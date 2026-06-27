@@ -1,49 +1,157 @@
-# Hard to Kill Starter Website
+# Rip City Athlete Development Platform
 
-A basic front-end prototype for the Hard to Kill athlete development platform.
+A web application prototype designed to help athletes and coaches manage workouts, goals, habits, progress, and communication in one place.
 
-## Current features
+This project is currently being developed as a pilot for **Rip City**, with the long-term vision of supporting multiple training facilities through customizable branding and coaching workflows.
+
+---
+
+## Current Features
+
+### Athlete View
 
 - Athlete dashboard
 - Today's workout
 - Exercise completion tracking
 - Daily habits
 - Habit completion tracking
-- Daily streak placeholder
+- Personal goals
 - Progress page
-- Personal goals page
-- Browser storage using `localStorage`
+- Player attributes card
+- Leaderboard preview
+- Coach note section
+- Data saved locally using `localStorage`
 
-## How to run it in VS Code
+### Coach View (Prototype)
 
-1. Open the `hard-to-kill-starter` folder in VS Code.
-2. Install the **Live Server** extension.
-3. Right-click `index.html`.
-4. Select **Open with Live Server**.
+- Coach dashboard
+- Athlete roster
+- Athlete status overview
+- Assign workout mockup
+- Coach notes mockup
+- Leaderboard mockup
 
-You can also open `index.html` directly in a browser, but Live Server is easier while editing.
+---
 
-## Files
+## Tech Stack
 
-- `index.html` — website structure
-- `styles.css` — all styling
-- `app.js` — workouts, habits, goals, navigation, and browser storage
+- HTML
+- CSS
+- JavaScript
+- Local Storage (temporary)
 
-## Important limitation
+Future:
+- Supabase
+- PostgreSQL
+- Authentication
+- Real-time database
 
-This version does not have real user accounts or a database yet. It saves completed workouts and habits only in the user's browser.
+---
 
-## Database planning
+## Running the Project
 
-- `DATABASE_PLAN.md` explains the next phase of the project and the data the app should track.
-- `supabase_schema.sql` is a starter PostgreSQL schema that can be used in Supabase.
-- `SUPABASE_SETUP.md` explains how to create a Supabase project and connect this app to it.
+1. Clone the repository.
+2. Open the project folder in VS Code.
+3. Install the **Live Server** extension.
+4. Right-click `index.html`.
+5. Select **Open with Live Server**.
 
-## Recommended next steps
+---
 
-1. Build the login and registration screens.
-2. Add a coach dashboard.
-3. Create forms for workouts, habits, and goals.
-4. Add a backend using Node.js and Express.
-5. Connect PostgreSQL or Supabase.
-6. Store athletes, coaches, workouts, habits, completions, goals, and streaks in the database.
+## Project Structure
+
+- `index.html` — Application layout
+- `styles.css` — UI styling
+- `app.js` — Application logic, navigation, workouts, habits, goals, coach view, and local storage
+
+---
+
+## Current Limitations
+
+This is currently a front-end prototype.
+
+The application does **not** yet include:
+
+- User authentication
+- Coach accounts
+- Athlete accounts
+- Database
+- Real workout assignments
+- Real coach notes
+- Live leaderboards
+- Progress history
+- Cloud storage
+
+All data is currently stored locally in the browser.
+
+---
+
+## Planned Features
+
+### Athlete
+
+- User registration & login
+- Athlete profile
+- Workout history
+- Goal tracking
+- Progress charts
+- Recovery tracking
+- Player development attributes
+- Notifications
+- Personal records
+
+### Coach
+
+- Coach login
+- Assign workouts
+- Assign goals
+- Daily coach notes
+- Create athlete groups
+- Team dashboard
+- Attendance tracking
+- Athlete progress reports
+- Leaderboards
+- Performance analytics
+
+### Administration
+
+- Multiple training facilities
+- Facility branding (logo, colors, terminology)
+- Coach permissions
+- Athlete invitations
+- Group management
+- Custom metrics
+- Facility-specific dashboards
+
+---
+
+## Long-Term Vision
+
+Create a customizable athlete development platform that allows training facilities to manage athletes, communicate with them, assign workouts, track development, and monitor progress through a modern web application.
+
+Each facility will be able to have its own:
+
+- Branding
+- Logo
+- Colors
+- Groups
+- Metrics
+- Leaderboards
+- Coach staff
+- Athlete roster
+
+while sharing the same underlying platform.
+
+---
+
+## Current Status
+
+🚧 Active Development
+
+Current focus:
+
+- Improve the Rip City pilot
+- Gather feedback from coaches
+- Build Version 1 for a small test group
+- Connect the application to a real database
+- Expand into a full athlete management platform
