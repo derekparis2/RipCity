@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rip City Athlete Development</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">
+        <img src="rip-city-logo.png" alt="Rip City logo">
+      </div>
+      <div>
+        <h1>RIP CITY</h1>
+        <p>Athlete Development</p>
+      </div>
+    </div>
+
+    <div class="mode-card">
+      <span>Current View</span>
+      <strong id="mode-label">Athlete</strong>
+      <button class="outline-btn small-btn" id="mode-toggle-btn">Switch to Coach</button>
+    </div>
+
+    <nav id="athlete-nav">
+      <button class="nav-link active" data-section="dashboard">Dashboard</button>
+      <button class="nav-link" data-section="workout">Today's Workout</button>
+      <button class="nav-link" data-section="habits">Daily Habits</button>
+      <button class="nav-link" data-section="progress">Progress</button>
+      <button class="nav-link" data-section="goals">Goals</button>
+      <button class="nav-link" data-section="leaderboard">Leaderboard</button>
+    </nav>
+
+    <nav id="coach-nav" class="hidden">
+      <button class="nav-link" data-section="coach-dashboard">Coach Dashboard</button>
+      <button class="nav-link" data-section="athletes">Athletes</button>
+      <button class="nav-link" data-section="assign-workout">Assign Workout</button>
+      <button class="nav-link" data-section="coach-notes">Coach Notes</button>
+      <button class="nav-link" data-section="coach-leaderboard">Leaderboard</button>
+    </nav>
+
+    <div class="user-card">
+      <div class="avatar">DP</div>
+      <div>
+        <strong>Derek Paris</strong>
+        <span id="user-role">Athlete</span>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow" id="current-date"></p>
+        <h2 id="page-title">Dashboard</h2>
+      </div>
+
+      <div class="topbar-actions">
+        <button class="outline-btn" id="reset-day-btn">Reset Today</button>
+        <button class="outline-btn">View Profile</button>
+      </div>
+    </header>
+
+    <!-- ATHLETE DASHBOARD -->
+    <section id="dashboard" class="page-section active athlete-section">
+      <div class="hero-card">
+        <div>
+          <p class="eyebrow">TODAY'S DEVELOPMENT PLAN</p>
+          <h3>Build your plan. Track your work. Prove your progress.</h3>
+          <p>Complete your workout, finish your daily habits, and keep building toward your goals.</p>
+        </div>
+        <button class="primary-btn" data-go="workout">Start Workout</button>
+      </div>
+
+      <div class="stats-grid">
+        <article class="stat-card">
+          <span>Current Streak</span>
+          <strong><span id="streak-count">6</span> days</strong>
+          <small>Best streak: 14 days</small>
+        </article>
+
+        <article class="stat-card">
+          <span>Workout Progress</span>
+          <strong><span id="workout-progress">0</span>%</strong>
+          <small id="workout-count">0 of 5 exercises complete</small>
+        </article>
+
+        <article class="stat-card">
+          <span>Daily Habits</span>
+          <strong><span id="habit-progress">0</span>/5</strong>
+          <small>Complete all habits to protect your streak</small>
+        </article>
+
+        <article class="stat-card">
+          <span>Daily Score</span>
+          <strong id="weekly-score">0%</strong>
+          <small>Based on workout and habits today</small>
+        </article>
+      </div>
+
+      <div class="dashboard-grid">
+        <article class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">TRAINING</p>
+              <h3>Today's Workout</h3>
+            </div>
+            <button class="text-btn" data-go="workout">View all</button>
+          </div>
+
+          <div class="mini-workout">
+            <div>
+              <strong>Lower Body Power</strong>
+              <span>5 exercises · 55 minutes</span>
+            </div>
+            <span class="tag">Strength</span>
+          </div>
+
+          <div class="progress-bar">
+            <div id="dashboard-workout-bar"></div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">COACH NOTE</p>
+              <h3>Message For Today</h3>
+            </div>
+          </div>
+
+          <div class="coach-note-card">
+            <p>Focus on clean reps today. Track how your body feels after the session and do not rush through recovery work.</p>
+            <small>From Coach · Today</small>
+          </div>
+        </article>
+      </div>
+
+      <div class="dashboard-grid lower-dashboard">
+        <article class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">CONSISTENCY</p>
+              <h3>Daily Habits</h3>
+            </div>
+            <button class="text-btn" data-go="habits">View all</button>
+          </div>
+
+          <div id="dashboard-habits" class="habit-preview"></div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">PLAYER CARD</p>
+              <h3>Attributes</h3>
+            </div>
+          </div>
+
+          <div class="attribute-list">
+            <div class="attribute-row"><span>Strength</span><div class="attribute-bar"><div style="width:82%"></div></div><strong>82</strong></div>
+            <div class="attribute-row"><span>Speed</span><div class="attribute-bar"><div style="width:74%"></div></div><strong>74</strong></div>
+            <div class="attribute-row"><span>Power</span><div class="attribute-bar"><div style="width:88%"></div></div><strong>88</strong></div>
+            <div class="attribute-row"><span>Mobility</span><div class="attribute-bar"><div style="width:70%"></div></div><strong>70</strong></div>
+            <div class="attribute-row"><span>Consistency</span><div class="attribute-bar"><div style="width:91%"></div></div><strong>91</strong></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ATHLETE WORKOUT -->
+    <section id="workout" class="page-section athlete-section">
+      <div class="section-intro">
+        <div>
+          <p class="eyebrow">TODAY'S PROGRAM</p>
+          <h3>Lower Body Power</h3>
+          <p>Focus: strength, speed, and explosive movement.</p>
+        </div>
+        <div class="completion-badge"><span id="workout-page-progress">0</span>% complete</div>
+      </div>
+
+      <div id="exercise-list" class="exercise-list"></div>
+    </section>
+
+    <!-- ATHLETE HABITS -->
+    <section id="habits" class="page-section athlete-section">
+      <div class="section-intro">
+        <div>
+          <p class="eyebrow">DAILY STANDARD</p>
+          <h3>Build the habits behind the results</h3>
+          <p>Complete each habit before the day ends.</p>
+        </div>
+        <div class="completion-badge"><span id="habit-page-progress">0</span>/5 complete</div>
+      </div>
+
+      <div id="habit-list" class="habit-list"></div>
+    </section>
+
+    <!-- ATHLETE PROGRESS -->
+    <section id="progress" class="page-section athlete-section">
+      <div class="section-intro">
+        <div>
+          <p class="eyebrow">PERFORMANCE</p>
+          <h3>Your Progress</h3>
+          <p>This will eventually pull from a real database.</p>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <article class="stat-card">
+          <span>Workouts Completed</span>
+          <strong>24</strong>
+          <small>Last 30 days</small>
+        </article>
+
+        <article class="stat-card">
+          <span>Habit Completion</span>
+          <strong>86%</strong>
+          <small>Last 30 days</small>
+        </article>
+
+        <article class="stat-card">
+          <span>Body Weight</span>
+          <strong>184 lb</strong>
+          <small>Goal: 190 lb</small>
+        </article>
+
+        <article class="stat-card">
+          <span>Trap Bar Deadlift</span>
+          <strong>365 lb</strong>
+          <small>Goal: 405 lb</small>
+        </article>
+      </div>
+
+      <article class="panel chart-placeholder">
+        <p class="eyebrow">COMING NEXT</p>
+        <h3>Progress charts and testing history</h3>
+        <p>Once the database is connected, this section can show strength numbers, body weight, sprint times, attendance, velocity, mobility, habit consistency, and testing history over time.</p>
+      </article>
+    </section>
+
+    <!-- ATHLETE GOALS -->
+    <section id="goals" class="page-section athlete-section">
+      <div class="section-intro">
+        <div>
+          <p class="eyebrow">PLAYER DEVELOPMENT</p>
+          <h3>Current Goals</h3>
+          <p>Your training should connect directly to what you are trying to accomplish.</p>
+        </div>
+        <button class="primary-btn" id="add-goal-btn">Add Goal</button>
+      </div>
+
+      <form id="goal-form" class="goal-form hidden">
+        <div>
+          <label for="goal-name">Goal Name</label>
+          <input id="goal-name" type="text" placeholder="Example: Bench Press" required />
+        </div>
+
+        <div>
+          <label for="goal-current">Current</label>
+          <input id="goal-current" type="number" placeholder="185" required />
+        </div>
+
+        <div>
+          <label for="goal-target">Target</label>
+          <input id="goal-target" type="number" placeholder="225" required />
+        </div>
+
+        <div>
+          <label for="goal-unit">Unit</label>
+          <input id="goal-unit" type="text" placeholder="lb, days, %, reps" />
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="outline-btn" id="cancel-goal-btn">Cancel</button>
+          <button type="submit" class="primary-btn">Save Goal</button>
+        </div>
+      </form>
+
+      <div id="goal-list" class="goal-grid"></div>
+    </section>
+
+    <!-- ATHLETE LEADERBOARD -->
+    <section id="leaderboard" class="page-section athlete-section">
+      <div class="section-intro">
+        <div>
+          <p class="eyebrow">COMPETE</p>
+          <h3>Leaderboard</h3>
+          <p>Built around consistency, improvement, and effort — not just raw numbers.</p>
+        </div>
+      </div>
+
+      <div class="leaderboard-grid">
+        <article class="panel">
+          <p class="eyebrow">THIS WEEK</p>
+          <h3>Consistency Leaders</h3>
+          <div id="athlete-leaderboard-list" class="rank-list"></div>
+        </article>
+
+        <article class="panel">
+          <p class="eyebrow">PLAYER DEVELOPMENT</p>
+          <h3>Most Improved</h3>
+          <div class="rank-list">
+            <div class="rank-row"><strong>1</strong><span>Ryan Smith</span><em>+14%</em></div>
+            <div class="rank-row"><strong>2</strong><span>Derek Paris</span><em>+11%</em></div>
+            <div class="rank-row"><strong>3</strong><span>Mike Johnson</span><em>+9%</em></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- COACH DASHBOARD -->
+    <section id="coach-dashboard" class="page-section coach-section hidden">
+      <div class="hero-card">
+        <div>
+          <p class="eyebrow">COACH COMMAND CENTER</p>
+          <h3>Assign the work. Track the progress. Know who needs attention.</h3>
+          <p>View team completion, individual progress, notes, goals, and athlete accountability from one place.</p>
+        </div>
+        <button class="primary-btn" data-go="assign-workout">Assign Workout</button>
+      </div>
+
+      <div class="stats-grid">
+        <article class="stat-card">
+          <span>Total Athletes</span>
+          <strong>24</strong>
+          <small>Across all groups</small>
+        </article>
+
+        <article class="stat-card">
+          <span>Workout Completion</span>
+          <strong>75%</strong>
+          <small>Today</small>
+        </article>
+
+        <article class="stat-card">
+          <span>Habit Completion</span>
+          <strong>68%</strong>
+          <small>Today</small>
+        </article>
+
+        <article class="stat-card">
+          <span>Need Attention</span>
+          <strong>4</strong>
+          <small>No check-in or low completion</small>
+        </article>
+      </div>
+
+      <div class="dashboard-grid">
+        <article class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">ATHLETE STATUS</p>
+              <h3>Today’s Overview</h3>
+            </div>
+            <button class="text-btn" data-go="athletes">View all</button>
+          </div>
+
+          <div id="coach-athlete-preview" class="table-list"></div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">COACH NOTES</p>
+              <h3>Recent Notes</h3>
+            </div>
+            <button class="text-btn" data-go="coach-notes">View all</button>
+          </div>
+
+          <div class="note-list">
+            <div class="note-item">
+              <strong>Team Note</strong>
+              <p>Hydrate today. Lower body power day tomorrow.</p>
+            </div>
+            <div class="note-item">
+              <strong>Derek Paris</strong>
+              <p>Keep tracking body weight and recovery after lower body sessions.</p>
+            </div>
+            <div class="note-item">
+              <strong>Pitchers Group</strong>
+              <p>Do not skip arm care after throwing.</p>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- COACH ATHLETES -->
+    <section id="athletes" class="page-section coach-section hidden">
+      <div class="section-intro">
+        <div>
+          <p class="eyebrow">ROSTER</p>
+          <h3>Athletes</h3>
+          <p>Track workout completion, habits, goals, streaks, and status.</p>
+        </div>
+      </div>
+
+      <article class="panel">
+        <div class="responsive-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Athlete</th>
+                <th>Group</th>
+                <th>Workout</th>
+                <th>Habits</th>
+                <th>Streak</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="athlete-table-body"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <!-- COACH ASSIGN WORKOUT -->
+    <section id="assign-workout" class="page-section coach-section hidden">
+      <div class="section-intro">
+        <div>
+          <p class="eyebrow">PROGRAMMING</p>
+          <h3>Assign Workout</h3>
+          <p>Mockup for assigning workouts to everyone, groups, or individual athletes.</p>
+        </div>
+      </div>
+
+      <article class="panel">
+        <form class="coach-form">
+          <div>
+            <label>Workout Name</label>
+            <input type="text" value="Lower Body Power">
+          </div>
+
+          <div>
+            <label>Focus</label>
+            <input type="text" value="Strength, speed, and explosive movement">
+          </div>
+
+          <div>
+            <label>Assign To</label>
+            <select>
+              <option>Everyone</option>
+              <option>Pitchers</option>
+              <option>Hitters</option>
+              <option>High School Group</option>
+              <option>College Group</option>
+              <option>Individual Athlete</option>
+            </select>
+          </div>
+
+          <div>
+            <label>Coach Note</label>
+            <textarea>Move with intent today. Quality reps over rushing through the workout.</textarea>
+          </div>
+
+          <div class="mock-exercises">
+            <div><strong>1. Box Jump</strong><span>4 sets × 3 reps</span></div>
+            <div><strong>2. Trap Bar Deadlift</strong><span>4 sets × 5 reps</span></div>
+            <div><strong>3. Bulgarian Split Squat</strong><span>3 sets × 8 each side</span></div>
+            <div><strong>4. Nordic Hamstring Curl</strong><span>3 sets × 6 reps</span></div>
+            <div><strong>5. Sled Push</strong><span>5 rounds × 20 yards</span></div>
+          </div>
+
+          <button type="button" class="primary-btn">Mock Assign Workout</button>
+        </form>
+      </article>
+    </section>
+
+    <!-- COACH NOTES -->
+    <section id="coach-notes" class="page-section coach-section hidden">
+      <div class="section-intro">
+        <div>
+          <p class="eyebrow">COMMUNICATION</p>
+          <h3>Coach Notes</h3>
+          <p>Notes can eventually go to everyone, groups, or individual athletes.</p>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        <article class="panel">
+          <p class="eyebrow">CREATE NOTE</p>
+          <h3>New Coach Note</h3>
+
+          <form class="coach-form">
+            <div>
+              <label>Send To</label>
+              <select>
+                <option>Everyone</option>
+                <option>Pitchers</option>
+                <option>Hitters</option>
+                <option>Derek Paris</option>
+              </select>
+            </div>
+
+            <div>
+              <label>Note</label>
+              <textarea>Focus on recovery today. Log how your body feels after training.</textarea>
+            </div>
+
+            <button type="button" class="primary-btn">Mock Send Note</button>
+          </form>
+        </article>
+
+        <article class="panel">
+          <p class="eyebrow">RECENT</p>
+          <h3>Sent Notes</h3>
+
+          <div class="note-list">
+            <div class="note-item">
+              <strong>Everyone</strong>
+              <p>Hydrate today. Lower body power day tomorrow.</p>
+            </div>
+            <div class="note-item">
+              <strong>Pitchers</strong>
+              <p>Arm care is mandatory after throwing.</p>
+            </div>
+            <div class="note-item">
+              <strong>Derek Paris</strong>
+              <p>Keep tracking body weight and recovery.</p>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- COACH LEADERBOARD -->
+    <section id="coach-leaderboard" class="page-section coach-section hidden">
+      <div class="section-intro">
+        <div>
+          <p class="eyebrow">ACCOUNTABILITY</p>
+          <h3>Coach Leaderboard</h3>
+          <p>Use leaderboards to reward consistency, improvement, and effort.</p>
+        </div>
+      </div>
+
+      <div class="leaderboard-grid">
+        <article class="panel">
+          <p class="eyebrow">THIS WEEK</p>
+          <h3>Top Consistency Scores</h3>
+          <div id="coach-leaderboard-list" class="rank-list"></div>
+        </article>
+
+        <article class="panel">
+          <p class="eyebrow">NEEDS ATTENTION</p>
+          <h3>Follow-Up List</h3>
+          <div class="rank-list">
+            <div class="rank-row alert-row"><strong>!</strong><span>Ryan Smith</span><em>No check-in</em></div>
+            <div class="rank-row alert-row"><strong>!</strong><span>Mike Johnson</span><em>2/5 habits</em></div>
+            <div class="rank-row alert-row"><strong>!</strong><span>Chris Miller</span><em>Workout incomplete</em></div>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
