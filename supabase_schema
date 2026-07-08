@@ -39,10 +39,10 @@ create table facility_members (
   facility_id uuid not null references facilities(id) on delete cascade,
   profile_id uuid not null references profiles(id) on delete cascade,
   role text not null check (role in ('athlete', 'h2k_member', 'coach', 'admin', 'parent')),
-status text not null default 'pending'
-  check (status in ('pending', 'approved', 'rejected', 'inactive')),
-approved_by uuid references profiles(id) on delete set null,
-approved_at timestamptz,  created_at timestamptz not null default now(),
+  status text not null default 'pending'
+    check (status in ('pending', 'approved', 'rejected', 'inactive')),
+  approved_by uuid references profiles(id) on delete set null,
+  approved_at timestamptz,  created_at timestamptz not null default now(),
   unique (facility_id, profile_id)
 );
 
@@ -313,6 +313,22 @@ create table ai_summaries (
   summary_type text not null check (summary_type in ('daily_coach', 'weekly_coach', 'athlete_risk', 'parent_summary')),
   summary_date date not null default current_date,
   body text not null,
+  created_at timestamptz not null default now()
+);
+
+-- Add signup Links
+create table facility_invites (
+  id uuid primary key default gen_random_uuid(),
+  facility_id uuid not null references facilities(id) on delete cascade,
+  created_by uuid references profiles(id) on delete set null,
+
+  invite_code text not null unique,
+  default_role text not null check (default_role in ('athlete', 'h2k_member', 'parent')),
+  default_member_type text check (default_member_type in ('athlete', 'h2k')),
+  default_group_id uuid references groups(id) on delete set null,
+
+  active boolean not null default true,
+  expires_at timestamptz,
   created_at timestamptz not null default now()
 );
 
