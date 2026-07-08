@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rip City Signup</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="auth-body">
+  <main class="auth-page">
+    <section class="auth-card wide-auth-card">
+      <div class="auth-brand">
+        <img src="rip-city-logo.png" alt="Rip City logo">
+        <div>
+          <h1>RIP CITY</h1>
+          <p>Athlete Development</p>
+        </div>
+      </div>
+
+      <div class="auth-heading">
+        <p class="eyebrow">JOIN RIP CITY</p>
+        <h2>Create Account</h2>
+        <p>After signing up, a coach will approve your account before you can access the app.</p>
+      </div>
+
+      <form id="signup-form" class="auth-form">
+        <div class="member-type-grid">
+          <label class="member-type-card">
+            <input type="radio" name="member-type" value="athlete" checked>
+            <span>Athlete</span>
+            <small>Workouts, goals, progress, coach notes, and development tracking.</small>
+          </label>
+
+          <label class="member-type-card">
+            <input type="radio" name="member-type" value="h2k">
+            <span>H2K Member</span>
+            <small>Habit tracking, weekly score, training consistency, and accountability.</small>
+          </label>
+        </div>
+
+        <div class="auth-grid">
+          <div>
+            <label for="signup-full-name">Full Name</label>
+            <input id="signup-full-name" type="text" required />
+          </div>
+
+          <div>
+            <label for="signup-email">Email</label>
+            <input id="signup-email" type="email" required />
+          </div>
+
+          <div>
+            <label for="signup-password">Password</label>
+            <input id="signup-password" type="password" minlength="6" required />
+          </div>
+
+          <div>
+            <label for="signup-age-group">Age Group</label>
+            <select id="signup-age-group">
+              <option value="">Select one</option>
+              <option value="12-13">12-13</option>
+              <option value="14-15">14-15</option>
+              <option value="16-18">16-18</option>
+              <option value="college">College</option>
+              <option value="adult">Adult</option>
+            </select>
+          </div>
+
+          <div class="athlete-only">
+            <label for="signup-sport">Sport</label>
+            <input id="signup-sport" type="text" placeholder="Example: Baseball" />
+          </div>
+
+          <div class="athlete-only">
+            <label for="signup-position">Position</label>
+            <input id="signup-position" type="text" placeholder="Example: Pitcher, Catcher, SS" />
+          </div>
+
+          <div class="athlete-only">
+            <label for="signup-school">School</label>
+            <input id="signup-school" type="text" />
+          </div>
+
+          <div class="athlete-only">
+            <label for="signup-grad-year">Graduation Year</label>
+            <input id="signup-grad-year" type="number" placeholder="2027" />
+          </div>
+
+          <div>
+            <label for="signup-body-weight">Body Weight</label>
+            <input id="signup-body-weight" type="number" placeholder="Optional" />
+          </div>
+        </div>
+
+        <button type="submit" class="primary-btn full-btn">Create Account</button>
+      </form>
+
+      <p class="auth-message" id="signup-message"></p>
+
+      <p class="auth-footer">
+        Already have an account? <a href="login.html">Log in here</a>
+      </p>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabaseClient.js"></script>
+  <script src="auth.js"></script>
+</body>
+</html>
