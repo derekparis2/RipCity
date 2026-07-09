@@ -34,18 +34,18 @@ Do not put the service role key in frontend JavaScript. The service role key is 
 
 ## 4. Add the Supabase Browser Script
 
-In `index.html`, add this above `app.js`:
+In `index.html`, add this above `js/app.js`:
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
-<script src="app.js"></script>
+<script src="js/app.js"></script>
 ```
 
 Then replace the current bottom script tag:
 
 ```html
-<script src="app.js"></script>
+<script src="js/app.js"></script>
 ```
 
 with the three script tags above.
@@ -61,7 +61,7 @@ const SUPABASE_PUBLISHABLE_KEY = "YOUR-PUBLISHABLE-KEY";
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 ```
 
-This gives `app.js` access to the database through `db`.
+This gives `js/app.js` access to the database through `db`.
 
 ## 6. Insert Starter Data
 

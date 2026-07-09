@@ -24,25 +24,25 @@ async function getRipCityFacility() {
 }
 
 async function getCurrentUserProfile(userId) {
-  const { data, error } = await db
-    .from("profiles")
-    .select(`
-      id,
-      email,
-      full_name,
-      global_role,
-      facility_members (
+    const { data, error } = await db
+      .from("profiles")
+      .select(`
         id,
-        role,
-        status,
-        facility_id
-      )
-    `)
-    .eq("id", userId)
-    .single();
-
-  if (error) throw error;
-  return data;
+        email,
+        full_name,
+        global_role,
+        facility_members:facility_members!facility_members_profile_id_fkey (
+          id,
+          role,
+          status,
+          facility_id
+        )
+      `)
+      .eq("id", userId)
+      .single();
+  
+    if (error) throw error;
+    return data;
 }
 
 async function handleSignup(event) {
@@ -153,8 +153,8 @@ async function handleLogin(event) {
     if (error) throw error;
 
     const profile = await getCurrentUserProfile(data.user.id);
-    const membership = profile.facility_members?.[0];
-
+    const membership = profile.facility_members?.[0] || profile["facility_members!facility_members_profile_id_fkey"]?.[0];
+    
     if (!membership || membership.status !== "approved") {
       window.location.href = "pending.html";
       return;
@@ -191,6 +191,166 @@ function setupMemberTypeToggle() {
   updateFields();
 }
 
+async function getCurrentSession() {
+    const { data, error } = await db.auth.getSession();
+  
+    if (error) throw error;
+  
+    return data.session;
+}
+  
+async function requireCoachOrAdmin() {
+    const session = await getCurrentSession();
+  
+    if (!session) {
+      window.location.href = "login.html";
+      return null;
+    }
+  
+    const profile = await getCurrentUserProfile(session.user.id);
+    const membership = profile.facility_members?.[0] || profile["facility_members!facility_members_profile_id_fkey"]?.[0];
+
+    if (!membership || membership.status !== "approved") {
+      window.location.href = "pending.html";
+      return null;
+    }
+  
+    if (membership.role !== "coach" && membership.role !== "admin") {
+      showMessage("approval-message", "You do not have permission to view this page.", true);
+      return null;
+    }
+  
+    return {
+      session,
+      profile,
+      membership
+    };
+}
+  
+async function loadPendingUsers() {
+    const access = await requireCoachOrAdmin();
+    if (!access) return;
+  
+    showMessage("approval-message", "Loading pending users...");
+  
+    try {
+      const { data, error } = await db
+        .from("facility_members")
+        .select(`
+          id,
+          role,
+          status,
+          created_at,
+          profile:profiles!facility_members_profile_id_fkey (
+            id,
+            full_name,
+            email
+          )
+        `)
+        .eq("facility_id", access.membership.facility_id)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false });
+  
+      if (error) throw error;
+  
+      console.log("Pending users:", data);
+  
+      renderPendingUsers(data || []);
+      showMessage("approval-message", "");
+    } catch (error) {
+      console.error(error);
+      showMessage("approval-message", error.message || "Could not load pending users.", true);
+    }
+}
+  
+function renderPendingUsers(users) {
+    const list = document.getElementById("pending-users-list");
+  
+    if (!users.length) {
+      list.innerHTML = `<div class="empty-state">No pending users right now.</div>`;
+      return;
+    }
+  
+    list.innerHTML = users.map(user => {
+      const profile = user.profile;
+  
+      return `
+        <article class="pending-user-card">
+          <div>
+            <h4>${profile?.full_name || "Unnamed User"}</h4>
+            <div class="pending-user-meta">
+              <span>${profile?.email || "No email"}</span>
+              <span>${formatRole(user.role)}</span>
+              <span>Status: ${user.status}</span>
+            </div>
+          </div>
+  
+          <div class="pending-user-actions">
+            <button class="approve-btn" data-approve-user="${user.id}">Approve</button>
+            <button class="reject-btn" data-reject-user="${user.id}">Reject</button>
+          </div>
+        </article>
+      `;
+    }).join("");
+  
+    document.querySelectorAll("[data-approve-user]").forEach(button => {
+      button.addEventListener("click", () => updateApprovalStatus(button.dataset.approveUser, "approved"));
+    });
+  
+    document.querySelectorAll("[data-reject-user]").forEach(button => {
+      button.addEventListener("click", () => updateApprovalStatus(button.dataset.rejectUser, "rejected"));
+    });
+}
+  
+function formatRole(role) {
+    if (role === "h2k_member") return "H2K Member";
+    if (role === "athlete") return "Athlete";
+    if (role === "coach") return "Coach";
+    if (role === "admin") return "Admin";
+    if (role === "parent") return "Parent";
+    return role;
+}
+  
+async function updateApprovalStatus(facilityMemberId, status) {
+    const access = await requireCoachOrAdmin();
+    if (!access) return;
+  
+    const confirmText = status === "approved"
+      ? "Approve this user?"
+      : "Reject this user?";
+  
+    const shouldContinue = confirm(confirmText);
+    if (!shouldContinue) return;
+  
+    try {
+      const updateData = {
+        status
+      };
+  
+      if (status === "approved") {
+        updateData.approved_by = access.profile.id;
+        updateData.approved_at = new Date().toISOString();
+      }
+  
+      const { error } = await db
+        .from("facility_members")
+        .update(updateData)
+        .eq("id", facilityMemberId);
+  
+      if (error) throw error;
+  
+      await loadPendingUsers();
+    } catch (error) {
+      console.error(error);
+      showMessage("approval-message", error.message || "Could not update user status.", true);
+    }
+}
+  
+async function handleApprovalLogout() {
+    await db.auth.signOut();
+    window.location.href = "login.html";
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const currentPage = getCurrentPage();
 
@@ -205,5 +365,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (currentPage === "pending.html") {
     document.getElementById("pending-logout-btn").addEventListener("click", handlePendingLogout);
+  }
+
+  if (currentPage === "coach-approvals.html") {
+    loadPendingUsers();
+  
+    document.getElementById("refresh-approvals-btn").addEventListener("click", loadPendingUsers);
+    document.getElementById("approval-logout-btn").addEventListener("click", handleApprovalLogout);
   }
 });

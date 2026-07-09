@@ -3,49 +3,49 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rip City Login</title>
+  <title>Coach Approvals</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css" />
 </head>
+
 <body class="auth-body">
-  <main class="auth-page">
-    <section class="auth-card">
+  <main class="approval-page">
+    <section class="approval-header">
       <div class="auth-brand">
         <img src="assets/rip-city-logo.png" alt="Rip City logo">
         <div>
           <h1>RIP CITY</h1>
-          <p>Athlete Development</p>
+          <p>Coach Approval</p>
         </div>
       </div>
 
-      <div class="auth-heading">
-        <p class="eyebrow">WELCOME BACK</p>
-        <h2>Log In</h2>
-        <p>Access your Rip City account.</p>
+      <div>
+        <p class="eyebrow">COACH ADMIN</p>
+        <h2>Pending Approvals</h2>
+        <p>Approve or reject new users before they can access the app.</p>
       </div>
-
-      <form id="login-form" class="auth-form">
-        <div>
-          <label for="login-email">Email</label>
-          <input id="login-email" type="email" required />
-        </div>
-
-        <div>
-          <label for="login-password">Password</label>
-          <input id="login-password" type="password" required />
-        </div>
-
-        <button type="submit" class="primary-btn full-btn">Log In</button>
-      </form>
-
-      <p class="auth-message" id="login-message"></p>
-
-      <p class="auth-footer">
-        Need an account? <a href="signup.html">Sign up here</a>
-      </p>
     </section>
+
+    <section class="panel">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">PENDING USERS</p>
+          <h3>Signup Requests</h3>
+        </div>
+        <button class="outline-btn" id="refresh-approvals-btn">Refresh</button>
+      </div>
+
+      <p id="approval-message" class="auth-message"></p>
+
+      <div id="pending-users-list" class="pending-users-list"></div>
+    </section>
+
+    <div class="approval-actions-bottom">
+      <a class="outline-link" href="index.html">Back to App</a>
+      <button class="outline-btn" id="approval-logout-btn">Log Out</button>
+    </div>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

@@ -1088,3 +1088,141 @@ td {
     font-size: 38px;
   }
 }
+
+
+.approval-page {
+  width: min(1100px, 100%);
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+.approval-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.approval-header h2 {
+  margin: 8px 0;
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 48px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.approval-header p:not(.eyebrow) {
+  color: var(--muted);
+}
+
+.pending-users-list {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.pending-user-card {
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  border-radius: 14px;
+  padding: 18px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 18px;
+  align-items: center;
+}
+
+.pending-user-card h4 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+.pending-user-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.pending-user-meta span {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 9px;
+}
+
+.pending-user-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.approve-btn {
+  border: 2px solid var(--success);
+  background: rgba(126, 231, 135, 0.08);
+  color: var(--success);
+  font-weight: 800;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.reject-btn {
+  border: 2px solid var(--danger);
+  background: rgba(255, 107, 107, 0.08);
+  color: var(--danger);
+  font-weight: 800;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.empty-state {
+  color: var(--muted);
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+  padding: 22px;
+  text-align: center;
+}
+
+.approval-actions-bottom {
+  margin-top: 18px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.outline-link {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text);
+  border: 2px solid var(--border);
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.outline-link:hover {
+  border-color: var(--text);
+  background: var(--accent-soft);
+}
+
+@media (max-width: 700px) {
+  .approval-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .pending-user-card {
+    grid-template-columns: 1fr;
+  }
+
+  .pending-user-actions {
+    flex-direction: column;
+  }
+
+  .approval-actions-bottom {
+    flex-direction: column;
+  }
+}
