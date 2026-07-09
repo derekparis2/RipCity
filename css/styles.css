@@ -1226,3 +1226,7 @@ td {
     flex-direction: column;
   }
 }
+.nav-link-anchor {
+  display: block;
+  text-decoration: none;
+}

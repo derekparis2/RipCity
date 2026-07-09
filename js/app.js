@@ -1,3 +1,64 @@
+// =====================================================
+// AUTH / ACCESS PROTECTION
+// =====================================================
+// This makes sure only approved users can access the main app.
+// Pending users get sent to pending.html.
+// Logged-out users get sent to login.html.
+// Coaches/admins can still access the app, but later they will get a coach dashboard.
+
+async function protectAppPage() {
+  const { data: sessionData, error: sessionError } = await db.auth.getSession();
+
+  if (sessionError) {
+    console.error("Session error:", sessionError);
+    window.location.href = "login.html";
+    return null;
+  }
+
+  const session = sessionData.session;
+
+  if (!session) {
+    window.location.href = "login.html";
+    return null;
+  }
+
+  const { data: profile, error: profileError } = await db
+    .from("profiles")
+    .select(`
+      id,
+      email,
+      full_name,
+      global_role,
+      facility_members:facility_members!facility_members_profile_id_fkey (
+        id,
+        role,
+        status,
+        facility_id
+      )
+    `)
+    .eq("id", session.user.id)
+    .single();
+
+  if (profileError) {
+    console.error("Profile error:", profileError);
+    window.location.href = "login.html";
+    return null;
+  }
+
+  const membership = profile.facility_members?.[0];
+
+  if (!membership || membership.status !== "approved") {
+    window.location.href = "pending.html";
+    return null;
+  }
+
+  return {
+    session,
+    profile,
+    membership
+  };
+}
+
 const exercises = [
   { name: "Box Jump", details: "4 sets × 3 reps", complete: false },
   { name: "Trap Bar Deadlift", details: "4 sets × 5 reps", complete: false },
@@ -457,3 +518,4 @@ renderGoals();
 renderCoachAthletes();
 renderLeaderboards();
 updateDashboard();
+protectAppPage();
