@@ -1230,3 +1230,110 @@ td {
   display: block;
   text-decoration: none;
 }
+
+/* =====================================================
+   H2K DASHBOARD
+   ===================================================== */
+
+   .h2k-page {
+    width: min(1180px, 100%);
+    margin: 0 auto;
+    padding: 32px 24px 60px;
+  }
+  
+  .h2k-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 22px;
+    margin-bottom: 24px;
+  }
+  
+  .h2k-header-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  
+  .h2k-hero {
+    margin-bottom: 22px;
+  }
+  
+  .h2k-dashboard-grid {
+    margin-top: 22px;
+  }
+  
+  .h2k-habit-list {
+    display: grid;
+    gap: 14px;
+    margin-top: 18px;
+  }
+  
+  .h2k-habit-card {
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    border-radius: 14px;
+    padding: 18px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 16px;
+    align-items: center;
+  }
+  
+  .h2k-habit-card.complete {
+    border-color: rgba(126, 231, 135, 0.7);
+    background: rgba(126, 231, 135, 0.07);
+  }
+  
+  .h2k-habit-card h4 {
+    margin: 0 0 6px;
+    font-size: 18px;
+  }
+  
+  .h2k-habit-card p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.45;
+  }
+  
+  .h2k-score-box {
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    border-radius: 14px;
+    padding: 18px;
+    margin: 20px 0;
+  }
+  
+  .h2k-score-box span {
+    color: var(--muted);
+  }
+  
+  .h2k-score-box strong {
+    display: block;
+    margin: 8px 0 14px;
+    font-family: "Barlow Condensed", sans-serif;
+    font-size: 42px;
+    letter-spacing: 1px;
+  }
+  
+  @media (max-width: 800px) {
+    .h2k-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .h2k-header-actions {
+      width: 100%;
+      flex-direction: column;
+      align-items: stretch;
+    }
+  
+    .h2k-habit-card {
+      grid-template-columns: 1fr;
+    }
+  
+    .h2k-habit-card .check-btn {
+      width: 100%;
+      border-radius: 12px;
+    }
+  }

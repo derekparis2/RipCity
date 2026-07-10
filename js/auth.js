@@ -153,13 +153,29 @@ async function handleLogin(event) {
     if (error) throw error;
 
     const profile = await getCurrentUserProfile(data.user.id);
-    const membership = profile.facility_members?.[0] || profile["facility_members!facility_members_profile_id_fkey"]?.[0];
-    
+    const membership =
+      profile.facility_members?.[0] ||
+      profile["facility_members!facility_members_profile_id_fkey"]?.[0];
+
     if (!membership || membership.status !== "approved") {
       window.location.href = "pending.html";
       return;
     }
 
+    // Coaches/admins go to the coach approval page for now.
+    // Later this can become a full coach dashboard.
+    if (membership.role === "coach" || membership.role === "admin") {
+      window.location.href = "coach-approvals.html";
+      return;
+    }
+
+    // H2K members go directly to the H2K habit dashboard.
+    if (membership.role === "h2k_member") {
+      window.location.href = "h2k-dashboard.html";
+      return;
+    }
+
+    // Athletes go to the main app for now.
     window.location.href = "index.html";
   } catch (error) {
     console.error(error);

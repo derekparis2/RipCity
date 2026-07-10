@@ -53,3 +53,35 @@
 - Link parent to athlete
 - Parent dashboard
 - Weekly progress summaries
+
+## Future Phase: Scheduling and Payments
+
+- Facility schedule
+- Practices and group sessions
+- Private workout booking
+- Session attendance
+- Parent/member payment portal
+- Membership payments
+- Private lesson payments
+- Camps/clinics payments
+- Stripe integration
+
+
+## Core Product Direction
+
+The app should use one shared member platform that can work for athletes, H2K members, and future facility programs.
+
+Shared modules:
+- Dashboard
+- Profile
+- Workouts
+- Goals
+- Progress
+- Leaderboards
+- Coach notes
+- Schedule later
+- Payments later
+
+Program-specific modules:
+- H2K: habit tracking / 42-point weekly score
+- Athlete: baseball-specific data later, arm care later, player card later

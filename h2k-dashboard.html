@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>H2K Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body class="auth-body">
+  <main class="h2k-page">
+    <header class="h2k-header">
+      <div class="auth-brand">
+        <img src="assets/rip-city-logo.png" alt="Rip City logo">
+        <div>
+          <h1>RIP CITY</h1>
+          <p>H2K Dashboard</p>
+        </div>
+      </div>
+
+      <div class="h2k-header-actions">
+        <a class="outline-link" href="index.html">Main App</a>
+        <button class="outline-btn" id="h2k-logout-btn">Log Out</button>
+      </div>
+    </header>
+
+    <section class="hero-card h2k-hero">
+      <div>
+        <p class="eyebrow">H2K DAILY STANDARD</p>
+        <h3>Build your habits. Track your week. Stay accountable.</h3>
+        <p>Complete the six H2K habits each day to build toward your weekly score.</p>
+      </div>
+    </section>
+
+    <section class="stats-grid">
+      <article class="stat-card">
+        <span>Today’s Score</span>
+        <strong><span id="today-score">0</span>/6</strong>
+        <small>Habits completed today</small>
+      </article>
+
+      <article class="stat-card">
+        <span>Weekly Score</span>
+        <strong><span id="weekly-score-h2k">0</span>/42</strong>
+        <small>Possible weekly points</small>
+      </article>
+
+      <article class="stat-card">
+        <span>Week Progress</span>
+        <strong><span id="weekly-percent-h2k">0</span>%</strong>
+        <small>Current week completion</small>
+      </article>
+
+      <article class="stat-card">
+        <span>Status</span>
+        <strong id="h2k-status">Open</strong>
+        <small id="h2k-status-detail">Complete habits to improve today’s score</small>
+      </article>
+    </section>
+
+    <section class="dashboard-grid h2k-dashboard-grid">
+      <article class="panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">TODAY</p>
+            <h3>Daily Habits</h3>
+          </div>
+          <button class="outline-btn" id="refresh-habits-btn">Refresh</button>
+        </div>
+
+        <p id="h2k-message" class="auth-message"></p>
+
+        <div id="h2k-habit-list" class="h2k-habit-list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">WHY THIS MATTERS</p>
+        <h3>Weekly Accountability</h3>
+        <p>
+          H2K uses six daily habits. Each completed habit is worth 1 point.
+          That means each member can earn up to 6 points per day and 42 points per week.
+        </p>
+
+        <div class="h2k-score-box">
+          <span>This Week</span>
+          <strong><span id="score-box-weekly">0</span> / 42</strong>
+          <div class="progress-bar">
+            <div id="h2k-weekly-bar"></div>
+          </div>
+        </div>
+
+        <div class="note-item">
+          <strong>Coming Next</strong>
+          <p>Rolling 4-week average, coach dashboard, missed-day alerts, and AI coach summaries.</p>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/h2k.js"></script>
+</body>
+</html>
