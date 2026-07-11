@@ -85,3 +85,53 @@ Shared modules:
 Program-specific modules:
 - H2K: habit tracking / 42-point weekly score
 - Athlete: baseball-specific data later, arm care later, player card later
+
+## Leaderboard Direction
+
+Leaderboards should be shared across the whole platform and filterable by:
+- Facility-wide
+- Program/member type
+- Group
+- Specific metric
+
+Examples:
+- H2K weekly habit score
+- H2K rolling 4-week average
+- Workout completion
+- Goals completed
+- Strength/performance metrics later
+
+
+## Profile and Community Direction
+
+Each member should have a profile page that helps make the app feel personal, social, and fun.
+
+Profile fields:
+- Display name / username
+- Profile picture
+- Bio
+- Birthday
+- Sport
+- Position
+- School
+- Graduation year
+- Height / weight if needed
+- Training goals
+- Group/team
+- Badges
+- Streaks
+- Recent progress
+
+Community features:
+- Birthday alerts
+- PR alerts
+- Goal completion posts
+- Habit streaks
+- Workout streaks
+- Coach shoutouts
+- Weekly leaderboard highlights
+- Group announcements
+- Badges and milestones
+
+Goal:
+Make the app feel like a Rip City community platform, not just a workout tracker.
