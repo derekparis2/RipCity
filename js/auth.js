@@ -165,7 +165,7 @@ async function handleLogin(event) {
     // Coaches/admins go to the coach approval page for now.
     // Later this can become a full coach dashboard.
     if (membership.role === "coach" || membership.role === "admin") {
-      window.location.href = "coach-approvals.html";
+      window.location.href = "coach-dashboard.html";
       return;
     }
 

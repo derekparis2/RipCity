@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Coach Dashboard</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body class="auth-body">
+  <main class="coach-page">
+    <header class="h2k-header">
+      <div class="auth-brand">
+        <img src="assets/rip-city-logo.png" alt="Rip City logo">
+        <div>
+          <h1>RIP CITY</h1>
+          <p>Coach Dashboard</p>
+        </div>
+      </div>
+
+      <div class="h2k-header-actions">
+        <a class="outline-link" href="coach-approvals.html">Approvals</a>
+        <a class="outline-link" href="index.html">Main App</a>
+        <button class="outline-btn" id="coach-logout-btn">Log Out</button>
+      </div>
+    </header>
+
+    <section class="hero-card h2k-hero">
+      <div>
+        <p class="eyebrow">COACH DASHBOARD</p>
+        <h3>Track member consistency, habits, and accountability.</h3>
+        <p>
+          This page gives coaches a quick view of who is staying consistent,
+          who logged today, and who may need attention.
+        </p>
+      </div>
+    </section>
+
+    <section class="stats-grid">
+      <article class="stat-card">
+        <span>H2K Members</span>
+        <strong id="coach-total-members">0</strong>
+        <small>Approved H2K members</small>
+      </article>
+
+      <article class="stat-card">
+        <span>Logged Today</span>
+        <strong id="coach-logged-today">0</strong>
+        <small>Members with at least 1 habit</small>
+      </article>
+
+      <article class="stat-card">
+        <span>Perfect Today</span>
+        <strong id="coach-perfect-today">0</strong>
+        <small>Completed all 6 habits</small>
+      </article>
+
+      <article class="stat-card">
+        <span>Needs Attention</span>
+        <strong id="coach-needs-attention">0</strong>
+        <small>No habits logged today</small>
+      </article>
+    </section>
+
+    <section class="dashboard-grid h2k-dashboard-grid">
+      <article class="panel coach-members-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">H2K ACCOUNTABILITY</p>
+            <h3>Member Habit Scores</h3>
+          </div>
+
+          <button class="outline-btn" id="refresh-coach-dashboard-btn">Refresh</button>
+        </div>
+
+        <p id="coach-dashboard-message" class="auth-message"></p>
+
+        <div id="coach-member-list" class="coach-member-list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">COACH SUMMARY</p>
+        <h3>What This Will Become</h3>
+
+        <p>
+          This coach dashboard will eventually summarize habits, workouts,
+          attendance, goals, progress, and missed check-ins across every group.
+        </p>
+
+        <div class="note-item">
+          <strong>Future AI Summary</strong>
+          <p>
+            “Three H2K members missed habits today. Two members are on 5-day streaks.
+            One member hit a weekly high.”
+          </p>
+        </div>
+
+        <div class="note-item">
+          <strong>Future Filters</strong>
+          <p>
+            Coaches will be able to filter by facility, program, group, member,
+            and metric.
+          </p>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/coach-dashboard.js"></script>
+</body>
+</html>
