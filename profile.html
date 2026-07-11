@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Member Profile</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body class="auth-body">
+  <main class="h2k-page">
+    <header class="h2k-header">
+      <div class="auth-brand">
+        <img src="assets/rip-city-logo.png" alt="Rip City logo">
+        <div>
+          <h1>RIP CITY</h1>
+          <p>Member Profile</p>
+        </div>
+      </div>
+
+      <div class="h2k-header-actions">
+        <a class="outline-link" href="h2k-dashboard.html">Dashboard</a>
+        <button class="outline-btn" id="profile-logout-btn">Log Out</button>
+      </div>
+    </header>
+
+    <section class="hero-card h2k-hero">
+      <div>
+        <p class="eyebrow">PROFILE & COMMUNITY</p>
+        <h3>Build your Rip City profile.</h3>
+        <p>
+          This will become the member profile page with bio, birthday alerts, badges,
+          streaks, goals, and community features.
+        </p>
+      </div>
+    </section>
+
+    <section class="dashboard-grid h2k-dashboard-grid">
+      <article class="panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">EDIT PROFILE</p>
+            <h3>Member Info</h3>
+          </div>
+        </div>
+
+        <p id="profile-message" class="auth-message"></p>
+
+        <form id="profile-form" class="profile-form">
+          <label>
+            Full Name
+            <input type="text" id="profile-full-name" required />
+          </label>
+
+          <label>
+            Username
+            <input type="text" id="profile-username" placeholder="ex: dparis2" />
+          </label>
+
+          <label>
+            Bio
+            <textarea id="profile-bio" rows="4" placeholder="Tell people a little about you..."></textarea>
+          </label>
+
+          <label>
+            Birthday
+            <input type="date" id="profile-birthday" />
+          </label>
+
+          <label>
+            Profile Picture URL
+            <input type="text" id="profile-picture-url" placeholder="We’ll add real uploads later" />
+          </label>
+
+          <div class="form-row">
+            <label>
+              Sport
+              <input type="text" id="profile-sport" placeholder="Baseball, softball, fitness, etc." />
+            </label>
+
+            <label>
+              Position
+              <input type="text" id="profile-position" placeholder="Pitcher, catcher, etc." />
+            </label>
+          </div>
+
+          <div class="form-row">
+            <label>
+              School
+              <input type="text" id="profile-school" />
+            </label>
+
+            <label>
+              Graduation Year
+              <input type="number" id="profile-grad-year" />
+            </label>
+          </div>
+
+          <div class="form-row">
+            <label>
+              Height
+              <input type="text" id="profile-height" placeholder="ex: 5'10" />
+            </label>
+
+            <label>
+              Body Weight
+              <input type="number" id="profile-body-weight" />
+            </label>
+          </div>
+
+          <label>
+            Training Focus
+            <input type="text" id="profile-training-focus" placeholder="Strength, speed, mobility, consistency..." />
+          </label>
+
+          <label>
+            Favorite Lift
+            <input type="text" id="profile-favorite-lift" placeholder="Trap bar deadlift, bench, squat..." />
+          </label>
+
+          <button class="primary-btn" type="submit">Save Profile</button>
+        </form>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">PUBLIC PREVIEW</p>
+        <h3 id="preview-name">Member Name</h3>
+
+        <div class="profile-preview-card">
+          <div class="profile-avatar" id="profile-avatar">?</div>
+
+          <div>
+            <h4 id="preview-username">@username</h4>
+            <p id="preview-bio">Your bio will show here.</p>
+          </div>
+        </div>
+
+        <div class="profile-detail-list">
+          <div>
+            <span>Birthday</span>
+            <strong id="preview-birthday">Not added</strong>
+          </div>
+
+          <div>
+            <span>Program</span>
+            <strong id="preview-program">Member</strong>
+          </div>
+
+          <div>
+            <span>Sport / Focus</span>
+            <strong id="preview-sport">Not added</strong>
+          </div>
+
+          <div>
+            <span>Group</span>
+            <strong id="preview-group">Coming soon</strong>
+          </div>
+        </div>
+
+        <div class="note-item">
+          <strong>Coming Later</strong>
+          <p>
+            Profile pictures, badges, streaks, birthday alerts, PR posts,
+            coach shoutouts, and leaderboard rankings.
+          </p>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/profile.js"></script>
+</body>
+</html>
