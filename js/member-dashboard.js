@@ -389,9 +389,15 @@ function renderTodayWorkouts(assignments) {
             <p>${workout.description || "No description added."}</p>
           </div>
 
-          <div class="today-workout-meta">
-            <span>${workout.estimated_minutes || "—"} min</span>
-            <span>${assignment.assigned_date}</span>
+          <div class="today-workout-actions">
+            <div class="today-workout-meta">
+              <span>${workout.estimated_minutes || "—"} min</span>
+              <span>${assignment.assigned_date}</span>
+            </div>
+
+            <a class="primary-link workout-open-link" href="workout-session.html?assignment=${assignment.id}">
+              Open Workout
+            </a>
           </div>
         </div>
 

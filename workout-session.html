@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Workout Session</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body class="auth-body">
+  <main class="h2k-page">
+    <header class="h2k-header">
+      <div class="auth-brand">
+        <img src="assets/rip-city-logo.png" alt="Rip City logo">
+        <div>
+          <h1>RIP CITY</h1>
+          <p>Workout Session</p>
+        </div>
+      </div>
+
+      <div class="h2k-header-actions">
+        <a class="outline-link" href="member-dashboard.html">Dashboard</a>
+        <a class="outline-link" href="profile.html">Profile</a>
+        <button class="outline-btn" id="workout-session-logout-btn">Log Out</button>
+      </div>
+    </header>
+
+    <section class="hero-card h2k-hero">
+      <div>
+        <p class="eyebrow">TODAY'S WORKOUT</p>
+        <h3 id="session-workout-title">Loading workout...</h3>
+        <p id="session-workout-description">
+          Log your actual work for each set. Coach targets are shown as the goal.
+        </p>
+      </div>
+    </section>
+
+    <section class="stats-grid">
+      <article class="stat-card">
+        <span>Workout Focus</span>
+        <strong id="session-focus">—</strong>
+        <small>Coach assigned focus</small>
+      </article>
+
+      <article class="stat-card">
+        <span>Estimated Time</span>
+        <strong><span id="session-minutes">—</span></strong>
+        <small>Minutes</small>
+      </article>
+
+      <article class="stat-card">
+        <span>Assigned Date</span>
+        <strong id="session-date">—</strong>
+        <small>Scheduled workout day</small>
+      </article>
+
+      <article class="stat-card">
+        <span>Sets Logged</span>
+        <strong><span id="session-sets-complete">0</span>/<span id="session-sets-total">0</span></strong>
+        <small>Saved set logs</small>
+      </article>
+    </section>
+
+    <section class="dashboard-grid h2k-dashboard-grid">
+      <article class="panel workout-session-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">LOG WORKOUT</p>
+            <h3>Blocks & Exercises</h3>
+          </div>
+
+          <button class="outline-btn" id="refresh-session-btn">Refresh</button>
+        </div>
+
+        <p id="workout-session-message" class="auth-message"></p>
+
+        <div id="workout-session-container" class="workout-session-container">
+          <div class="empty-state">Loading workout...</div>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/workout-session.js"></script>
+</body>
+</html>

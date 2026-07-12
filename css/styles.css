@@ -1886,3 +1886,63 @@ td {
       justify-content: flex-start;
     }
   }
+
+  /* =====================================================
+   WORKOUT SESSION ROUND / SUPERSET VIEW
+   ===================================================== */
+
+.session-round-list {
+  display: grid;
+  gap: 18px;
+}
+
+.session-round-card {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.session-round-heading {
+  margin-bottom: 14px;
+}
+
+.session-round-heading h4 {
+  margin: 4px 0 0;
+  font-size: 22px;
+}
+
+.session-round-exercises {
+  display: grid;
+  gap: 14px;
+}
+
+.round-exercise-item {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+.round-exercise-label {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: var(--text);
+  color: var(--bg);
+  font-weight: 900;
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 22px;
+}
+
+@media (max-width: 700px) {
+  .round-exercise-item {
+    grid-template-columns: 1fr;
+  }
+
+  .round-exercise-label {
+    width: 100%;
+  }
+}
