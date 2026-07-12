@@ -171,7 +171,7 @@ async function handleLogin(event) {
 
     // H2K members go directly to the H2K habit dashboard.
     if (membership.role === "h2k_member") {
-      window.location.href = "h2k-dashboard.html";
+      window.location.href = "member-dashboard.html";
       return;
     }
 
