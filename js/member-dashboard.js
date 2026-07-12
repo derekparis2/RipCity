@@ -253,6 +253,201 @@ async function refreshH2KDashboard() {
   renderHabitCards();
   await updateScores();
 }
+// =====================================================
+// TODAY'S WORKOUT
+// =====================================================
+// Loads workouts assigned to the member's group for today's date.
+// This supports the flow:
+// Coach creates workout -> assigns to group/date -> member sees today's lift.
+
+function showTodayWorkoutMessage(message, isError = false) {
+  const element = document.getElementById("today-workout-message");
+  if (!element) return;
+
+  element.textContent = message;
+  element.classList.toggle("error-message", isError);
+}
+
+async function getCurrentMemberGroupIds(memberProfileId) {
+  const { data, error } = await db
+    .from("group_members")
+    .select("group_id")
+    .eq("member_profile_id", memberProfileId);
+
+  if (error) throw error;
+
+  return (data || []).map(row => row.group_id);
+}
+
+async function loadTodayAssignedWorkouts() {
+  const container = document.getElementById("today-workout-container");
+
+  if (!container || !currentMemberProfile) return;
+
+  showTodayWorkoutMessage("Loading today’s workout...");
+
+  try {
+    const groupIds = await getCurrentMemberGroupIds(currentMemberProfile.id);
+
+    if (!groupIds.length) {
+      container.innerHTML = `
+        <div class="empty-state">
+          You are not assigned to a group yet, so no workouts can be shown.
+        </div>
+      `;
+      showTodayWorkoutMessage("");
+      return;
+    }
+
+    const today = getTodayString();
+
+    const { data, error } = await db
+      .from("workout_assignments")
+      .select(`
+        id,
+        assigned_date,
+        target_type,
+        target_group_id,
+        workout:workouts (
+          id,
+          title,
+          focus,
+          description,
+          estimated_minutes,
+          workout_blocks (
+            id,
+            name,
+            block_order,
+            workout_exercises (
+              id,
+              name,
+              description,
+              sets,
+              reps,
+              tempo,
+              rest_time,
+              input_type,
+              video_url,
+              coach_note,
+              exercise_order
+            )
+          )
+        )
+      `)
+      .eq("target_type", "group")
+      .in("target_group_id", groupIds)
+      .eq("assigned_date", today);
+
+    if (error) throw error;
+
+    renderTodayWorkouts(data || []);
+    showTodayWorkoutMessage("");
+  } catch (error) {
+    console.error(error);
+    showTodayWorkoutMessage(error.message || "Could not load today’s workout.", true);
+
+    container.innerHTML = `
+      <div class="empty-state">
+        Could not load today’s workout.
+      </div>
+    `;
+  }
+}
+
+function renderTodayWorkouts(assignments) {
+  const container = document.getElementById("today-workout-container");
+
+  if (!assignments.length) {
+    container.innerHTML = `
+      <div class="empty-state">
+        No workout assigned for today.
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = assignments.map(assignment => {
+    const workout = assignment.workout;
+
+    if (!workout) {
+      return `
+        <div class="empty-state">
+          Workout details unavailable.
+        </div>
+      `;
+    }
+
+    const blocks = [...(workout.workout_blocks || [])]
+      .sort((a, b) => a.block_order - b.block_order);
+
+    return `
+      <article class="today-workout-card">
+        <div class="today-workout-header">
+          <div>
+            <p class="eyebrow">${workout.focus || "Workout"}</p>
+            <h3>${workout.title}</h3>
+            <p>${workout.description || "No description added."}</p>
+          </div>
+
+          <div class="today-workout-meta">
+            <span>${workout.estimated_minutes || "—"} min</span>
+            <span>${assignment.assigned_date}</span>
+          </div>
+        </div>
+
+        <div class="today-workout-blocks">
+          ${blocks.map(block => {
+            const exercises = [...(block.workout_exercises || [])]
+              .sort((a, b) => a.exercise_order - b.exercise_order);
+
+            return `
+              <div class="today-workout-block">
+                <h4>${block.name}</h4>
+
+                <div class="today-exercise-list">
+                  ${exercises.map(exercise => `
+                    <article class="today-exercise-card">
+                      <div>
+                        <strong>${exercise.name}</strong>
+                        <p>${exercise.description || "No details added."}</p>
+                      </div>
+
+                      <div class="today-exercise-meta">
+                        ${exercise.sets || exercise.reps ? `<span>${exercise.sets || "—"} x ${exercise.reps || "—"}</span>` : ""}
+                        ${exercise.tempo ? `<span>Tempo: ${exercise.tempo}</span>` : ""}
+                        ${exercise.rest_time ? `<span>Rest: ${exercise.rest_time}</span>` : ""}
+                        ${exercise.input_type ? `<span>${formatInputType(exercise.input_type)}</span>` : ""}
+                      </div>
+
+                      ${exercise.coach_note ? `
+                        <p class="coach-note-preview">
+                          Coach note: ${exercise.coach_note}
+                        </p>
+                      ` : ""}
+                    </article>
+                  `).join("")}
+                </div>
+              </div>
+            `;
+          }).join("")}
+        </div>
+      </article>
+    `;
+  }).join("");
+}
+
+function formatInputType(inputType) {
+  const labels = {
+    completion: "Completion",
+    weight_reps: "Weight + Reps",
+    band_color: "Band Color",
+    time: "Time",
+    distance: "Distance",
+    custom: "Custom"
+  };
+
+  return labels[inputType] || inputType;
+}
 
 // Main startup function for the H2K page.
 async function initH2KDashboard() {
@@ -272,7 +467,9 @@ async function initH2KDashboard() {
 
     h2kHabits = await loadHabits(currentAccess.membership.facility_id);
 
+    await loadTodayAssignedWorkouts();
     await refreshH2KDashboard();
+
     showH2KMessage("");
   } catch (error) {
     console.error(error);
@@ -289,6 +486,7 @@ async function logoutH2K() {
 document.addEventListener("DOMContentLoaded", () => {
   initH2KDashboard();
 
+  document.getElementById("refresh-workout-btn")?.addEventListener("click", loadTodayAssignedWorkouts);
   document.getElementById("refresh-habits-btn").addEventListener("click", refreshH2KDashboard);
   document.getElementById("h2k-logout-btn").addEventListener("click", logoutH2K);
 });

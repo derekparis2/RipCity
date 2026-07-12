@@ -1762,3 +1762,127 @@ td {
     flex-direction: column;
   }
 }
+
+/* =====================================================
+   TODAY'S WORKOUT - MEMBER DASHBOARD
+   ===================================================== */
+
+   .today-workout-container {
+    margin-top: 18px;
+  }
+  
+  .today-workout-card {
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    border-radius: 18px;
+    padding: 20px;
+  }
+  
+  .today-workout-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    align-items: flex-start;
+    margin-bottom: 20px;
+  }
+  
+  .today-workout-header h3 {
+    margin: 4px 0 8px;
+    font-size: 28px;
+  }
+  
+  .today-workout-header p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  
+  .today-workout-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+  
+  .today-workout-meta span {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 999px;
+    padding: 7px 10px;
+    font-size: 12px;
+    color: var(--text);
+    white-space: nowrap;
+  }
+  
+  .today-workout-blocks {
+    display: grid;
+    gap: 16px;
+  }
+  
+  .today-workout-block {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 16px;
+  }
+  
+  .today-workout-block h4 {
+    margin: 0 0 12px;
+    font-size: 20px;
+  }
+  
+  .today-exercise-list {
+    display: grid;
+    gap: 12px;
+  }
+  
+  .today-exercise-card {
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    border-radius: 14px;
+    padding: 14px;
+  }
+  
+  .today-exercise-card strong {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 16px;
+  }
+  
+  .today-exercise-card p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.45;
+  }
+  
+  .today-exercise-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-top: 10px;
+  }
+  
+  .today-exercise-meta span {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 999px;
+    padding: 6px 9px;
+    font-size: 12px;
+    color: var(--text);
+  }
+  
+  .coach-note-preview {
+    margin-top: 10px !important;
+    color: var(--text) !important;
+    font-size: 13px;
+  }
+  
+  @media (max-width: 700px) {
+    .today-workout-header {
+      flex-direction: column;
+    }
+  
+    .today-workout-meta {
+      justify-content: flex-start;
+    }
+  }
