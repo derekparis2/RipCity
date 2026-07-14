@@ -73,6 +73,33 @@ function findExistingLog(exerciseId, setNumber) {
   );
 }
 
+// Finds the most recent saved weight from an earlier set of the same exercise.
+// Example: if Set 1 was 185, Set 2 will start with 185 filled in.
+function findPreviousWeightForExercise(exerciseId, setNumber) {
+  const previousLogs = existingSetLogs
+    .filter(log =>
+      log.exercise_id === exerciseId &&
+      Number(log.set_number) < Number(setNumber) &&
+      log.weight !== null
+    )
+    .sort((a, b) => Number(b.set_number) - Number(a.set_number));
+
+  return previousLogs[0]?.weight || "";
+}
+
+// Finds the most recent saved reps from an earlier set of the same exercise.
+function findPreviousRepsForExercise(exerciseId, setNumber) {
+  const previousLogs = existingSetLogs
+    .filter(log =>
+      log.exercise_id === exerciseId &&
+      Number(log.set_number) < Number(setNumber) &&
+      log.reps_completed !== null
+    )
+    .sort((a, b) => Number(b.set_number) - Number(a.set_number));
+
+  return previousLogs[0]?.reps_completed || "";
+}
+
 function getExerciseBlockLabel(index) {
   const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   return letters[index] || `${index + 1}`;
@@ -434,7 +461,7 @@ function renderSetLogger(exercise, setNumber) {
         <span>${completed ? "Saved" : "Not saved"}</span>
       </div>
 
-      ${renderInputsForExerciseType(exercise, existing)}
+      ${renderInputsForExerciseType(exercise, existing, setNumber)}
 
       <label class="set-complete-check">
         <input
@@ -479,8 +506,14 @@ function renderSetLogger(exercise, setNumber) {
   `;
 }
 
-function renderInputsForExerciseType(exercise, existing) {
+function renderInputsForExerciseType(exercise, existing, setNumber) {
   if (exercise.input_type === "weight_reps") {
+    const previousWeight = findPreviousWeightForExercise(exercise.id, setNumber);
+    const previousReps = findPreviousRepsForExercise(exercise.id, setNumber);
+
+    const weightValue = existing?.weight ?? previousWeight;
+    const repsValue = existing?.reps_completed ?? previousReps;
+
     return `
       <div class="set-input-grid">
         <label>
@@ -488,7 +521,7 @@ function renderInputsForExerciseType(exercise, existing) {
           <input
             type="number"
             class="set-weight-input"
-            value="${existing?.weight ?? ""}"
+            value="${weightValue}"
             placeholder="ex: 185"
           />
         </label>
@@ -498,7 +531,7 @@ function renderInputsForExerciseType(exercise, existing) {
           <input
             type="number"
             class="set-reps-input"
-            value="${existing?.reps_completed ?? ""}"
+            value="${repsValue || ""}"
             placeholder="${exercise.reps || "reps"}"
           />
         </label>
