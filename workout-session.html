@@ -13,8 +13,8 @@
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 
-<body class="auth-body">
-  <main class="h2k-page">
+<body class="auth-body workout-session-body">
+  <main class="h2k-page workout-session-page">
     <header class="h2k-header">
       <div class="auth-brand">
         <img src="assets/rip-city-logo.png" alt="Rip City logo">
@@ -31,13 +31,22 @@
       </div>
     </header>
 
-    <section class="hero-card h2k-hero">
+    <section class="hero-card h2k-hero workout-session-hero">
       <div>
         <p class="eyebrow">TODAY'S WORKOUT</p>
         <h3 id="session-workout-title">Loading workout...</h3>
         <p id="session-workout-description">
           Log your actual work for each set. Coach targets are shown as the goal.
         </p>
+      </div>
+
+      <div class="session-save-card">
+        <span>Session Progress</span>
+        <strong><span id="session-progress-percent">0</span>%</strong>
+        <div class="progress-bar session-progress-bar">
+          <div id="session-progress-fill"></div>
+        </div>
+        <button class="primary-btn full-btn" id="save-all-sets-btn">Save All Sets</button>
       </div>
     </section>
 
@@ -77,7 +86,6 @@
 
           <div class="session-header-actions">
             <button class="outline-btn" id="refresh-session-btn">Refresh</button>
-            <button class="primary-btn" id="save-all-sets-btn">Save All Sets</button>
           </div>
         </div>
 
@@ -88,10 +96,20 @@
         </div>
       </article>
     </section>
+
+    <div class="mobile-session-save-bar">
+      <div>
+        <span>Sets Logged</span>
+        <strong><span id="mobile-session-sets-complete">0</span>/<span id="mobile-session-sets-total">0</span></strong>
+      </div>
+      <button class="primary-btn" id="mobile-save-all-sets-btn">Save All</button>
+    </div>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabaseClient.js"></script>
+  <script src="js/workout-session-core.js"></script>
+  <script src="js/workout-session-render.js"></script>
   <script src="js/workout-session.js"></script>
 </body>
 </html>

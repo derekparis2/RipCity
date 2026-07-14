@@ -25,11 +25,21 @@ function getInputValue(id) {
   return element.value.trim();
 }
 
+function formatLocalDate(date) {
+  // Date inputs should default to the coach's local calendar day.
+  // toISOString() can jump to tomorrow for evening sessions.
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
 function setTodayAsDefaultDate() {
   const dateInput = document.getElementById("workout-date");
   if (!dateInput) return;
 
-  dateInput.value = new Date().toISOString().split("T")[0];
+  dateInput.value = formatLocalDate(new Date());
 }
 
 // ----------------------------
@@ -135,186 +145,188 @@ function renderGroupOptions() {
 // ----------------------------
 
 function createBlockCard(index) {
-    return `
-      <article class="workout-block-card" data-block-card>
-        <div class="block-card-heading">
-          <div>
-            <p class="eyebrow">BLOCK ${index}</p>
-            <input
-              type="text"
-              class="block-name"
-              value="${index === 1 ? "Warmup" : `Block ${index}`}"
-              placeholder="Warmup, A Block, B Block, Finisher..."
-              required
-            />
-          </div>
-  
-          <div class="block-actions">
-            <button class="outline-btn add-exercise-to-block-btn" type="button">
-              Add Exercise
-            </button>
-            <button class="outline-btn remove-block-btn" type="button">
-              Remove Block
-            </button>
-          </div>
+  // A block is a coach-facing group such as Warmup, A Block, or Finisher.
+  return `
+    <article class="workout-block-card" data-block-card>
+      <div class="block-card-heading">
+        <div>
+          <p class="eyebrow">BLOCK ${index}</p>
+          <input
+            type="text"
+            class="block-name"
+            value="${index === 1 ? "Warmup" : `Block ${index}`}"
+            placeholder="Warmup, A Block, B Block, Finisher..."
+            required
+          />
         </div>
-  
-        <div class="block-exercise-list" data-block-exercise-list></div>
-      </article>
-    `;
-  }
-  
-  function createExerciseCard(index) {
-    return `
-      <article class="exercise-builder-card" data-exercise-card>
-        <div class="exercise-card-heading">
-          <h4>Exercise ${index}</h4>
-          <button class="outline-btn remove-exercise-btn" type="button">Remove</button>
+
+        <div class="block-actions">
+          <button class="outline-btn add-exercise-to-block-btn" type="button">
+            Add Exercise
+          </button>
+          <button class="outline-btn remove-block-btn" type="button">
+            Remove Block
+          </button>
         </div>
-  
+      </div>
+
+      <div class="block-exercise-list" data-block-exercise-list></div>
+    </article>
+  `;
+}
+
+function createExerciseCard(index) {
+  // Exercise fields map directly to workout_exercises columns.
+  return `
+    <article class="exercise-builder-card" data-exercise-card>
+      <div class="exercise-card-heading">
+        <h4>Exercise ${index}</h4>
+        <button class="outline-btn remove-exercise-btn" type="button">Remove</button>
+      </div>
+
+      <label>
+        Exercise Name
+        <input type="text" class="exercise-name" placeholder="Trap Bar Deadlift" required />
+      </label>
+
+      <label>
+        Description / Details
+        <textarea class="exercise-description" rows="2" placeholder="Coaching cues, setup, or notes..."></textarea>
+      </label>
+
+      <div class="form-row">
         <label>
-          Exercise Name
-          <input type="text" class="exercise-name" placeholder="Trap Bar Deadlift" required />
+          Sets
+          <input type="number" class="exercise-sets" placeholder="3" />
         </label>
-  
+
         <label>
-          Description / Details
-          <textarea class="exercise-description" rows="2" placeholder="Coaching cues, setup, or notes..."></textarea>
+          Reps
+          <input type="text" class="exercise-reps" placeholder="5, 8 each side, 30 sec..." />
         </label>
-  
-        <div class="form-row">
-          <label>
-            Sets
-            <input type="number" class="exercise-sets" placeholder="3" />
-          </label>
-  
-          <label>
-            Reps
-            <input type="text" class="exercise-reps" placeholder="5, 8 each side, 30 sec..." />
-          </label>
-        </div>
-  
-        <div class="form-row">
-          <label>
-            Tempo
-            <input type="text" class="exercise-tempo" placeholder="3-1-1" />
-          </label>
-  
-          <label>
-            Rest Time
-            <input type="text" class="exercise-rest" placeholder="90 sec" />
-          </label>
-        </div>
-  
-        <div class="form-row">
-          <label>
-            Input Type
-            <select class="exercise-input-type">
-              <option value="completion">Completion</option>
-              <option value="weight_reps">Weight + Reps</option>
-              <option value="band_color">Band Color</option>
-              <option value="time">Time</option>
-              <option value="distance">Distance</option>
-              <option value="custom">Custom</option>
-            </select>
-          </label>
-  
-          <label>
-            Video URL
-            <input type="text" class="exercise-video" placeholder="Optional demo link" />
-          </label>
-        </div>
-  
+      </div>
+
+      <div class="form-row">
         <label>
-          Coach Note
-          <input type="text" class="exercise-coach-note" placeholder="Optional note for members" />
+          Tempo
+          <input type="text" class="exercise-tempo" placeholder="3-1-1" />
         </label>
-      </article>
-    `;
-  }
-  
-  function refreshBlockAndExerciseNumbers() {
-    document.querySelectorAll("[data-block-card]").forEach((blockCard, blockIndex) => {
-      const eyebrow = blockCard.querySelector(".eyebrow");
-      if (eyebrow) eyebrow.textContent = `BLOCK ${blockIndex + 1}`;
-  
-      blockCard.querySelectorAll("[data-exercise-card]").forEach((exerciseCard, exerciseIndex) => {
-        const heading = exerciseCard.querySelector("h4");
-        if (heading) heading.textContent = `Exercise ${exerciseIndex + 1}`;
-      });
+
+        <label>
+          Rest Time
+          <input type="text" class="exercise-rest" placeholder="90 sec" />
+        </label>
+      </div>
+
+      <div class="form-row">
+        <label>
+          Input Type
+          <select class="exercise-input-type">
+            <option value="completion">Completion</option>
+            <option value="weight_reps">Weight + Reps</option>
+            <option value="band_color">Band Color</option>
+            <option value="time">Time</option>
+            <option value="distance">Distance</option>
+            <option value="custom">Custom</option>
+          </select>
+        </label>
+
+        <label>
+          Video URL
+          <input type="text" class="exercise-video" placeholder="Optional demo link" />
+        </label>
+      </div>
+
+      <label>
+        Coach Note
+        <input type="text" class="exercise-coach-note" placeholder="Optional note for members" />
+      </label>
+    </article>
+  `;
+}
+
+function refreshBlockAndExerciseNumbers() {
+  // Renumber visible labels after deleting blocks/exercises.
+  document.querySelectorAll("[data-block-card]").forEach((blockCard, blockIndex) => {
+    const eyebrow = blockCard.querySelector(".eyebrow");
+    if (eyebrow) eyebrow.textContent = `BLOCK ${blockIndex + 1}`;
+
+    blockCard.querySelectorAll("[data-exercise-card]").forEach((exerciseCard, exerciseIndex) => {
+      const heading = exerciseCard.querySelector("h4");
+      if (heading) heading.textContent = `Exercise ${exerciseIndex + 1}`;
     });
-  }
-  
-  function addExerciseToBlock(blockCard) {
-    const list = blockCard.querySelector("[data-block-exercise-list]");
-    const count = list.querySelectorAll("[data-exercise-card]").length + 1;
-  
-    list.insertAdjacentHTML("beforeend", createExerciseCard(count));
-  
-    const newestCard = list.lastElementChild;
-    const removeButton = newestCard.querySelector(".remove-exercise-btn");
-  
-    removeButton.addEventListener("click", () => {
-      newestCard.remove();
+  });
+}
+
+function addExerciseToBlock(blockCard) {
+  const list = blockCard.querySelector("[data-block-exercise-list]");
+  const count = list.querySelectorAll("[data-exercise-card]").length + 1;
+
+  list.insertAdjacentHTML("beforeend", createExerciseCard(count));
+
+  const newestCard = list.lastElementChild;
+  const removeButton = newestCard.querySelector(".remove-exercise-btn");
+
+  removeButton.addEventListener("click", () => {
+    newestCard.remove();
+    refreshBlockAndExerciseNumbers();
+  });
+}
+
+function addBlockCard() {
+  const list = document.getElementById("block-list");
+  const count = document.querySelectorAll("[data-block-card]").length + 1;
+
+  list.insertAdjacentHTML("beforeend", createBlockCard(count));
+
+  const newestBlock = list.lastElementChild;
+
+  newestBlock
+    .querySelector(".add-exercise-to-block-btn")
+    .addEventListener("click", () => addExerciseToBlock(newestBlock));
+
+  newestBlock
+    .querySelector(".remove-block-btn")
+    .addEventListener("click", () => {
+      newestBlock.remove();
       refreshBlockAndExerciseNumbers();
     });
-  }
-  
-  function addBlockCard() {
-    const list = document.getElementById("block-list");
-    const count = document.querySelectorAll("[data-block-card]").length + 1;
-  
-    list.insertAdjacentHTML("beforeend", createBlockCard(count));
-  
-    const newestBlock = list.lastElementChild;
-  
-    newestBlock
-      .querySelector(".add-exercise-to-block-btn")
-      .addEventListener("click", () => addExerciseToBlock(newestBlock));
-  
-    newestBlock
-      .querySelector(".remove-block-btn")
-      .addEventListener("click", () => {
-        newestBlock.remove();
-        refreshBlockAndExerciseNumbers();
-      });
-  
-    // Start every new block with one exercise.
-    addExerciseToBlock(newestBlock);
-  }
-  
-  function getBlockFormData() {
-    const blockCards = Array.from(document.querySelectorAll("[data-block-card]"));
-  
-    return blockCards.map((blockCard, blockIndex) => {
-      const blockName = blockCard.querySelector(".block-name").value.trim();
-  
-      const exerciseCards = Array.from(blockCard.querySelectorAll("[data-exercise-card]"));
-  
-      const exercises = exerciseCards.map((card, exerciseIndex) => {
-        return {
-          name: card.querySelector(".exercise-name").value.trim(),
-          description: card.querySelector(".exercise-description").value.trim() || null,
-          sets: card.querySelector(".exercise-sets").value
-            ? Number(card.querySelector(".exercise-sets").value)
-            : null,
-          reps: card.querySelector(".exercise-reps").value.trim() || null,
-          tempo: card.querySelector(".exercise-tempo").value.trim() || null,
-          rest_time: card.querySelector(".exercise-rest").value.trim() || null,
-          input_type: card.querySelector(".exercise-input-type").value,
-          video_url: card.querySelector(".exercise-video").value.trim() || null,
-          coach_note: card.querySelector(".exercise-coach-note").value.trim() || null,
-          exercise_order: exerciseIndex
-        };
-      }).filter(exercise => exercise.name);
-  
+
+  // Start every new block with one exercise so the coach can type immediately.
+  addExerciseToBlock(newestBlock);
+}
+
+function getBlockFormData() {
+  const blockCards = Array.from(document.querySelectorAll("[data-block-card]"));
+
+  return blockCards.map((blockCard, blockIndex) => {
+    const blockName = blockCard.querySelector(".block-name").value.trim();
+    const exerciseCards = Array.from(blockCard.querySelectorAll("[data-exercise-card]"));
+
+    const exercises = exerciseCards.map((card, exerciseIndex) => {
       return {
-        name: blockName,
-        block_order: blockIndex,
-        exercises
+        name: card.querySelector(".exercise-name").value.trim(),
+        description: card.querySelector(".exercise-description").value.trim() || null,
+        sets: card.querySelector(".exercise-sets").value
+          ? Number(card.querySelector(".exercise-sets").value)
+          : null,
+        reps: card.querySelector(".exercise-reps").value.trim() || null,
+        tempo: card.querySelector(".exercise-tempo").value.trim() || null,
+        rest_time: card.querySelector(".exercise-rest").value.trim() || null,
+        input_type: card.querySelector(".exercise-input-type").value,
+        video_url: card.querySelector(".exercise-video").value.trim() || null,
+        coach_note: card.querySelector(".exercise-coach-note").value.trim() || null,
+        exercise_order: exerciseIndex
       };
-    }).filter(block => block.name && block.exercises.length);
-  }
+    }).filter(exercise => exercise.name);
+
+    return {
+      name: blockName,
+      block_order: blockIndex,
+      exercises
+    };
+  }).filter(block => block.name && block.exercises.length);
+}
 
 // ----------------------------
 // Save workout
@@ -345,7 +357,8 @@ async function createWorkoutWithAssignment(event) {
         return;
     }
 
-    // 1. Create the workout.
+    // Save order matters: workout -> blocks -> exercises -> assignment.
+    // This preserves the relationships expected by member-dashboard/workout-session.
     const { data: workout, error: workoutError } = await db
       .from("workouts")
       .insert({
@@ -361,7 +374,6 @@ async function createWorkoutWithAssignment(event) {
 
     if (workoutError) throw workoutError;
 
-    // 2. Create workout blocks.
     const blockRows = blocks.map(block => ({
         workout_id: workout.id,
         name: block.name,
@@ -375,7 +387,6 @@ async function createWorkoutWithAssignment(event) {
     
     if (blockError) throw blockError;
     
-    // 3. Add exercises connected to each block.
     const exerciseRows = [];
     
     blocks.forEach(originalBlock => {
@@ -407,7 +418,6 @@ async function createWorkoutWithAssignment(event) {
     
     if (exerciseError) throw exerciseError;
 
-    // 4. Assign workout to selected group for selected date.
     const { error: assignmentError } = await db
       .from("workout_assignments")
       .insert({
@@ -560,7 +570,7 @@ async function initCoachWorkoutsPage() {
     renderGroupOptions();
 
     setTodayAsDefaultDate();
-    addExerciseCard();
+    addBlockCard();
     await loadRecentWorkouts();
 
     showWorkoutMessage("");
@@ -573,7 +583,8 @@ async function initCoachWorkoutsPage() {
 document.addEventListener("DOMContentLoaded", () => {
   initCoachWorkoutsPage();
 
-  document.getElementById("add-block-btn").addEventListener("click", addBlockCard);  document.getElementById("workout-form").addEventListener("submit", createWorkoutWithAssignment);
+  document.getElementById("add-block-btn").addEventListener("click", addBlockCard);
+  document.getElementById("workout-form").addEventListener("submit", createWorkoutWithAssignment);
   document.getElementById("refresh-workouts-btn").addEventListener("click", loadRecentWorkouts);
   document.getElementById("coach-workouts-logout-btn").addEventListener("click", logoutCoachWorkouts);
 });

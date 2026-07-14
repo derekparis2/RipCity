@@ -14,25 +14,39 @@ let todayLogs = [];
 
 // Gets today's date in YYYY-MM-DD format.
 // This is the format we store in Supabase date fields.
+function formatLocalDate(date) {
+  // Supabase date columns store local calendar days, not UTC instants.
+  // Using toISOString() here can move "today" to tomorrow after evening ET.
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
 function getTodayString() {
-  return new Date().toISOString().split("T")[0];
+  return formatLocalDate(new Date());
 }
 
 // Gets the Monday of the current week.
 // This lets us calculate the 42-point weekly score.
-function getStartOfWeekString() {
+function getStartOfWeekDate() {
   const today = new Date();
   const day = today.getDay();
   const diff = today.getDate() - day + (day === 0 ? -6 : 1);
-  const monday = new Date(today.setDate(diff));
-  return monday.toISOString().split("T")[0];
+  return new Date(today.getFullYear(), today.getMonth(), diff);
+}
+
+function getStartOfWeekString() {
+  const monday = getStartOfWeekDate();
+  return formatLocalDate(monday);
 }
 
 // Gets the Sunday of the current week.
 function getEndOfWeekString() {
-  const start = new Date(getStartOfWeekString());
+  const start = getStartOfWeekDate();
   start.setDate(start.getDate() + 6);
-  return start.toISOString().split("T")[0];
+  return formatLocalDate(start);
 }
 
 // Shows messages on the H2K page.
@@ -249,6 +263,8 @@ async function updateScores() {
 
 // Reloads today logs, re-renders cards, and updates scores.
 async function refreshH2KDashboard() {
+  // Habits and scores are refreshed together so the top stat cards always
+  // match the checkmark cards below.
   todayLogs = await loadTodayLogs(currentMemberProfile.id);
   renderHabitCards();
   await updateScores();
@@ -256,7 +272,7 @@ async function refreshH2KDashboard() {
 // =====================================================
 // TODAY'S WORKOUT
 // =====================================================
-// Loads workouts assigned to the member's group for today's date.
+// Loads workouts assigned to this member, their groups, or the whole facility for today's date.
 // This supports the flow:
 // Coach creates workout -> assigns to group/date -> member sees today's lift.
 
@@ -269,6 +285,7 @@ function showTodayWorkoutMessage(message, isError = false) {
 }
 
 async function getCurrentMemberGroupIds(memberProfileId) {
+  // Group membership determines which group-assigned workouts appear.
   const { data, error } = await db
     .from("group_members")
     .select("group_id")
@@ -288,18 +305,19 @@ async function loadTodayAssignedWorkouts() {
 
   try {
     const groupIds = await getCurrentMemberGroupIds(currentMemberProfile.id);
-
-    if (!groupIds.length) {
-      container.innerHTML = `
-        <div class="empty-state">
-          You are not assigned to a group yet, so no workouts can be shown.
-        </div>
-      `;
-      showTodayWorkoutMessage("");
-      return;
-    }
-
     const today = getTodayString();
+    const facilityId = currentAccess.membership.facility_id;
+
+    // The shared platform supports facility-wide, group, and individual
+    // assignments. The session page uses the same access model.
+    const targetFilters = [
+      `target_facility_id.eq.${facilityId}`,
+      `target_member_profile_id.eq.${currentMemberProfile.id}`
+    ];
+
+    if (groupIds.length) {
+      targetFilters.push(`target_group_id.in.(${groupIds.join(",")})`);
+    }
 
     const { data, error } = await db
       .from("workout_assignments")
@@ -307,9 +325,12 @@ async function loadTodayAssignedWorkouts() {
         id,
         assigned_date,
         target_type,
+        target_facility_id,
         target_group_id,
+        target_member_profile_id,
         workout:workouts (
           id,
+          facility_id,
           title,
           focus,
           description,
@@ -334,13 +355,19 @@ async function loadTodayAssignedWorkouts() {
           )
         )
       `)
-      .eq("target_type", "group")
-      .in("target_group_id", groupIds)
-      .eq("assigned_date", today);
+      .eq("assigned_date", today)
+      .or(targetFilters.join(","));
 
     if (error) throw error;
 
-    renderTodayWorkouts(data || []);
+    // Keep an extra facility check client-side so a broad target filter never
+    // displays a workout from another facility if bad data is present.
+    const accessibleAssignments = (data || []).filter(assignment => {
+      const workoutFacilityId = assignment.workout?.facility_id;
+      return !workoutFacilityId || workoutFacilityId === facilityId;
+    });
+
+    renderTodayWorkouts(accessibleAssignments);
     showTodayWorkoutMessage("");
   } catch (error) {
     console.error(error);
@@ -377,6 +404,8 @@ function renderTodayWorkouts(assignments) {
       `;
     }
 
+    // Blocks and exercises are sorted here because Supabase nested results are
+    // not guaranteed to come back in display order.
     const blocks = [...(workout.workout_blocks || [])]
       .sort((a, b) => a.block_order - b.block_order);
 
@@ -460,6 +489,7 @@ async function initH2KDashboard() {
   showH2KMessage("Loading H2K dashboard...");
 
   try {
+    // Startup order matters: access -> member profile -> facility habits/workouts.
     currentAccess = await getApprovedUserAccess();
     if (!currentAccess) return;
 

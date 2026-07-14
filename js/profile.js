@@ -7,6 +7,10 @@
 let profileAccess = null;
 let currentMemberProfile = null;
 
+// ----------------------------
+// Page messages / small helpers
+// ----------------------------
+
 function showProfileMessage(message, isError = false) {
   const element = document.getElementById("profile-message");
   if (!element) return;
@@ -24,6 +28,8 @@ async function getProfileSession() {
 }
 
 async function getProfileUser(userId) {
+  // Shared account/profile fields live in profiles.
+  // Program/member-specific fields are loaded separately from member_profiles.
   const { data, error } = await db
     .from("profiles")
     .select(`
@@ -51,6 +57,7 @@ async function getProfileUser(userId) {
 }
 
 async function getMemberProfile(facilityMemberId) {
+  // member_profiles is keyed from facility_members, not directly from auth users.
   const { data, error } = await db
     .from("member_profiles")
     .select("*")
@@ -63,6 +70,7 @@ async function getMemberProfile(facilityMemberId) {
 }
 
 async function requireApprovedProfileUser() {
+  // Profile editing is only available after the facility has approved access.
   const session = await getProfileSession();
 
   if (!session) {
@@ -103,6 +111,8 @@ function getInputValue(id) {
 }
 
 function updateProfilePreview() {
+  // The preview updates as the user types so the profile page feels less like
+  // a plain settings form and more like a member card.
   const fullName = getInputValue("profile-full-name") || "Member Name";
   const username = getInputValue("profile-username") || "username";
   const bio = getInputValue("profile-bio") || "Your bio will show here.";
@@ -126,6 +136,7 @@ function updateProfilePreview() {
 }
 
 function fillProfileForm() {
+  // Populate the edit form from both profile tables.
   const profile = profileAccess.profile;
   const member = currentMemberProfile;
 
@@ -160,6 +171,7 @@ async function saveProfile(event) {
       return;
     }
 
+    // Save public/account-level fields first.
     const { error: profileError } = await db
       .from("profiles")
       .update({
@@ -176,6 +188,7 @@ async function saveProfile(event) {
     const gradYear = getInputValue("profile-grad-year");
     const bodyWeight = getInputValue("profile-body-weight");
 
+    // Save training/program fields second.
     const { error: memberError } = await db
       .from("member_profiles")
       .update({
@@ -234,6 +247,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("profile-form").addEventListener("submit", saveProfile);
   document.getElementById("profile-logout-btn").addEventListener("click", logoutProfile);
 
+  // Keep the right-side preview in sync with form edits.
   document.querySelectorAll("#profile-form input, #profile-form textarea").forEach(input => {
     input.addEventListener("input", updateProfilePreview);
   });

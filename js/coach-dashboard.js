@@ -8,24 +8,37 @@ let coachAccess = null;
 let coachHabits = [];
 
 // Gets today's date in YYYY-MM-DD format.
+function formatLocalDate(date) {
+  // Habit logs are stored as date-only values, so we keep everything on the
+  // coach's local calendar day instead of UTC.
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
 function getTodayString() {
-  return new Date().toISOString().split("T")[0];
+  return formatLocalDate(new Date());
 }
 
 // Gets Monday of current week.
-function getStartOfWeekString() {
+function getStartOfWeekDate() {
   const today = new Date();
   const day = today.getDay();
   const diff = today.getDate() - day + (day === 0 ? -6 : 1);
-  const monday = new Date(today.setDate(diff));
-  return monday.toISOString().split("T")[0];
+  return new Date(today.getFullYear(), today.getMonth(), diff);
+}
+
+function getStartOfWeekString() {
+  return formatLocalDate(getStartOfWeekDate());
 }
 
 // Gets Sunday of current week.
 function getEndOfWeekString() {
-  const start = new Date(getStartOfWeekString());
+  const start = getStartOfWeekDate();
   start.setDate(start.getDate() + 6);
-  return start.toISOString().split("T")[0];
+  return formatLocalDate(start);
 }
 
 function showCoachDashboardMessage(message, isError = false) {
@@ -117,6 +130,8 @@ async function loadCoachHabits(facilityId) {
 
 // Loads approved H2K members and their profile info.
 async function loadApprovedH2KMembers(facilityId) {
+  // This page is H2K-specific for now. Later, the same shape can be expanded
+  // for athletes once workout completion and progress metrics are visible.
   const { data, error } = await db
     .from("facility_members")
     .select(`
@@ -166,6 +181,8 @@ function buildMemberScoreRows(members, logs) {
   const today = getTodayString();
 
   return members.map(member => {
+    // Supabase may return one-to-one joined rows as either an object or array
+    // depending on relationship metadata, so normalize before scoring.
     const memberProfile = Array.isArray(member.member_profile)
       ? member.member_profile[0]
       : member.member_profile;
@@ -203,6 +220,7 @@ function buildMemberScoreRows(members, logs) {
 
 // Updates the top stat cards.
 function updateCoachStats(rows) {
+  // These four numbers power the top stat cards on coach-dashboard.html.
   const totalMembers = rows.length;
   const loggedToday = rows.filter(row => row.loggedToday).length;
   const perfectToday = rows.filter(row => row.perfectToday).length;
@@ -228,6 +246,7 @@ function renderCoachMemberList(rows) {
   }
 
   list.innerHTML = rows.map(row => {
+    // The weekly bar is a quick visual read of H2K consistency this week.
     const weeklyPercent = row.maxWeeklyScore > 0
       ? Math.round((row.weeklyScore / row.maxWeeklyScore) * 100)
       : 0;
@@ -277,6 +296,7 @@ async function refreshCoachDashboard() {
   showCoachDashboardMessage("Loading coach dashboard...");
 
   try {
+    // Load habits first because their count defines the daily/weekly max score.
     coachHabits = await loadCoachHabits(coachAccess.membership.facility_id);
 
     const members = await loadApprovedH2KMembers(coachAccess.membership.facility_id);

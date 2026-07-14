@@ -1,4 +1,12 @@
 // =====================================================
+// LEGACY MAIN APP PROTOTYPE
+// =====================================================
+// index.html is still useful as visual/design reference, but most live member
+// workflows now happen in member-dashboard.html, coach-workouts.html, and
+// workout-session.html with Supabase data. This file still uses localStorage
+// for mock dashboard sections.
+
+// =====================================================
 // AUTH / ACCESS PROTECTION
 // =====================================================
 // This makes sure only approved users can access the main app.
