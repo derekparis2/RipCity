@@ -46,6 +46,10 @@ function isChecked(selector, parent = document) {
   return element.checked;
 }
 
+function hasValue(selector, parent = document) {
+  return getInputValue(selector, parent) !== "";
+}
+
 function formatInputType(inputType) {
   const labels = {
     completion: "Completion",
@@ -455,7 +459,11 @@ function renderSetLogger(exercise, setNumber) {
   const completed = existing?.completed || false;
 
   return `
-    <div class="set-log-row ${completed ? "set-complete" : ""}" data-set-row="${exercise.id}-${setNumber}">
+    <div
+      class="set-log-row ${completed ? "set-complete" : ""}"
+      data-exercise-id="${exercise.id}"
+      data-set-number="${setNumber}"
+    >
       <div class="set-log-title">
         <strong>Set ${setNumber}</strong>
         <span>${completed ? "Saved" : "Not saved"}</span>
@@ -606,8 +614,46 @@ function renderInputsForExerciseType(exercise, existing, setNumber) {
 // Save set logs
 // ----------------------------
 
+function buildLogRowFromSetRow(row) {
+  const difficultyValue = getInputValue(".set-difficulty-input", row);
+
+  const logRow = {
+    workout_assignment_id: workoutAssignment.id,
+    member_profile_id: workoutMemberProfile.id,
+    exercise_id: row.dataset.exerciseId,
+    set_number: Number(row.dataset.setNumber),
+    completed: isChecked(".set-completed-input", row),
+    weight: hasValue(".set-weight-input", row) ? Number(getInputValue(".set-weight-input", row)) : null,
+    reps_completed: hasValue(".set-reps-input", row) ? Number(getInputValue(".set-reps-input", row)) : null,
+    band_color: getInputValue(".set-band-input", row) || null,
+    time_value: getInputValue(".set-time-input", row) || null,
+    distance_value: getInputValue(".set-distance-input", row) || null,
+    difficulty_rating: difficultyValue ? Number(difficultyValue) : null,
+    athlete_note: getInputValue(".set-note-input", row) || null,
+    logged_at: new Date().toISOString()
+  };
+
+  // If they entered any actual data but forgot to check completed,
+  // we mark it completed automatically.
+  const hasActualData =
+    logRow.weight !== null ||
+    logRow.reps_completed !== null ||
+    logRow.band_color !== null ||
+    logRow.time_value !== null ||
+    logRow.distance_value !== null ||
+    logRow.athlete_note !== null;
+
+  if (hasActualData) {
+    logRow.completed = true;
+  }
+
+  return logRow;
+}
+
 async function saveSetLog(exerciseId, setNumber) {
-  const row = document.querySelector(`[data-set-row="${exerciseId}-${setNumber}"]`);
+  const row = document.querySelector(
+    `.set-log-row[data-exercise-id="${exerciseId}"][data-set-number="${setNumber}"]`
+  );
 
   if (!row) {
     showWorkoutSessionMessage("Could not find set row.", true);
@@ -617,37 +663,7 @@ async function saveSetLog(exerciseId, setNumber) {
   showWorkoutSessionMessage("Saving set...");
 
   try {
-    const difficultyValue = getInputValue(".set-difficulty-input", row);
-
-    const logRow = {
-      workout_assignment_id: workoutAssignment.id,
-      member_profile_id: workoutMemberProfile.id,
-      exercise_id: exerciseId,
-      set_number: setNumber,
-      completed: isChecked(".set-completed-input", row),
-      weight: getInputValue(".set-weight-input", row) ? Number(getInputValue(".set-weight-input", row)) : null,
-      reps_completed: getInputValue(".set-reps-input", row) ? Number(getInputValue(".set-reps-input", row)) : null,
-      band_color: getInputValue(".set-band-input", row) || null,
-      time_value: getInputValue(".set-time-input", row) || null,
-      distance_value: getInputValue(".set-distance-input", row) || null,
-      difficulty_rating: difficultyValue ? Number(difficultyValue) : null,
-      athlete_note: getInputValue(".set-note-input", row) || null,
-      logged_at: new Date().toISOString()
-    };
-
-    // If they entered any actual data but forgot to check completed,
-    // we mark it completed automatically.
-    const hasActualData =
-      logRow.weight !== null ||
-      logRow.reps_completed !== null ||
-      logRow.band_color !== null ||
-      logRow.time_value !== null ||
-      logRow.distance_value !== null ||
-      logRow.athlete_note !== null;
-
-    if (hasActualData) {
-      logRow.completed = true;
-    }
+    const logRow = buildLogRowFromSetRow(row);
 
     const { error } = await db
       .from("exercise_set_logs")
@@ -664,6 +680,37 @@ async function saveSetLog(exerciseId, setNumber) {
   } catch (error) {
     console.error(error);
     showWorkoutSessionMessage(error.message || "Could not save set.", true);
+  }
+}
+
+async function saveAllSetLogs() {
+  const setRows = Array.from(document.querySelectorAll(".set-log-row"));
+
+  if (!setRows.length) {
+    showWorkoutSessionMessage("No sets found to save.", true);
+    return;
+  }
+
+  showWorkoutSessionMessage("Saving all sets...");
+
+  try {
+    const logRows = setRows.map(row => buildLogRowFromSetRow(row));
+
+    const { error } = await db
+      .from("exercise_set_logs")
+      .upsert(logRows, {
+        onConflict: "workout_assignment_id,member_profile_id,exercise_id,set_number"
+      });
+
+    if (error) throw error;
+
+    existingSetLogs = await loadExistingSetLogs(workoutAssignment.id);
+    renderWorkoutSession();
+
+    showWorkoutSessionMessage("All sets saved.");
+  } catch (error) {
+    console.error(error);
+    showWorkoutSessionMessage(error.message || "Could not save all sets.", true);
   }
 }
 
@@ -728,6 +775,7 @@ async function initWorkoutSessionPage() {
 document.addEventListener("DOMContentLoaded", () => {
   initWorkoutSessionPage();
 
-  document.getElementById("refresh-session-btn").addEventListener("click", refreshWorkoutSession);
-  document.getElementById("workout-session-logout-btn").addEventListener("click", logoutWorkoutSession);
+  document.getElementById("refresh-session-btn")?.addEventListener("click", refreshWorkoutSession);
+  document.getElementById("save-all-sets-btn")?.addEventListener("click", saveAllSetLogs);
+  document.getElementById("workout-session-logout-btn")?.addEventListener("click", logoutWorkoutSession);
 });

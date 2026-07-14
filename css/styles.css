@@ -1946,3 +1946,25 @@ td {
     width: 100%;
   }
 }
+
+/* =====================================================
+   WORKOUT SESSION ACTIONS
+   ===================================================== */
+
+   .session-header-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  
+  @media (max-width: 700px) {
+    .session-header-actions {
+      width: 100%;
+      flex-direction: column;
+      align-items: stretch;
+    }
+  
+    .session-header-actions button {
+      width: 100%;
+    }
+  }
