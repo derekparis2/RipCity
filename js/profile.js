@@ -20,80 +20,28 @@ function showProfileMessage(message, isError = false) {
 }
 
 async function getProfileSession() {
-  const { data, error } = await db.auth.getSession();
-
-  if (error) throw error;
-
-  return data.session;
+  return window.RipCityAccess.getSession();
 }
 
 async function getProfileUser(userId) {
   // Shared account/profile fields live in profiles.
   // Program/member-specific fields are loaded separately from member_profiles.
-  const { data, error } = await db
-    .from("profiles")
-    .select(`
-      id,
-      email,
-      full_name,
-      global_role,
-      username,
-      bio,
-      birthday,
-      profile_picture_url,
-      facility_members:facility_members!facility_members_profile_id_fkey (
-        id,
-        role,
-        status,
-        facility_id
-      )
-    `)
-    .eq("id", userId)
-    .single();
-
-  if (error) throw error;
-
-  return data;
+  return window.RipCityAccess.getProfileWithMemberships(
+    userId,
+    "username,bio,birthday,profile_picture_url"
+  );
 }
 
 async function getMemberProfile(facilityMemberId) {
   // member_profiles is keyed from facility_members, not directly from auth users.
-  const { data, error } = await db
-    .from("member_profiles")
-    .select("*")
-    .eq("facility_member_id", facilityMemberId)
-    .single();
-
-  if (error) throw error;
-
-  return data;
+  return window.RipCityAccess.getMemberProfileForMembership(facilityMemberId);
 }
 
 async function requireApprovedProfileUser() {
   // Profile editing is only available after the facility has approved access.
-  const session = await getProfileSession();
-
-  if (!session) {
-    window.location.href = "login.html";
-    return null;
-  }
-
-  const profile = await getProfileUser(session.user.id);
-
-  const membership =
-    profile.facility_members?.[0] ||
-    profile["facility_members!facility_members_profile_id_fkey"]?.[0];
-
-  if (!membership || membership.status !== "approved") {
-    window.location.href = "pending.html";
-    return null;
-  }
-
-  return {
-    session,
-    profile,
-    membership
-  };
+  return window.RipCityAccess.requireApprovedAccess({
+    extraProfileColumns: "username,bio,birthday,profile_picture_url"
+  });
 }
 
 function setInputValue(id, value) {

@@ -6,6 +6,7 @@
 
 let workoutCoachAccess = null;
 let availableGroups = [];
+let availableMembers = [];
 
 // ----------------------------
 // Small helper functions
@@ -47,65 +48,17 @@ function setTodayAsDefaultDate() {
 // ----------------------------
 
 async function getCurrentSession() {
-  const { data, error } = await db.auth.getSession();
-
-  if (error) throw error;
-
-  return data.session;
+  return window.RipCityAccess.getSession();
 }
 
 async function getCurrentUserProfile(userId) {
-  const { data, error } = await db
-    .from("profiles")
-    .select(`
-      id,
-      email,
-      full_name,
-      global_role,
-      facility_members:facility_members!facility_members_profile_id_fkey (
-        id,
-        role,
-        status,
-        facility_id
-      )
-    `)
-    .eq("id", userId)
-    .single();
-
-  if (error) throw error;
-
-  return data;
+  return window.RipCityAccess.getProfileWithMemberships(userId);
 }
 
 async function requireCoachOrAdmin() {
-  const session = await getCurrentSession();
-
-  if (!session) {
-    window.location.href = "login.html";
-    return null;
-  }
-
-  const profile = await getCurrentUserProfile(session.user.id);
-
-  const membership =
-    profile.facility_members?.[0] ||
-    profile["facility_members!facility_members_profile_id_fkey"]?.[0];
-
-  if (!membership || membership.status !== "approved") {
-    window.location.href = "pending.html";
-    return null;
-  }
-
-  if (membership.role !== "coach" && membership.role !== "admin") {
-    showWorkoutMessage("You do not have permission to view this page.", true);
-    return null;
-  }
-
-  return {
-    session,
-    profile,
-    membership
-  };
+  return window.RipCityAccess.requireCoachAccess({
+    onDeniedMessage: showWorkoutMessage
+  });
 }
 
 // ----------------------------
@@ -124,6 +77,50 @@ async function loadGroups(facilityId) {
   return data || [];
 }
 
+async function loadAssignableMembers(facilityId) {
+  const { data, error } = await db
+    .from("facility_members")
+    .select(`
+      id,
+      role,
+      profile:profiles!facility_members_profile_id_fkey (
+        id,
+        full_name,
+        email
+      ),
+      member_profile:member_profiles (
+        id,
+        member_type,
+        sport,
+        age_group
+      )
+    `)
+    .eq("facility_id", facilityId)
+    .eq("status", "approved")
+    .in("role", ["athlete", "h2k_member"])
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+
+  return (data || []).map(member => {
+    const memberProfile = window.RipCityWorkoutData
+      ? window.RipCityWorkoutData.normalizeJoinedOne(member.member_profile)
+      : Array.isArray(member.member_profile)
+        ? member.member_profile[0]
+        : member.member_profile;
+
+    return {
+      facilityMemberId: member.id,
+      memberProfileId: memberProfile?.id,
+      memberType: memberProfile?.member_type || member.role,
+      sport: memberProfile?.sport || "",
+      ageGroup: memberProfile?.age_group || "",
+      name: member.profile?.full_name || "Unnamed Member",
+      email: member.profile?.email || ""
+    };
+  }).filter(member => member.memberProfileId);
+}
+
 function renderGroupOptions() {
   const select = document.getElementById("workout-group");
 
@@ -138,6 +135,39 @@ function renderGroupOptions() {
       <option value="${group.id}">${group.name}</option>
     `).join("")}
   `;
+}
+
+function renderMemberOptions() {
+  const select = document.getElementById("workout-member");
+  if (!select) return;
+
+  if (!availableMembers.length) {
+    select.innerHTML = `<option value="">No approved members found</option>`;
+    return;
+  }
+
+  select.innerHTML = `
+    <option value="">Select member...</option>
+    ${availableMembers.map(member => `
+      <option value="${member.memberProfileId}">
+        ${member.name} · ${member.memberType}${member.sport ? ` · ${member.sport}` : ""}
+      </option>
+    `).join("")}
+  `;
+}
+
+function updateAssignmentControls() {
+  const targetType = getInputValue("workout-target-type") || "group";
+  const groupField = document.getElementById("workout-group-field");
+  const memberField = document.getElementById("workout-member-field");
+  const groupSelect = document.getElementById("workout-group");
+  const memberSelect = document.getElementById("workout-member");
+
+  groupField?.classList.toggle("hidden", targetType !== "group");
+  memberField?.classList.toggle("hidden", targetType !== "member");
+
+  if (groupSelect) groupSelect.required = targetType === "group";
+  if (memberSelect) memberSelect.required = targetType === "member";
 }
 
 // ----------------------------
@@ -342,11 +372,23 @@ async function createWorkoutWithAssignment(event) {
     const focus = getInputValue("workout-focus");
     const description = getInputValue("workout-description");
     const minutes = getInputValue("workout-minutes");
+    const targetType = getInputValue("workout-target-type") || "group";
     const groupId = getInputValue("workout-group");
+    const memberProfileId = getInputValue("workout-member");
     const assignedDate = getInputValue("workout-date");
 
-    if (!title || !groupId || !assignedDate) {
-      showWorkoutMessage("Workout title, group, and assigned date are required.", true);
+    if (!title || !assignedDate) {
+      showWorkoutMessage("Workout title and assigned date are required.", true);
+      return;
+    }
+
+    if (targetType === "group" && !groupId) {
+      showWorkoutMessage("Choose a group for this assignment.", true);
+      return;
+    }
+
+    if (targetType === "member" && !memberProfileId) {
+      showWorkoutMessage("Choose a member for this assignment.", true);
       return;
     }
 
@@ -418,15 +460,21 @@ async function createWorkoutWithAssignment(event) {
     
     if (exerciseError) throw exerciseError;
 
+    const assignmentRow = {
+      workout_id: workout.id,
+      assigned_by: workoutCoachAccess.profile.id,
+      target_type: targetType,
+      target_facility_id: targetType === "facility"
+        ? workoutCoachAccess.membership.facility_id
+        : null,
+      target_group_id: targetType === "group" ? groupId : null,
+      target_member_profile_id: targetType === "member" ? memberProfileId : null,
+      assigned_date: assignedDate
+    };
+
     const { error: assignmentError } = await db
       .from("workout_assignments")
-      .insert({
-        workout_id: workout.id,
-        assigned_by: workoutCoachAccess.profile.id,
-        target_type: "group",
-        target_group_id: groupId,
-        assigned_date: assignedDate
-      });
+      .insert(assignmentRow);
 
     if (assignmentError) throw assignmentError;
 
@@ -444,6 +492,7 @@ function resetWorkoutForm() {
     document.getElementById("workout-form").reset();
     document.getElementById("block-list").innerHTML = "";
     setTodayAsDefaultDate();
+    updateAssignmentControls();
   
     // Start with common training blocks.
     addBlockCard();
@@ -483,7 +532,9 @@ async function loadRecentWorkouts() {
         id,
         assigned_date,
         target_type,
-        target_group_id
+        target_facility_id,
+        target_group_id,
+        target_member_profile_id
       )
     `)
     .eq("facility_id", workoutCoachAccess.membership.facility_id)
@@ -503,8 +554,7 @@ async function loadRecentWorkouts() {
 
   list.innerHTML = data.map(workout => {
     const assignment = workout.workout_assignments?.[0];
-    const group = availableGroups.find(g => g.id === assignment?.target_group_id);
-    const groupName = group?.name || "Group";
+    const targetLabel = getAssignmentTargetLabel(assignment);
     const assignedDate = assignment?.assigned_date || "No date";
 
     const blocks = [...(workout.workout_blocks || [])]
@@ -520,7 +570,7 @@ async function loadRecentWorkouts() {
 
         <div class="workout-meta-row">
           <span>${workout.estimated_minutes || "—"} min</span>
-          <span>${groupName}</span>
+          <span>${targetLabel}</span>
           <span>${assignedDate}</span>
         </div>
 
@@ -549,6 +599,25 @@ async function loadRecentWorkouts() {
   }).join("");
 }
 
+function getAssignmentTargetLabel(assignment) {
+  if (!assignment) return "Unassigned";
+
+  if (assignment.target_type === "facility") {
+    return "Entire Facility";
+  }
+
+  if (assignment.target_type === "member") {
+    const member = availableMembers.find(row =>
+      row.memberProfileId === assignment.target_member_profile_id
+    );
+
+    return member ? member.name : "Individual Member";
+  }
+
+  const group = availableGroups.find(g => g.id === assignment.target_group_id);
+  return group?.name || "Group";
+}
+
 // ----------------------------
 // Logout / init
 // ----------------------------
@@ -567,9 +636,12 @@ async function initCoachWorkoutsPage() {
     if (!workoutCoachAccess) return;
 
     availableGroups = await loadGroups(workoutCoachAccess.membership.facility_id);
+    availableMembers = await loadAssignableMembers(workoutCoachAccess.membership.facility_id);
     renderGroupOptions();
+    renderMemberOptions();
 
     setTodayAsDefaultDate();
+    updateAssignmentControls();
     addBlockCard();
     await loadRecentWorkouts();
 
@@ -584,6 +656,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initCoachWorkoutsPage();
 
   document.getElementById("add-block-btn").addEventListener("click", addBlockCard);
+  document.getElementById("workout-target-type").addEventListener("change", updateAssignmentControls);
   document.getElementById("workout-form").addEventListener("submit", createWorkoutWithAssignment);
   document.getElementById("refresh-workouts-btn").addEventListener("click", loadRecentWorkouts);
   document.getElementById("coach-workouts-logout-btn").addEventListener("click", logoutCoachWorkouts);

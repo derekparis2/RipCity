@@ -110,10 +110,33 @@
         </div>
       </article>
     </section>
+
+    <section class="dashboard-grid h2k-dashboard-grid">
+      <article class="panel coach-workout-review-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">WORKOUT REVIEW</p>
+            <h3>Member Completion</h3>
+          </div>
+
+          <button class="outline-btn" id="refresh-workout-review-btn">Refresh</button>
+        </div>
+
+        <p id="coach-workout-review-message" class="auth-message"></p>
+
+        <div id="coach-workout-review-list" class="coach-workout-review-list">
+          <div class="empty-state">Loading workout completion...</div>
+        </div>
+
+        <div id="coach-workout-detail" class="coach-workout-detail hidden"></div>
+      </article>
+    </section>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabaseClient.js"></script>
+  <script src="js/access-control.js"></script>
+  <script src="js/workout-data.js"></script>
   <script src="js/coach-dashboard.js"></script>
 </body>
 </html>

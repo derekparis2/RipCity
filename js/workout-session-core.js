@@ -97,82 +97,23 @@ function getExerciseBlockLabel(index) {
 }
 
 async function getWorkoutSessionAuthSession() {
-  const { data, error } = await db.auth.getSession();
-
-  if (error) throw error;
-
-  return data.session;
+  return window.RipCityAccess.getSession();
 }
 
 async function getWorkoutSessionProfile(userId) {
-  const { data, error } = await db
-    .from("profiles")
-    .select(`
-      id,
-      email,
-      full_name,
-      global_role,
-      facility_members:facility_members!facility_members_profile_id_fkey (
-        id,
-        role,
-        status,
-        facility_id
-      )
-    `)
-    .eq("id", userId)
-    .single();
-
-  if (error) throw error;
-
-  return data;
+  return window.RipCityAccess.getProfileWithMemberships(userId);
 }
 
 async function getWorkoutMemberProfile(facilityMemberId) {
-  const { data, error } = await db
-    .from("member_profiles")
-    .select("*")
-    .eq("facility_member_id", facilityMemberId)
-    .single();
-
-  if (error) throw error;
-
-  return data;
+  return window.RipCityAccess.getMemberProfileForMembership(facilityMemberId);
 }
 
 async function requireApprovedWorkoutMember() {
-  const session = await getWorkoutSessionAuthSession();
-
-  if (!session) {
-    window.location.href = "login.html";
-    return null;
-  }
-
-  const profile = await getWorkoutSessionProfile(session.user.id);
-  const membership =
-    profile.facility_members?.[0] ||
-    profile["facility_members!facility_members_profile_id_fkey"]?.[0];
-
-  if (!membership || membership.status !== "approved") {
-    window.location.href = "pending.html";
-    return null;
-  }
-
-  return {
-    session,
-    profile,
-    membership
-  };
+  return window.RipCityAccess.requireApprovedAccess();
 }
 
 async function getMemberGroupIds(memberProfileId) {
-  const { data, error } = await db
-    .from("group_members")
-    .select("group_id")
-    .eq("member_profile_id", memberProfileId);
-
-  if (error) throw error;
-
-  return (data || []).map(row => row.group_id);
+  return window.RipCityWorkoutData.loadMemberGroupIds(memberProfileId);
 }
 
 async function loadWorkoutAssignment(assignmentId) {
@@ -224,24 +165,13 @@ async function loadWorkoutAssignment(assignmentId) {
 async function userCanAccessAssignment(assignment) {
   if (!assignment || !assignment.workout) return false;
 
-  if (assignment.workout.facility_id !== workoutSessionAccess.membership.facility_id) {
-    return false;
-  }
+  const groupIds = await getMemberGroupIds(workoutMemberProfile.id);
 
-  if (assignment.target_type === "group") {
-    const groupIds = await getMemberGroupIds(workoutMemberProfile.id);
-    return groupIds.includes(assignment.target_group_id);
-  }
-
-  if (assignment.target_type === "member") {
-    return assignment.target_member_profile_id === workoutMemberProfile.id;
-  }
-
-  if (assignment.target_type === "facility") {
-    return assignment.target_facility_id === workoutSessionAccess.membership.facility_id;
-  }
-
-  return false;
+  return window.RipCityWorkoutData.isAssignmentVisibleToMember(assignment, {
+    facilityId: workoutSessionAccess.membership.facility_id,
+    memberProfileId: workoutMemberProfile.id,
+    groupIds
+  });
 }
 
 async function loadExistingSetLogs(assignmentId) {

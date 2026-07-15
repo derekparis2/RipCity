@@ -9,8 +9,47 @@
 
 let currentAccess = null;
 let currentMemberProfile = null;
+let currentMemberGroupIds = [];
 let h2kHabits = [];
 let todayLogs = [];
+let todayWorkoutAssignments = [];
+let workoutHistoryAssignments = [];
+let workoutHistoryLogs = [];
+
+const MEMBER_WORKOUT_ASSIGNMENT_SELECT = `
+  id,
+  assigned_date,
+  target_type,
+  target_facility_id,
+  target_group_id,
+  target_member_profile_id,
+  workout:workouts (
+    id,
+    facility_id,
+    title,
+    focus,
+    description,
+    estimated_minutes,
+    workout_blocks (
+      id,
+      name,
+      block_order,
+      workout_exercises (
+        id,
+        name,
+        description,
+        sets,
+        reps,
+        tempo,
+        rest_time,
+        input_type,
+        video_url,
+        coach_note,
+        exercise_order
+      )
+    )
+  )
+`;
 
 // Gets today's date in YYYY-MM-DD format.
 // This is the format we store in Supabase date fields.
@@ -25,7 +64,9 @@ function formatLocalDate(date) {
 }
 
 function getTodayString() {
-  return formatLocalDate(new Date());
+  return window.RipCityWorkoutData?.getTodayString
+    ? window.RipCityWorkoutData.getTodayString()
+    : formatLocalDate(new Date());
 }
 
 // Gets the Monday of the current week.
@@ -58,72 +99,15 @@ function showH2KMessage(message, isError = false) {
   element.classList.toggle("error-message", isError);
 }
 
-// Gets the logged-in user and confirms they are approved.
+// Gets the logged-in user and confirms they are approved for one facility.
 async function getApprovedUserAccess() {
-  const { data: sessionData, error: sessionError } = await db.auth.getSession();
-
-  if (sessionError) {
-    console.error(sessionError);
-    window.location.href = "login.html";
-    return null;
-  }
-
-  const session = sessionData.session;
-
-  if (!session) {
-    window.location.href = "login.html";
-    return null;
-  }
-
-  // Pull the user's profile and facility membership.
-  // The !facility_members_profile_id_fkey part tells Supabase which relationship to use.
-  const { data: profile, error: profileError } = await db
-    .from("profiles")
-    .select(`
-      id,
-      email,
-      full_name,
-      facility_members:facility_members!facility_members_profile_id_fkey (
-        id,
-        role,
-        status,
-        facility_id
-      )
-    `)
-    .eq("id", session.user.id)
-    .single();
-
-  if (profileError) {
-    console.error(profileError);
-    window.location.href = "login.html";
-    return null;
-  }
-
-  const membership = profile.facility_members?.[0];
-
-  if (!membership || membership.status !== "approved") {
-    window.location.href = "pending.html";
-    return null;
-  }
-
-  return {
-    session,
-    profile,
-    membership
-  };
+  return window.RipCityAccess.requireApprovedAccess();
 }
 
 // Gets the member profile connected to the approved user.
 // This tells us whether they are athlete or h2k.
 async function getMemberProfile(facilityMemberId) {
-  const { data, error } = await db
-    .from("member_profiles")
-    .select("*")
-    .eq("facility_member_id", facilityMemberId)
-    .single();
-
-  if (error) throw error;
-  return data;
+  return window.RipCityAccess.getMemberProfileForMembership(facilityMemberId);
 }
 
 // Loads the H2K habits that were seeded into Supabase.
@@ -269,6 +253,61 @@ async function refreshH2KDashboard() {
   renderHabitCards();
   await updateScores();
 }
+
+function toggleH2KModuleVisibility() {
+  const isH2K = currentMemberProfile?.member_type === "h2k";
+  const habitsSection = document.getElementById("h2k-habits-section");
+
+  if (habitsSection) {
+    habitsSection.classList.toggle("hidden", !isH2K);
+  }
+
+  if (!isH2K) {
+    document.getElementById("member-stat-one-label").textContent = "Today’s Workouts";
+    document.getElementById("member-stat-one-detail").textContent = "Assigned for today";
+    document.getElementById("member-stat-two-label").textContent = "Completed";
+    document.getElementById("member-stat-two-detail").textContent = "Finished assigned workouts";
+    document.getElementById("member-stat-three-label").textContent = "Training Progress";
+    document.getElementById("member-stat-three-detail").textContent = "Average logged set completion";
+    document.getElementById("member-stat-one-suffix").textContent = "";
+    document.getElementById("member-stat-two-suffix").textContent = "";
+    document.getElementById("h2k-status").textContent = "Training";
+    document.getElementById("h2k-status-detail").textContent = "Open assigned workouts and track progress";
+  }
+}
+
+function updateSharedWorkoutStats() {
+  if (currentMemberProfile?.member_type === "h2k") return;
+
+  const summaries = workoutHistoryAssignments.map(assignment => {
+    const logs = workoutHistoryLogs.filter(log => log.workout_assignment_id === assignment.id);
+    return window.RipCityWorkoutData.summarizeSetLogs(logs, assignment.workout);
+  });
+  const completedCount = summaries.filter(summary => summary.isComplete).length;
+  const averagePercent = summaries.length
+    ? Math.round(summaries.reduce((total, summary) => total + summary.completionPercent, 0) / summaries.length)
+    : 0;
+  const activeCount = summaries.filter(summary => summary.completedSets > 0 && !summary.isComplete).length;
+
+  document.getElementById("today-score").textContent = todayWorkoutAssignments.length;
+  document.getElementById("weekly-score-h2k").textContent = completedCount;
+  document.getElementById("weekly-percent-h2k").textContent = averagePercent;
+
+  const status = document.getElementById("h2k-status");
+  const detail = document.getElementById("h2k-status-detail");
+
+  if (activeCount > 0) {
+    status.textContent = "In Progress";
+    detail.textContent = `${activeCount} workout${activeCount === 1 ? "" : "s"} partially logged`;
+  } else if (todayWorkoutAssignments.length) {
+    status.textContent = "Ready";
+    detail.textContent = "Open today's assigned workout";
+  } else {
+    status.textContent = "Clear";
+    detail.textContent = "No workout assigned for today";
+  }
+}
+
 // =====================================================
 // TODAY'S WORKOUT
 // =====================================================
@@ -285,15 +324,7 @@ function showTodayWorkoutMessage(message, isError = false) {
 }
 
 async function getCurrentMemberGroupIds(memberProfileId) {
-  // Group membership determines which group-assigned workouts appear.
-  const { data, error } = await db
-    .from("group_members")
-    .select("group_id")
-    .eq("member_profile_id", memberProfileId);
-
-  if (error) throw error;
-
-  return (data || []).map(row => row.group_id);
+  return window.RipCityWorkoutData.loadMemberGroupIds(memberProfileId);
 }
 
 async function loadTodayAssignedWorkouts() {
@@ -304,70 +335,36 @@ async function loadTodayAssignedWorkouts() {
   showTodayWorkoutMessage("Loading today’s workout...");
 
   try {
-    const groupIds = await getCurrentMemberGroupIds(currentMemberProfile.id);
     const today = getTodayString();
     const facilityId = currentAccess.membership.facility_id;
-
-    // The shared platform supports facility-wide, group, and individual
-    // assignments. The session page uses the same access model.
-    const targetFilters = [
-      `target_facility_id.eq.${facilityId}`,
-      `target_member_profile_id.eq.${currentMemberProfile.id}`
-    ];
-
-    if (groupIds.length) {
-      targetFilters.push(`target_group_id.in.(${groupIds.join(",")})`);
-    }
+    const targetFilters = window.RipCityWorkoutData.buildMemberAssignmentOrFilter({
+      facilityId,
+      memberProfileId: currentMemberProfile.id,
+      groupIds: currentMemberGroupIds
+    });
 
     const { data, error } = await db
       .from("workout_assignments")
-      .select(`
-        id,
-        assigned_date,
-        target_type,
-        target_facility_id,
-        target_group_id,
-        target_member_profile_id,
-        workout:workouts (
-          id,
-          facility_id,
-          title,
-          focus,
-          description,
-          estimated_minutes,
-          workout_blocks (
-            id,
-            name,
-            block_order,
-            workout_exercises (
-              id,
-              name,
-              description,
-              sets,
-              reps,
-              tempo,
-              rest_time,
-              input_type,
-              video_url,
-              coach_note,
-              exercise_order
-            )
-          )
-        )
-      `)
+      .select(MEMBER_WORKOUT_ASSIGNMENT_SELECT)
       .eq("assigned_date", today)
-      .or(targetFilters.join(","));
+      .or(targetFilters);
 
     if (error) throw error;
 
-    // Keep an extra facility check client-side so a broad target filter never
-    // displays a workout from another facility if bad data is present.
-    const accessibleAssignments = (data || []).filter(assignment => {
-      const workoutFacilityId = assignment.workout?.facility_id;
-      return !workoutFacilityId || workoutFacilityId === facilityId;
+    const visibleAssignments = (data || []).filter(assignment => {
+      return window.RipCityWorkoutData.isAssignmentVisibleToMember(assignment, {
+        facilityId,
+        memberProfileId: currentMemberProfile.id,
+        groupIds: currentMemberGroupIds
+      });
     });
 
+    const accessibleAssignments = window.RipCityWorkoutData
+      .dedupeAssignmentsByWorkoutDate(visibleAssignments);
+    todayWorkoutAssignments = accessibleAssignments;
+
     renderTodayWorkouts(accessibleAssignments);
+    updateSharedWorkoutStats();
     showTodayWorkoutMessage("");
   } catch (error) {
     console.error(error);
@@ -406,8 +403,7 @@ function renderTodayWorkouts(assignments) {
 
     // Blocks and exercises are sorted here because Supabase nested results are
     // not guaranteed to come back in display order.
-    const blocks = [...(workout.workout_blocks || [])]
-      .sort((a, b) => a.block_order - b.block_order);
+    const blocks = window.RipCityWorkoutData.getWorkoutBlocks(workout);
 
     return `
       <article class="today-workout-card">
@@ -432,15 +428,12 @@ function renderTodayWorkouts(assignments) {
 
         <div class="today-workout-blocks">
           ${blocks.map(block => {
-            const exercises = [...(block.workout_exercises || [])]
-              .sort((a, b) => a.exercise_order - b.exercise_order);
-
             return `
               <div class="today-workout-block">
                 <h4>${block.name}</h4>
 
                 <div class="today-exercise-list">
-                  ${exercises.map(exercise => `
+                  ${window.RipCityWorkoutData.getBlockExercises(block).map(exercise => `
                     <article class="today-exercise-card">
                       <div>
                         <strong>${exercise.name}</strong>
@@ -471,6 +464,121 @@ function renderTodayWorkouts(assignments) {
   }).join("");
 }
 
+// =====================================================
+// WORKOUT HISTORY
+// =====================================================
+// History uses the same assignment visibility as today's workout, then joins
+// saved set logs to show completion without trusting client-only state.
+
+function showWorkoutHistoryMessage(message, isError = false) {
+  const element = document.getElementById("workout-history-message");
+  if (!element) return;
+
+  element.textContent = message;
+  element.classList.toggle("error-message", isError);
+}
+
+async function loadWorkoutHistory() {
+  const list = document.getElementById("workout-history-list");
+
+  if (!list || !currentMemberProfile) return;
+
+  showWorkoutHistoryMessage("Loading workout history...");
+
+  try {
+    const facilityId = currentAccess.membership.facility_id;
+    const targetFilters = window.RipCityWorkoutData.buildMemberAssignmentOrFilter({
+      facilityId,
+      memberProfileId: currentMemberProfile.id,
+      groupIds: currentMemberGroupIds
+    });
+
+    const { data, error } = await db
+      .from("workout_assignments")
+      .select(MEMBER_WORKOUT_ASSIGNMENT_SELECT)
+      .lte("assigned_date", getTodayString())
+      .or(targetFilters)
+      .order("assigned_date", { ascending: false })
+      .limit(30);
+
+    if (error) throw error;
+
+    const visibleAssignments = (data || []).filter(assignment => {
+      return window.RipCityWorkoutData.isAssignmentVisibleToMember(assignment, {
+        facilityId,
+        memberProfileId: currentMemberProfile.id,
+        groupIds: currentMemberGroupIds
+      });
+    });
+
+    const assignments = window.RipCityWorkoutData
+      .dedupeAssignmentsByWorkoutDate(visibleAssignments)
+      .sort((a, b) => b.assigned_date.localeCompare(a.assigned_date));
+
+    const logs = await window.RipCityWorkoutData.loadSetLogsForAssignments(
+      assignments.map(assignment => assignment.id),
+      currentMemberProfile.id
+    );
+    workoutHistoryAssignments = assignments;
+    workoutHistoryLogs = logs;
+
+    renderWorkoutHistory(assignments, logs);
+    updateSharedWorkoutStats();
+    showWorkoutHistoryMessage("");
+  } catch (error) {
+    console.error(error);
+    showWorkoutHistoryMessage(error.message || "Could not load workout history.", true);
+    list.innerHTML = `<div class="empty-state">Could not load workout history.</div>`;
+  }
+}
+
+function renderWorkoutHistory(assignments, logs) {
+  const list = document.getElementById("workout-history-list");
+
+  if (!assignments.length) {
+    list.innerHTML = `<div class="empty-state">No completed or previously assigned workouts yet.</div>`;
+    return;
+  }
+
+  list.innerHTML = assignments.map(assignment => {
+    const workout = assignment.workout;
+    const assignmentLogs = logs.filter(log => log.workout_assignment_id === assignment.id);
+    const summary = window.RipCityWorkoutData.summarizeSetLogs(assignmentLogs, workout);
+    const status = summary.isComplete
+      ? "Complete"
+      : summary.completedSets > 0
+        ? "In Progress"
+        : "Not Started";
+
+    return `
+      <article class="workout-history-card">
+        <div class="workout-history-main">
+          <div>
+            <p class="eyebrow">${workout?.focus || "Workout"}</p>
+            <h4>${workout?.title || "Untitled Workout"}</h4>
+            <p>${workout?.description || "No description added."}</p>
+          </div>
+
+          <a class="primary-link workout-open-link" href="workout-session.html?assignment=${assignment.id}">
+            Review Workout
+          </a>
+        </div>
+
+        <div class="workout-history-stats">
+          <span><strong>${window.RipCityWorkoutData.formatDateLabel(assignment.assigned_date)}</strong> Assigned</span>
+          <span><strong>${status}</strong> Status</span>
+          <span><strong>${summary.completedSets}/${summary.totalSets}</strong> Sets</span>
+          <span><strong>${window.RipCityWorkoutData.formatDateTimeLabel(summary.lastLoggedAt)}</strong> Last Logged</span>
+        </div>
+
+        <div class="progress-bar workout-history-progress">
+          <div style="width: ${summary.completionPercent}%"></div>
+        </div>
+      </article>
+    `;
+  }).join("");
+}
+
 function formatInputType(inputType) {
   const labels = {
     completion: "Completion",
@@ -495,16 +603,19 @@ async function initH2KDashboard() {
 
     currentMemberProfile = await getMemberProfile(currentAccess.membership.id);
 
-    // If an athlete tries to access the H2K dashboard, send them back to the main app.
-    if (currentMemberProfile.member_type !== "h2k") {
-      window.location.href = "index.html";
-      return;
+    currentMemberGroupIds = await getCurrentMemberGroupIds(currentMemberProfile.id);
+    toggleH2KModuleVisibility();
+
+    if (currentMemberProfile.member_type === "h2k") {
+      h2kHabits = await loadHabits(currentAccess.membership.facility_id);
     }
 
-    h2kHabits = await loadHabits(currentAccess.membership.facility_id);
-
     await loadTodayAssignedWorkouts();
-    await refreshH2KDashboard();
+    await loadWorkoutHistory();
+
+    if (currentMemberProfile.member_type === "h2k") {
+      await refreshH2KDashboard();
+    }
 
     showH2KMessage("");
   } catch (error) {
@@ -523,6 +634,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initH2KDashboard();
 
   document.getElementById("refresh-workout-btn")?.addEventListener("click", loadTodayAssignedWorkouts);
-  document.getElementById("refresh-habits-btn").addEventListener("click", refreshH2KDashboard);
-  document.getElementById("h2k-logout-btn").addEventListener("click", logoutH2K);
+  document.getElementById("refresh-history-btn")?.addEventListener("click", loadWorkoutHistory);
+  document.getElementById("refresh-habits-btn")?.addEventListener("click", refreshH2KDashboard);
+  document.getElementById("h2k-logout-btn")?.addEventListener("click", logoutH2K);
 });

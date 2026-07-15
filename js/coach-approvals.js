@@ -13,64 +13,17 @@ function showApprovalMessage(message, isError = false) {
 }
 
 async function getApprovalSession() {
-  const { data, error } = await db.auth.getSession();
-
-  if (error) throw error;
-
-  return data.session;
+  return window.RipCityAccess.getSession();
 }
 
 async function getApprovalUserProfile(userId) {
-  const { data, error } = await db
-    .from("profiles")
-    .select(`
-      id,
-      email,
-      full_name,
-      global_role,
-      facility_members:facility_members!facility_members_profile_id_fkey (
-        id,
-        role,
-        status,
-        facility_id
-      )
-    `)
-    .eq("id", userId)
-    .single();
-
-  if (error) throw error;
-
-  return data;
+  return window.RipCityAccess.getProfileWithMemberships(userId);
 }
 
 async function requireApprovalCoachOrAdmin() {
-  const session = await getApprovalSession();
-
-  if (!session) {
-    window.location.href = "login.html";
-    return null;
-  }
-
-  const profile = await getApprovalUserProfile(session.user.id);
-  const membership =
-    profile.facility_members?.[0] ||
-    profile["facility_members!facility_members_profile_id_fkey"]?.[0];
-
-  if (!membership || membership.status !== "approved") {
-    window.location.href = "pending.html";
-    return null;
-  }
-
-  if (membership.role !== "coach" && membership.role !== "admin") {
-    showApprovalMessage("You do not have permission to view this page.", true);
-    return null;
-  }
-
-  return {
-    session,
-    profile,
-    membership
-  };
+  return window.RipCityAccess.requireCoachAccess({
+    onDeniedMessage: showApprovalMessage
+  });
 }
 
 function formatApprovalRole(role) {
@@ -181,7 +134,8 @@ async function updateApprovalStatus(facilityMemberId, status) {
     const { error } = await db
       .from("facility_members")
       .update(updateData)
-      .eq("id", facilityMemberId);
+      .eq("id", facilityMemberId)
+      .eq("facility_id", access.membership.facility_id);
 
     if (error) throw error;
 

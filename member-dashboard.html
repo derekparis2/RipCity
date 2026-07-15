@@ -33,29 +33,29 @@
         <p class="eyebrow">MEMBER DASHBOARD</p>
         <h3>Your training, habits, goals, and progress in one place.</h3>
         <p>
-            This dashboard will become the main home for members. H2K members can track habits now,
-            with workouts, goals, leaderboards, and coach notes coming next.
+            Open today’s assigned work, review previous sessions, and keep optional program modules
+            like H2K habits in one shared member home.
         </p>
       </div>
     </section>
 
     <section class="stats-grid">
       <article class="stat-card">
-        <span>Today’s Score</span>
-        <strong><span id="today-score">0</span>/6</strong>
-        <small>Habits completed today</small>
+        <span id="member-stat-one-label">Today’s Score</span>
+        <strong><span id="today-score">0</span><span id="member-stat-one-suffix">/6</span></strong>
+        <small id="member-stat-one-detail">Habits completed today</small>
       </article>
 
       <article class="stat-card">
-        <span>Weekly Score</span>
-        <strong><span id="weekly-score-h2k">0</span>/42</strong>
-        <small>Possible weekly points</small>
+        <span id="member-stat-two-label">Weekly Score</span>
+        <strong><span id="weekly-score-h2k">0</span><span id="member-stat-two-suffix">/42</span></strong>
+        <small id="member-stat-two-detail">Possible weekly points</small>
       </article>
 
       <article class="stat-card">
-        <span>Week Progress</span>
+        <span id="member-stat-three-label">Week Progress</span>
         <strong><span id="weekly-percent-h2k">0</span>%</strong>
-        <small>Current week completion</small>
+        <small id="member-stat-three-detail">Current week completion</small>
       </article>
 
       <article class="stat-card">
@@ -83,8 +83,27 @@
         </div>
       </article>
     </section>
-    
+
     <section class="dashboard-grid h2k-dashboard-grid">
+      <article class="panel workout-history-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">WORKOUT HISTORY</p>
+            <h3>Past Assigned Workouts</h3>
+          </div>
+
+          <button class="outline-btn" id="refresh-history-btn">Refresh</button>
+        </div>
+
+        <p id="workout-history-message" class="auth-message"></p>
+
+        <div id="workout-history-list" class="workout-history-list">
+          <div class="empty-state">Loading workout history...</div>
+        </div>
+      </article>
+    </section>
+
+    <section class="dashboard-grid h2k-dashboard-grid" id="h2k-habits-section">
       <article class="panel">
         <div class="panel-heading">
           <div>
@@ -212,6 +231,8 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabaseClient.js"></script>
+  <script src="js/access-control.js"></script>
+  <script src="js/workout-data.js"></script>
   <script src="js/member-dashboard.js"></script>
 </body>
 </html>

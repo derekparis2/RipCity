@@ -175,13 +175,13 @@ async function handleLogin(event) {
       return;
     }
 
-    // H2K members go directly to the H2K habit dashboard.
-    if (membership.role === "h2k_member") {
+    // Athletes and H2K members share the member dashboard. Program-specific
+    // modules such as H2K habits are enabled from member profile data.
+    if (membership.role === "h2k_member" || membership.role === "athlete") {
       window.location.href = "member-dashboard.html";
       return;
     }
 
-    // Athletes go to the main app for now.
     window.location.href = "index.html";
   } catch (error) {
     console.error(error);

@@ -78,15 +78,33 @@
 
           <div class="form-row">
             <label>
-              Assign To Group
-              <select id="workout-group" required>
-                <option value="">Loading groups...</option>
+              Assign To
+              <select id="workout-target-type" required>
+                <option value="group">Group</option>
+                <option value="member">Individual Member</option>
+                <option value="facility">Entire Facility</option>
               </select>
             </label>
 
             <label>
               Assigned Date
               <input type="date" id="workout-date" required />
+            </label>
+          </div>
+
+          <div class="form-row">
+            <label id="workout-group-field">
+              Group
+              <select id="workout-group" required>
+                <option value="">Loading groups...</option>
+              </select>
+            </label>
+
+            <label id="workout-member-field" class="hidden">
+              Member
+              <select id="workout-member">
+                <option value="">Loading members...</option>
+              </select>
             </label>
           </div>
 
@@ -124,6 +142,8 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabaseClient.js"></script>
+  <script src="js/access-control.js"></script>
+  <script src="js/workout-data.js"></script>
   <script src="js/coach-workouts.js"></script>
 </body>
 </html>

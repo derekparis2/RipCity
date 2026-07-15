@@ -19,29 +19,11 @@ function updateWorkoutHeader() {
 function getAllExercises() {
   const workout = workoutAssignment.workout;
 
-  const blocks = [...(workout.workout_blocks || [])]
-    .sort((a, b) => a.block_order - b.block_order);
-
-  const exercises = [];
-
-  blocks.forEach(block => {
-    const blockExercises = [...(block.workout_exercises || [])]
-      .sort((a, b) => a.exercise_order - b.exercise_order);
-
-    blockExercises.forEach(exercise => {
-      exercises.push(exercise);
-    });
-  });
-
-  return exercises;
+  return window.RipCityWorkoutData.getWorkoutExercises(workout);
 }
 
 function getTotalSetCount() {
-  const exercises = getAllExercises();
-
-  return exercises.reduce((total, exercise) => {
-    return total + Number(exercise.sets || 1);
-  }, 0);
+  return window.RipCityWorkoutData.getWorkoutTotalSets(workoutAssignment.workout);
 }
 
 function getCompletedSetCount() {
@@ -71,8 +53,7 @@ function renderWorkoutSession() {
   const container = document.getElementById("workout-session-container");
   const workout = workoutAssignment.workout;
 
-  const blocks = [...(workout.workout_blocks || [])]
-    .sort((a, b) => a.block_order - b.block_order);
+  const blocks = window.RipCityWorkoutData.getWorkoutBlocks(workout);
 
   if (!blocks.length) {
     container.innerHTML = `<div class="empty-state">This workout has no blocks yet.</div>`;
@@ -80,8 +61,7 @@ function renderWorkoutSession() {
   }
 
   container.innerHTML = blocks.map(block => {
-    const exercises = [...(block.workout_exercises || [])]
-      .sort((a, b) => a.exercise_order - b.exercise_order);
+    const exercises = window.RipCityWorkoutData.getBlockExercises(block);
 
     return `
       <article class="session-block-card">

@@ -1767,8 +1767,27 @@ td {
    TODAY'S WORKOUT - MEMBER DASHBOARD
    ===================================================== */
 
-   .today-workout-container {
+  .today-workout-container {
     margin-top: 18px;
+  }
+
+  .primary-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #101011;
+    background: var(--text);
+    border: 2px solid var(--text);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-weight: 800;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .primary-link:hover {
+    color: var(--text);
+    background: transparent;
   }
   
   .today-workout-card {
@@ -1876,6 +1895,156 @@ td {
     color: var(--text) !important;
     font-size: 13px;
   }
+
+  .workout-history-list,
+  .coach-workout-review-list,
+  .coach-workout-detail-list {
+    display: grid;
+    gap: 14px;
+    margin-top: 18px;
+  }
+
+  .workout-history-card,
+  .coach-workout-review-card,
+  .coach-workout-detail {
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    border-radius: 18px;
+    padding: 18px;
+  }
+
+  .workout-history-main,
+  .coach-workout-review-header,
+  .coach-workout-detail-heading {
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    align-items: flex-start;
+  }
+
+  .workout-history-card h4,
+  .coach-workout-review-card h4,
+  .coach-workout-detail h4 {
+    margin: 5px 0 8px;
+    font-size: 24px;
+  }
+
+  .workout-history-card p,
+  .coach-workout-review-card p,
+  .coach-workout-detail p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.45;
+  }
+
+  .workout-history-stats,
+  .coach-workout-review-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .workout-history-stats {
+    margin: 16px 0;
+  }
+
+  .workout-history-stats span,
+  .coach-workout-review-summary span {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 999px;
+    padding: 8px 10px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .workout-history-stats strong,
+  .coach-workout-review-summary strong {
+    color: var(--text);
+  }
+
+  .workout-history-progress,
+  .coach-workout-progress {
+    margin-top: 14px;
+  }
+
+  .coach-workout-member-table {
+    display: grid;
+    gap: 9px;
+    margin-top: 16px;
+  }
+
+  .coach-workout-member-row {
+    display: grid;
+    grid-template-columns: minmax(180px, 1fr) repeat(4, minmax(92px, auto)) auto;
+    gap: 10px;
+    align-items: center;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 12px;
+  }
+
+  .coach-workout-member-row strong,
+  .coach-workout-member-row span {
+    display: block;
+  }
+
+  .coach-workout-member-row span {
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .small-inline-btn {
+    padding: 8px 10px;
+    border-radius: 10px;
+    font-size: 12px;
+  }
+
+  .coach-workout-detail {
+    margin-top: 18px;
+    background:
+      linear-gradient(180deg, rgba(23, 23, 25, 0.98), rgba(18, 18, 20, 0.98));
+  }
+
+  .coach-exercise-result-card {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 14px;
+  }
+
+  .coach-exercise-result-card h5 {
+    margin: 0 0 5px;
+    font-size: 18px;
+  }
+
+  .coach-set-result-list {
+    display: grid;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .coach-set-result-row {
+    display: grid;
+    grid-template-columns: 70px 90px minmax(140px, 1fr) 80px;
+    gap: 10px;
+    align-items: center;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    border-radius: 10px;
+    padding: 10px;
+  }
+
+  .coach-set-result-row.complete {
+    border-color: rgba(126, 231, 135, 0.42);
+    background: rgba(126, 231, 135, 0.06);
+  }
+
+  .coach-set-result-row span {
+    color: var(--muted);
+    font-size: 12px;
+  }
   
   @media (max-width: 700px) {
     .today-workout-header {
@@ -1884,6 +2053,22 @@ td {
   
     .today-workout-meta {
       justify-content: flex-start;
+    }
+
+    .workout-history-main,
+    .coach-workout-review-header,
+    .coach-workout-detail-heading {
+      flex-direction: column;
+    }
+
+    .workout-history-main .primary-link,
+    .coach-workout-detail-heading .outline-btn {
+      width: 100%;
+    }
+
+    .coach-workout-member-row,
+    .coach-set-result-row {
+      grid-template-columns: 1fr;
     }
   }
 
