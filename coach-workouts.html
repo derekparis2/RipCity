@@ -43,7 +43,7 @@
     </section>
 
     <section class="dashboard-grid member-dashboard-grid">
-      <article class="panel">
+      <article class="panel coach-workout-builder-panel">
         <div class="panel-heading">
           <div>
             <p class="eyebrow">CREATE WORKOUT</p>
@@ -125,6 +125,64 @@
         </form>
       </article>
 
+      <article class="panel coach-workout-side-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">EXERCISE LIBRARY</p>
+            <h3>Reusable Exercises</h3>
+          </div>
+        </div>
+
+        <p id="exercise-library-message" class="auth-message"></p>
+
+        <form id="exercise-library-form" class="exercise-library-form">
+          <label>
+            Exercise Name
+            <input type="text" id="library-exercise-name" placeholder="Trap Bar Deadlift" />
+          </label>
+
+          <div class="form-row">
+            <label>
+              Category
+              <input type="text" id="library-exercise-category" placeholder="Strength, power, mobility..." />
+            </label>
+
+            <label>
+              Equipment
+              <input type="text" id="library-exercise-equipment" placeholder="Trap bar, DB, bands..." />
+            </label>
+          </div>
+
+          <label>
+            Default Input Type
+            <select id="library-exercise-input-type">
+              <option value="completion">Completion</option>
+              <option value="weight_reps">Weight + Reps</option>
+              <option value="band_color">Band Color</option>
+              <option value="time">Time</option>
+              <option value="distance">Distance</option>
+              <option value="custom">Custom</option>
+            </select>
+          </label>
+
+          <label>
+            Description / Cues
+            <textarea id="library-exercise-description" rows="3" placeholder="Setup, coaching cues, or intent..."></textarea>
+          </label>
+
+          <label>
+            Demo Video URL
+            <input type="text" id="library-exercise-video" placeholder="Optional demo link" />
+          </label>
+
+          <button class="outline-btn full-btn" type="submit">Save Exercise</button>
+        </form>
+
+        <div id="exercise-library-list" class="exercise-library-list">
+          <div class="empty-state">Loading exercise library...</div>
+        </div>
+      </article>
+
       <article class="panel">
         <div class="panel-heading">
           <div>
@@ -142,6 +200,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabaseClient.js"></script>
+  <script src="js/ui-utils.js"></script>
   <script src="js/access-control.js"></script>
   <script src="js/workout-data.js"></script>
   <script src="js/coach-workouts.js"></script>

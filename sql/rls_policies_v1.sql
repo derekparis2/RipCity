@@ -101,6 +101,19 @@ as $$
   limit 1;
 $$;
 
+create or replace function app_private.profile_global_role(check_profile_id uuid)
+returns text
+language sql
+stable
+security definer
+set search_path = public, pg_temp
+as $$
+  select p.global_role
+  from public.profiles p
+  where p.id = check_profile_id
+  limit 1;
+$$;
+
 create or replace function app_private.can_view_member_profile(check_member_profile_id uuid)
 returns boolean
 language sql
@@ -365,6 +378,45 @@ alter table public.ai_summaries enable row level security;
 alter table public.facility_invites enable row level security;
 
 -- =====================================================
+-- ROLE PRIVILEGES
+-- =====================================================
+-- RLS filters rows, but table privileges still decide which roles may attempt
+-- a query at all. The live project currently has broad anon grants, so this
+-- migration narrows anon before policies are created.
+--
+-- Public signup only needs to read the seeded Rip City facility before an auth
+-- session exists. All other frontend app access should happen as authenticated
+-- users and then be filtered by the policies below.
+
+revoke all privileges on all tables in schema public from anon;
+revoke all privileges on all sequences in schema public from anon;
+revoke all privileges on all functions in schema public from anon;
+
+grant select on public.facilities to anon;
+
+grant select, insert, update, delete on
+  public.facilities,
+  public.profiles,
+  public.facility_members,
+  public.member_profiles,
+  public.groups,
+  public.group_members,
+  public.habits,
+  public.habit_logs,
+  public.workouts,
+  public.workout_blocks,
+  public.workout_exercises,
+  public.workout_assignments,
+  public.exercise_set_logs,
+  public.goals,
+  public.progress_entries,
+  public.coach_notes,
+  public.parent_links,
+  public.ai_summaries,
+  public.facility_invites
+to authenticated;
+
+-- =====================================================
 -- DROP EXISTING POLICIES BY NAME
 -- =====================================================
 -- This keeps the migration repeatable while still requiring a careful review
@@ -544,12 +596,18 @@ using (
 );
 
 -- Users can edit their own shared profile fields.
+-- The global_role check prevents a member from promoting themself through a
+-- direct API update. Role changes should happen only through trusted admin or
+-- server workflows.
 create policy "profiles users can update own profile"
 on public.profiles
 for update
 to authenticated
 using (id = auth.uid())
-with check (id = auth.uid());
+with check (
+  id = auth.uid()
+  and global_role = app_private.profile_global_role(id)
+);
 
 -- No DELETE policy: account/profile deletion should be an admin/server workflow.
 
@@ -569,6 +627,12 @@ with check (
   and role in ('athlete', 'h2k_member')
   and approved_by is null
   and approved_at is null
+  and exists (
+    select 1
+    from public.facilities f
+    where f.id = facility_members.facility_id
+      and f.slug = 'rip-city'
+  )
 );
 
 -- Users can read their own facility membership status.
@@ -654,12 +718,27 @@ to authenticated
 using (app_private.is_facility_coach(app_private.member_profile_facility_id(id)));
 
 -- Users can update their own member profile fields.
+-- The role/type check keeps members from changing their program type through a
+-- direct API update. Coaches can update facility member profiles through the
+-- coach policy below.
 create policy "member_profiles users can update own profile"
 on public.member_profiles
 for update
 to authenticated
 using (app_private.owns_member_profile(id))
-with check (app_private.owns_member_profile(id));
+with check (
+  app_private.owns_member_profile(id)
+  and exists (
+    select 1
+    from public.facility_members fm
+    where fm.id = member_profiles.facility_member_id
+      and fm.profile_id = auth.uid()
+      and (
+        (fm.role = 'athlete' and member_profiles.member_type = 'athlete')
+        or (fm.role = 'h2k_member' and member_profiles.member_type = 'h2k')
+      )
+  )
+);
 
 -- Coaches/admins can update member profiles in their facility.
 create policy "member_profiles coaches can update facility profiles"

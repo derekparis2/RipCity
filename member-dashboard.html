@@ -10,25 +10,54 @@
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 
-<body class="auth-body">
-  <main class="h2k-page">
-    <header class="h2k-header">
-      <div class="auth-brand">
+<body class="auth-body member-dashboard-body">
+  <aside class="sidebar member-sidebar">
+    <div class="brand">
+      <div class="brand-mark">
         <img src="assets/rip-city-logo.png" alt="Rip City logo">
-        <div>
-          <h1>RIP CITY</h1>
-          <p>Member Dashboard</p>
-        </div>
+      </div>
+      <div>
+        <h1>RIP CITY</h1>
+        <p>Member Platform</p>
+      </div>
+    </div>
+
+    <div class="mode-card">
+      <span>Current View</span>
+      <strong id="member-program-label">Member</strong>
+      <a class="outline-link small-btn" href="profile.html">View Profile</a>
+    </div>
+
+    <nav class="member-shell-nav">
+      <a class="nav-link nav-link-anchor active" href="#member-dashboard-top">Dashboard</a>
+      <a class="nav-link nav-link-anchor" href="#today-workout-panel">Today's Workout</a>
+      <a class="nav-link nav-link-anchor" href="#workout-history-panel">Workout History</a>
+      <a class="nav-link nav-link-anchor" href="#h2k-habits-section" id="member-habits-nav-link">Habits</a>
+    </nav>
+
+    <div class="user-card">
+      <div class="avatar" id="member-avatar">RC</div>
+      <div>
+        <strong id="member-sidebar-name">Member</strong>
+        <span id="member-sidebar-role">Approved</span>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main-content member-main-content">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow" id="member-dashboard-date">Member Dashboard</p>
+        <h2>Dashboard</h2>
       </div>
 
-      <div class="h2k-header-actions">
+      <div class="topbar-actions">
         <a class="outline-link" href="profile.html">Profile</a>
-        <a class="outline-link" href="index.html">Main App</a>
         <button class="outline-btn" id="h2k-logout-btn">Log Out</button>
       </div>
     </header>
 
-    <section class="hero-card h2k-hero">
+    <section class="hero-card h2k-hero" id="member-dashboard-top">
       <div>
         <p class="eyebrow">MEMBER DASHBOARD</p>
         <h3>Your training, habits, goals, and progress in one place.</h3>
@@ -66,7 +95,7 @@
     </section>
 
     <section class="dashboard-grid h2k-dashboard-grid">
-      <article class="panel today-workout-panel">
+      <article class="panel today-workout-panel" id="today-workout-panel">
         <div class="panel-heading">
           <div>
             <p class="eyebrow">TODAY'S TRAINING</p>
@@ -85,7 +114,7 @@
     </section>
 
     <section class="dashboard-grid h2k-dashboard-grid">
-      <article class="panel workout-history-panel">
+      <article class="panel workout-history-panel" id="workout-history-panel">
         <div class="panel-heading">
           <div>
             <p class="eyebrow">WORKOUT HISTORY</p>
@@ -231,6 +260,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabaseClient.js"></script>
+  <script src="js/ui-utils.js"></script>
   <script src="js/access-control.js"></script>
   <script src="js/workout-data.js"></script>
   <script src="js/member-dashboard.js"></script>

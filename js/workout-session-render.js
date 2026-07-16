@@ -68,7 +68,7 @@ function renderWorkoutSession() {
         <div class="session-block-heading">
           <div>
             <p class="eyebrow">BLOCK</p>
-            <h3>${block.name}</h3>
+            <h3>${window.RipCityUI.text(block.name)}</h3>
           </div>
           <span>${exercises.length} exercise${exercises.length === 1 ? "" : "s"}</span>
         </div>
@@ -148,8 +148,8 @@ function renderExerciseSetLogger(exercise, setNumber) {
     <article class="session-exercise-card">
       <div class="session-exercise-header">
         <div>
-          <h4>${exercise.name}</h4>
-          <p>${exercise.description || "No description added."}</p>
+          <h4>${window.RipCityUI.text(exercise.name)}</h4>
+          <p>${window.RipCityUI.text(exercise.description, "No description added.")}</p>
         </div>
 
         <div class="session-exercise-tags">
@@ -160,7 +160,7 @@ function renderExerciseSetLogger(exercise, setNumber) {
       ${exercise.coach_note ? `
         <div class="session-coach-note">
           <strong>Coach Note</strong>
-          <p>${exercise.coach_note}</p>
+          <p>${window.RipCityUI.text(exercise.coach_note)}</p>
         </div>
       ` : ""}
 
@@ -179,8 +179,8 @@ function renderSetLogger(exercise, setNumber) {
   return `
     <div
       class="set-log-row ${completed ? "set-complete" : ""}"
-      data-exercise-id="${exercise.id}"
-      data-set-number="${setNumber}"
+      data-exercise-id="${window.RipCityUI.attr(exercise.id)}"
+      data-set-number="${window.RipCityUI.attr(setNumber)}"
     >
       <div class="set-log-title">
         <div>
@@ -220,7 +220,7 @@ function renderSetLogger(exercise, setNumber) {
             <input
               type="text"
               class="set-note-input"
-              value="${existing?.athlete_note || ""}"
+              value="${window.RipCityUI.attr(existing?.athlete_note || "")}"
               placeholder="Optional note"
             />
           </label>
@@ -230,8 +230,8 @@ function renderSetLogger(exercise, setNumber) {
       <button
         class="primary-btn save-set-btn"
         type="button"
-        data-exercise-id="${exercise.id}"
-        data-set-number="${setNumber}"
+        data-exercise-id="${window.RipCityUI.attr(exercise.id)}"
+        data-set-number="${window.RipCityUI.attr(setNumber)}"
       >
         Save Set
       </button>
@@ -254,7 +254,7 @@ function renderInputsForExerciseType(exercise, existing, setNumber) {
           <input
             type="number"
             class="set-weight-input"
-            value="${weightValue}"
+            value="${window.RipCityUI.attr(weightValue)}"
             placeholder="ex: 185"
           />
         </label>
@@ -264,8 +264,8 @@ function renderInputsForExerciseType(exercise, existing, setNumber) {
           <input
             type="number"
             class="set-reps-input"
-            value="${repsValue || ""}"
-            placeholder="${exercise.reps || "reps"}"
+            value="${window.RipCityUI.attr(repsValue || "")}"
+            placeholder="${window.RipCityUI.attr(exercise.reps || "reps")}"
           />
         </label>
       </div>
@@ -279,7 +279,7 @@ function renderInputsForExerciseType(exercise, existing, setNumber) {
         <input
           type="text"
           class="set-band-input"
-          value="${existing?.band_color || ""}"
+          value="${window.RipCityUI.attr(existing?.band_color || "")}"
           placeholder="Red, black, green..."
         />
       </label>
@@ -293,8 +293,8 @@ function renderInputsForExerciseType(exercise, existing, setNumber) {
         <input
           type="text"
           class="set-time-input"
-          value="${existing?.time_value || ""}"
-          placeholder="${exercise.reps || "ex: 10.4 sec"}"
+          value="${window.RipCityUI.attr(existing?.time_value || "")}"
+          placeholder="${window.RipCityUI.attr(exercise.reps || "ex: 10.4 sec")}"
         />
       </label>
     `;
@@ -307,8 +307,8 @@ function renderInputsForExerciseType(exercise, existing, setNumber) {
         <input
           type="text"
           class="set-distance-input"
-          value="${existing?.distance_value || ""}"
-          placeholder="${exercise.reps || "ex: 20 yards"}"
+          value="${window.RipCityUI.attr(existing?.distance_value || "")}"
+          placeholder="${window.RipCityUI.attr(exercise.reps || "ex: 20 yards")}"
         />
       </label>
     `;
@@ -321,7 +321,7 @@ function renderInputsForExerciseType(exercise, existing, setNumber) {
         <input
           type="text"
           class="set-note-input"
-          value="${existing?.athlete_note || ""}"
+          value="${window.RipCityUI.attr(existing?.athlete_note || "")}"
           placeholder="Enter result"
         />
       </label>

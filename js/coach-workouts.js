@@ -7,6 +7,8 @@
 let workoutCoachAccess = null;
 let availableGroups = [];
 let availableMembers = [];
+let exerciseTemplates = [];
+let exerciseLibraryAvailable = false;
 
 // ----------------------------
 // Small helper functions
@@ -24,6 +26,11 @@ function getInputValue(id) {
   const element = document.getElementById(id);
   if (!element) return "";
   return element.value.trim();
+}
+
+function getCardInputValue(card, selector) {
+  const element = card.querySelector(selector);
+  return element ? element.value.trim() : "";
 }
 
 function formatLocalDate(date) {
@@ -132,7 +139,7 @@ function renderGroupOptions() {
   select.innerHTML = `
     <option value="">Select group...</option>
     ${availableGroups.map(group => `
-      <option value="${group.id}">${group.name}</option>
+      <option value="${window.RipCityUI.attr(group.id)}">${window.RipCityUI.text(group.name)}</option>
     `).join("")}
   `;
 }
@@ -149,11 +156,189 @@ function renderMemberOptions() {
   select.innerHTML = `
     <option value="">Select member...</option>
     ${availableMembers.map(member => `
-      <option value="${member.memberProfileId}">
-        ${member.name} · ${member.memberType}${member.sport ? ` · ${member.sport}` : ""}
+      <option value="${window.RipCityUI.attr(member.memberProfileId)}">
+        ${window.RipCityUI.text(member.name)} · ${window.RipCityUI.text(member.memberType)}${member.sport ? ` · ${window.RipCityUI.text(member.sport)}` : ""}
       </option>
     `).join("")}
   `;
+}
+
+function showExerciseLibraryMessage(message, isError = false) {
+  const element = document.getElementById("exercise-library-message");
+  if (!element) return;
+
+  element.textContent = message;
+  element.classList.toggle("error-message", isError);
+}
+
+function isMissingExerciseLibraryError(error) {
+  return error?.code === "42P01" ||
+    error?.code === "PGRST205" ||
+    /exercise_templates/i.test(error?.message || "");
+}
+
+async function loadExerciseTemplates(facilityId) {
+  const { data, error } = await db
+    .from("exercise_templates")
+    .select("*")
+    .eq("facility_id", facilityId)
+    .eq("active", true)
+    .order("name", { ascending: true });
+
+  if (error) {
+    if (isMissingExerciseLibraryError(error)) {
+      exerciseLibraryAvailable = false;
+      return [];
+    }
+
+    throw error;
+  }
+
+  exerciseLibraryAvailable = true;
+  return data || [];
+}
+
+function renderExerciseTemplatePicker(select) {
+  if (!select) return;
+
+  if (!exerciseLibraryAvailable) {
+    select.innerHTML = `<option value="">Library migration not run yet</option>`;
+    select.disabled = true;
+    return;
+  }
+
+  if (!exerciseTemplates.length) {
+    select.innerHTML = `<option value="">No library exercises yet</option>`;
+    select.disabled = true;
+    return;
+  }
+
+  select.disabled = false;
+  select.innerHTML = `
+    <option value="">Choose from library...</option>
+    ${exerciseTemplates.map(template => `
+      <option value="${window.RipCityUI.attr(template.id)}">
+        ${window.RipCityUI.text(template.name)}${template.category ? ` · ${window.RipCityUI.text(template.category)}` : ""}
+      </option>
+    `).join("")}
+  `;
+}
+
+function refreshExerciseTemplatePickers() {
+  document.querySelectorAll(".exercise-template-select").forEach(select => {
+    renderExerciseTemplatePicker(select);
+  });
+}
+
+function renderExerciseLibraryList() {
+  const list = document.getElementById("exercise-library-list");
+  if (!list) return;
+
+  if (!exerciseLibraryAvailable) {
+    list.innerHTML = `
+      <div class="empty-state">
+        Exercise library tables are not installed yet. Coaches can keep typing exercises manually.
+      </div>
+    `;
+    return;
+  }
+
+  if (!exerciseTemplates.length) {
+    list.innerHTML = `<div class="empty-state">No library exercises yet. Save one above.</div>`;
+    return;
+  }
+
+  list.innerHTML = exerciseTemplates.map(template => `
+    <article class="exercise-library-card">
+      <div>
+        <h4>${window.RipCityUI.text(template.name)}</h4>
+        <p>${window.RipCityUI.text(template.description, "No cues added.")}</p>
+      </div>
+
+      <div class="workout-meta-row">
+        <span>${window.RipCityUI.text(template.input_type)}</span>
+        ${template.category ? `<span>${window.RipCityUI.text(template.category)}</span>` : ""}
+        ${template.equipment ? `<span>${window.RipCityUI.text(template.equipment)}</span>` : ""}
+      </div>
+    </article>
+  `).join("");
+}
+
+async function refreshExerciseLibrary() {
+  showExerciseLibraryMessage("Loading exercise library...");
+
+  try {
+    exerciseTemplates = await loadExerciseTemplates(workoutCoachAccess.membership.facility_id);
+    renderExerciseLibraryList();
+    refreshExerciseTemplatePickers();
+
+    showExerciseLibraryMessage(
+      exerciseLibraryAvailable
+        ? ""
+        : "Run the exercise library migration to enable saved exercises."
+    );
+  } catch (error) {
+    console.error(error);
+    showExerciseLibraryMessage(error.message || "Could not load exercise library.", true);
+    exerciseLibraryAvailable = false;
+    exerciseTemplates = [];
+    renderExerciseLibraryList();
+    refreshExerciseTemplatePickers();
+  }
+}
+
+function applyExerciseTemplateToCard(card, templateId) {
+  const template = exerciseTemplates.find(row => row.id === templateId);
+  if (!template) return;
+
+  card.querySelector(".exercise-template-id").value = template.id;
+  card.querySelector(".exercise-name").value = template.name || "";
+  card.querySelector(".exercise-description").value = template.description || "";
+  card.querySelector(".exercise-input-type").value = template.input_type || "completion";
+  card.querySelector(".exercise-video").value = template.video_url || "";
+  card.querySelector(".exercise-coach-note").value = template.coach_note || "";
+}
+
+async function saveExerciseTemplate(event) {
+  event.preventDefault();
+
+  if (!exerciseLibraryAvailable) {
+    showExerciseLibraryMessage("Run the exercise library migration before saving templates.", true);
+    return;
+  }
+
+  const name = getInputValue("library-exercise-name");
+
+  if (!name) {
+    showExerciseLibraryMessage("Exercise name is required.", true);
+    return;
+  }
+
+  showExerciseLibraryMessage("Saving exercise...");
+
+  try {
+    const { error } = await db
+      .from("exercise_templates")
+      .insert({
+        facility_id: workoutCoachAccess.membership.facility_id,
+        created_by: workoutCoachAccess.profile.id,
+        name,
+        category: getInputValue("library-exercise-category") || null,
+        equipment: getInputValue("library-exercise-equipment") || null,
+        input_type: getInputValue("library-exercise-input-type") || "completion",
+        description: getInputValue("library-exercise-description") || null,
+        video_url: getInputValue("library-exercise-video") || null
+      });
+
+    if (error) throw error;
+
+    document.getElementById("exercise-library-form").reset();
+    await refreshExerciseLibrary();
+    showExerciseLibraryMessage("Exercise saved.");
+  } catch (error) {
+    console.error(error);
+    showExerciseLibraryMessage(error.message || "Could not save exercise.", true);
+  }
 }
 
 function updateAssignmentControls() {
@@ -212,6 +397,17 @@ function createExerciseCard(index) {
       <div class="exercise-card-heading">
         <h4>Exercise ${index}</h4>
         <button class="outline-btn remove-exercise-btn" type="button">Remove</button>
+      </div>
+
+      <input type="hidden" class="exercise-template-id" />
+
+      <div class="exercise-library-picker">
+        <label>
+          Exercise Library
+          <select class="exercise-template-select">
+            <option value="">Loading library...</option>
+          </select>
+        </label>
       </div>
 
       <label>
@@ -296,6 +492,13 @@ function addExerciseToBlock(blockCard) {
 
   const newestCard = list.lastElementChild;
   const removeButton = newestCard.querySelector(".remove-exercise-btn");
+  const templateSelect = newestCard.querySelector(".exercise-template-select");
+
+  renderExerciseTemplatePicker(templateSelect);
+
+  templateSelect.addEventListener("change", () => {
+    applyExerciseTemplateToCard(newestCard, templateSelect.value);
+  });
 
   removeButton.addEventListener("click", () => {
     newestCard.remove();
@@ -344,6 +547,7 @@ function getBlockFormData() {
         tempo: card.querySelector(".exercise-tempo").value.trim() || null,
         rest_time: card.querySelector(".exercise-rest").value.trim() || null,
         input_type: card.querySelector(".exercise-input-type").value,
+        exercise_template_id: getCardInputValue(card, ".exercise-template-id") || null,
         video_url: card.querySelector(".exercise-video").value.trim() || null,
         coach_note: card.querySelector(".exercise-coach-note").value.trim() || null,
         exercise_order: exerciseIndex
@@ -437,7 +641,7 @@ async function createWorkoutWithAssignment(event) {
         );
     
         originalBlock.exercises.forEach(exercise => {
-        exerciseRows.push({
+        const exerciseRow = {
             workout_id: workout.id,
             block_id: createdBlock.id,
             name: exercise.name,
@@ -450,7 +654,13 @@ async function createWorkoutWithAssignment(event) {
             video_url: exercise.video_url,
             coach_note: exercise.coach_note,
             exercise_order: exercise.exercise_order
-        });
+        };
+
+        if (exercise.exercise_template_id && exerciseLibraryAvailable) {
+            exerciseRow.exercise_template_id = exercise.exercise_template_id;
+        }
+
+        exerciseRows.push(exerciseRow);
         });
     });
     
@@ -563,15 +773,15 @@ async function loadRecentWorkouts() {
     return `
       <article class="recent-workout-card">
         <div>
-          <p class="eyebrow">${workout.focus || "Workout"}</p>
-          <h4>${workout.title}</h4>
-          <p>${workout.description || "No description added."}</p>
+          <p class="eyebrow">${window.RipCityUI.text(workout.focus, "Workout")}</p>
+          <h4>${window.RipCityUI.text(workout.title)}</h4>
+          <p>${window.RipCityUI.text(workout.description, "No description added.")}</p>
         </div>
 
         <div class="workout-meta-row">
           <span>${workout.estimated_minutes || "—"} min</span>
-          <span>${targetLabel}</span>
-          <span>${assignedDate}</span>
+          <span>${window.RipCityUI.text(targetLabel)}</span>
+          <span>${window.RipCityUI.text(assignedDate)}</span>
         </div>
 
         <div class="workout-block-preview">
@@ -581,12 +791,12 @@ async function loadRecentWorkouts() {
 
                 return `
                 <div class="workout-block-preview-item">
-                    <strong>${block.name}</strong>
+                    <strong>${window.RipCityUI.text(block.name)}</strong>
                     <ul class="workout-exercise-preview">
                     ${exercises.map(exercise => `
                         <li>
-                        ${exercise.name}
-                        ${exercise.sets || exercise.reps ? `<span>${exercise.sets || ""} x ${exercise.reps || ""}</span>` : ""}
+                        ${window.RipCityUI.text(exercise.name)}
+                        ${exercise.sets || exercise.reps ? `<span>${window.RipCityUI.text(exercise.sets || "")} x ${window.RipCityUI.text(exercise.reps || "")}</span>` : ""}
                         </li>
                     `).join("")}
                     </ul>
@@ -639,6 +849,7 @@ async function initCoachWorkoutsPage() {
     availableMembers = await loadAssignableMembers(workoutCoachAccess.membership.facility_id);
     renderGroupOptions();
     renderMemberOptions();
+    await refreshExerciseLibrary();
 
     setTodayAsDefaultDate();
     updateAssignmentControls();
@@ -656,6 +867,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initCoachWorkoutsPage();
 
   document.getElementById("add-block-btn").addEventListener("click", addBlockCard);
+  document.getElementById("exercise-library-form").addEventListener("submit", saveExerciseTemplate);
   document.getElementById("workout-target-type").addEventListener("change", updateAssignmentControls);
   document.getElementById("workout-form").addEventListener("submit", createWorkoutWithAssignment);
   document.getElementById("refresh-workouts-btn").addEventListener("click", loadRecentWorkouts);

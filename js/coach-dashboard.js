@@ -255,8 +255,8 @@ function renderCoachMemberList(rows) {
     return `
       <article class="coach-member-card">
         <div>
-          <h4>${row.name}</h4>
-          <p>${row.email}</p>
+          <h4>${window.RipCityUI.text(row.name)}</h4>
+          <p>${window.RipCityUI.text(row.email)}</p>
         </div>
 
         <div class="coach-score-grid">
@@ -272,12 +272,12 @@ function renderCoachMemberList(rows) {
 
           <div>
             <span>Status</span>
-            <strong>${statusText}</strong>
+            <strong>${window.RipCityUI.text(statusText)}</strong>
           </div>
         </div>
 
         <div class="progress-bar coach-progress-bar">
-          <div style="width: ${weeklyPercent}%"></div>
+          <div style="width: ${window.RipCityUI.percent(weeklyPercent)}%"></div>
         </div>
       </article>
     `;
@@ -477,19 +477,19 @@ function renderCoachWorkoutReview(rows) {
         <div class="coach-workout-review-header">
           <div>
             <p class="eyebrow">${row.workout?.focus || "Workout"}</p>
-            <h4>${row.workout?.title || "Untitled Workout"}</h4>
-            <p>${window.RipCityWorkoutData.formatDateLabel(row.assignment.assigned_date)} · ${formatAssignmentTarget(row.assignment)}</p>
+            <h4>${window.RipCityUI.text(row.workout?.title, "Untitled Workout")}</h4>
+            <p>${window.RipCityUI.text(window.RipCityWorkoutData.formatDateLabel(row.assignment.assigned_date))} · ${window.RipCityUI.text(formatAssignmentTarget(row.assignment))}</p>
           </div>
 
           <div class="coach-workout-review-summary">
             <span><strong>${row.completedMembers}/${memberCount}</strong> Complete</span>
             <span><strong>${row.activeMembers}</strong> Started</span>
-            <span><strong>${window.RipCityWorkoutData.formatDateTimeLabel(row.latestLog)}</strong> Latest</span>
+            <span><strong>${window.RipCityUI.text(window.RipCityWorkoutData.formatDateTimeLabel(row.latestLog))}</strong> Latest</span>
           </div>
         </div>
 
         <div class="progress-bar coach-workout-progress">
-          <div style="width: ${completionPercent}%"></div>
+          <div style="width: ${window.RipCityUI.percent(completionPercent)}%"></div>
         </div>
 
         <div class="coach-workout-member-table">
@@ -518,19 +518,19 @@ function renderCoachWorkoutMemberRow(member, rowIndex) {
   return `
     <div class="coach-workout-member-row">
       <div>
-        <strong>${member.name}</strong>
-        <span>${member.memberType} ${member.sport ? `· ${member.sport}` : ""}</span>
+        <strong>${window.RipCityUI.text(member.name)}</strong>
+        <span>${window.RipCityUI.text(member.memberType)} ${member.sport ? `· ${window.RipCityUI.text(member.sport)}` : ""}</span>
       </div>
 
-      <span>${status}</span>
+      <span>${window.RipCityUI.text(status)}</span>
       <span>${member.summary.completedSets}/${member.summary.totalSets} sets</span>
       <span>${member.summary.completionPercent}%</span>
-      <span>${window.RipCityWorkoutData.formatDateTimeLabel(member.summary.lastLoggedAt)}</span>
+      <span>${window.RipCityUI.text(window.RipCityWorkoutData.formatDateTimeLabel(member.summary.lastLoggedAt))}</span>
       <button
         class="outline-btn small-inline-btn"
         type="button"
-        data-review-row="${rowIndex}"
-        data-member-id="${member.memberProfileId}"
+        data-review-row="${window.RipCityUI.attr(rowIndex)}"
+        data-member-id="${window.RipCityUI.attr(member.memberProfileId)}"
       >
         Details
       </button>
@@ -559,8 +559,8 @@ function openCoachWorkoutDetail(rowIndex, memberProfileId) {
     <div class="coach-workout-detail-heading">
       <div>
         <p class="eyebrow">MEMBER RESULTS</p>
-        <h4>${member.name}</h4>
-        <p>${reviewRow.workout?.title || "Workout"} · ${window.RipCityWorkoutData.formatDateLabel(reviewRow.assignment.assigned_date)}</p>
+        <h4>${window.RipCityUI.text(member.name)}</h4>
+        <p>${window.RipCityUI.text(reviewRow.workout?.title, "Workout")} · ${window.RipCityUI.text(window.RipCityWorkoutData.formatDateLabel(reviewRow.assignment.assigned_date))}</p>
       </div>
       <button class="outline-btn" id="close-workout-detail-btn" type="button">Close</button>
     </div>
@@ -601,8 +601,8 @@ function renderCoachExerciseResult(exercise, logs) {
   return `
     <article class="coach-exercise-result-card">
       <div>
-        <h5>${exercise.name}</h5>
-        <p>${exercise.sets || 1} x ${exercise.reps || "complete"} · ${exercise.input_type}</p>
+        <h5>${window.RipCityUI.text(exercise.name)}</h5>
+        <p>${window.RipCityUI.text(exercise.sets || 1)} x ${window.RipCityUI.text(exercise.reps || "complete")} · ${window.RipCityUI.text(exercise.input_type)}</p>
       </div>
       <div class="coach-set-result-list">${rows.join("")}</div>
     </article>
@@ -621,7 +621,7 @@ function formatSetActuals(log) {
     log.athlete_note || ""
   ].filter(Boolean);
 
-  return parts.join(" · ") || "Completed";
+  return window.RipCityUI.text(parts.join(" · ") || "Completed");
 }
 
 // Loads everything for the coach dashboard.

@@ -153,6 +153,47 @@ function isHabitCompleteToday(habitId) {
   return todayLogs.some(log => log.habit_id === habitId && log.completed);
 }
 
+function updateMemberShell() {
+  const profile = currentAccess?.profile;
+  const memberType = currentMemberProfile?.member_type === "h2k"
+    ? "H2K Member"
+    : "Athlete";
+
+  document.getElementById("member-program-label").textContent = memberType;
+  document.getElementById("member-sidebar-name").textContent = profile?.full_name || "Member";
+  document.getElementById("member-sidebar-role").textContent = memberType;
+  document.getElementById("member-avatar").textContent = window.RipCityUI.safeInitials(profile?.full_name);
+
+  const dateLabel = new Date().toLocaleDateString(undefined, {
+    weekday: "long",
+    month: "short",
+    day: "numeric"
+  });
+  document.getElementById("member-dashboard-date").textContent = dateLabel;
+}
+
+function setActiveMemberNav(hash) {
+  const normalizedHash = hash || "#member-dashboard-top";
+
+  document.querySelectorAll(".member-shell-nav .nav-link").forEach(link => {
+    link.classList.toggle("active", link.getAttribute("href") === normalizedHash);
+  });
+}
+
+function setupMemberSidebarNav() {
+  document.querySelectorAll(".member-shell-nav .nav-link").forEach(link => {
+    link.addEventListener("click", () => {
+      setActiveMemberNav(link.getAttribute("href"));
+    });
+  });
+
+  window.addEventListener("hashchange", () => {
+    setActiveMemberNav(window.location.hash);
+  });
+
+  setActiveMemberNav(window.location.hash);
+}
+
 // Renders the list of six habits as checkable cards.
 function renderHabitCards() {
   const list = document.getElementById("h2k-habit-list");
@@ -168,11 +209,11 @@ function renderHabitCards() {
     return `
       <article class="h2k-habit-card ${completed ? "complete" : ""}">
         <div>
-          <h4>${habit.name}</h4>
-          <p>${habit.description || "Complete this habit for today."}</p>
+          <h4>${window.RipCityUI.text(habit.name)}</h4>
+          <p>${window.RipCityUI.text(habit.description, "Complete this habit for today.")}</p>
         </div>
 
-        <button class="check-btn ${completed ? "complete" : ""}" data-habit-id="${habit.id}">
+        <button class="check-btn ${completed ? "complete" : ""}" data-habit-id="${window.RipCityUI.attr(habit.id)}">
           ${completed ? "✓" : ""}
         </button>
       </article>
@@ -257,9 +298,14 @@ async function refreshH2KDashboard() {
 function toggleH2KModuleVisibility() {
   const isH2K = currentMemberProfile?.member_type === "h2k";
   const habitsSection = document.getElementById("h2k-habits-section");
+  const habitsNavLink = document.getElementById("member-habits-nav-link");
 
   if (habitsSection) {
     habitsSection.classList.toggle("hidden", !isH2K);
+  }
+
+  if (habitsNavLink) {
+    habitsNavLink.classList.toggle("hidden", !isH2K);
   }
 
   if (!isH2K) {
@@ -273,6 +319,11 @@ function toggleH2KModuleVisibility() {
     document.getElementById("member-stat-two-suffix").textContent = "";
     document.getElementById("h2k-status").textContent = "Training";
     document.getElementById("h2k-status-detail").textContent = "Open assigned workouts and track progress";
+
+    if (window.location.hash === "#h2k-habits-section") {
+      window.location.hash = "#member-dashboard-top";
+      setActiveMemberNav("#member-dashboard-top");
+    }
   }
 }
 
@@ -409,18 +460,18 @@ function renderTodayWorkouts(assignments) {
       <article class="today-workout-card">
         <div class="today-workout-header">
           <div>
-            <p class="eyebrow">${workout.focus || "Workout"}</p>
-            <h3>${workout.title}</h3>
-            <p>${workout.description || "No description added."}</p>
+            <p class="eyebrow">${window.RipCityUI.text(workout.focus, "Workout")}</p>
+            <h3>${window.RipCityUI.text(workout.title)}</h3>
+            <p>${window.RipCityUI.text(workout.description, "No description added.")}</p>
           </div>
 
           <div class="today-workout-actions">
             <div class="today-workout-meta">
-              <span>${workout.estimated_minutes || "—"} min</span>
-              <span>${assignment.assigned_date}</span>
+              <span>${window.RipCityUI.text(workout.estimated_minutes || "—")} min</span>
+              <span>${window.RipCityUI.text(assignment.assigned_date)}</span>
             </div>
 
-            <a class="primary-link workout-open-link" href="workout-session.html?assignment=${assignment.id}">
+            <a class="primary-link workout-open-link" href="workout-session.html?assignment=${window.RipCityUI.attr(assignment.id)}">
               Open Workout
             </a>
           </div>
@@ -430,26 +481,26 @@ function renderTodayWorkouts(assignments) {
           ${blocks.map(block => {
             return `
               <div class="today-workout-block">
-                <h4>${block.name}</h4>
+                <h4>${window.RipCityUI.text(block.name)}</h4>
 
                 <div class="today-exercise-list">
                   ${window.RipCityWorkoutData.getBlockExercises(block).map(exercise => `
                     <article class="today-exercise-card">
                       <div>
-                        <strong>${exercise.name}</strong>
-                        <p>${exercise.description || "No details added."}</p>
+                        <strong>${window.RipCityUI.text(exercise.name)}</strong>
+                        <p>${window.RipCityUI.text(exercise.description, "No details added.")}</p>
                       </div>
 
                       <div class="today-exercise-meta">
-                        ${exercise.sets || exercise.reps ? `<span>${exercise.sets || "—"} x ${exercise.reps || "—"}</span>` : ""}
-                        ${exercise.tempo ? `<span>Tempo: ${exercise.tempo}</span>` : ""}
-                        ${exercise.rest_time ? `<span>Rest: ${exercise.rest_time}</span>` : ""}
+                        ${exercise.sets || exercise.reps ? `<span>${window.RipCityUI.text(exercise.sets || "—")} x ${window.RipCityUI.text(exercise.reps || "—")}</span>` : ""}
+                        ${exercise.tempo ? `<span>Tempo: ${window.RipCityUI.text(exercise.tempo)}</span>` : ""}
+                        ${exercise.rest_time ? `<span>Rest: ${window.RipCityUI.text(exercise.rest_time)}</span>` : ""}
                         ${exercise.input_type ? `<span>${formatInputType(exercise.input_type)}</span>` : ""}
                       </div>
 
                       ${exercise.coach_note ? `
                         <p class="coach-note-preview">
-                          Coach note: ${exercise.coach_note}
+                          Coach note: ${window.RipCityUI.text(exercise.coach_note)}
                         </p>
                       ` : ""}
                     </article>
@@ -554,25 +605,25 @@ function renderWorkoutHistory(assignments, logs) {
       <article class="workout-history-card">
         <div class="workout-history-main">
           <div>
-            <p class="eyebrow">${workout?.focus || "Workout"}</p>
-            <h4>${workout?.title || "Untitled Workout"}</h4>
-            <p>${workout?.description || "No description added."}</p>
+            <p class="eyebrow">${window.RipCityUI.text(workout?.focus, "Workout")}</p>
+            <h4>${window.RipCityUI.text(workout?.title, "Untitled Workout")}</h4>
+            <p>${window.RipCityUI.text(workout?.description, "No description added.")}</p>
           </div>
 
-          <a class="primary-link workout-open-link" href="workout-session.html?assignment=${assignment.id}">
+          <a class="primary-link workout-open-link" href="workout-session.html?assignment=${window.RipCityUI.attr(assignment.id)}">
             Review Workout
           </a>
         </div>
 
         <div class="workout-history-stats">
-          <span><strong>${window.RipCityWorkoutData.formatDateLabel(assignment.assigned_date)}</strong> Assigned</span>
-          <span><strong>${status}</strong> Status</span>
+          <span><strong>${window.RipCityUI.text(window.RipCityWorkoutData.formatDateLabel(assignment.assigned_date))}</strong> Assigned</span>
+          <span><strong>${window.RipCityUI.text(status)}</strong> Status</span>
           <span><strong>${summary.completedSets}/${summary.totalSets}</strong> Sets</span>
-          <span><strong>${window.RipCityWorkoutData.formatDateTimeLabel(summary.lastLoggedAt)}</strong> Last Logged</span>
+          <span><strong>${window.RipCityUI.text(window.RipCityWorkoutData.formatDateTimeLabel(summary.lastLoggedAt))}</strong> Last Logged</span>
         </div>
 
         <div class="progress-bar workout-history-progress">
-          <div style="width: ${summary.completionPercent}%"></div>
+          <div style="width: ${window.RipCityUI.percent(summary.completionPercent)}%"></div>
         </div>
       </article>
     `;
@@ -602,6 +653,7 @@ async function initH2KDashboard() {
     if (!currentAccess) return;
 
     currentMemberProfile = await getMemberProfile(currentAccess.membership.id);
+    updateMemberShell();
 
     currentMemberGroupIds = await getCurrentMemberGroupIds(currentMemberProfile.id);
     toggleH2KModuleVisibility();
@@ -631,6 +683,7 @@ async function logoutH2K() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  setupMemberSidebarNav();
   initH2KDashboard();
 
   document.getElementById("refresh-workout-btn")?.addEventListener("click", loadTodayAssignedWorkouts);

@@ -86,17 +86,17 @@ function renderPendingUsers(users) {
     return `
       <article class="pending-user-card">
         <div>
-          <h4>${profile?.full_name || "Unnamed User"}</h4>
+          <h4>${window.RipCityUI.text(profile?.full_name, "Unnamed User")}</h4>
           <div class="pending-user-meta">
-            <span>${profile?.email || "No email"}</span>
-            <span>${formatApprovalRole(user.role)}</span>
-            <span>Status: ${user.status}</span>
+            <span>${window.RipCityUI.text(profile?.email, "No email")}</span>
+            <span>${window.RipCityUI.text(formatApprovalRole(user.role))}</span>
+            <span>Status: ${window.RipCityUI.text(user.status)}</span>
           </div>
         </div>
 
         <div class="pending-user-actions">
-          <button class="approve-btn" data-approve-user="${user.id}">Approve</button>
-          <button class="reject-btn" data-reject-user="${user.id}">Reject</button>
+          <button class="approve-btn" data-approve-user="${window.RipCityUI.attr(user.id)}">Approve</button>
+          <button class="reject-btn" data-reject-user="${window.RipCityUI.attr(user.id)}">Reject</button>
         </div>
       </article>
     `;

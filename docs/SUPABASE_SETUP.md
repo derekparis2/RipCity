@@ -1,146 +1,77 @@
-# Supabase Connection Setup
+# Supabase Setup And Audit Guide
 
-Use this when you are ready to connect the current Hard to Kill prototype to a real database.
+Rip City is already connected to Supabase through `js/supabaseClient.js`. This
+guide is for rebuilding, auditing, or safely applying proposed database changes.
 
-## 1. Create the Supabase Project
+## Current Rule
 
-1. Go to <https://supabase.com>.
-2. Create a new project.
-3. Save the project password somewhere safe.
-4. Wait for the project to finish setting up.
+Do not run SQL from this repo blindly against production. Review the file, apply
+it manually in Supabase SQL Editor, and test with real member and coach accounts.
 
-## 2. Create the Database Tables
+The frontend must use the publishable anon key only. Never place the service
+role key in browser JavaScript.
 
-1. Open the Supabase project dashboard.
-2. Go to the SQL Editor.
-3. Open this project file: `supabase_schema.sql`.
-4. Copy the full SQL file into the Supabase SQL Editor.
-5. Run it.
+## Fresh Database Setup
 
-This creates the tables for users, athlete profiles, workouts, exercises, habits, goals, and progress entries.
+For a new Supabase project:
 
-## 3. Get the Project Connection Values
+1. Create the Supabase project.
+2. In SQL Editor, run `sql/supabase_schema.sql`.
+3. Run `sql/seed_rip_city.sql`.
+4. Run `sql/profile_fields_v1.sql`.
+5. Create the first coach/admin auth user in Supabase Auth.
+6. Connect that auth user to `profiles` and `facility_members`.
+7. Confirm login, signup, coach approval, member dashboard, and workout logging.
 
-In Supabase, go to:
+Optional migrations:
 
-`Project Settings` -> `API`
+- `sql/platform_owner_role_v1.sql` when platform-owner tooling is ready.
+- `sql/exercise_library_v1.sql` when saved exercise templates should be live.
+- `sql/rls_policies_v1.sql` only after review and staging tests.
 
-Copy these values:
+## Existing Live Database Audit
 
-- Project URL
-- Publishable key, also called the anon/public key
+Before applying any migration to the current project, run the read-only audit
+queries in `sql/README.md` and compare the output to this repo.
 
-Do not put the service role key in frontend JavaScript. The service role key is private and should only be used on a secure backend.
+Known current drift from the repo base schema:
 
-## 4. Add the Supabase Browser Script
+- The live project appears to already include profile UI fields such as
+  `profiles.username`, `profiles.bio`, `profiles.birthday`,
+  `profiles.profile_picture_url`, `member_profiles.height`,
+  `member_profiles.training_focus`, and `member_profiles.favorite_lift`.
+- The live project does not appear to have the proposed exercise library tables
+  or `workout_exercises.exercise_template_id` yet.
 
-In `index.html`, add this above `js/app.js`:
+## RLS Rollout Checklist
 
-```html
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-config.js"></script>
-<script src="js/app.js"></script>
+Before enabling RLS policies:
+
+1. Confirm signup can still insert the required `profiles`,
+   `facility_members`, and `member_profiles` rows.
+2. Confirm pending members can only see their own pending state.
+3. Confirm approved members can see only their facility, profile, assignments,
+   workouts, and logs they are authorized for.
+4. Confirm athletes do not see H2K-only modules.
+5. Confirm coaches/admins can manage only their facility.
+6. Confirm platform-owner access is not acting as an accidental cross-facility
+   data bypass.
+7. Confirm parents have no app data access unless a secure parent policy is
+   intentionally introduced.
+
+## Manual App Smoke Test
+
+From the repo root:
+
+```bash
+python3 -m http.server 8000
 ```
 
-Then replace the current bottom script tag:
+Open `http://localhost:8000/login.html`, then test:
 
-```html
-<script src="js/app.js"></script>
-```
-
-with the three script tags above.
-
-## 5. Create `supabase-config.js`
-
-Create a file named `supabase-config.js`:
-
-```js
-const SUPABASE_URL = "https://YOUR-PROJECT-ID.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "YOUR-PUBLISHABLE-KEY";
-
-const db = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-```
-
-This gives `js/app.js` access to the database through `db`.
-
-## 6. Insert Starter Data
-
-Before the app can load data, the database needs a test athlete, a workout, exercises, habits, and goals.
-
-The easiest first version is to manually add data in Supabase's Table Editor. Later, create real forms in the app.
-
-Recommended starter records:
-
-- One coach user
-- One athlete user
-- One athlete profile
-- One workout named `Lower Body Power`
-- Five workout exercises
-- Five habits
-- Three goals
-
-## 7. Connect One Feature First
-
-Do not connect everything at once. Start with habit completion.
-
-The current app stores habits here:
-
-```js
-const habits = [
-  { name: "Drink 100 oz of water", category: "Hydration", complete: false },
-  ...
-];
-```
-
-The database version should eventually load habits from Supabase:
-
-```js
-async function loadHabitsFromDatabase(athleteId) {
-  const { data, error } = await db
-    .from("habit_assignments")
-    .select("habit_id, habits(name, category)")
-    .eq("athlete_id", athleteId)
-    .eq("active", true);
-
-  if (error) {
-    console.error(error);
-    return;
-  }
-
-  habits.length = 0;
-
-  data.forEach(item => {
-    habits.push({
-      id: item.habit_id,
-      name: item.habits.name,
-      category: item.habits.category,
-      complete: false
-    });
-  });
-}
-```
-
-Then habit checks should save into `habit_completions`.
-
-## 8. What Still Needs to Be Built
-
-The app needs these upgrades to become a real platform:
-
-1. Login and signup
-2. Real athlete accounts
-3. Real coach accounts
-4. Database-loaded workouts
-5. Database-saved exercise completions
-6. Database-saved habit completions
-7. Add Goal form
-8. Progress entry form
-9. Coach dashboard
-10. Row Level Security policies in Supabase
-
-## 9. Best Next Milestone
-
-The best next milestone is:
-
-> Save daily habit completion to Supabase.
-
-That proves the app can write real training data to a database. After that, connect workout completion, goals, and coach views.
+- Coach login and approval page.
+- Coach workout builder assignment to member, group, and facility.
+- H2K member dashboard habits and today workout.
+- Athlete dashboard without H2K habits.
+- Workout session Save Set and Save All Sets.
+- Refresh workout session and confirm saved logs reload.

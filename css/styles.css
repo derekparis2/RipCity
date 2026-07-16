@@ -906,6 +906,30 @@ td {
     repeating-linear-gradient(-45deg, transparent 0 18px, rgba(255, 255, 255, 0.03) 18px 20px);
 }
 
+.member-dashboard-body {
+  display: flex;
+  background: var(--bg);
+}
+
+.member-dashboard-body .member-sidebar {
+  min-height: 100vh;
+}
+
+.member-dashboard-body .member-main-content {
+  min-height: 100vh;
+}
+
+.member-shell-nav .nav-link-anchor {
+  text-decoration: none;
+}
+
+.member-sidebar .mode-card .outline-link {
+  width: 100%;
+  justify-content: center;
+  padding: 10px 12px;
+  font-size: 13px;
+}
+
 .auth-page {
   min-height: 100vh;
   display: grid;
@@ -1086,6 +1110,16 @@ td {
 
   .auth-heading h2 {
     font-size: 38px;
+  }
+}
+
+@media (max-width: 980px) {
+  .member-dashboard-body {
+    display: block;
+  }
+
+  .member-dashboard-body .member-sidebar {
+    min-height: auto;
   }
 }
 
@@ -1608,6 +1642,69 @@ td {
     padding: 18px;
     display: grid;
     gap: 14px;
+  }
+
+  .exercise-library-picker {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 12px;
+  }
+
+  .exercise-library-form {
+    display: grid;
+    gap: 14px;
+    margin-top: 18px;
+  }
+
+  .exercise-library-form label {
+    display: grid;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .exercise-library-form input,
+  .exercise-library-form select,
+  .exercise-library-form textarea {
+    width: 100%;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text);
+    border-radius: 12px;
+    padding: 12px 14px;
+    outline: none;
+  }
+
+  .exercise-library-form input:focus,
+  .exercise-library-form select:focus,
+  .exercise-library-form textarea:focus {
+    border-color: var(--text);
+  }
+
+  .exercise-library-list {
+    display: grid;
+    gap: 12px;
+    margin-top: 18px;
+  }
+
+  .exercise-library-card {
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    border-radius: 14px;
+    padding: 14px;
+  }
+
+  .exercise-library-card h4 {
+    margin: 0 0 6px;
+    font-size: 18px;
+  }
+
+  .exercise-library-card p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.45;
   }
   
   .exercise-card-heading {
