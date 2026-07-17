@@ -1515,6 +1515,42 @@ td {
     margin: 18px 0;
   }
 
+  .roster-filter-grid label,
+  .roster-group-form label {
+    display: grid;
+    gap: 7px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0;
+  }
+
+  .roster-filter-grid input,
+  .roster-filter-grid select,
+  .roster-group-form input,
+  .roster-group-form select {
+    width: 100%;
+    min-height: 48px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text);
+    border-radius: 10px;
+    padding: 12px 14px;
+    outline: none;
+  }
+
+  .roster-filter-grid input:focus,
+  .roster-filter-grid select:focus,
+  .roster-group-form input:focus,
+  .roster-group-form select:focus {
+    border-color: var(--text);
+  }
+
+  .roster-filter-grid input::placeholder,
+  .roster-group-form input::placeholder {
+    color: rgba(247, 247, 247, 0.46);
+  }
+
   .coach-roster-list,
   .roster-group-list {
     display: grid;
@@ -1532,8 +1568,16 @@ td {
 
   .roster-member-card {
     display: grid;
-    grid-template-columns: minmax(230px, 1fr) minmax(160px, 0.6fr);
+    grid-template-columns: minmax(260px, 1fr) minmax(190px, 0.55fr);
     gap: 16px;
+    transition: border-color 160ms ease, background 160ms ease;
+  }
+
+  .roster-member-card.has-unsaved-changes {
+    border-color: rgba(255, 255, 255, 0.5);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.025)),
+      var(--surface-2);
   }
 
   .roster-member-main {
@@ -1589,19 +1633,69 @@ td {
   .roster-member-groups {
     display: grid;
     align-content: start;
-    gap: 5px;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    border-radius: 12px;
-    padding: 12px;
+    gap: 8px;
+    padding-top: 3px;
   }
 
-  .roster-member-groups strong {
-    line-height: 1.35;
+  .roster-current-groups {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+  }
+
+  .roster-current-group-tag {
+    display: inline-flex;
+    align-items: center;
+    min-height: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.055);
+    border-radius: 999px;
+    padding: 5px 10px;
+    font-size: 12px;
+    line-height: 1;
+  }
+
+  .roster-current-group-tag.muted {
+    color: var(--muted);
+    font-weight: 700;
+  }
+
+  .roster-group-editor {
+    grid-column: 1 / -1;
+    display: grid;
+    gap: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.09);
+    padding-top: 14px;
+  }
+
+  .roster-editor-heading {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .roster-unsaved-indicator {
+    display: none;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    padding: 5px 9px;
+    color: var(--text);
+    font-style: normal;
+    text-transform: none;
+  }
+
+  .roster-member-card.has-unsaved-changes .roster-unsaved-indicator {
+    display: inline-flex;
   }
 
   .roster-group-checkboxes {
-    grid-column: 1 / -1;
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
@@ -1612,19 +1706,41 @@ td {
     align-items: center;
     gap: 7px;
     border: 1px solid var(--border);
-    background: var(--surface);
+    background: rgba(255, 255, 255, 0.035);
     border-radius: 999px;
     padding: 8px 10px;
     cursor: pointer;
+    transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
   }
 
   .roster-checkbox-pill input {
     accent-color: var(--accent);
   }
 
+  .roster-checkbox-pill:has(input:checked) {
+    border-color: rgba(255, 255, 255, 0.55);
+    background: rgba(255, 255, 255, 0.1);
+  }
+
   .roster-checkbox-pill span {
     font-weight: 800;
     font-size: 12px;
+  }
+
+  .roster-member-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .roster-member-actions .danger-btn {
+    margin-left: auto;
+  }
+
+  .roster-member-actions button:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
   }
 
   .roster-group-form {
@@ -1649,6 +1765,12 @@ td {
     font-size: 28px;
   }
 
+  .roster-group-card-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
   @media (max-width: 900px) {
     .roster-filter-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1656,6 +1778,10 @@ td {
 
     .roster-member-card {
       grid-template-columns: 1fr;
+    }
+
+    .roster-member-actions .danger-btn {
+      margin-left: 0;
     }
   }
 
@@ -2882,5 +3008,339 @@ td {
 
   .mobile-session-save-bar .primary-btn {
     padding: 12px 16px;
+  }
+}
+
+/* =====================================================
+   APP-WIDE POLISH PASS
+   ===================================================== */
+
+body {
+  line-height: 1.45;
+}
+
+.coach-page,
+.h2k-page,
+.approval-page,
+.workout-session-page {
+  width: min(1180px, calc(100% - 32px));
+  padding-right: 0;
+  padding-left: 0;
+}
+
+.workout-session-page {
+  width: min(1240px, calc(100% - 32px));
+}
+
+.panel,
+.auth-card,
+.hero-card,
+.stat-card,
+.today-workout-card,
+.workout-history-card,
+.coach-workout-review-card,
+.coach-workout-detail,
+.roster-member-card,
+.roster-group-card,
+.recent-workout-card,
+.workout-block-card,
+.session-block-card,
+.session-round-card,
+.session-exercise-card,
+.set-log-row {
+  border-radius: 14px;
+}
+
+.hero-card {
+  min-height: 220px;
+  padding: 32px;
+}
+
+.hero-card h3 {
+  font-size: 56px;
+  line-height: 0.96;
+}
+
+.panel {
+  padding: 22px;
+}
+
+.panel-heading {
+  gap: 16px;
+}
+
+.panel-heading h3,
+.section-intro h3 {
+  font-size: 30px;
+  line-height: 1;
+}
+
+.stats-grid,
+.dashboard-grid,
+.member-preview-grid,
+.leaderboard-grid {
+  gap: 16px;
+}
+
+.stat-card {
+  padding: 18px;
+}
+
+.stat-card strong {
+  font-size: 34px;
+  line-height: 1;
+}
+
+.outline-btn,
+.primary-btn,
+.outline-link,
+.primary-link {
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  line-height: 1.1;
+  text-align: center;
+  white-space: normal;
+}
+
+.outline-btn,
+.outline-link {
+  padding: 11px 16px;
+}
+
+.primary-btn,
+.primary-link {
+  padding: 12px 18px;
+}
+
+.auth-form input,
+.auth-form select,
+.profile-form input,
+.profile-form select,
+.profile-form textarea,
+.coach-form input,
+.coach-form select,
+.coach-form textarea,
+.goal-form input,
+.exercise-library-form input,
+.exercise-library-form select,
+.exercise-library-form textarea,
+.set-log-row input,
+.set-log-row select,
+.block-card-heading input {
+  min-height: 48px;
+  border-radius: 10px;
+}
+
+.auth-form label,
+.profile-form label,
+.exercise-library-form label,
+.coach-form label,
+.goal-form label,
+.set-log-row label {
+  letter-spacing: 0;
+}
+
+.form-row {
+  gap: 16px;
+}
+
+.h2k-header,
+.approval-header,
+.today-workout-header,
+.workout-history-main,
+.coach-workout-review-header,
+.coach-workout-detail-heading,
+.block-card-heading,
+.exercise-card-heading,
+.workout-exercise-header {
+  gap: 16px;
+}
+
+.h2k-header-actions,
+.pending-user-actions,
+.approval-actions-bottom,
+.topbar-actions,
+.session-header-actions {
+  flex-wrap: wrap;
+}
+
+.auth-heading h2,
+.approval-header h2 {
+  font-size: 44px;
+  line-height: 0.98;
+}
+
+.auth-heading p:not(.eyebrow),
+.hero-card p:not(.eyebrow),
+.panel p:not(.eyebrow) {
+  max-width: 72ch;
+}
+
+.member-type-card,
+.pending-user-card,
+.coach-member-card,
+.today-exercise-card,
+.workout-block-preview-item,
+.note-item,
+.table-card,
+.exercise-library-card {
+  border-radius: 12px;
+}
+
+.assignment-filter-card {
+  grid-template-columns: minmax(220px, 0.7fr) minmax(260px, 1fr);
+  align-items: stretch;
+}
+
+.assignment-context {
+  min-height: 48px;
+}
+
+.roster-filter-grid {
+  grid-template-columns: repeat(4, minmax(140px, 1fr));
+}
+
+.roster-member-card {
+  grid-template-columns: minmax(260px, 1fr) minmax(180px, 0.55fr);
+}
+
+.coach-workout-member-row {
+  grid-template-columns: minmax(190px, 1fr) repeat(4, minmax(84px, auto)) auto;
+}
+
+.session-exercise-header {
+  grid-template-columns: minmax(240px, 1fr) minmax(240px, 0.85fr);
+}
+
+.set-log-fields {
+  grid-template-columns: repeat(4, minmax(110px, 1fr));
+}
+
+@media (max-width: 1120px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboard-grid,
+  .member-preview-grid,
+  .leaderboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .roster-filter-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .hero-card {
+    min-height: auto;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .hero-card h3 {
+    font-size: 46px;
+  }
+
+  .h2k-header,
+  .approval-header,
+  .today-workout-header,
+  .workout-history-main,
+  .coach-workout-review-header,
+  .coach-workout-detail-heading,
+  .block-card-heading,
+  .exercise-card-heading,
+  .workout-exercise-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .h2k-header-actions,
+  .pending-user-actions,
+  .approval-actions-bottom,
+  .topbar-actions,
+  .session-header-actions {
+    width: 100%;
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .h2k-header-actions > *,
+  .pending-user-actions > *,
+  .approval-actions-bottom > *,
+  .topbar-actions > *,
+  .session-header-actions > * {
+    width: 100%;
+  }
+
+  .assignment-filter-card,
+  .session-exercise-header,
+  .coach-workout-member-row,
+  .coach-set-result-row,
+  .roster-member-card {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .coach-page,
+  .h2k-page,
+  .approval-page,
+  .workout-session-page {
+    width: min(100% - 24px, 1180px);
+    padding-top: 18px;
+    padding-bottom: 48px;
+  }
+
+  .member-main-content,
+  .main-content {
+    padding: 22px 14px 48px;
+  }
+
+  .panel,
+  .auth-card,
+  .hero-card,
+  .stat-card {
+    padding: 18px;
+  }
+
+  .hero-card h3,
+  .auth-heading h2,
+  .approval-header h2 {
+    font-size: 38px;
+  }
+
+  .panel-heading h3,
+  .section-intro h3 {
+    font-size: 26px;
+  }
+
+  .stats-grid,
+  .auth-grid,
+  .member-type-grid,
+  .roster-filter-grid,
+  .form-row,
+  .set-log-fields,
+  .set-input-grid,
+  .session-exercise-tags {
+    grid-template-columns: 1fr;
+  }
+
+  .today-workout-meta,
+  .workout-meta-row,
+  .workout-history-stats,
+  .coach-workout-review-summary,
+  .roster-group-checkboxes {
+    gap: 7px;
+  }
+
+  .mobile-session-save-bar {
+    right: 10px;
+    bottom: 10px;
+    left: 10px;
   }
 }
