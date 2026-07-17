@@ -23,6 +23,9 @@ not execute live database SQL unless Derek explicitly asks.
   The app currently falls back gracefully if this migration has not been run.
 - `rls_policies_v1.sql` - proposed Row Level Security policies. Review and test
   carefully before enabling in production.
+- `signup_group_selection_v1.sql` - live patch after RLS that lets athlete
+  signups choose an initial Rip City training group and save it to
+  `group_members`.
 
 ## Historical Files
 
@@ -39,6 +42,8 @@ not execute live database SQL unless Derek explicitly asks.
 5. Optional: run `exercise_library_v1.sql` when the exercise library should be
    live.
 6. Review, stage-test, then run `rls_policies_v1.sql`.
+7. Run `signup_group_selection_v1.sql` if athlete signup should require a
+   starting training group.
 
 ## Live Database Audit Queries
 

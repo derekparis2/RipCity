@@ -23,11 +23,12 @@ For a new Supabase project:
 6. Connect that auth user to `profiles` and `facility_members`.
 7. Confirm login, signup, coach approval, member dashboard, and workout logging.
 
-Optional migrations:
+Optional/current migrations:
 
 - `sql/platform_owner_role_v1.sql` when platform-owner tooling is ready.
 - `sql/exercise_library_v1.sql` when saved exercise templates should be live.
-- `sql/rls_policies_v1.sql` only after review and staging tests.
+- `sql/rls_policies_v1.sql` has been applied to the live project and should be
+  kept as the current RLS source of truth.
 
 ## Existing Live Database Audit
 
@@ -43,9 +44,33 @@ Known current drift from the repo base schema:
 - The live project does not appear to have the proposed exercise library tables
   or `workout_exercises.exercise_template_id` yet.
 
-## RLS Rollout Checklist
+## RLS Status
 
-Before enabling RLS policies:
+RLS has been enabled on every current public app table in the live Supabase
+project. The rollout was verified with:
+
+- Coach/admin login and dashboard access.
+- Existing H2K member login, habits, workout dashboard, and session access.
+- Existing athlete login with H2K UI hidden.
+- New signup, pending approval, coach approval, and approved member login.
+- `anon` table grants reduced to only `facilities SELECT`.
+- `authenticated` grants reduced to normal app CRUD, with row access filtered
+  by RLS policies.
+
+Signup currently depends on public Rip City signup:
+
+1. `anon` reads the `rip-city` facility.
+2. Supabase Auth creates the user.
+3. The authenticated session inserts `profiles`, `facility_members`, and
+   `member_profiles`.
+
+If Supabase email confirmation is enabled later and no session is returned from
+`auth.signUp`, move app-row creation into a secure server-side signup handler or
+database trigger.
+
+## RLS Regression Checklist
+
+After any RLS or signup change:
 
 1. Confirm signup can still insert the required `profiles`,
    `facility_members`, and `member_profiles` rows.

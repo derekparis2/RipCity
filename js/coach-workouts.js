@@ -33,6 +33,17 @@ function getCardInputValue(card, selector) {
   return element ? element.value.trim() : "";
 }
 
+function createClientId() {
+  if (window.crypto?.randomUUID) {
+    return window.crypto.randomUUID();
+  }
+
+  // Fallback for older browsers. Supabase/Postgres still validates this as UUID.
+  return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, char => (
+    Number(char) ^ window.crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> Number(char) / 4
+  ).toString(16));
+}
+
 function formatLocalDate(date) {
   // Date inputs should default to the coach's local calendar day.
   // toISOString() can jump to tomorrow for evening sessions.
@@ -351,8 +362,25 @@ function updateAssignmentControls() {
   groupField?.classList.toggle("hidden", targetType !== "group");
   memberField?.classList.toggle("hidden", targetType !== "member");
 
-  if (groupSelect) groupSelect.required = targetType === "group";
-  if (memberSelect) memberSelect.required = targetType === "member";
+  if (groupSelect) {
+    const isGroupTarget = targetType === "group";
+    groupSelect.required = isGroupTarget;
+    groupSelect.disabled = !isGroupTarget;
+
+    if (!isGroupTarget) {
+      groupSelect.value = "";
+    }
+  }
+
+  if (memberSelect) {
+    const isMemberTarget = targetType === "member";
+    memberSelect.required = isMemberTarget;
+    memberSelect.disabled = !isMemberTarget;
+
+    if (!isMemberTarget) {
+      memberSelect.value = "";
+    }
+  }
 }
 
 // ----------------------------
@@ -568,6 +596,7 @@ function getBlockFormData() {
 
 async function createWorkoutWithAssignment(event) {
   event.preventDefault();
+  updateAssignmentControls();
 
   showWorkoutMessage("Creating workout...");
 
@@ -603,46 +632,49 @@ async function createWorkoutWithAssignment(event) {
         return;
     }
 
+    const workoutId = createClientId();
+
     // Save order matters: workout -> blocks -> exercises -> assignment.
     // This preserves the relationships expected by member-dashboard/workout-session.
-    const { data: workout, error: workoutError } = await db
+    // IDs are generated client-side so the flow does not rely on INSERT ... RETURNING,
+    // which is more fragile under strict RLS policies.
+    const { error: workoutError } = await db
       .from("workouts")
       .insert({
+        id: workoutId,
         facility_id: workoutCoachAccess.membership.facility_id,
         title,
         focus: focus || null,
         description: description || null,
         estimated_minutes: minutes ? Number(minutes) : null,
         created_by: workoutCoachAccess.profile.id
-      })
-      .select()
-      .single();
+      });
 
     if (workoutError) throw workoutError;
 
     const blockRows = blocks.map(block => ({
-        workout_id: workout.id,
+        id: createClientId(),
+        workout_id: workoutId,
         name: block.name,
         block_order: block.block_order
     }));
     
-    const { data: createdBlocks, error: blockError } = await db
+    const { error: blockError } = await db
         .from("workout_blocks")
-        .insert(blockRows)
-        .select();
+        .insert(blockRows);
     
     if (blockError) throw blockError;
     
     const exerciseRows = [];
     
     blocks.forEach(originalBlock => {
-        const createdBlock = createdBlocks.find(
+        const createdBlock = blockRows.find(
         block => block.block_order === originalBlock.block_order
         );
     
         originalBlock.exercises.forEach(exercise => {
         const exerciseRow = {
-            workout_id: workout.id,
+            workout_id: workoutId,
             block_id: createdBlock.id,
             name: exercise.name,
             description: exercise.description,
@@ -671,7 +703,7 @@ async function createWorkoutWithAssignment(event) {
     if (exerciseError) throw exerciseError;
 
     const assignmentRow = {
-      workout_id: workout.id,
+      workout_id: workoutId,
       assigned_by: workoutCoachAccess.profile.id,
       target_type: targetType,
       target_facility_id: targetType === "facility"

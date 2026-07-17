@@ -263,6 +263,12 @@ as $$
     app_private.can_manage_workout(check_workout_id)
     or exists (
       select 1
+      from public.workouts w
+      where w.id = check_workout_id
+        and w.created_by = auth.uid()
+    )
+    or exists (
+      select 1
       from public.workout_assignments wa
       where wa.workout_id = check_workout_id
         and app_private.can_view_workout_assignment(wa.id)
@@ -391,8 +397,10 @@ alter table public.facility_invites enable row level security;
 revoke all privileges on all tables in schema public from anon;
 revoke all privileges on all sequences in schema public from anon;
 revoke all privileges on all functions in schema public from anon;
+revoke all privileges on all tables in schema public from authenticated;
+revoke all privileges on all sequences in schema public from authenticated;
 
-grant select on public.facilities to anon;
+grant select on public.facilities, public.groups to anon;
 
 grant select, insert, update, delete on
   public.facilities,
@@ -423,6 +431,7 @@ to authenticated;
 -- before first execution.
 
 drop policy if exists "facilities anon can read rip city signup facility" on public.facilities;
+drop policy if exists "facilities authenticated can read rip city signup facility" on public.facilities;
 drop policy if exists "facilities members can read own facilities" on public.facilities;
 drop policy if exists "facilities admins can update own facility" on public.facilities;
 
@@ -445,11 +454,14 @@ drop policy if exists "member_profiles users can update own profile" on public.m
 drop policy if exists "member_profiles coaches can update facility profiles" on public.member_profiles;
 
 drop policy if exists "groups members can read own facility groups" on public.groups;
+drop policy if exists "groups anon can read rip city signup groups" on public.groups;
+drop policy if exists "groups pending users can read signup facility groups" on public.groups;
 drop policy if exists "groups coaches can insert facility groups" on public.groups;
 drop policy if exists "groups coaches can update facility groups" on public.groups;
 drop policy if exists "groups coaches can delete facility groups" on public.groups;
 
 drop policy if exists "group_members users can read own group memberships" on public.group_members;
+drop policy if exists "group_members users can insert own signup group membership" on public.group_members;
 drop policy if exists "group_members coaches can read facility group memberships" on public.group_members;
 drop policy if exists "group_members coaches can insert facility group memberships" on public.group_members;
 drop policy if exists "group_members coaches can update facility group memberships" on public.group_members;
@@ -537,6 +549,14 @@ create policy "facilities anon can read rip city signup facility"
 on public.facilities
 for select
 to anon
+using (slug = 'rip-city');
+
+-- Newly signed-up users need to read the signup facility before their pending
+-- facility_members row exists.
+create policy "facilities authenticated can read rip city signup facility"
+on public.facilities
+for select
+to authenticated
 using (slug = 'rip-city');
 
 -- Authenticated users can read facilities where they have a membership row.
@@ -754,6 +774,40 @@ with check (app_private.is_facility_coach(app_private.member_profile_facility_id
 -- GROUPS / GROUP MEMBERS
 -- =====================================================
 
+-- Public signup may list only Rip City athlete groups so athletes can choose
+-- the group that will drive group-assigned workout visibility after approval.
+create policy "groups anon can read rip city signup groups"
+on public.groups
+for select
+to anon
+using (
+  member_type in ('athlete', 'both')
+  and exists (
+    select 1
+    from public.facilities f
+    where f.id = groups.facility_id
+      and f.slug = 'rip-city'
+  )
+);
+
+-- Newly signed-up pending users may still need to read their signup facility's
+-- groups during the profile/membership creation flow.
+create policy "groups pending users can read signup facility groups"
+on public.groups
+for select
+to authenticated
+using (
+  member_type in ('athlete', 'both')
+  and exists (
+    select 1
+    from public.facility_members fm
+    where fm.facility_id = groups.facility_id
+      and fm.profile_id = auth.uid()
+      and fm.status = 'pending'
+      and fm.role = 'athlete'
+  )
+);
+
 -- Approved members and coaches can read groups in their own facility.
 create policy "groups members can read own facility groups"
 on public.groups
@@ -789,6 +843,33 @@ on public.group_members
 for select
 to authenticated
 using (app_private.owns_member_profile(member_profile_id));
+
+-- Signup may place an athlete into their own selected athlete group while their
+-- facility membership is still pending. Coaches can adjust groups later.
+create policy "group_members users can insert own signup group membership"
+on public.group_members
+for insert
+to authenticated
+with check (
+  app_private.owns_member_profile(member_profile_id)
+  and exists (
+    select 1
+    from public.member_profiles mp
+    join public.facility_members fm on fm.id = mp.facility_member_id
+    where mp.id = group_members.member_profile_id
+      and fm.profile_id = auth.uid()
+      and fm.status = 'pending'
+      and fm.role = 'athlete'
+      and mp.member_type = 'athlete'
+  )
+  and exists (
+    select 1
+    from public.groups g
+    where g.id = group_members.group_id
+      and g.facility_id = app_private.member_profile_facility_id(group_members.member_profile_id)
+      and g.member_type in ('athlete', 'both')
+  )
+);
 
 -- Coaches/admins can read group memberships in their facility.
 create policy "group_members coaches can read facility group memberships"

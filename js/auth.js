@@ -1,4 +1,6 @@
 const RIP_CITY_SLUG = "rip-city";
+let signupFacility = null;
+let signupGroups = [];
 
 // This file is only for public auth pages:
 // signup.html, login.html, and pending.html.
@@ -16,6 +18,26 @@ function showMessage(elementId, message, isError = false) {
   element.classList.toggle("error-message", isError);
 }
 
+function escapeOptionText(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    "\"": "&quot;",
+    "'": "&#39;"
+  })[char]);
+}
+
+function createClientId() {
+  if (window.crypto?.randomUUID) {
+    return window.crypto.randomUUID();
+  }
+
+  return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, char => (
+    Number(char) ^ window.crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> Number(char) / 4
+  ).toString(16));
+}
+
 async function getRipCityFacility() {
   // Signup currently joins everyone to the seeded Rip City facility.
   // Later this can be invite-code driven for other facilities.
@@ -27,6 +49,35 @@ async function getRipCityFacility() {
 
   if (error) throw error;
   return data;
+}
+
+async function loadSignupGroups(facilityId) {
+  const { data, error } = await db
+    .from("groups")
+    .select("id, name, group_type, member_type")
+    .eq("facility_id", facilityId)
+    .in("member_type", ["athlete", "both"])
+    .order("name", { ascending: true });
+
+  if (error) throw error;
+  return data || [];
+}
+
+function renderSignupGroups(groups) {
+  const select = document.getElementById("signup-training-group");
+  if (!select) return;
+
+  if (!groups.length) {
+    select.innerHTML = `<option value="">No athlete groups available</option>`;
+    return;
+  }
+
+  select.innerHTML = `
+    <option value="">Select training group</option>
+    ${groups.map(group => `
+      <option value="${group.id}">${escapeOptionText(group.name)}</option>
+    `).join("")}
+  `;
 }
 
 async function getCurrentUserProfile(userId) {
@@ -62,6 +113,7 @@ async function handleSignup(event) {
   const memberType = document.querySelector("input[name='member-type']:checked").value;
 
   const ageGroup = document.getElementById("signup-age-group").value;
+  const trainingGroupId = document.getElementById("signup-training-group")?.value || "";
   const sport = document.getElementById("signup-sport").value.trim();
   const position = document.getElementById("signup-position").value.trim();
   const school = document.getElementById("signup-school").value.trim();
@@ -69,7 +121,12 @@ async function handleSignup(event) {
   const bodyWeight = document.getElementById("signup-body-weight").value;
 
   try {
-    const facility = await getRipCityFacility();
+    const facility = signupFacility || await getRipCityFacility();
+
+    if (memberType === "athlete" && !trainingGroupId) {
+      showMessage("signup-message", "Choose a training group before creating your account.", true);
+      return;
+    }
 
     const { data: authData, error: authError } = await db.auth.signUp({
       email,
@@ -121,10 +178,13 @@ async function handleSignup(event) {
 
     if (memberError) throw memberError;
 
+    const memberProfileId = createClientId();
+
     // member_profiles stores program-specific member details.
     const { error: memberProfileError } = await db
       .from("member_profiles")
       .insert({
+        id: memberProfileId,
         facility_member_id: facilityMember.id,
         member_type: memberType,
         sport: memberType === "athlete" ? sport || null : null,
@@ -136,6 +196,17 @@ async function handleSignup(event) {
       });
 
     if (memberProfileError) throw memberProfileError;
+
+    if (memberType === "athlete") {
+      const { error: groupMemberError } = await db
+        .from("group_members")
+        .insert({
+          group_id: trainingGroupId,
+          member_profile_id: memberProfileId
+        });
+
+      if (groupMemberError) throw groupMemberError;
+    }
 
     window.location.href = "pending.html";
   } catch (error) {
@@ -194,31 +265,57 @@ async function handlePendingLogout() {
   window.location.href = "login.html";
 }
 
-function setupMemberTypeToggle() {
-  const memberTypeInputs = document.querySelectorAll("input[name='member-type']");
+function updateSignupMemberTypeFields() {
+  const selected = document.querySelector("input[name='member-type']:checked").value;
   const athleteFields = document.querySelectorAll(".athlete-only");
+  const trainingGroup = document.getElementById("signup-training-group");
 
-  function updateFields() {
-    const selected = document.querySelector("input[name='member-type']:checked").value;
-
-    athleteFields.forEach(field => {
-      field.classList.toggle("hidden", selected !== "athlete");
-    });
-  }
-
-  memberTypeInputs.forEach(input => {
-    input.addEventListener("change", updateFields);
+  athleteFields.forEach(field => {
+    field.classList.toggle("hidden", selected !== "athlete");
   });
 
-  updateFields();
+  if (trainingGroup) {
+    trainingGroup.required = selected === "athlete";
+    trainingGroup.disabled = selected !== "athlete";
+
+    if (selected !== "athlete") {
+      trainingGroup.value = "";
+    }
+  }
+}
+
+function setupMemberTypeToggle() {
+  const memberTypeInputs = document.querySelectorAll("input[name='member-type']");
+
+  memberTypeInputs.forEach(input => {
+    input.addEventListener("change", updateSignupMemberTypeFields);
+  });
+
+  updateSignupMemberTypeFields();
+}
+
+async function setupSignupPage() {
+  setupMemberTypeToggle();
+
+  try {
+    signupFacility = await getRipCityFacility();
+    signupGroups = await loadSignupGroups(signupFacility.id);
+    renderSignupGroups(signupGroups);
+    updateSignupMemberTypeFields();
+  } catch (error) {
+    console.error(error);
+    renderSignupGroups([]);
+    showMessage("signup-message", "Could not load signup groups. Try refreshing the page.", true);
+  }
+
+  document.getElementById("signup-form").addEventListener("submit", handleSignup);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
   const currentPage = getCurrentPage();
 
   if (currentPage === "signup.html") {
-    setupMemberTypeToggle();
-    document.getElementById("signup-form").addEventListener("submit", handleSignup);
+    setupSignupPage();
   }
 
   if (currentPage === "login.html") {
