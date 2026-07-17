@@ -43,34 +43,32 @@
 
         <div class="auth-grid">
           <div>
-            <label for="signup-full-name">Full Name</label>
+            <label for="signup-full-name">Full Name <span class="required-label">Required</span></label>
             <input id="signup-full-name" type="text" required />
           </div>
 
           <div>
-            <label for="signup-email">Email</label>
+            <label for="signup-email">Email <span class="required-label">Required</span></label>
             <input id="signup-email" type="email" required />
           </div>
 
           <div>
-            <label for="signup-password">Password</label>
+            <label for="signup-username">Username <span class="required-label">Required</span></label>
+            <input id="signup-username" type="text" autocomplete="username" placeholder="ex: dparis2" required />
+          </div>
+
+          <div>
+            <label for="signup-password">Password <span class="required-label">Required</span></label>
             <input id="signup-password" type="password" minlength="6" required />
           </div>
 
           <div>
-            <label for="signup-age-group">Age Group</label>
-            <select id="signup-age-group">
-              <option value="">Select one</option>
-              <option value="12-13">12-13</option>
-              <option value="14-15">14-15</option>
-              <option value="16-18">16-18</option>
-              <option value="college">College</option>
-              <option value="adult">Adult</option>
-            </select>
+            <label for="signup-confirm-password">Re-enter Password <span class="required-label">Required</span></label>
+            <input id="signup-confirm-password" type="password" minlength="6" required />
           </div>
 
           <div class="athlete-only">
-            <label for="signup-training-group">Training Group</label>
+            <label for="signup-training-group">Training Group <span class="required-label">Required</span></label>
             <select id="signup-training-group">
               <option value="">Loading groups...</option>
             </select>
@@ -78,7 +76,19 @@
 
           <div class="athlete-only">
             <label for="signup-sport">Sport</label>
-            <input id="signup-sport" type="text" placeholder="Example: Baseball" />
+            <select id="signup-sport">
+              <option value="">Select sport</option>
+              <option value="Baseball">Baseball</option>
+              <option value="Softball">Softball</option>
+              <option value="Basketball">Basketball</option>
+              <option value="Football">Football</option>
+              <option value="Soccer">Soccer</option>
+              <option value="Volleyball">Volleyball</option>
+              <option value="Lacrosse">Lacrosse</option>
+              <option value="Track & Field">Track & Field</option>
+              <option value="General Fitness">General Fitness</option>
+              <option value="Other">Other</option>
+            </select>
           </div>
 
           <div class="athlete-only">

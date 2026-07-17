@@ -263,6 +263,16 @@ function renderRosterMembers() {
     input.addEventListener("change", () => markMemberGroupChanges(input.dataset.memberProfileId));
   });
 
+  document.querySelectorAll("[data-toggle-group-editor]").forEach(button => {
+    button.addEventListener("click", () => {
+      const card = document.querySelector(`[data-roster-member-card="${button.dataset.memberProfileId}"]`);
+      if (!card) return;
+
+      card.classList.toggle("is-editing-groups");
+      button.textContent = card.classList.contains("is-editing-groups") ? "Hide Groups" : "Change Groups";
+    });
+  });
+
   document.querySelectorAll("[data-save-member-groups]").forEach(button => {
     button.addEventListener("click", () => saveMemberGroupChanges(button.dataset.memberProfileId));
   });
@@ -317,6 +327,14 @@ function renderRosterMemberCard(member) {
             <strong class="roster-current-group-tag">${window.RipCityUI.text(group.name)}</strong>
           `).join("") : `<strong class="roster-current-group-tag muted">No groups</strong>`}
         </div>
+        <button
+          class="outline-btn small-inline-btn roster-change-groups-btn"
+          type="button"
+          data-toggle-group-editor
+          data-member-profile-id="${window.RipCityUI.attr(member.memberProfileId)}"
+        >
+          Change Groups
+        </button>
       </div>
 
       <div class="roster-group-editor">

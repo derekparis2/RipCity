@@ -271,7 +271,8 @@ async function updateScores() {
   document.getElementById("today-score").textContent = todayScore;
   document.getElementById("weekly-score-h2k").textContent = weeklyScore;
   document.getElementById("score-box-weekly").textContent = weeklyScore;
-  document.getElementById("weekly-percent-h2k").textContent = weeklyPercent;
+  document.getElementById("weekly-percent-h2k").textContent = weeklyScore;
+  document.getElementById("member-stat-three-suffix").textContent = `/${weeklyMax}`;
   document.getElementById("h2k-weekly-bar").style.width = `${weeklyPercent}%`;
 
   const status = document.getElementById("h2k-status");
@@ -314,9 +315,10 @@ function toggleH2KModuleVisibility() {
     document.getElementById("member-stat-two-label").textContent = "Completed";
     document.getElementById("member-stat-two-detail").textContent = "Finished assigned workouts";
     document.getElementById("member-stat-three-label").textContent = "Training Progress";
-    document.getElementById("member-stat-three-detail").textContent = "Average logged set completion";
+    document.getElementById("member-stat-three-detail").textContent = "Logged sets across assigned workouts";
     document.getElementById("member-stat-one-suffix").textContent = "";
     document.getElementById("member-stat-two-suffix").textContent = "";
+    document.getElementById("member-stat-three-suffix").textContent = "";
     document.getElementById("h2k-status").textContent = "Training";
     document.getElementById("h2k-status-detail").textContent = "Open assigned workouts and track progress";
 
@@ -335,14 +337,13 @@ function updateSharedWorkoutStats() {
     return window.RipCityWorkoutData.summarizeSetLogs(logs, assignment.workout);
   });
   const completedCount = summaries.filter(summary => summary.isComplete).length;
-  const averagePercent = summaries.length
-    ? Math.round(summaries.reduce((total, summary) => total + summary.completionPercent, 0) / summaries.length)
-    : 0;
+  const completedSets = summaries.reduce((total, summary) => total + summary.completedSets, 0);
+  const totalSets = summaries.reduce((total, summary) => total + summary.totalSets, 0);
   const activeCount = summaries.filter(summary => summary.completedSets > 0 && !summary.isComplete).length;
 
   document.getElementById("today-score").textContent = todayWorkoutAssignments.length;
   document.getElementById("weekly-score-h2k").textContent = completedCount;
-  document.getElementById("weekly-percent-h2k").textContent = averagePercent;
+  document.getElementById("weekly-percent-h2k").textContent = `${completedSets}/${totalSets}`;
 
   const status = document.getElementById("h2k-status");
   const detail = document.getElementById("h2k-status-detail");

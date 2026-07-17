@@ -6,6 +6,7 @@
 
 let profileAccess = null;
 let currentMemberProfile = null;
+let profileSupportsGender = false;
 
 // ----------------------------
 // Page messages / small helpers
@@ -48,6 +49,10 @@ function setInputValue(id, value) {
   const element = document.getElementById(id);
   if (!element) return;
 
+  if (element.tagName === "SELECT" && value && !Array.from(element.options).some(option => option.value === String(value))) {
+    element.add(new Option(value, value));
+  }
+
   element.value = value || "";
 }
 
@@ -65,7 +70,10 @@ function updateProfilePreview() {
   const username = getInputValue("profile-username") || "username";
   const bio = getInputValue("profile-bio") || "Your bio will show here.";
   const birthday = getInputValue("profile-birthday") || "Not added";
-  const sport = getInputValue("profile-sport") || getInputValue("profile-training-focus") || "Not added";
+  const isAthlete = currentMemberProfile?.member_type === "athlete";
+  const sport = isAthlete
+    ? getInputValue("profile-sport") || getInputValue("profile-training-focus") || "Not added"
+    : getInputValue("profile-training-focus") || "Not added";
 
   const program =
     currentMemberProfile?.member_type === "h2k"
@@ -83,6 +91,25 @@ function updateProfilePreview() {
   avatar.textContent = fullName.charAt(0).toUpperCase();
 }
 
+function updateProfileFieldVisibility() {
+  const isAthlete = currentMemberProfile?.member_type === "athlete";
+  document.querySelectorAll(".athlete-profile-fields").forEach(element => {
+    element.classList.toggle("hidden", !isAthlete);
+  });
+}
+
+function updateGenderFieldState() {
+  const gender = document.getElementById("profile-gender");
+  const help = document.getElementById("profile-gender-help");
+
+  if (!gender || !help) return;
+
+  gender.disabled = !profileSupportsGender;
+  help.textContent = profileSupportsGender
+    ? ""
+    : "Run the profile gender migration before this field can save.";
+}
+
 function fillProfileForm() {
   // Populate the edit form from both profile tables.
   const profile = profileAccess.profile;
@@ -94,6 +121,8 @@ function fillProfileForm() {
   setInputValue("profile-birthday", profile.birthday);
   setInputValue("profile-picture-url", profile.profile_picture_url);
 
+  profileSupportsGender = Object.prototype.hasOwnProperty.call(member, "gender");
+  setInputValue("profile-gender", member.gender);
   setInputValue("profile-sport", member.sport);
   setInputValue("profile-position", member.position);
   setInputValue("profile-school", member.school);
@@ -103,6 +132,8 @@ function fillProfileForm() {
   setInputValue("profile-training-focus", member.training_focus);
   setInputValue("profile-favorite-lift", member.favorite_lift);
 
+  updateProfileFieldVisibility();
+  updateGenderFieldState();
   updateProfilePreview();
 }
 
@@ -135,21 +166,27 @@ async function saveProfile(event) {
 
     const gradYear = getInputValue("profile-grad-year");
     const bodyWeight = getInputValue("profile-body-weight");
+    const isAthlete = currentMemberProfile.member_type === "athlete";
+    const memberProfileUpdate = {
+      sport: isAthlete ? getInputValue("profile-sport") || null : null,
+      position: isAthlete ? getInputValue("profile-position") || null : null,
+      school: getInputValue("profile-school") || null,
+      graduation_year: gradYear ? Number(gradYear) : null,
+      height: getInputValue("profile-height") || null,
+      body_weight: bodyWeight ? Number(bodyWeight) : null,
+      training_focus: getInputValue("profile-training-focus") || null,
+      favorite_lift: getInputValue("profile-favorite-lift") || null,
+      updated_at: new Date().toISOString()
+    };
+
+    if (profileSupportsGender) {
+      memberProfileUpdate.gender = getInputValue("profile-gender") || null;
+    }
 
     // Save training/program fields second.
     const { error: memberError } = await db
       .from("member_profiles")
-      .update({
-        sport: getInputValue("profile-sport") || null,
-        position: getInputValue("profile-position") || null,
-        school: getInputValue("profile-school") || null,
-        graduation_year: gradYear ? Number(gradYear) : null,
-        height: getInputValue("profile-height") || null,
-        body_weight: bodyWeight ? Number(bodyWeight) : null,
-        training_focus: getInputValue("profile-training-focus") || null,
-        favorite_lift: getInputValue("profile-favorite-lift") || null,
-        updated_at: new Date().toISOString()
-      })
+      .update(memberProfileUpdate)
       .eq("id", currentMemberProfile.id);
 
     if (memberError) throw memberError;
@@ -196,7 +233,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("profile-logout-btn").addEventListener("click", logoutProfile);
 
   // Keep the right-side preview in sync with form edits.
-  document.querySelectorAll("#profile-form input, #profile-form textarea").forEach(input => {
+  document.querySelectorAll("#profile-form input, #profile-form textarea, #profile-form select").forEach(input => {
     input.addEventListener("input", updateProfilePreview);
   });
 });

@@ -102,6 +102,31 @@ async function getCurrentUserProfile(userId) {
   return data;
 }
 
+function normalizeUsername(value) {
+  return value.trim().replace(/^@/, "").toLowerCase();
+}
+
+function isEmailIdentifier(value) {
+  return value.includes("@");
+}
+
+async function resolveLoginEmail(identifier) {
+  const normalizedIdentifier = identifier.trim();
+
+  if (isEmailIdentifier(normalizedIdentifier)) {
+    return normalizedIdentifier;
+  }
+
+  const { data, error } = await db.rpc("resolve_login_identifier", {
+    login_identifier: normalizeUsername(normalizedIdentifier)
+  });
+
+  if (error) throw error;
+  if (!data) throw new Error("No account found for that username.");
+
+  return data;
+}
+
 async function handleSignup(event) {
   event.preventDefault();
 
@@ -109,10 +134,11 @@ async function handleSignup(event) {
 
   const fullName = document.getElementById("signup-full-name").value.trim();
   const email = document.getElementById("signup-email").value.trim();
+  const username = normalizeUsername(document.getElementById("signup-username").value);
   const password = document.getElementById("signup-password").value;
+  const confirmPassword = document.getElementById("signup-confirm-password").value;
   const memberType = document.querySelector("input[name='member-type']:checked").value;
 
-  const ageGroup = document.getElementById("signup-age-group").value;
   const trainingGroupId = document.getElementById("signup-training-group")?.value || "";
   const sport = document.getElementById("signup-sport").value.trim();
   const position = document.getElementById("signup-position").value.trim();
@@ -122,6 +148,26 @@ async function handleSignup(event) {
 
   try {
     const facility = signupFacility || await getRipCityFacility();
+
+    if (password !== confirmPassword) {
+      showMessage("signup-message", "Passwords must match.", true);
+      return;
+    }
+
+    if (!username) {
+      showMessage("signup-message", "Username is required.", true);
+      return;
+    }
+
+    const existingUsernameEmail = await resolveLoginEmail(username).catch(error => {
+      if (/No account found/i.test(error.message || "")) return null;
+      throw error;
+    });
+
+    if (existingUsernameEmail) {
+      showMessage("signup-message", "That username is already taken.", true);
+      return;
+    }
 
     if (memberType === "athlete" && !trainingGroupId) {
       showMessage("signup-message", "Choose a training group before creating your account.", true);
@@ -157,6 +203,7 @@ async function handleSignup(event) {
         id: user.id,
         email,
         full_name: fullName,
+        username,
         global_role: "member"
       });
 
@@ -188,7 +235,7 @@ async function handleSignup(event) {
         facility_member_id: facilityMember.id,
         member_type: memberType,
         sport: memberType === "athlete" ? sport || null : null,
-        age_group: ageGroup || null,
+        age_group: null,
         position: memberType === "athlete" ? position || null : null,
         school: memberType === "athlete" ? school || null : null,
         graduation_year: graduationYear ? Number(graduationYear) : null,
@@ -220,10 +267,12 @@ async function handleLogin(event) {
 
   showMessage("login-message", "Logging in...");
 
-  const email = document.getElementById("login-email").value.trim();
+  const identifier = document.getElementById("login-identifier").value.trim();
   const password = document.getElementById("login-password").value;
 
   try {
+    const email = await resolveLoginEmail(identifier);
+
     const { data, error } = await db.auth.signInWithPassword({
       email,
       password

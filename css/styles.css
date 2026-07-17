@@ -351,11 +351,19 @@ nav {
 }
 
 .stat-card strong {
-  display: block;
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
   margin: 12px 0 8px;
   font-family: "Barlow Condensed", sans-serif;
   font-size: 38px;
   letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+.stat-card strong span {
+  display: inline;
+  color: inherit;
 }
 
 .dashboard-grid {
@@ -1018,6 +1026,16 @@ td {
   font-weight: 700;
 }
 
+.required-label {
+  display: inline-flex;
+  margin-left: 6px;
+  color: var(--text);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
 .auth-form input,
 .auth-form select {
   width: 100%;
@@ -1068,34 +1086,55 @@ td {
   gap: 12px;
 }
 
-.member-type-card {
-  border: 1px solid var(--border);
-  background: var(--surface-2);
-  padding: 16px;
-  border-radius: 14px;
+.auth-form .member-type-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  align-items: center;
+  border: 2px solid var(--border);
+  background:
+    linear-gradient(180deg, rgba(32, 33, 36, 0.98), rgba(20, 20, 22, 0.98));
+  min-height: 116px;
+  padding: 18px 20px;
+  border-radius: 16px;
   cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease, box-shadow 160ms ease;
 }
 
-.member-type-card input {
-  width: auto;
-  margin-bottom: 12px;
+.auth-form .member-type-card input {
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  accent-color: var(--text);
 }
 
-.member-type-card span {
+.auth-form .member-type-card span {
   display: block;
   font-weight: 800;
-  font-size: 18px;
+  font-size: 24px;
   margin-bottom: 6px;
 }
 
-.member-type-card small {
+.auth-form .member-type-card small {
   display: block;
   color: var(--muted);
   line-height: 1.4;
 }
 
-.member-type-card:has(input:checked) {
+.auth-form .member-type-card:has(input:checked) {
   border-color: var(--text);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.04)),
+    var(--surface-2);
+  box-shadow:
+    0 16px 42px rgba(0, 0, 0, 0.28),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+.auth-form .member-type-card:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.4);
 }
 
 @media (max-width: 700px) {
@@ -1240,6 +1279,27 @@ td {
 .outline-link:hover {
   border-color: var(--text);
   background: var(--accent-soft);
+}
+
+.h2k-header-actions .outline-link,
+.h2k-header-actions .outline-btn,
+.approval-actions-bottom .outline-link,
+.approval-actions-bottom .outline-btn {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.035));
+  border-color: rgba(255, 255, 255, 0.32);
+  box-shadow:
+    0 10px 28px rgba(0, 0, 0, 0.22),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.055);
+}
+
+.h2k-header-actions .outline-link:hover,
+.h2k-header-actions .outline-btn:hover,
+.approval-actions-bottom .outline-link:hover,
+.approval-actions-bottom .outline-btn:hover {
+  background: var(--text);
+  border-color: var(--text);
+  color: var(--bg);
 }
 
 @media (max-width: 700px) {
@@ -1660,12 +1720,22 @@ td {
     font-weight: 700;
   }
 
+  .roster-change-groups-btn {
+    width: fit-content;
+    margin-top: 4px;
+  }
+
   .roster-group-editor {
     grid-column: 1 / -1;
-    display: grid;
+    display: none;
     gap: 12px;
     border-top: 1px solid rgba(255, 255, 255, 0.09);
     padding-top: 14px;
+  }
+
+  .roster-member-card.is-editing-groups .roster-group-editor,
+  .roster-member-card.has-unsaved-changes .roster-group-editor {
+    display: grid;
   }
 
   .roster-editor-heading {
@@ -1837,6 +1907,12 @@ td {
   gap: 7px;
   color: var(--muted);
   font-weight: 600;
+}
+
+.field-help {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
 }
 
 .profile-form input,
@@ -2071,6 +2147,53 @@ td {
     color: var(--muted);
     line-height: 1.45;
   }
+
+  .recent-reassign-card {
+    display: grid;
+    gap: 12px;
+    margin: 14px 0;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.035);
+    border-radius: 12px;
+    padding: 14px;
+  }
+
+  .recent-reassign-card strong,
+  .recent-reassign-card span {
+    display: block;
+  }
+
+  .recent-reassign-card span {
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  .recent-reassign-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .recent-reassign-grid label {
+    display: grid;
+    gap: 7px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .recent-reassign-grid input,
+  .recent-reassign-grid select {
+    width: 100%;
+    min-height: 46px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    border-radius: 10px;
+    padding: 10px 12px;
+  }
   
   .workout-meta-row {
     display: flex;
@@ -2108,6 +2231,10 @@ td {
     .exercise-card-heading {
       flex-direction: column;
       align-items: stretch;
+    }
+
+    .recent-reassign-grid {
+      grid-template-columns: 1fr;
     }
   }
 
@@ -2568,6 +2695,81 @@ td {
   margin-top: 18px;
 }
 
+.session-step-shell {
+  display: grid;
+  gap: 18px;
+}
+
+.session-step-topbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.session-step-topbar h3 {
+  margin: 6px 0 0;
+  font-size: 30px;
+}
+
+.set-log-actions button:disabled,
+.session-step-dot:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.session-step-progress {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.session-step-dot {
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--muted);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.session-step-dot.active {
+  border-color: var(--text);
+  background: var(--text);
+  color: var(--bg);
+}
+
+.session-step-dot.complete:not(.active) {
+  border-color: rgba(126, 231, 135, 0.55);
+  color: var(--success);
+  background: rgba(126, 231, 135, 0.08);
+}
+
+.session-step-list {
+  display: grid;
+}
+
+.session-step-card {
+  display: none;
+  border: 1px solid var(--border);
+  background:
+    linear-gradient(180deg, rgba(23, 23, 25, 0.96), rgba(18, 18, 20, 0.98));
+  border-radius: 18px;
+  padding: 20px;
+}
+
+.session-step-card.active {
+  display: grid;
+  gap: 18px;
+}
+
 .session-block-card {
   border: 1px solid var(--border);
   background:
@@ -2858,6 +3060,19 @@ td {
   white-space: nowrap;
 }
 
+.set-log-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.set-log-actions .primary-btn,
+.set-log-actions .outline-btn {
+  min-height: 46px;
+}
+
 .session-header-actions {
   display: flex;
   gap: 10px;
@@ -2896,6 +3111,7 @@ td {
   .workout-session-hero,
   .workout-session-panel,
   .session-block-card,
+  .session-step-card,
   .session-round-card,
   .session-exercise-card {
     border-radius: 14px;
@@ -2912,6 +3128,7 @@ td {
 
   .workout-session-panel,
   .session-block-card,
+  .session-step-card,
   .session-round-card,
   .session-exercise-card {
     padding: 14px;
@@ -2965,8 +3182,20 @@ td {
   }
 
   .session-header-actions button,
+  .set-log-actions,
+  .set-log-actions button,
   .save-set-btn {
     width: 100%;
+  }
+
+  .session-step-topbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .session-step-progress {
+    max-height: 92px;
+    overflow: auto;
   }
 
   .mobile-session-save-bar {
@@ -3045,6 +3274,7 @@ body {
 .recent-workout-card,
 .workout-block-card,
 .session-block-card,
+.session-step-card,
 .session-round-card,
 .session-exercise-card,
 .set-log-row {

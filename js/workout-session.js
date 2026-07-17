@@ -39,6 +39,20 @@ function buildLogRowFromSetRow(row) {
   return logRow;
 }
 
+async function saveSetRow(row) {
+  const logRow = buildLogRowFromSetRow(row);
+
+  const { error } = await db
+    .from("exercise_set_logs")
+    .upsert(logRow, {
+      onConflict: "workout_assignment_id,member_profile_id,exercise_id,set_number"
+    });
+
+  if (error) throw error;
+
+  existingSetLogs = await loadExistingSetLogs(workoutAssignment.id);
+}
+
 async function saveSetLog(exerciseId, setNumber) {
   const row = document.querySelector(
     `.set-log-row[data-exercise-id="${exerciseId}"][data-set-number="${setNumber}"]`
@@ -52,19 +66,31 @@ async function saveSetLog(exerciseId, setNumber) {
   showWorkoutSessionMessage("Saving set...");
 
   try {
-    const logRow = buildLogRowFromSetRow(row);
-
-    const { error } = await db
-      .from("exercise_set_logs")
-      .upsert(logRow, {
-        onConflict: "workout_assignment_id,member_profile_id,exercise_id,set_number"
-      });
-
-    if (error) throw error;
-
-    existingSetLogs = await loadExistingSetLogs(workoutAssignment.id);
+    await saveSetRow(row);
     renderWorkoutSession();
 
+    showWorkoutSessionMessage("Set saved.");
+  } catch (error) {
+    console.error(error);
+    showWorkoutSessionMessage(error.message || "Could not save set.", true);
+  }
+}
+
+async function saveCurrentSetAndGoToStep(stepIndex) {
+  const activeStep = document.querySelector(".session-step-card.active");
+  const row = activeStep?.querySelector(".set-log-row");
+
+  if (!row) {
+    showWorkoutSessionMessage("Could not find current set row.", true);
+    return;
+  }
+
+  showWorkoutSessionMessage("Saving set...");
+
+  try {
+    await saveSetRow(row);
+    currentSessionStepIndex = stepIndex;
+    renderWorkoutSession();
     showWorkoutSessionMessage("Set saved.");
   } catch (error) {
     console.error(error);

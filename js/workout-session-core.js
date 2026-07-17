@@ -8,6 +8,7 @@ let workoutSessionAccess = null;
 let workoutMemberProfile = null;
 let workoutAssignment = null;
 let existingSetLogs = [];
+let currentSessionStepIndex = 0;
 
 function showWorkoutSessionMessage(message, isError = false) {
   const element = document.getElementById("workout-session-message");
