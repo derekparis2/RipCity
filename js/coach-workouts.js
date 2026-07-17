@@ -7,6 +7,7 @@
 let workoutCoachAccess = null;
 let availableGroups = [];
 let availableMembers = [];
+let availableGroupMemberships = [];
 let exerciseTemplates = [];
 let exerciseLibraryAvailable = false;
 
@@ -139,39 +140,132 @@ async function loadAssignableMembers(facilityId) {
   }).filter(member => member.memberProfileId);
 }
 
+async function loadAssignableGroupMemberships(memberProfileIds) {
+  if (!memberProfileIds.length) return [];
+
+  const { data, error } = await db
+    .from("group_members")
+    .select("group_id, member_profile_id")
+    .in("member_profile_id", memberProfileIds);
+
+  if (error) throw error;
+
+  return data || [];
+}
+
+function getAudienceFilter() {
+  return getInputValue("workout-audience-filter") || "all";
+}
+
+function groupMatchesAudience(group, audience) {
+  return audience === "all" ||
+    group.member_type === "both" ||
+    group.member_type === audience;
+}
+
+function memberMatchesAudience(member, audience) {
+  return audience === "all" || member.memberType === audience;
+}
+
+function getFilteredGroups() {
+  const audience = getAudienceFilter();
+  return availableGroups.filter(group => groupMatchesAudience(group, audience));
+}
+
+function getFilteredMembers() {
+  const audience = getAudienceFilter();
+  return availableMembers.filter(member => memberMatchesAudience(member, audience));
+}
+
+function getMemberGroupNames(memberProfileId) {
+  const groupIds = new Set(
+    availableGroupMemberships
+      .filter(row => row.member_profile_id === memberProfileId)
+      .map(row => row.group_id)
+  );
+
+  return availableGroups
+    .filter(group => groupIds.has(group.id))
+    .map(group => group.name);
+}
+
+function updateAssignmentContext() {
+  const element = document.getElementById("assignment-context");
+  if (!element) return;
+
+  const targetType = getInputValue("workout-target-type") || "group";
+  const groups = getFilteredGroups();
+  const members = getFilteredMembers();
+  const audience = getAudienceFilter();
+
+  const audienceLabel = audience === "all"
+    ? "all approved members"
+    : audience === "h2k"
+      ? "H2K members"
+      : "athletes";
+
+  if (targetType === "facility") {
+    element.textContent = `Facility assignment will reach ${members.length} ${audienceLabel}.`;
+    return;
+  }
+
+  if (targetType === "member") {
+    element.textContent = `${members.length} ${audienceLabel} available for individual assignment.`;
+    return;
+  }
+
+  element.textContent = `${groups.length} compatible groups available for ${audienceLabel}.`;
+}
+
 function renderGroupOptions() {
   const select = document.getElementById("workout-group");
+  const groups = getFilteredGroups();
 
-  if (!availableGroups.length) {
-    select.innerHTML = `<option value="">No groups found</option>`;
+  if (!groups.length) {
+    select.innerHTML = `<option value="">No compatible groups found</option>`;
+    updateAssignmentContext();
     return;
   }
 
   select.innerHTML = `
     <option value="">Select group...</option>
-    ${availableGroups.map(group => `
-      <option value="${window.RipCityUI.attr(group.id)}">${window.RipCityUI.text(group.name)}</option>
+    ${groups.map(group => `
+      <option value="${window.RipCityUI.attr(group.id)}">
+        ${window.RipCityUI.text(group.name)} · ${window.RipCityUI.text(group.member_type)}
+      </option>
     `).join("")}
   `;
+
+  updateAssignmentContext();
 }
 
 function renderMemberOptions() {
   const select = document.getElementById("workout-member");
   if (!select) return;
 
-  if (!availableMembers.length) {
-    select.innerHTML = `<option value="">No approved members found</option>`;
+  const members = getFilteredMembers();
+
+  if (!members.length) {
+    select.innerHTML = `<option value="">No compatible approved members found</option>`;
+    updateAssignmentContext();
     return;
   }
 
   select.innerHTML = `
     <option value="">Select member...</option>
-    ${availableMembers.map(member => `
+    ${members.map(member => {
+      const groupNames = getMemberGroupNames(member.memberProfileId);
+      const groupLabel = groupNames.length ? ` · ${groupNames.join(", ")}` : " · No group";
+
+      return `
       <option value="${window.RipCityUI.attr(member.memberProfileId)}">
-        ${window.RipCityUI.text(member.name)} · ${window.RipCityUI.text(member.memberType)}${member.sport ? ` · ${window.RipCityUI.text(member.sport)}` : ""}
+        ${window.RipCityUI.text(member.name)} · ${window.RipCityUI.text(member.memberType)}${member.sport ? ` · ${window.RipCityUI.text(member.sport)}` : ""}${window.RipCityUI.text(groupLabel)}
       </option>
-    `).join("")}
+    `;
+    }).join("")}
   `;
+
+  updateAssignmentContext();
 }
 
 function showExerciseLibraryMessage(message, isError = false) {
@@ -381,6 +475,14 @@ function updateAssignmentControls() {
       memberSelect.value = "";
     }
   }
+
+  updateAssignmentContext();
+}
+
+function refreshAssignmentOptions() {
+  renderGroupOptions();
+  renderMemberOptions();
+  updateAssignmentControls();
 }
 
 // ----------------------------
@@ -879,12 +981,13 @@ async function initCoachWorkoutsPage() {
 
     availableGroups = await loadGroups(workoutCoachAccess.membership.facility_id);
     availableMembers = await loadAssignableMembers(workoutCoachAccess.membership.facility_id);
-    renderGroupOptions();
-    renderMemberOptions();
+    availableGroupMemberships = await loadAssignableGroupMemberships(
+      availableMembers.map(member => member.memberProfileId)
+    );
+    refreshAssignmentOptions();
     await refreshExerciseLibrary();
 
     setTodayAsDefaultDate();
-    updateAssignmentControls();
     addBlockCard();
     await loadRecentWorkouts();
 
@@ -900,6 +1003,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("add-block-btn").addEventListener("click", addBlockCard);
   document.getElementById("exercise-library-form").addEventListener("submit", saveExerciseTemplate);
+  document.getElementById("workout-audience-filter").addEventListener("change", refreshAssignmentOptions);
   document.getElementById("workout-target-type").addEventListener("change", updateAssignmentControls);
   document.getElementById("workout-form").addEventListener("submit", createWorkoutWithAssignment);
   document.getElementById("refresh-workouts-btn").addEventListener("click", loadRecentWorkouts);

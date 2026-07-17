@@ -77,6 +77,21 @@
             <textarea id="workout-description" rows="3" placeholder="Short overview of the workout..."></textarea>
           </label>
 
+          <div class="assignment-filter-card">
+            <label>
+              Workout Audience
+              <select id="workout-audience-filter">
+                <option value="all">All members</option>
+                <option value="athlete">Athletes</option>
+                <option value="h2k">H2K</option>
+              </select>
+            </label>
+
+            <div id="assignment-context" class="assignment-context">
+              Loading assignment options...
+            </div>
+          </div>
+
           <div class="form-row">
             <label>
               Assign To
