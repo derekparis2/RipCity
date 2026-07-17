@@ -7,6 +7,8 @@
 let coachAccess = null;
 let coachHabits = [];
 let coachWorkoutReviewRows = [];
+let coachReviewMembers = [];
+let coachReviewGroups = [];
 
 const COACH_WORKOUT_ASSIGNMENT_SELECT = `
   id,
@@ -342,6 +344,18 @@ async function loadFacilityGroupMemberships(memberProfileIds) {
   return data || [];
 }
 
+async function loadCoachReviewGroups(facilityId) {
+  const { data, error } = await db
+    .from("groups")
+    .select("id, name, member_type, group_type")
+    .eq("facility_id", facilityId)
+    .order("name", { ascending: true });
+
+  if (error) throw error;
+
+  return data || [];
+}
+
 async function loadRecentWorkoutAssignmentsForCoach(facilityId) {
   const { data, error } = await db
     .from("workout_assignments")
@@ -433,6 +447,7 @@ async function refreshCoachWorkoutReview() {
   try {
     const facilityId = coachAccess.membership.facility_id;
     const members = await loadApprovedFacilityMembers(facilityId);
+    const groups = await loadCoachReviewGroups(facilityId);
     const groupMemberships = await loadFacilityGroupMemberships(
       members.map(member => member.memberProfileId)
     );
@@ -441,6 +456,8 @@ async function refreshCoachWorkoutReview() {
       assignments.map(assignment => assignment.id)
     );
 
+    coachReviewMembers = members;
+    coachReviewGroups = groups;
     coachWorkoutReviewRows = buildCoachWorkoutReviewRows(
       assignments,
       members,
@@ -514,6 +531,11 @@ function renderCoachWorkoutMemberRow(member, rowIndex) {
     : member.summary.completedSets > 0
       ? "In Progress"
       : "Not Started";
+  const statusClass = member.summary.isComplete
+    ? "is-complete"
+    : member.summary.completedSets > 0
+      ? "is-active"
+      : "is-empty";
 
   return `
     <div class="coach-workout-member-row">
@@ -522,7 +544,7 @@ function renderCoachWorkoutMemberRow(member, rowIndex) {
         <span>${window.RipCityUI.text(member.memberType)} ${member.sport ? `· ${window.RipCityUI.text(member.sport)}` : ""}</span>
       </div>
 
-      <span>${window.RipCityUI.text(status)}</span>
+      <span class="coach-review-status ${statusClass}">${window.RipCityUI.text(status)}</span>
       <span>${member.summary.completedSets}/${member.summary.totalSets} sets</span>
       <span>${member.summary.completionPercent}%</span>
       <span>${window.RipCityUI.text(window.RipCityWorkoutData.formatDateTimeLabel(member.summary.lastLoggedAt))}</span>
@@ -539,9 +561,21 @@ function renderCoachWorkoutMemberRow(member, rowIndex) {
 }
 
 function formatAssignmentTarget(assignment) {
-  if (assignment.target_type === "facility") return "Facility assignment";
-  if (assignment.target_type === "group") return "Group assignment";
-  if (assignment.target_type === "member") return "Individual assignment";
+  if (assignment.target_type === "facility") return "Entire facility";
+
+  if (assignment.target_type === "group") {
+    const group = coachReviewGroups.find(row => row.id === assignment.target_group_id);
+    return group ? `${group.name} group` : "Group assignment";
+  }
+
+  if (assignment.target_type === "member") {
+    const member = coachReviewMembers.find(row =>
+      row.memberProfileId === assignment.target_member_profile_id
+    );
+
+    return member ? member.name : "Individual assignment";
+  }
+
   return "Assignment";
 }
 

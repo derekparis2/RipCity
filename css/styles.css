@@ -2099,6 +2099,8 @@ td {
     background: var(--surface-2);
     border-radius: 14px;
     padding: 14px;
+    display: grid;
+    gap: 12px;
   }
 
   .exercise-library-card h4 {
@@ -2146,6 +2148,48 @@ td {
     margin: 0;
     color: var(--muted);
     line-height: 1.45;
+  }
+
+  .recent-workout-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 14px 0;
+  }
+
+  .recent-workout-edit-form {
+    display: grid;
+    gap: 12px;
+    margin: 14px 0;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.035);
+    border-radius: 12px;
+    padding: 14px;
+  }
+
+  .recent-workout-edit-form label {
+    display: grid;
+    gap: 7px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .recent-workout-edit-form input,
+  .recent-workout-edit-form textarea {
+    width: 100%;
+    min-height: 46px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    border-radius: 10px;
+    padding: 10px 12px;
+    outline: none;
+  }
+
+  .recent-workout-edit-form input:focus,
+  .recent-workout-edit-form textarea:focus {
+    border-color: var(--text);
   }
 
   .recent-reassign-card {
@@ -2546,6 +2590,27 @@ td {
   .coach-workout-member-row span {
     color: var(--muted);
     font-size: 12px;
+  }
+
+  .coach-workout-member-row .coach-review-status {
+    width: max-content;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 7px 10px;
+    color: var(--text);
+    font-weight: 800;
+  }
+
+  .coach-review-status.is-complete {
+    border-color: rgba(103, 232, 139, 0.55);
+    background: rgba(103, 232, 139, 0.1);
+    color: #86efac;
+  }
+
+  .coach-review-status.is-active {
+    border-color: rgba(250, 204, 21, 0.55);
+    background: rgba(250, 204, 21, 0.1);
+    color: #fde68a;
   }
 
   .small-inline-btn {

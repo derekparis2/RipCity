@@ -71,6 +71,13 @@ function setTodayAsDefaultDate() {
   dateInput.value = formatLocalDate(new Date());
 }
 
+function setFieldValue(id, value) {
+  const element = document.getElementById(id);
+  if (!element) return;
+
+  element.value = value ?? "";
+}
+
 // ----------------------------
 // Auth / access protection
 // ----------------------------
@@ -373,8 +380,20 @@ function renderExerciseLibraryList() {
         ${template.category ? `<span>${window.RipCityUI.text(template.category)}</span>` : ""}
         ${template.equipment ? `<span>${window.RipCityUI.text(template.equipment)}</span>` : ""}
       </div>
+
+      <button
+        class="outline-btn small-inline-btn"
+        type="button"
+        data-add-template-to-builder="${window.RipCityUI.attr(template.id)}"
+      >
+        Add to Builder
+      </button>
     </article>
   `).join("");
+
+  list.querySelectorAll("[data-add-template-to-builder]").forEach(button => {
+    button.addEventListener("click", () => addTemplateToBuilder(button.dataset.addTemplateToBuilder));
+  });
 }
 
 function renderAllGroupOptions() {
@@ -431,6 +450,36 @@ function applyExerciseTemplateToCard(card, templateId) {
   card.querySelector(".exercise-input-type").value = template.input_type || "completion";
   card.querySelector(".exercise-video").value = template.video_url || "";
   card.querySelector(".exercise-coach-note").value = template.coach_note || "";
+}
+
+function getLastOrCreateBuilderBlock() {
+  let blockCard = Array.from(document.querySelectorAll("[data-block-card]")).at(-1);
+
+  if (!blockCard) {
+    addBlockCard();
+    blockCard = Array.from(document.querySelectorAll("[data-block-card]")).at(-1);
+  }
+
+  return blockCard;
+}
+
+function addTemplateToBuilder(templateId) {
+  if (!templateId) return;
+
+  const blockCard = getLastOrCreateBuilderBlock();
+  if (!blockCard) return;
+
+  addExerciseToBlock(blockCard);
+
+  const exerciseCard = blockCard
+    .querySelector("[data-block-exercise-list]")
+    ?.lastElementChild;
+
+  if (!exerciseCard) return;
+
+  applyExerciseTemplateToCard(exerciseCard, templateId);
+  exerciseCard.scrollIntoView({ behavior: "smooth", block: "center" });
+  showExerciseLibraryMessage("Exercise added to the workout builder.");
 }
 
 async function saveExerciseTemplate(event) {
@@ -667,6 +716,19 @@ function addExerciseToBlock(blockCard) {
   });
 }
 
+function setExerciseCardValues(card, exercise = {}) {
+  card.querySelector(".exercise-template-id").value = exercise.exercise_template_id || "";
+  card.querySelector(".exercise-name").value = exercise.name || "";
+  card.querySelector(".exercise-description").value = exercise.description || "";
+  card.querySelector(".exercise-sets").value = exercise.sets || "";
+  card.querySelector(".exercise-reps").value = exercise.reps || "";
+  card.querySelector(".exercise-tempo").value = exercise.tempo || "";
+  card.querySelector(".exercise-rest").value = exercise.rest_time || "";
+  card.querySelector(".exercise-input-type").value = exercise.input_type || "completion";
+  card.querySelector(".exercise-video").value = exercise.video_url || "";
+  card.querySelector(".exercise-coach-note").value = exercise.coach_note || "";
+}
+
 function addBlockCard() {
   const list = document.getElementById("block-list");
   const count = document.querySelectorAll("[data-block-card]").length + 1;
@@ -688,6 +750,63 @@ function addBlockCard() {
 
   // Start every new block with one exercise so the coach can type immediately.
   addExerciseToBlock(newestBlock);
+}
+
+function loadWorkoutIntoBuilder(workout) {
+  if (!workout) return;
+
+  setFieldValue("workout-title", `${workout.title || "Workout"} Copy`);
+  setFieldValue("workout-focus", workout.focus || "");
+  setFieldValue("workout-minutes", workout.estimated_minutes || "");
+  setFieldValue("workout-description", workout.description || "");
+
+  const list = document.getElementById("block-list");
+  list.innerHTML = "";
+
+  const blocks = [...(workout.workout_blocks || [])]
+    .sort((a, b) => a.block_order - b.block_order);
+
+  if (!blocks.length) {
+    addBlockCard();
+    return;
+  }
+
+  blocks.forEach((block, blockIndex) => {
+    list.insertAdjacentHTML("beforeend", createBlockCard(blockIndex + 1));
+    const blockCard = list.lastElementChild;
+    blockCard.querySelector(".block-name").value = block.name || `Block ${blockIndex + 1}`;
+
+    blockCard
+      .querySelector(".add-exercise-to-block-btn")
+      .addEventListener("click", () => addExerciseToBlock(blockCard));
+
+    blockCard
+      .querySelector(".remove-block-btn")
+      .addEventListener("click", () => {
+        blockCard.remove();
+        refreshBlockAndExerciseNumbers();
+      });
+
+    const exercises = [...(block.workout_exercises || [])]
+      .sort((a, b) => a.exercise_order - b.exercise_order);
+
+    if (!exercises.length) {
+      addExerciseToBlock(blockCard);
+      return;
+    }
+
+    exercises.forEach(exercise => {
+      addExerciseToBlock(blockCard);
+      setExerciseCardValues(blockCard.querySelector("[data-block-exercise-list]").lastElementChild, exercise);
+    });
+  });
+
+  document.getElementById("workout-form")?.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+
+  showWorkoutMessage("Workout loaded into builder. Save it to create a new assigned workout.");
 }
 
 function getBlockFormData() {
@@ -772,6 +891,62 @@ function getAssignmentKey(assignment) {
 function filterDuplicateAssignmentRows(rows, existingAssignments = []) {
   const existingKeys = new Set(existingAssignments.map(getAssignmentKey));
   return rows.filter(row => !existingKeys.has(getAssignmentKey(row)));
+}
+
+function buildRecentWorkoutSelect(includeExerciseTemplateColumn = true) {
+  const exerciseTemplateColumn = includeExerciseTemplateColumn
+    ? "exercise_template_id,"
+    : "";
+
+  return `
+    id,
+    title,
+    focus,
+    description,
+    estimated_minutes,
+    created_at,
+    workout_blocks (
+      id,
+      name,
+      block_order,
+      workout_exercises (
+          id,
+          name,
+          description,
+          tempo,
+          sets,
+          reps,
+          rest_time,
+          input_type,
+          video_url,
+          coach_note,
+          ${exerciseTemplateColumn}
+          exercise_order
+      )
+    ),
+    workout_assignments (
+      id,
+      assigned_date,
+      target_type,
+      target_facility_id,
+      target_group_id,
+      target_member_profile_id
+    )
+  `;
+}
+
+function isMissingExerciseTemplateColumnError(error) {
+  return /exercise_template_id/i.test(error?.message || "") ||
+    /exercise_template_id/i.test(error?.details || "");
+}
+
+async function fetchRecentWorkoutRows(includeExerciseTemplateColumn = true) {
+  return db
+    .from("workouts")
+    .select(buildRecentWorkoutSelect(includeExerciseTemplateColumn))
+    .eq("facility_id", workoutCoachAccess.membership.facility_id)
+    .order("created_at", { ascending: false })
+    .limit(8);
 }
 
 // ----------------------------
@@ -929,39 +1104,11 @@ async function loadRecentWorkouts() {
 
   list.innerHTML = `<div class="empty-state">Loading workouts...</div>`;
 
-  const { data, error } = await db
-    .from("workouts")
-    .select(`
-      id,
-      title,
-      focus,
-      description,
-      estimated_minutes,
-      created_at,
-      workout_blocks (
-        id,
-        name,
-        block_order,
-        workout_exercises (
-            id,
-            name,
-            sets,
-            reps,
-            exercise_order
-        )
-      ),
-      workout_assignments (
-        id,
-        assigned_date,
-        target_type,
-        target_facility_id,
-        target_group_id,
-        target_member_profile_id
-      )
-    `)
-    .eq("facility_id", workoutCoachAccess.membership.facility_id)
-    .order("created_at", { ascending: false })
-    .limit(8);
+  let { data, error } = await fetchRecentWorkoutRows(true);
+
+  if (error && isMissingExerciseTemplateColumnError(error)) {
+    ({ data, error } = await fetchRecentWorkoutRows(false));
+  }
 
   if (error) {
     console.error(error);
@@ -998,6 +1145,40 @@ async function loadRecentWorkouts() {
           <span>${window.RipCityUI.text(targetLabel)}</span>
           <span>${window.RipCityUI.text(assignedDate)}</span>
         </div>
+
+        <div class="recent-workout-actions">
+          <button class="outline-btn small-inline-btn" type="button" data-load-workout-template="${window.RipCityUI.attr(workout.id)}">
+            Load in Builder
+          </button>
+          <button class="outline-btn small-inline-btn" type="button" data-toggle-workout-edit="${window.RipCityUI.attr(workout.id)}">
+            Edit Details
+          </button>
+        </div>
+
+        <form class="recent-workout-edit-form hidden" data-workout-edit-form="${window.RipCityUI.attr(workout.id)}">
+          <label>
+            Title
+            <input type="text" value="${window.RipCityUI.attr(workout.title || "")}" data-edit-workout-title required />
+          </label>
+          <div class="form-row">
+            <label>
+              Focus
+              <input type="text" value="${window.RipCityUI.attr(workout.focus || "")}" data-edit-workout-focus />
+            </label>
+            <label>
+              Estimated Minutes
+              <input type="number" value="${window.RipCityUI.attr(workout.estimated_minutes || "")}" data-edit-workout-minutes />
+            </label>
+          </div>
+          <label>
+            Description
+            <textarea rows="2" data-edit-workout-description>${window.RipCityUI.text(workout.description || "")}</textarea>
+          </label>
+          <div class="recent-workout-actions">
+            <button class="primary-btn small-inline-btn" type="submit">Save Details</button>
+            <button class="outline-btn small-inline-btn" type="button" data-cancel-workout-edit="${window.RipCityUI.attr(workout.id)}">Cancel</button>
+          </div>
+        </form>
 
         <div class="recent-reassign-card">
           <div>
@@ -1076,6 +1257,69 @@ async function loadRecentWorkouts() {
       assignExistingWorkout(workout);
     });
   });
+
+  list.querySelectorAll("[data-load-workout-template]").forEach(button => {
+    button.addEventListener("click", () => {
+      const workout = data.find(row => row.id === button.dataset.loadWorkoutTemplate);
+      loadWorkoutIntoBuilder(workout);
+    });
+  });
+
+  list.querySelectorAll("[data-toggle-workout-edit]").forEach(button => {
+    button.addEventListener("click", () => {
+      document
+        .querySelector(`[data-workout-edit-form="${button.dataset.toggleWorkoutEdit}"]`)
+        ?.classList.toggle("hidden");
+    });
+  });
+
+  list.querySelectorAll("[data-cancel-workout-edit]").forEach(button => {
+    button.addEventListener("click", () => {
+      document
+        .querySelector(`[data-workout-edit-form="${button.dataset.cancelWorkoutEdit}"]`)
+        ?.classList.add("hidden");
+    });
+  });
+
+  list.querySelectorAll("[data-workout-edit-form]").forEach(form => {
+    form.addEventListener("submit", event => saveWorkoutDetails(event, form.dataset.workoutEditForm));
+  });
+}
+
+async function saveWorkoutDetails(event, workoutId) {
+  event.preventDefault();
+
+  const form = event.currentTarget;
+  const title = form.querySelector("[data-edit-workout-title]").value.trim();
+  const minutes = form.querySelector("[data-edit-workout-minutes]").value;
+
+  if (!title) {
+    showWorkoutMessage("Workout title is required.", true);
+    return;
+  }
+
+  showWorkoutMessage("Saving workout details...");
+
+  try {
+    const { error } = await db
+      .from("workouts")
+      .update({
+        title,
+        focus: form.querySelector("[data-edit-workout-focus]").value.trim() || null,
+        description: form.querySelector("[data-edit-workout-description]").value.trim() || null,
+        estimated_minutes: minutes ? Number(minutes) : null
+      })
+      .eq("id", workoutId)
+      .eq("facility_id", workoutCoachAccess.membership.facility_id);
+
+    if (error) throw error;
+
+    showWorkoutMessage("Workout details saved.");
+    await loadRecentWorkouts();
+  } catch (error) {
+    console.error(error);
+    showWorkoutMessage(error.message || "Could not save workout details.", true);
+  }
 }
 
 function updateRecentAssignmentControls(workoutId) {
