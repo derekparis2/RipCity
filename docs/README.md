@@ -15,6 +15,7 @@ For the product roadmap, start with `docs/BUILD_PLAN.md`.
 - Supabase auth and app database connection
 - Signup, login, pending approval, and logout flows
 - Coach/admin approval page
+- Coach roster and group management
 - Coach dashboard for H2K habit score overview and workout completion review
 - Shared member dashboard with optional H2K habit tracking
 - Today’s workout and workout history on the member dashboard
@@ -38,6 +39,7 @@ For the product roadmap, start with `docs/BUILD_PLAN.md`.
 - `js/ui-utils.js` - shared escaping and display helpers
 - `js/auth.js` - signup, login, and pending-page auth actions
 - `js/coach-approvals.js` - coach/admin approval workflow
+- `js/coach-roster.js` - coach roster, filters, group creation, and group membership management
 - `js/coach-dashboard.js` - coach H2K score and workout completion overview
 - `js/coach-workouts.js` - coach workout builder and assignment flow
 - `js/member-dashboard.js` - member dashboard, habits, today’s workout, and history

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Coach Roster</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body class="auth-body">
+  <main class="coach-page">
+    <header class="h2k-header">
+      <div class="auth-brand">
+        <img src="assets/rip-city-logo.png" alt="Rip City logo">
+        <div>
+          <h1>RIP CITY</h1>
+          <p>Coach Roster</p>
+        </div>
+      </div>
+
+      <div class="h2k-header-actions">
+        <a class="outline-link" href="coach-dashboard.html">Coach Dashboard</a>
+        <a class="outline-link" href="coach-workouts.html">Workout Builder</a>
+        <a class="outline-link" href="coach-approvals.html">Approvals</a>
+        <button class="outline-btn" id="coach-roster-logout-btn">Log Out</button>
+      </div>
+    </header>
+
+    <section class="hero-card h2k-hero">
+      <div>
+        <p class="eyebrow">ROSTER MANAGEMENT</p>
+        <h3>Manage members, programs, and training groups.</h3>
+        <p>
+          Keep athletes and H2K members organized so workout assignments,
+          reviews, and future leaderboards stay facility-aware.
+        </p>
+      </div>
+    </section>
+
+    <section class="stats-grid">
+      <article class="stat-card">
+        <span>Total Members</span>
+        <strong id="roster-total-members">0</strong>
+        <small>Approved and pending</small>
+      </article>
+
+      <article class="stat-card">
+        <span>Athletes</span>
+        <strong id="roster-athlete-count">0</strong>
+        <small>Training group members</small>
+      </article>
+
+      <article class="stat-card">
+        <span>H2K Members</span>
+        <strong id="roster-h2k-count">0</strong>
+        <small>Habit module members</small>
+      </article>
+
+      <article class="stat-card">
+        <span>Ungrouped</span>
+        <strong id="roster-ungrouped-count">0</strong>
+        <small>Need group assignment</small>
+      </article>
+    </section>
+
+    <section class="dashboard-grid member-dashboard-grid">
+      <article class="panel roster-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">FACILITY ROSTER</p>
+            <h3>Members</h3>
+          </div>
+
+          <button class="outline-btn" id="refresh-roster-btn">Refresh</button>
+        </div>
+
+        <div class="roster-filter-grid">
+          <label>
+            Member Type
+            <select id="roster-type-filter">
+              <option value="all">All</option>
+              <option value="athlete">Athletes</option>
+              <option value="h2k">H2K</option>
+            </select>
+          </label>
+
+          <label>
+            Status
+            <select id="roster-status-filter">
+              <option value="all">All</option>
+              <option value="approved">Approved</option>
+              <option value="pending">Pending</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </label>
+
+          <label>
+            Group
+            <select id="roster-group-filter">
+              <option value="all">All groups</option>
+            </select>
+          </label>
+
+          <label>
+            Search
+            <input id="roster-search" type="search" placeholder="Name, email, sport..." />
+          </label>
+        </div>
+
+        <p id="coach-roster-message" class="auth-message"></p>
+
+        <div id="coach-roster-list" class="coach-roster-list">
+          <div class="empty-state">Loading roster...</div>
+        </div>
+      </article>
+
+      <aside class="panel roster-groups-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">GROUPS</p>
+            <h3>Training Groups</h3>
+          </div>
+        </div>
+
+        <form id="create-group-form" class="roster-group-form">
+          <label>
+            Group Name
+            <input id="new-group-name" type="text" placeholder="Example: Freshman Pitchers" />
+          </label>
+
+          <div class="form-row">
+            <label>
+              Group Type
+              <select id="new-group-type">
+                <option value="program">Program</option>
+                <option value="age">Age</option>
+                <option value="team">Team</option>
+                <option value="sport">Sport</option>
+                <option value="h2k">H2K</option>
+                <option value="custom">Custom</option>
+              </select>
+            </label>
+
+            <label>
+              Members
+              <select id="new-group-member-type">
+                <option value="athlete">Athletes</option>
+                <option value="h2k">H2K</option>
+                <option value="both">Both</option>
+              </select>
+            </label>
+          </div>
+
+          <button class="outline-btn full-btn" type="submit">Create Group</button>
+        </form>
+
+        <div id="roster-group-list" class="roster-group-list">
+          <div class="empty-state">Loading groups...</div>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/ui-utils.js"></script>
+  <script src="js/access-control.js"></script>
+  <script src="js/workout-data.js"></script>
+  <script src="js/coach-roster.js"></script>
+</body>
+</html>

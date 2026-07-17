@@ -1499,6 +1499,172 @@ td {
     }
   }
 
+  /* =====================================================
+   COACH ROSTER
+   ===================================================== */
+
+  .roster-panel,
+  .roster-groups-panel {
+    min-height: 560px;
+  }
+
+  .roster-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin: 18px 0;
+  }
+
+  .coach-roster-list,
+  .roster-group-list {
+    display: grid;
+    gap: 12px;
+    margin-top: 18px;
+  }
+
+  .roster-member-card,
+  .roster-group-card {
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    border-radius: 14px;
+    padding: 16px;
+  }
+
+  .roster-member-card {
+    display: grid;
+    grid-template-columns: minmax(230px, 1fr) minmax(160px, 0.6fr);
+    gap: 16px;
+  }
+
+  .roster-member-main {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    min-width: 0;
+  }
+
+  .roster-avatar {
+    flex: 0 0 auto;
+  }
+
+  .roster-member-heading {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .roster-member-card h4 {
+    margin: 0;
+    font-size: 20px;
+  }
+
+  .roster-member-card p,
+  .roster-member-card small,
+  .roster-member-groups span,
+  .roster-group-card span,
+  .muted-small {
+    color: var(--muted);
+  }
+
+  .roster-member-card p,
+  .roster-member-card small {
+    display: block;
+    margin: 4px 0 0;
+    line-height: 1.4;
+  }
+
+  .status-pill {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 999px;
+    padding: 5px 9px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0;
+  }
+
+  .roster-member-groups {
+    display: grid;
+    align-content: start;
+    gap: 5px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 12px;
+  }
+
+  .roster-member-groups strong {
+    line-height: 1.35;
+  }
+
+  .roster-group-checkboxes {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .roster-checkbox-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 999px;
+    padding: 8px 10px;
+    cursor: pointer;
+  }
+
+  .roster-checkbox-pill input {
+    accent-color: var(--accent);
+  }
+
+  .roster-checkbox-pill span {
+    font-weight: 800;
+    font-size: 12px;
+  }
+
+  .roster-group-form {
+    display: grid;
+    gap: 12px;
+  }
+
+  .roster-group-card {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .roster-group-card strong,
+  .roster-group-card span {
+    display: block;
+  }
+
+  .roster-group-card b {
+    font-family: "Barlow Condensed", sans-serif;
+    font-size: 28px;
+  }
+
+  @media (max-width: 900px) {
+    .roster-filter-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .roster-member-card {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 620px) {
+    .roster-filter-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
 
   /* =====================================================
    PROFILE PAGE
