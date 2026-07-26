@@ -10,6 +10,8 @@ let rosterGroups = [];
 let rosterGroupMemberships = [];
 let rosterSupportsH2KBandColor = true;
 
+// H2K bands work like coach-managed training levels. The blank option in the
+// roster UI saves as null and means "No Band" for a member.
 const H2K_BAND_COLORS = [
   "White",
   "Grey",

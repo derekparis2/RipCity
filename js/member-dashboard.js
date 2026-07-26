@@ -183,6 +183,8 @@ function setupFeedbackLink() {
   const link = document.getElementById("member-feedback-link");
   if (!link) return;
 
+  // The live Google Form URL is configured in js/ui-utils.js so every member
+  // surface can use the same feedback destination.
   const url = window.RipCityUI.feedbackFormUrl;
 
   if (!url) {

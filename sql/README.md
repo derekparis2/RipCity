@@ -21,6 +21,11 @@ not execute live database SQL unless Derek explicitly asks.
   explicit and safe.
 - `exercise_library_v1.sql` - proposed exercise library and substitution base.
   The app currently falls back gracefully if this migration has not been run.
+- `exercise_library_seed_rip_city_v1.sql` - starter Rip City exercise list.
+  Run only after `exercise_library_v1.sql`.
+- `h2k_band_color_v1.sql` - H2K training band color column and trigger guard.
+- `h2k_band_color_v2_levels.sql` - corrected H2K band levels:
+  no band, White, Grey, Green, Blue, Black, Red.
 - `rls_policies_v1.sql` - proposed Row Level Security policies. Review and test
   carefully before enabling in production.
 - `signup_group_selection_v1.sql` - live patch after RLS that lets athlete
@@ -29,8 +34,8 @@ not execute live database SQL unless Derek explicitly asks.
 
 ## Historical Files
 
-- `starter_schema_v1.sql` - early prototype schema. Keep for history only. Do
-  not run it against the current Rip City Supabase project.
+- `old/starter_schema_v1.sql` - early prototype schema. Keep for history only.
+  Do not run it against the current Rip City Supabase project.
 
 ## Safe Migration Order For A Fresh Database
 
@@ -41,8 +46,12 @@ not execute live database SQL unless Derek explicitly asks.
    ready.
 5. Optional: run `exercise_library_v1.sql` when the exercise library should be
    live.
-6. Review, stage-test, then run `rls_policies_v1.sql`.
-7. Run `signup_group_selection_v1.sql` if athlete signup should require a
+6. Optional: run `exercise_library_seed_rip_city_v1.sql` after the exercise
+   library base migration.
+7. Optional: run `h2k_band_color_v1.sql`, then `h2k_band_color_v2_levels.sql`
+   if H2K bands should be live.
+8. Review, stage-test, then run `rls_policies_v1.sql`.
+9. Run `signup_group_selection_v1.sql` if athlete signup should require a
    starting training group.
 
 ## Live Database Audit Queries

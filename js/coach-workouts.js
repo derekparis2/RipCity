@@ -1056,6 +1056,9 @@ async function createTemplateFromWorkoutExercise(exercise) {
 async function ensureWorkoutExercisesAreInLibrary(blocks) {
   if (!exerciseLibraryAvailable) return blocks;
 
+  // Before a workout is saved, attach every exercise to an existing template
+  // or create a facility-owned template for custom coach entries. That keeps
+  // the library useful without forcing coaches to leave the builder flow.
   const templatesByName = new Map(
     exerciseTemplates.map(template => [normalizeExerciseName(template.name), template])
   );

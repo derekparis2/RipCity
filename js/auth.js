@@ -302,7 +302,9 @@ async function handleLogin(event) {
       return;
     }
 
-    window.location.href = "index.html";
+    // Unknown approved facility roles should still land on a real app surface,
+    // not the archived prototype.
+    window.location.href = "member-dashboard.html";
   } catch (error) {
     console.error(error);
     showMessage("login-message", error.message || "Login failed.", true);

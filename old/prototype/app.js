@@ -10,8 +10,8 @@
 // AUTH / ACCESS PROTECTION
 // =====================================================
 // This makes sure only approved users can access the main app.
-// Pending users get sent to pending.html.
-// Logged-out users get sent to login.html.
+// Pending users get sent to the live pending page.
+// Logged-out users get sent to the live login page.
 // Coaches/admins can still access the app, but later they will get a coach dashboard.
 
 async function protectAppPage() {
@@ -19,14 +19,14 @@ async function protectAppPage() {
 
   if (sessionError) {
     console.error("Session error:", sessionError);
-    window.location.href = "login.html";
+    window.location.href = "../../login.html";
     return null;
   }
 
   const session = sessionData.session;
 
   if (!session) {
-    window.location.href = "login.html";
+    window.location.href = "../../login.html";
     return null;
   }
 
@@ -49,14 +49,14 @@ async function protectAppPage() {
 
   if (profileError) {
     console.error("Profile error:", profileError);
-    window.location.href = "login.html";
+    window.location.href = "../../login.html";
     return null;
   }
 
   const membership = profile.facility_members?.[0];
 
   if (!membership || membership.status !== "approved") {
-    window.location.href = "pending.html";
+    window.location.href = "../../pending.html";
     return null;
   }
 

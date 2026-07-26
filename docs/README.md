@@ -21,7 +21,8 @@ For the product roadmap, start with `docs/BUILD_PLAN.md`.
 - Today’s workout and workout history on the member dashboard
 - Coach workout builder with blocks and exercises
 - Member, group, and facility workout assignment
-- Proposed exercise library support with graceful fallback before migration
+- Exercise library support for saved, editable coach exercise templates
+- H2K band color support, managed by coaches from the roster
 - Workout session page with round/superset display
 - Set-by-set actual result logging
 - Save Set and Save All Sets
@@ -31,6 +32,7 @@ For the product roadmap, start with `docs/BUILD_PLAN.md`.
 
 - `docs/BUILD_PLAN.md` - product direction and phases
 - `docs/PRODUCT_DECISIONS.md` - current product rules and tenant decisions
+- `docs/old/` - historical notes that are no longer the current source of truth
 - `sql/supabase_schema.sql` - current intended database schema
 - `sql/README.md` - SQL file guide, migration order, and audit queries
 - `js/supabaseClient.js` - Supabase browser client setup
@@ -47,6 +49,7 @@ For the product roadmap, start with `docs/BUILD_PLAN.md`.
 - `js/workout-session-render.js` - workout session block/round/set rendering
 - `js/workout-session.js` - workout session save actions and page init
 - `css/styles.css` - shared visual system and page styles
+- `old/prototype/` - archived localStorage prototype kept only for design/history reference
 
 ## Running Locally
 
@@ -78,8 +81,7 @@ Use approved Supabase test accounts for end-to-end checks.
 
 ## Current Known Gaps
 
-- Row Level Security policies are proposed in `sql/rls_policies_v1.sql` but should be reviewed and tested before applying.
-- The exercise library UI exists, but the live database needs `sql/exercise_library_v1.sql` before saved templates are available.
+- Calculated maxes, volume tracking, and PR tracking still need product/math decisions before showing official numbers.
 - Goals, progress charts, leaderboards, coach notes, and community features are mostly future-facing.
 - Profile image upload is not implemented; profile picture is URL-only for now.
 - Platform owner/support mode needs explicit UX and policies before cross-facility operations are added.
