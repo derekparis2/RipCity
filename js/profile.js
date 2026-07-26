@@ -7,6 +7,10 @@
 let profileAccess = null;
 let currentMemberProfile = null;
 let profileSupportsGender = false;
+let selectedProfilePictureFile = null;
+
+const PROFILE_PICTURE_BUCKET = "profile-pictures";
+const MAX_PROFILE_PICTURE_BYTES = 5 * 1024 * 1024;
 
 // ----------------------------
 // Page messages / small helpers
@@ -63,6 +67,28 @@ function getInputValue(id) {
   return element.value.trim();
 }
 
+function setProfilePicturePreview(url, fallbackName) {
+  const avatar = document.getElementById("profile-avatar");
+  if (!avatar) return;
+
+  avatar.textContent = "";
+  avatar.classList.toggle("has-image", Boolean(url));
+
+  if (url) {
+    const image = document.createElement("img");
+    image.src = url;
+    image.alt = `${fallbackName || "Member"} profile picture`;
+    image.addEventListener("error", () => {
+      avatar.classList.remove("has-image");
+      avatar.textContent = (fallbackName || "Member").charAt(0).toUpperCase();
+    });
+    avatar.appendChild(image);
+    return;
+  }
+
+  avatar.textContent = (fallbackName || "Member").charAt(0).toUpperCase();
+}
+
 function updateProfilePreview() {
   // The preview updates as the user types so the profile page feels less like
   // a plain settings form and more like a member card.
@@ -70,10 +96,7 @@ function updateProfilePreview() {
   const username = getInputValue("profile-username") || "username";
   const bio = getInputValue("profile-bio") || "Your bio will show here.";
   const birthday = getInputValue("profile-birthday") || "Not added";
-  const isAthlete = currentMemberProfile?.member_type === "athlete";
-  const sport = isAthlete
-    ? getInputValue("profile-sport") || getInputValue("profile-training-focus") || "Not added"
-    : getInputValue("profile-training-focus") || "Not added";
+  const pictureUrl = getInputValue("profile-picture-url");
 
   const program =
     currentMemberProfile?.member_type === "h2k"
@@ -86,10 +109,7 @@ function updateProfilePreview() {
   document.getElementById("preview-bio").textContent = bio;
   document.getElementById("preview-birthday").textContent = birthday;
   document.getElementById("preview-program").textContent = program;
-  document.getElementById("preview-sport").textContent = sport;
-
-  const avatar = document.getElementById("profile-avatar");
-  avatar.textContent = fullName.charAt(0).toUpperCase();
+  setProfilePicturePreview(pictureUrl, fullName);
 
   if (bandBadge) {
     bandBadge.textContent = currentMemberProfile?.h2k_band_color
@@ -145,6 +165,77 @@ function fillProfileForm() {
   updateProfilePreview();
 }
 
+function getSafeProfilePicturePath(file) {
+  const extension = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+  const timestamp = Date.now();
+  return `${profileAccess.profile.id}/${timestamp}.${extension}`;
+}
+
+async function uploadSelectedProfilePicture() {
+  if (!selectedProfilePictureFile) return getInputValue("profile-picture-url") || null;
+
+  if (!selectedProfilePictureFile.type.startsWith("image/")) {
+    throw new Error("Profile picture must be an image file.");
+  }
+
+  if (selectedProfilePictureFile.size > MAX_PROFILE_PICTURE_BYTES) {
+    throw new Error("Profile picture must be 5 MB or smaller.");
+  }
+
+  const path = getSafeProfilePicturePath(selectedProfilePictureFile);
+  const { error } = await db.storage
+    .from(PROFILE_PICTURE_BUCKET)
+    .upload(path, selectedProfilePictureFile, {
+      cacheControl: "3600",
+      upsert: true
+    });
+
+  if (error) throw error;
+
+  const { data } = db.storage
+    .from(PROFILE_PICTURE_BUCKET)
+    .getPublicUrl(path);
+
+  return data.publicUrl;
+}
+
+function handleProfilePictureChange(event) {
+  const file = event.target.files?.[0];
+
+  if (!file) {
+    selectedProfilePictureFile = null;
+    updateProfilePreview();
+    return;
+  }
+
+  if (!file.type.startsWith("image/")) {
+    showProfileMessage("Profile picture must be an image file.", true);
+    event.target.value = "";
+    return;
+  }
+
+  if (file.size > MAX_PROFILE_PICTURE_BYTES) {
+    showProfileMessage("Profile picture must be 5 MB or smaller.", true);
+    event.target.value = "";
+    return;
+  }
+
+  selectedProfilePictureFile = file;
+  setInputValue("profile-picture-url", URL.createObjectURL(file));
+  updateProfilePreview();
+  showProfileMessage("");
+}
+
+function removeProfilePicture() {
+  selectedProfilePictureFile = null;
+  setInputValue("profile-picture-url", "");
+
+  const input = document.getElementById("profile-picture-file");
+  if (input) input.value = "";
+
+  updateProfilePreview();
+}
+
 async function saveProfile(event) {
   event.preventDefault();
 
@@ -158,6 +249,8 @@ async function saveProfile(event) {
       return;
     }
 
+    const profilePictureUrl = await uploadSelectedProfilePicture();
+
     // Save public/account-level fields first.
     const { error: profileError } = await db
       .from("profiles")
@@ -166,7 +259,7 @@ async function saveProfile(event) {
         username: getInputValue("profile-username") || null,
         bio: getInputValue("profile-bio") || null,
         birthday: getInputValue("profile-birthday") || null,
-        profile_picture_url: getInputValue("profile-picture-url") || null
+        profile_picture_url: profilePictureUrl
       })
       .eq("id", profileAccess.profile.id);
 
@@ -202,6 +295,7 @@ async function saveProfile(event) {
     // Reload fresh data after saving.
     profileAccess.profile = await getProfileUser(profileAccess.profile.id);
     currentMemberProfile = await getMemberProfile(profileAccess.membership.id);
+    selectedProfilePictureFile = null;
 
     fillProfileForm();
     showProfileMessage("Profile saved.");
@@ -239,6 +333,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("profile-form").addEventListener("submit", saveProfile);
   document.getElementById("profile-logout-btn").addEventListener("click", logoutProfile);
+  document.getElementById("profile-picture-file")?.addEventListener("change", handleProfilePictureChange);
+  document.getElementById("profile-picture-remove")?.addEventListener("click", removeProfilePicture);
 
   // Keep the right-side preview in sync with form edits.
   document.querySelectorAll("#profile-form input, #profile-form textarea, #profile-form select").forEach(input => {

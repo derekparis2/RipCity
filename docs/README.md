@@ -31,6 +31,7 @@ For the product roadmap, start with `docs/BUILD_PLAN.md`.
 ## Important Files
 
 - `docs/BUILD_PLAN.md` - product direction and phases
+- `docs/BETA_TEST_CHECKLIST.md` - walkthrough checklist for early testers
 - `docs/PRODUCT_DECISIONS.md` - current product rules and tenant decisions
 - `docs/old/` - historical notes that are no longer the current source of truth
 - `sql/supabase_schema.sql` - current intended database schema

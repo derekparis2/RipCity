@@ -5,9 +5,8 @@
 // putting them into template strings so stored content cannot become HTML.
 
 (function () {
-  // Add the Google Form URL here when the beta feedback form is ready.
-  // Leave blank to show the feedback card as "coming soon."
-  const FEEDBACK_FORM_URL = "";
+  // Shared beta feedback form shown on member and coach surfaces.
+  const FEEDBACK_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdNy5HIv7SIW89IPFP_ZGjaWwXQZMUTiGGIikLXXy0PmhGbVQ/viewform?usp=header";
 
   function escapeHtml(value) {
     return String(value ?? "")
@@ -52,12 +51,30 @@
       .join("");
   }
 
+  function setupFeedbackLinks() {
+    document.querySelectorAll("[data-feedback-link]").forEach(link => {
+      if (!FEEDBACK_FORM_URL) {
+        link.href = "#";
+        link.classList.add("is-disabled");
+        link.setAttribute("aria-disabled", "true");
+        return;
+      }
+
+      link.href = FEEDBACK_FORM_URL;
+      link.classList.remove("is-disabled");
+      link.removeAttribute("aria-disabled");
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", setupFeedbackLinks);
+
   window.RipCityUI = {
     attr,
     escapeHtml,
     feedbackFormUrl: FEEDBACK_FORM_URL,
     percent,
     safeInitials,
+    setupFeedbackLinks,
     text
   };
 })();

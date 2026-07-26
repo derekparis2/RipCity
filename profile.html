@@ -35,8 +35,7 @@
         <p class="eyebrow">PROFILE & COMMUNITY</p>
         <h3>Build your Rip City profile.</h3>
         <p>
-          This will become the member profile page with bio, birthday alerts, badges,
-          streaks, goals, and community features.
+          Keep your member info current so coaches and teammates know who you are.
         </p>
       </div>
     </section>
@@ -84,10 +83,16 @@
             <small class="field-help" id="profile-gender-help"></small>
           </label>
 
-          <label>
-            Profile Picture URL
-            <input type="text" id="profile-picture-url" placeholder="We’ll add real uploads later" />
-          </label>
+          <div class="profile-photo-editor">
+            <label>
+              Profile Picture
+              <input type="file" id="profile-picture-file" accept="image/png,image/jpeg,image/webp,image/gif" />
+              <small class="field-help">Upload a square photo if possible. Max size: 5 MB.</small>
+            </label>
+
+            <input type="hidden" id="profile-picture-url" />
+            <button class="outline-btn" type="button" id="profile-picture-remove">Remove Photo</button>
+          </div>
 
           <div class="form-row athlete-profile-fields">
             <label>
@@ -177,24 +182,6 @@
             <span>Program</span>
             <strong id="preview-program">Member</strong>
           </div>
-
-          <div>
-            <span>Sport / Focus</span>
-            <strong id="preview-sport">Not added</strong>
-          </div>
-
-          <div>
-            <span>Group</span>
-            <strong id="preview-group">Coming soon</strong>
-          </div>
-        </div>
-
-        <div class="note-item">
-          <strong>Coming Later</strong>
-          <p>
-            Profile pictures, badges, streaks, birthday alerts, PR posts,
-            coach shoutouts, and leaderboard rankings.
-          </p>
         </div>
       </article>
     </section>

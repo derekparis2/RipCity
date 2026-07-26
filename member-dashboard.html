@@ -31,8 +31,9 @@
     <nav class="member-shell-nav">
       <a class="nav-link nav-link-anchor active" href="#member-dashboard-top">Dashboard</a>
       <a class="nav-link nav-link-anchor" href="#today-workout-panel">Today's Workout</a>
-      <a class="nav-link nav-link-anchor" href="#workout-history-panel">Workout History</a>
       <a class="nav-link nav-link-anchor" href="#h2k-habits-section" id="member-habits-nav-link">Habits</a>
+      <a class="nav-link nav-link-anchor" href="#future-workouts-panel">Future Workouts</a>
+      <a class="nav-link nav-link-anchor" href="#workout-history-panel">Past Workouts</a>
     </nav>
 
     <div class="user-card">
@@ -62,10 +63,6 @@
       <div>
         <p class="eyebrow">MEMBER DASHBOARD</p>
         <h3>Your training, habits, goals, and progress in one place.</h3>
-        <p>
-            Open today’s assigned work, review previous sessions, and keep optional program modules
-            like H2K habits in one shared member home.
-        </p>
       </div>
     </section>
 
@@ -86,23 +83,23 @@
       </article>
     </section>
 
-    <section class="stats-grid">
+    <section class="stats-grid member-stats-grid" id="member-stats-section">
       <article class="stat-card">
-        <span id="member-stat-one-label">Today’s Score</span>
-        <strong><span id="today-score">0</span><span id="member-stat-one-suffix">/6</span></strong>
-        <small id="member-stat-one-detail">Habits completed today</small>
+        <span id="member-stat-one-label">Today’s Workouts</span>
+        <strong><span id="today-score">0</span><span id="member-stat-one-suffix"></span></strong>
+        <small id="member-stat-one-detail">Assigned for today</small>
       </article>
 
       <article class="stat-card">
-        <span id="member-stat-two-label">Weekly Score</span>
-        <strong><span id="weekly-score-h2k">0</span><span id="member-stat-two-suffix">/42</span></strong>
-        <small id="member-stat-two-detail">Possible weekly points</small>
+        <span id="member-stat-two-label">Completed</span>
+        <strong><span id="weekly-score-h2k">0</span><span id="member-stat-two-suffix"></span></strong>
+        <small id="member-stat-two-detail">Finished assigned workouts</small>
       </article>
 
-      <article class="stat-card">
-        <span id="member-stat-three-label">Week Progress</span>
-        <strong><span id="weekly-percent-h2k">0</span><span id="member-stat-three-suffix">/42</span></strong>
-        <small id="member-stat-three-detail">Current week completion</small>
+      <article class="stat-card" id="member-training-progress-card">
+        <span id="member-stat-three-label">Training Progress</span>
+        <strong><span id="weekly-percent-h2k">0</span><span id="member-stat-three-suffix"></span></strong>
+        <small id="member-stat-three-detail">Logged sets across assigned workouts</small>
       </article>
 
       <article class="stat-card">
@@ -131,25 +128,6 @@
       </article>
     </section>
 
-    <section class="dashboard-grid h2k-dashboard-grid">
-      <article class="panel workout-history-panel" id="workout-history-panel">
-        <div class="panel-heading">
-          <div>
-            <p class="eyebrow">WORKOUT HISTORY</p>
-            <h3>Past Assigned Workouts</h3>
-          </div>
-
-          <button class="outline-btn" id="refresh-history-btn">Refresh</button>
-        </div>
-
-        <p id="workout-history-message" class="auth-message"></p>
-
-        <div id="workout-history-list" class="workout-history-list">
-          <div class="empty-state">Loading workout history...</div>
-        </div>
-      </article>
-    </section>
-
     <section class="dashboard-grid h2k-dashboard-grid" id="h2k-habits-section">
       <article class="panel">
         <div class="panel-heading">
@@ -165,115 +143,49 @@
         <div id="h2k-habit-list" class="h2k-habit-list"></div>
       </article>
 
-      <article class="panel">
-        <p class="eyebrow">WHY THIS MATTERS</p>
-        <h3>Weekly Accountability</h3>
-        <p>
-          H2K uses six daily habits. Each completed habit is worth 1 point.
-          That means each member can earn up to 6 points per day and 42 points per week.
-        </p>
-
-        <div class="h2k-score-box">
-          <span>This Week</span>
-          <strong><span id="score-box-weekly">0</span> / 42</strong>
-          <div class="progress-bar">
-            <div id="h2k-weekly-bar"></div>
-          </div>
-        </div>
-
-        <div class="note-item">
-          <strong>Coming Next</strong>
-          <p>Rolling 4-week average, coach dashboard, missed-day alerts, and AI coach summaries.</p>
-        </div>
-      </article>
     </section>
-    <section class="member-preview-grid">
-        <article class="panel preview-card">
-          <p class="eyebrow">PROFILE</p>
-          <h3>Member Profile</h3>
-          <p>
-            Members will be able to customize their profile with a photo, username, bio,
-            birthday, sport or training focus, goals, badges, and recent progress.
-          </p>
-          <div class="preview-tags">
-            <span>Profile picture</span>
-            <span>Bio</span>
-            <span>Badges</span>
-            <span>Birthday alerts</span>
-          </div>
-        </article>
-      
-        <article class="panel preview-card">
-          <p class="eyebrow">WORKOUTS</p>
-          <h3>Training Plan</h3>
-          <p>
-            Coaches will assign workouts to groups or individuals. Members will log completion,
-            weights, reps, notes, and progress over time.
-          </p>
-          <div class="preview-tags">
-            <span>Assigned workouts</span>
-            <span>Exercise logs</span>
-            <span>Progress tracking</span>
-          </div>
-        </article>
-      
-        <article class="panel preview-card">
-          <p class="eyebrow">GOALS</p>
-          <h3>Goals & Progress</h3>
-          <p>
-            Coaches and members can track goals, milestones, and progress so everyone knows
-            what they are working toward.
-          </p>
-          <div class="preview-tags">
-            <span>Coach goals</span>
-            <span>Member goals</span>
-            <span>Milestones</span>
-          </div>
-        </article>
-      
-        <article class="panel preview-card">
-          <p class="eyebrow">LEADERBOARD</p>
-          <h3>Facility & Group Rankings</h3>
-          <p>
-            Leaderboards will be filterable by facility, program, group, and metric.
-            H2K can rank habit scores while athletes can rank workouts and performance metrics.
-          </p>
-          <div class="preview-tags">
-            <span>Facility highs</span>
-            <span>Group rankings</span>
-            <span>Weekly leaders</span>
-          </div>
-        </article>
-      
-        <article class="panel preview-card">
-          <p class="eyebrow">COACH NOTES</p>
-          <h3>Coach Feedback</h3>
-          <p>
-            Coaches will be able to leave private notes, shoutouts, reminders, and progress
-            updates for members.
-          </p>
-          <div class="preview-tags">
-            <span>Private notes</span>
-            <span>Shoutouts</span>
-            <span>Accountability</span>
-          </div>
-        </article>
-      
-        <article class="panel preview-card">
-          <p class="eyebrow">COMMUNITY</p>
-          <h3>Make It Fun</h3>
-          <p>
-            The app should feel like a community, not just a tracker. Streaks, badges,
-            birthday alerts, PRs, and coach shoutouts can help members want to come back.
-          </p>
-          <div class="preview-tags">
-            <span>Streaks</span>
-            <span>PR alerts</span>
-            <span>Birthdays</span>
-            <span>Badges</span>
-          </div>
-        </article>
-      </section>
+
+    <details class="panel future-workouts-panel compact-history-panel" id="future-workouts-panel">
+      <summary>
+        <span>
+          <span class="eyebrow">COMING UP</span>
+          <strong>Future Workouts</strong>
+        </span>
+        <span class="history-summary-hint">Click to view</span>
+      </summary>
+
+      <div class="compact-history-content">
+        <div class="compact-history-actions">
+          <p id="workout-history-message" class="auth-message"></p>
+          <button class="outline-btn" id="refresh-workout-lists-btn">Refresh</button>
+        </div>
+
+        <div id="future-workout-list" class="future-calendar">
+          <div class="empty-state">Loading future workouts...</div>
+        </div>
+      </div>
+    </details>
+
+    <details class="panel workout-history-panel compact-history-panel" id="workout-history-panel">
+      <summary>
+        <span>
+          <span class="eyebrow">HISTORY</span>
+          <strong>Past Workouts</strong>
+        </span>
+        <span class="history-summary-hint">Click to view</span>
+      </summary>
+
+      <div class="compact-history-content">
+        <div class="compact-history-actions">
+          <span>Previously assigned sessions</span>
+          <button class="outline-btn" id="refresh-history-btn">Refresh</button>
+        </div>
+
+        <div id="workout-history-list" class="workout-history-list compact-workout-list">
+          <div class="empty-state">Loading past workouts...</div>
+        </div>
+      </div>
+    </details>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

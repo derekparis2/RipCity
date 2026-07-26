@@ -16,6 +16,8 @@ not execute live database SQL unless Derek explicitly asks.
 - `profile_fields_v1.sql` - non-destructive profile columns used by the profile
   page. The current live database appears to already have these fields, but a
   clean rebuild needs this migration unless the base schema is updated.
+- `profile_picture_storage_v1.sql` - Supabase Storage bucket and policies for
+  member profile picture uploads.
 - `platform_owner_role_v1.sql` - proposed platform-owner role support. This is
   needed before Derek-only platform administration/support tooling can be made
   explicit and safe.
@@ -42,16 +44,17 @@ not execute live database SQL unless Derek explicitly asks.
 1. Run `supabase_schema.sql`.
 2. Run `seed_rip_city.sql`.
 3. Run `profile_fields_v1.sql`.
-4. Optional: run `platform_owner_role_v1.sql` when platform-owner support is
+4. Run `profile_picture_storage_v1.sql` before enabling profile picture uploads.
+5. Optional: run `platform_owner_role_v1.sql` when platform-owner support is
    ready.
-5. Optional: run `exercise_library_v1.sql` when the exercise library should be
+6. Optional: run `exercise_library_v1.sql` when the exercise library should be
    live.
-6. Optional: run `exercise_library_seed_rip_city_v1.sql` after the exercise
+7. Optional: run `exercise_library_seed_rip_city_v1.sql` after the exercise
    library base migration.
-7. Optional: run `h2k_band_color_v1.sql`, then `h2k_band_color_v2_levels.sql`
+8. Optional: run `h2k_band_color_v1.sql`, then `h2k_band_color_v2_levels.sql`
    if H2K bands should be live.
-8. Review, stage-test, then run `rls_policies_v1.sql`.
-9. Run `signup_group_selection_v1.sql` if athlete signup should require a
+9. Review, stage-test, then run `rls_policies_v1.sql`.
+10. Run `signup_group_selection_v1.sql` if athlete signup should require a
    starting training group.
 
 ## Live Database Audit Queries
