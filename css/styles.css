@@ -938,6 +938,56 @@ td {
   font-size: 13px;
 }
 
+.h2k-band-badge {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  padding: 5px 9px;
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.user-card .h2k-band-badge {
+  margin: 4px 0;
+}
+
+.feedback-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.feedback-panel h3,
+.feedback-panel p {
+  margin: 0;
+}
+
+.feedback-panel h3 {
+  margin-top: 4px;
+}
+
+.feedback-panel p {
+  margin-top: 8px;
+  color: var(--muted);
+}
+
+.feedback-panel .primary-link {
+  flex: 0 0 auto;
+}
+
+.feedback-panel .primary-link.is-disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  pointer-events: none;
+}
+
 .auth-page {
   min-height: 100vh;
   display: grid;
@@ -1771,6 +1821,31 @@ td {
     gap: 8px;
   }
 
+  .roster-band-editor {
+    display: grid;
+    gap: 8px;
+    max-width: 260px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .roster-band-editor select {
+    width: 100%;
+    min-height: 44px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    border-radius: 10px;
+    padding: 10px 12px;
+  }
+
+  .roster-band-editor p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+
   .roster-checkbox-pill {
     display: inline-flex;
     align-items: center;
@@ -1955,6 +2030,17 @@ td {
   margin: 18px 0;
 }
 
+.profile-preview-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.profile-preview-heading h3 {
+  margin: 0;
+}
+
 .profile-avatar {
   width: 72px;
   height: 72px;
@@ -2056,6 +2142,29 @@ td {
     padding: 12px;
   }
 
+  .exercise-library-picker label {
+    display: grid;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .exercise-library-picker input {
+    width: 100%;
+    min-height: 48px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text);
+    border-radius: 10px;
+    padding: 12px 14px;
+    outline: none;
+  }
+
+  .exercise-library-picker input:focus {
+    border-color: var(--text);
+  }
+
   .exercise-library-form {
     display: grid;
     gap: 14px;
@@ -2112,6 +2221,48 @@ td {
     margin: 0;
     color: var(--muted);
     line-height: 1.45;
+  }
+
+  .exercise-template-edit-form {
+    display: grid;
+    gap: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.035);
+    border-radius: 12px;
+    padding: 14px;
+  }
+
+  .exercise-template-edit-form label {
+    display: grid;
+    gap: 7px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .exercise-template-edit-form input,
+  .exercise-template-edit-form select,
+  .exercise-template-edit-form textarea {
+    width: 100%;
+    min-height: 44px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    border-radius: 10px;
+    padding: 10px 12px;
+    outline: none;
+  }
+
+  .exercise-template-edit-form input:focus,
+  .exercise-template-edit-form select:focus,
+  .exercise-template-edit-form textarea:focus {
+    border-color: var(--text);
+  }
+
+  .exercise-template-edit-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
   }
   
   .exercise-card-heading {
@@ -3543,6 +3694,7 @@ body {
 
   .h2k-header,
   .approval-header,
+  .feedback-panel,
   .today-workout-header,
   .workout-history-main,
   .coach-workout-review-header,

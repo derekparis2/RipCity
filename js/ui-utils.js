@@ -5,6 +5,10 @@
 // putting them into template strings so stored content cannot become HTML.
 
 (function () {
+  // Add the Google Form URL here when the beta feedback form is ready.
+  // Leave blank to show the feedback card as "coming soon."
+  const FEEDBACK_FORM_URL = "";
+
   function escapeHtml(value) {
     return String(value ?? "")
       .replaceAll("&", "&amp;")
@@ -51,6 +55,7 @@
   window.RipCityUI = {
     attr,
     escapeHtml,
+    feedbackFormUrl: FEEDBACK_FORM_URL,
     percent,
     safeInitials,
     text

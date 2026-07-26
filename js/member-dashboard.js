@@ -158,11 +158,18 @@ function updateMemberShell() {
   const memberType = currentMemberProfile?.member_type === "h2k"
     ? "H2K Member"
     : "Athlete";
+  const bandBadge = document.getElementById("member-band-color");
+  const bandColor = currentMemberProfile?.h2k_band_color;
 
   document.getElementById("member-program-label").textContent = memberType;
   document.getElementById("member-sidebar-name").textContent = profile?.full_name || "Member";
   document.getElementById("member-sidebar-role").textContent = memberType;
   document.getElementById("member-avatar").textContent = window.RipCityUI.safeInitials(profile?.full_name);
+
+  if (bandBadge) {
+    bandBadge.textContent = bandColor ? `${bandColor} Band` : "Band not set";
+    bandBadge.classList.toggle("hidden", currentMemberProfile?.member_type !== "h2k");
+  }
 
   const dateLabel = new Date().toLocaleDateString(undefined, {
     weekday: "long",
@@ -170,6 +177,26 @@ function updateMemberShell() {
     day: "numeric"
   });
   document.getElementById("member-dashboard-date").textContent = dateLabel;
+}
+
+function setupFeedbackLink() {
+  const link = document.getElementById("member-feedback-link");
+  if (!link) return;
+
+  const url = window.RipCityUI.feedbackFormUrl;
+
+  if (!url) {
+    link.href = "#";
+    link.textContent = "Feedback Form Coming Soon";
+    link.classList.add("is-disabled");
+    link.setAttribute("aria-disabled", "true");
+    return;
+  }
+
+  link.href = url;
+  link.textContent = "Open Feedback Form";
+  link.classList.remove("is-disabled");
+  link.removeAttribute("aria-disabled");
 }
 
 function setActiveMemberNav(hash) {
@@ -685,6 +712,7 @@ async function logoutH2K() {
 
 document.addEventListener("DOMContentLoaded", () => {
   setupMemberSidebarNav();
+  setupFeedbackLink();
   initH2KDashboard();
 
   document.getElementById("refresh-workout-btn")?.addEventListener("click", loadTodayAssignedWorkouts);

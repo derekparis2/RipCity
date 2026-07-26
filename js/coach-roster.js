@@ -8,6 +8,16 @@ let rosterAccess = null;
 let rosterMembers = [];
 let rosterGroups = [];
 let rosterGroupMemberships = [];
+let rosterSupportsH2KBandColor = true;
+
+const H2K_BAND_COLORS = [
+  "White",
+  "Grey",
+  "Green",
+  "Blue",
+  "Black",
+  "Red"
+];
 
 function showRosterMessage(message, isError = false) {
   const element = document.getElementById("coach-roster-message");
@@ -58,6 +68,10 @@ function getCheckedGroupIds(memberProfileId) {
     .map(input => input.dataset.groupId);
 }
 
+function getSelectedBandColor(memberProfileId) {
+  return document.querySelector(`[data-h2k-band-select="${memberProfileId}"]`)?.value || "";
+}
+
 function sameGroupSelection(savedGroupIds, selectedGroupIds) {
   const saved = new Set(savedGroupIds);
   const selected = new Set(selectedGroupIds);
@@ -69,11 +83,20 @@ function sameGroupSelection(savedGroupIds, selectedGroupIds) {
 function markMemberGroupChanges(memberProfileId) {
   const card = document.querySelector(`[data-roster-member-card="${memberProfileId}"]`);
   if (!card) return;
+  const member = rosterMembers.find(row => row.memberProfileId === memberProfileId);
+  const savedBandColor = member?.memberProfile?.h2k_band_color || "";
+  const selectedBandColor = getSelectedBandColor(memberProfileId);
 
-  const hasChanges = !sameGroupSelection(
+  const hasGroupChanges = !sameGroupSelection(
     getMemberGroupIds(memberProfileId),
     getCheckedGroupIds(memberProfileId)
   );
+  const hasBandChanges = Boolean(
+    rosterSupportsH2KBandColor &&
+    member?.memberType === "h2k" &&
+    savedBandColor !== selectedBandColor
+  );
+  const hasChanges = hasGroupChanges || hasBandChanges;
 
   card.classList.toggle("has-unsaved-changes", hasChanges);
   card.querySelectorAll("[data-save-member-groups], [data-reset-member-groups]").forEach(button => {
@@ -116,35 +139,61 @@ async function requireRosterCoachAccess() {
   });
 }
 
-async function loadRosterMembers(facilityId) {
-  const { data, error } = await db
-    .from("facility_members")
-    .select(`
+function buildRosterMemberSelect(includeBandColor = true) {
+  const bandColorColumn = includeBandColor
+    ? "h2k_band_color,"
+    : "";
+
+  return `
+    id,
+    role,
+    status,
+    created_at,
+    profile:profiles!facility_members_profile_id_fkey (
       id,
-      role,
-      status,
-      created_at,
-      profile:profiles!facility_members_profile_id_fkey (
-        id,
-        full_name,
-        email
-      ),
-      member_profile:member_profiles (
-        id,
-        member_type,
-        sport,
-        age_group,
-        position,
-        school,
-        graduation_year,
-        body_weight,
-        training_focus
-      )
-    `)
+      full_name,
+      email
+    ),
+    member_profile:member_profiles (
+      id,
+      member_type,
+      sport,
+      age_group,
+      position,
+      school,
+      graduation_year,
+      body_weight,
+      training_focus,
+      ${bandColorColumn}
+      facility_member_id
+    )
+  `;
+}
+
+function isMissingBandColorColumnError(error) {
+  return /h2k_band_color/i.test(error?.message || "") ||
+    /h2k_band_color/i.test(error?.details || "");
+}
+
+async function fetchRosterMembers(facilityId, includeBandColor = true) {
+  return db
+    .from("facility_members")
+    .select(buildRosterMemberSelect(includeBandColor))
     .eq("facility_id", facilityId)
     .in("role", ["athlete", "h2k_member"])
     .neq("status", "rejected")
     .order("created_at", { ascending: false });
+}
+
+async function loadRosterMembers(facilityId) {
+  let { data, error } = await fetchRosterMembers(facilityId, true);
+
+  if (error && isMissingBandColorColumnError(error)) {
+    rosterSupportsH2KBandColor = false;
+    ({ data, error } = await fetchRosterMembers(facilityId, false));
+  } else {
+    rosterSupportsH2KBandColor = true;
+  }
 
   if (error) throw error;
 
@@ -263,6 +312,10 @@ function renderRosterMembers() {
     input.addEventListener("change", () => markMemberGroupChanges(input.dataset.memberProfileId));
   });
 
+  document.querySelectorAll("[data-h2k-band-select]").forEach(select => {
+    select.addEventListener("change", () => markMemberGroupChanges(select.dataset.h2kBandSelect));
+  });
+
   document.querySelectorAll("[data-toggle-group-editor]").forEach(button => {
     button.addEventListener("click", () => {
       const card = document.querySelector(`[data-roster-member-card="${button.dataset.memberProfileId}"]`);
@@ -287,6 +340,33 @@ function renderRosterMembers() {
       button.dataset.nextStatus
     ));
   });
+}
+
+function renderH2KBandEditor(member) {
+  if (!rosterSupportsH2KBandColor) {
+    return `
+      <div class="roster-band-editor">
+        <span>H2K Band</span>
+        <p>Run the H2K band migration before coaches can set member bands.</p>
+      </div>
+    `;
+  }
+
+  const currentBand = member.memberProfile?.h2k_band_color || "";
+
+  return `
+    <label class="roster-band-editor">
+      <span>H2K Band</span>
+      <select data-h2k-band-select="${window.RipCityUI.attr(member.memberProfileId)}">
+        <option value="">Band not set</option>
+        ${H2K_BAND_COLORS.map(color => `
+          <option value="${window.RipCityUI.attr(color)}" ${currentBand === color ? "selected" : ""}>
+            ${window.RipCityUI.text(color)} Band
+          </option>
+        `).join("")}
+      </select>
+    </label>
+  `;
 }
 
 function renderRosterMemberCard(member) {
@@ -314,6 +394,9 @@ function renderRosterMemberCard(member) {
           <div class="roster-member-heading">
             <h4>${window.RipCityUI.text(member.name)}</h4>
             <span class="status-pill">${window.RipCityUI.text(formatMemberType(member.memberType))}</span>
+            ${member.memberType === "h2k" ? `
+              <span class="h2k-band-badge">${window.RipCityUI.text(memberProfile.h2k_band_color ? `${memberProfile.h2k_band_color} Band` : "Band not set")}</span>
+            ` : ""}
           </div>
           <p>${window.RipCityUI.text(member.email)}</p>
           <small>${window.RipCityUI.text(meta || "No profile details yet")}</small>
@@ -339,9 +422,11 @@ function renderRosterMemberCard(member) {
 
       <div class="roster-group-editor">
         <div class="roster-editor-heading">
-          <span>Update Groups</span>
+          <span>Update Member Settings</span>
           <em class="roster-unsaved-indicator">Unsaved changes</em>
         </div>
+
+        ${member.memberType === "h2k" ? renderH2KBandEditor(member) : ""}
 
         <div class="roster-group-checkboxes">
           ${compatibleGroups.length ? compatibleGroups.map(group => `
@@ -366,7 +451,7 @@ function renderRosterMemberCard(member) {
             data-member-profile-id="${window.RipCityUI.attr(member.memberProfileId)}"
             disabled
           >
-            Save Groups
+            Save Changes
           </button>
           <button
             class="outline-btn small-inline-btn"
@@ -395,22 +480,42 @@ function renderRosterMemberCard(member) {
 async function saveMemberGroupChanges(memberProfileId) {
   const card = document.querySelector(`[data-roster-member-card="${memberProfileId}"]`);
   const saveButton = card?.querySelector("[data-save-member-groups]");
+  const member = rosterMembers.find(row => row.memberProfileId === memberProfileId);
   const savedGroupIds = getMemberGroupIds(memberProfileId);
   const selectedGroupIds = getCheckedGroupIds(memberProfileId);
+  const selectedBandColor = getSelectedBandColor(memberProfileId);
+  const savedBandColor = member?.memberProfile?.h2k_band_color || "";
   const selectedSet = new Set(selectedGroupIds);
   const savedSet = new Set(savedGroupIds);
   const groupsToAdd = selectedGroupIds.filter(groupId => !savedSet.has(groupId));
   const groupsToRemove = savedGroupIds.filter(groupId => !selectedSet.has(groupId));
+  const shouldUpdateBandColor = Boolean(
+    rosterSupportsH2KBandColor &&
+    member?.memberType === "h2k" &&
+    selectedBandColor !== savedBandColor
+  );
 
-  if (!groupsToAdd.length && !groupsToRemove.length) {
+  if (!groupsToAdd.length && !groupsToRemove.length && !shouldUpdateBandColor) {
     markMemberGroupChanges(memberProfileId);
     return;
   }
 
   if (saveButton) saveButton.disabled = true;
-  showRosterMessage("Saving group changes...");
+  showRosterMessage("Saving member changes...");
 
   try {
+    if (shouldUpdateBandColor) {
+      const { error } = await db
+        .from("member_profiles")
+        .update({
+          h2k_band_color: selectedBandColor || null,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", memberProfileId);
+
+      if (error) throw error;
+    }
+
     if (groupsToAdd.length) {
       const { error } = await db
         .from("group_members")
@@ -438,14 +543,15 @@ async function saveMemberGroupChanges(memberProfileId) {
     rosterGroupMemberships = await loadRosterGroupMemberships(
       rosterMembers.map(member => member.memberProfileId)
     );
+    rosterMembers = await loadRosterMembers(rosterAccess.membership.facility_id);
 
     renderGroupList();
     renderRosterMembers();
-    showRosterMessage("Group changes saved.");
+    showRosterMessage("Member changes saved.");
   } catch (error) {
     console.error(error);
     renderRosterMembers();
-    showRosterMessage(error.message || "Could not save group changes.", true);
+    showRosterMessage(error.message || "Could not save member changes.", true);
   }
 }
 

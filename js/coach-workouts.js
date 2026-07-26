@@ -318,35 +318,60 @@ async function loadExerciseTemplates(facilityId) {
   return data || [];
 }
 
-function renderExerciseTemplatePicker(select) {
-  if (!select) return;
+function getExerciseTemplateLabel(template) {
+  return [
+    template.category,
+    template.equipment,
+    template.input_type
+  ].filter(Boolean).join(" · ");
+}
+
+function normalizeExerciseName(name) {
+  return String(name || "").trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+function findExerciseTemplateByName(name) {
+  const normalizedName = normalizeExerciseName(name);
+  return exerciseTemplates.find(template => normalizeExerciseName(template.name) === normalizedName);
+}
+
+function renderExerciseTemplatePicker(input) {
+  if (!input) return;
+
+  const list = input.closest(".exercise-library-picker")?.querySelector("datalist");
 
   if (!exerciseLibraryAvailable) {
-    select.innerHTML = `<option value="">Library migration not run yet</option>`;
-    select.disabled = true;
+    input.placeholder = "Library migration not run yet";
+    input.disabled = true;
+    if (list) list.innerHTML = "";
     return;
   }
 
   if (!exerciseTemplates.length) {
-    select.innerHTML = `<option value="">No library exercises yet</option>`;
-    select.disabled = true;
+    input.placeholder = "No library exercises yet";
+    input.disabled = true;
+    if (list) list.innerHTML = "";
     return;
   }
 
-  select.disabled = false;
-  select.innerHTML = `
-    <option value="">Choose from library...</option>
+  input.disabled = false;
+  input.placeholder = "Start typing an exercise...";
+
+  if (!list) return;
+
+  list.innerHTML = `
     ${exerciseTemplates.map(template => `
-      <option value="${window.RipCityUI.attr(template.id)}">
-        ${window.RipCityUI.text(template.name)}${template.category ? ` · ${window.RipCityUI.text(template.category)}` : ""}
-      </option>
+      <option
+        value="${window.RipCityUI.attr(template.name)}"
+        label="${window.RipCityUI.attr(getExerciseTemplateLabel(template))}"
+      ></option>
     `).join("")}
   `;
 }
 
 function refreshExerciseTemplatePickers() {
-  document.querySelectorAll(".exercise-template-select").forEach(select => {
-    renderExerciseTemplatePicker(select);
+  document.querySelectorAll(".exercise-template-search").forEach(input => {
+    renderExerciseTemplatePicker(input);
   });
 }
 
@@ -388,11 +413,90 @@ function renderExerciseLibraryList() {
       >
         Add to Builder
       </button>
+
+      <button
+        class="outline-btn small-inline-btn"
+        type="button"
+        data-toggle-template-edit="${window.RipCityUI.attr(template.id)}"
+      >
+        Edit Exercise
+      </button>
+
+      <form class="exercise-template-edit-form hidden" data-template-edit-form="${window.RipCityUI.attr(template.id)}">
+        <label>
+          Exercise Name
+          <input type="text" value="${window.RipCityUI.attr(template.name || "")}" data-template-edit-name required />
+        </label>
+
+        <div class="form-row">
+          <label>
+            Category
+            <input type="text" value="${window.RipCityUI.attr(template.category || "")}" data-template-edit-category />
+          </label>
+
+          <label>
+            Equipment
+            <input type="text" value="${window.RipCityUI.attr(template.equipment || "")}" data-template-edit-equipment />
+          </label>
+        </div>
+
+        <label>
+          Default Input Type
+          <select data-template-edit-input-type>
+            <option value="completion" ${template.input_type === "completion" ? "selected" : ""}>Completion</option>
+            <option value="weight_reps" ${template.input_type === "weight_reps" ? "selected" : ""}>Weight + Reps</option>
+            <option value="band_color" ${template.input_type === "band_color" ? "selected" : ""}>Band Color</option>
+            <option value="time" ${template.input_type === "time" ? "selected" : ""}>Time</option>
+            <option value="distance" ${template.input_type === "distance" ? "selected" : ""}>Distance</option>
+            <option value="custom" ${template.input_type === "custom" ? "selected" : ""}>Custom</option>
+          </select>
+        </label>
+
+        <label>
+          Description / Cues
+          <textarea rows="3" data-template-edit-description>${window.RipCityUI.text(template.description || "")}</textarea>
+        </label>
+
+        <label>
+          Demo Video URL
+          <input type="text" value="${window.RipCityUI.attr(template.video_url || "")}" data-template-edit-video />
+        </label>
+
+        <label>
+          Default Coach Note
+          <textarea rows="2" data-template-edit-coach-note>${window.RipCityUI.text(template.coach_note || "")}</textarea>
+        </label>
+
+        <div class="exercise-template-edit-actions">
+          <button class="primary-btn small-inline-btn" type="submit">Save Exercise</button>
+          <button class="outline-btn small-inline-btn" type="button" data-cancel-template-edit="${window.RipCityUI.attr(template.id)}">Cancel</button>
+        </div>
+      </form>
     </article>
   `).join("");
 
   list.querySelectorAll("[data-add-template-to-builder]").forEach(button => {
     button.addEventListener("click", () => addTemplateToBuilder(button.dataset.addTemplateToBuilder));
+  });
+
+  list.querySelectorAll("[data-toggle-template-edit]").forEach(button => {
+    button.addEventListener("click", () => {
+      document
+        .querySelector(`[data-template-edit-form="${button.dataset.toggleTemplateEdit}"]`)
+        ?.classList.toggle("hidden");
+    });
+  });
+
+  list.querySelectorAll("[data-cancel-template-edit]").forEach(button => {
+    button.addEventListener("click", () => {
+      document
+        .querySelector(`[data-template-edit-form="${button.dataset.cancelTemplateEdit}"]`)
+        ?.classList.add("hidden");
+    });
+  });
+
+  list.querySelectorAll("[data-template-edit-form]").forEach(form => {
+    form.addEventListener("submit", event => saveExerciseTemplateEdit(event, form.dataset.templateEditForm));
   });
 }
 
@@ -445,6 +549,7 @@ function applyExerciseTemplateToCard(card, templateId) {
   if (!template) return;
 
   card.querySelector(".exercise-template-id").value = template.id;
+  card.querySelector(".exercise-template-search").value = template.name || "";
   card.querySelector(".exercise-name").value = template.name || "";
   card.querySelector(".exercise-description").value = template.description || "";
   card.querySelector(".exercise-input-type").value = template.input_type || "completion";
@@ -452,12 +557,30 @@ function applyExerciseTemplateToCard(card, templateId) {
   card.querySelector(".exercise-coach-note").value = template.coach_note || "";
 }
 
+function applyExerciseTemplateSearch(card) {
+  const searchInput = card.querySelector(".exercise-template-search");
+  const hiddenInput = card.querySelector(".exercise-template-id");
+  if (!searchInput || !hiddenInput) return;
+
+  const search = searchInput.value.trim().toLowerCase();
+  const template = findExerciseTemplateByName(search);
+
+  if (!template) {
+    hiddenInput.value = "";
+    return;
+  }
+
+  applyExerciseTemplateToCard(card, template.id);
+}
+
 function getLastOrCreateBuilderBlock() {
-  let blockCard = Array.from(document.querySelectorAll("[data-block-card]")).at(-1);
+  let blockCards = Array.from(document.querySelectorAll("[data-block-card]"));
+  let blockCard = blockCards[blockCards.length - 1];
 
   if (!blockCard) {
     addBlockCard();
-    blockCard = Array.from(document.querySelectorAll("[data-block-card]")).at(-1);
+    blockCards = Array.from(document.querySelectorAll("[data-block-card]"));
+    blockCard = blockCards[blockCards.length - 1];
   }
 
   return blockCard;
@@ -510,7 +633,8 @@ async function saveExerciseTemplate(event) {
         equipment: getInputValue("library-exercise-equipment") || null,
         input_type: getInputValue("library-exercise-input-type") || "completion",
         description: getInputValue("library-exercise-description") || null,
-        video_url: getInputValue("library-exercise-video") || null
+        video_url: getInputValue("library-exercise-video") || null,
+        coach_note: getInputValue("library-exercise-coach-note") || null
       });
 
     if (error) throw error;
@@ -521,6 +645,45 @@ async function saveExerciseTemplate(event) {
   } catch (error) {
     console.error(error);
     showExerciseLibraryMessage(error.message || "Could not save exercise.", true);
+  }
+}
+
+async function saveExerciseTemplateEdit(event, templateId) {
+  event.preventDefault();
+
+  const form = event.currentTarget;
+  const name = form.querySelector("[data-template-edit-name]").value.trim();
+
+  if (!name) {
+    showExerciseLibraryMessage("Exercise name is required.", true);
+    return;
+  }
+
+  showExerciseLibraryMessage("Saving exercise...");
+
+  try {
+    const { error } = await db
+      .from("exercise_templates")
+      .update({
+        name,
+        category: form.querySelector("[data-template-edit-category]").value.trim() || null,
+        equipment: form.querySelector("[data-template-edit-equipment]").value.trim() || null,
+        input_type: form.querySelector("[data-template-edit-input-type]").value || "completion",
+        description: form.querySelector("[data-template-edit-description]").value.trim() || null,
+        video_url: form.querySelector("[data-template-edit-video]").value.trim() || null,
+        coach_note: form.querySelector("[data-template-edit-coach-note]").value.trim() || null,
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", templateId)
+      .eq("facility_id", workoutCoachAccess.membership.facility_id);
+
+    if (error) throw error;
+
+    await refreshExerciseLibrary();
+    showExerciseLibraryMessage("Exercise updated.");
+  } catch (error) {
+    console.error(error);
+    showExerciseLibraryMessage(error.message || "Could not update exercise.", true);
   }
 }
 
@@ -602,6 +765,8 @@ function createBlockCard(index) {
 
 function createExerciseCard(index) {
   // Exercise fields map directly to workout_exercises columns.
+  const templateListId = `exercise-template-list-${createClientId()}`;
+
   return `
     <article class="exercise-builder-card" data-exercise-card>
       <div class="exercise-card-heading">
@@ -614,9 +779,15 @@ function createExerciseCard(index) {
       <div class="exercise-library-picker">
         <label>
           Exercise Library
-          <select class="exercise-template-select">
-            <option value="">Loading library...</option>
-          </select>
+          <input
+            type="text"
+            class="exercise-template-search"
+            list="${window.RipCityUI.attr(templateListId)}"
+            placeholder="Loading library..."
+            autocomplete="off"
+          />
+          <datalist id="${window.RipCityUI.attr(templateListId)}"></datalist>
+          <small class="field-help">Type to search, or keep typing to use a custom exercise.</small>
         </label>
       </div>
 
@@ -702,12 +873,16 @@ function addExerciseToBlock(blockCard) {
 
   const newestCard = list.lastElementChild;
   const removeButton = newestCard.querySelector(".remove-exercise-btn");
-  const templateSelect = newestCard.querySelector(".exercise-template-select");
+  const templateSearch = newestCard.querySelector(".exercise-template-search");
 
-  renderExerciseTemplatePicker(templateSelect);
+  renderExerciseTemplatePicker(templateSearch);
 
-  templateSelect.addEventListener("change", () => {
-    applyExerciseTemplateToCard(newestCard, templateSelect.value);
+  templateSearch.addEventListener("input", () => {
+    applyExerciseTemplateSearch(newestCard);
+  });
+
+  templateSearch.addEventListener("change", () => {
+    applyExerciseTemplateSearch(newestCard);
   });
 
   removeButton.addEventListener("click", () => {
@@ -717,7 +892,9 @@ function addExerciseToBlock(blockCard) {
 }
 
 function setExerciseCardValues(card, exercise = {}) {
+  const template = exerciseTemplates.find(row => row.id === exercise.exercise_template_id);
   card.querySelector(".exercise-template-id").value = exercise.exercise_template_id || "";
+  card.querySelector(".exercise-template-search").value = template?.name || "";
   card.querySelector(".exercise-name").value = exercise.name || "";
   card.querySelector(".exercise-description").value = exercise.description || "";
   card.querySelector(".exercise-sets").value = exercise.sets || "";
@@ -817,8 +994,14 @@ function getBlockFormData() {
     const exerciseCards = Array.from(blockCard.querySelectorAll("[data-exercise-card]"));
 
     const exercises = exerciseCards.map((card, exerciseIndex) => {
+      const exerciseName = card.querySelector(".exercise-name").value.trim();
+      const templateId = getCardInputValue(card, ".exercise-template-id") || null;
+      const linkedTemplate = exerciseTemplates.find(template => template.id === templateId);
+      const templateStillMatchesName = linkedTemplate &&
+        normalizeExerciseName(linkedTemplate.name) === normalizeExerciseName(exerciseName);
+
       return {
-        name: card.querySelector(".exercise-name").value.trim(),
+        name: exerciseName,
         description: card.querySelector(".exercise-description").value.trim() || null,
         sets: card.querySelector(".exercise-sets").value
           ? Number(card.querySelector(".exercise-sets").value)
@@ -827,7 +1010,7 @@ function getBlockFormData() {
         tempo: card.querySelector(".exercise-tempo").value.trim() || null,
         rest_time: card.querySelector(".exercise-rest").value.trim() || null,
         input_type: card.querySelector(".exercise-input-type").value,
-        exercise_template_id: getCardInputValue(card, ".exercise-template-id") || null,
+        exercise_template_id: templateStillMatchesName ? templateId : null,
         video_url: card.querySelector(".exercise-video").value.trim() || null,
         coach_note: card.querySelector(".exercise-coach-note").value.trim() || null,
         exercise_order: exerciseIndex
@@ -840,6 +1023,85 @@ function getBlockFormData() {
       exercises
     };
   }).filter(block => block.name && block.exercises.length);
+}
+
+async function createTemplateFromWorkoutExercise(exercise) {
+  const templateId = createClientId();
+  const { error } = await db
+    .from("exercise_templates")
+    .insert({
+      id: templateId,
+      facility_id: workoutCoachAccess.membership.facility_id,
+      created_by: workoutCoachAccess.profile.id,
+      name: exercise.name,
+      input_type: exercise.input_type || "completion",
+      description: exercise.description,
+      video_url: exercise.video_url,
+      coach_note: exercise.coach_note
+    });
+
+  if (error) throw error;
+
+  return {
+    id: templateId,
+    facility_id: workoutCoachAccess.membership.facility_id,
+    name: exercise.name,
+    input_type: exercise.input_type || "completion",
+    description: exercise.description,
+    video_url: exercise.video_url,
+    coach_note: exercise.coach_note
+  };
+}
+
+async function ensureWorkoutExercisesAreInLibrary(blocks) {
+  if (!exerciseLibraryAvailable) return blocks;
+
+  const templatesByName = new Map(
+    exerciseTemplates.map(template => [normalizeExerciseName(template.name), template])
+  );
+  const createdTemplates = [];
+
+  for (const block of blocks) {
+    for (const exercise of block.exercises) {
+      if (exercise.exercise_template_id) continue;
+
+      const normalizedName = normalizeExerciseName(exercise.name);
+      if (!normalizedName) continue;
+
+      const existingTemplate = templatesByName.get(normalizedName);
+      if (existingTemplate) {
+        exercise.exercise_template_id = existingTemplate.id;
+        continue;
+      }
+
+      try {
+        const createdTemplate = await createTemplateFromWorkoutExercise(exercise);
+        templatesByName.set(normalizedName, createdTemplate);
+        createdTemplates.push(createdTemplate);
+        exercise.exercise_template_id = createdTemplate.id;
+      } catch (error) {
+        // If another coach added the same exercise first, refresh and attach it.
+        // Other errors should still stop the workout save so the coach sees them.
+        if (error?.code !== "23505") throw error;
+
+        exerciseTemplates = await loadExerciseTemplates(workoutCoachAccess.membership.facility_id);
+        const duplicateTemplate = findExerciseTemplateByName(exercise.name);
+        if (!duplicateTemplate) throw error;
+
+        templatesByName.set(normalizedName, duplicateTemplate);
+        exercise.exercise_template_id = duplicateTemplate.id;
+      }
+    }
+  }
+
+  if (createdTemplates.length) {
+    exerciseTemplates = [...exerciseTemplates, ...createdTemplates]
+      .sort((a, b) => a.name.localeCompare(b.name));
+    renderExerciseLibraryList();
+    refreshExerciseTemplatePickers();
+  }
+
+  return blocks;
 }
 
 function buildAssignmentRows({ workoutId, targetType, groupIds = [], memberProfileId = "", assignedDate }) {
@@ -984,7 +1246,7 @@ async function createWorkoutWithAssignment(event) {
       return;
     }
 
-    const blocks = getBlockFormData();
+    const blocks = await ensureWorkoutExercisesAreInLibrary(getBlockFormData());
 
     if (!blocks.length) {
         showWorkoutMessage("Add at least one block with at least one exercise.", true);

@@ -79,6 +79,7 @@ function updateProfilePreview() {
     currentMemberProfile?.member_type === "h2k"
       ? "H2K Member"
       : "Athlete";
+  const bandBadge = document.getElementById("preview-h2k-band");
 
   document.getElementById("preview-name").textContent = fullName;
   document.getElementById("preview-username").textContent = `@${username}`;
@@ -89,6 +90,13 @@ function updateProfilePreview() {
 
   const avatar = document.getElementById("profile-avatar");
   avatar.textContent = fullName.charAt(0).toUpperCase();
+
+  if (bandBadge) {
+    bandBadge.textContent = currentMemberProfile?.h2k_band_color
+      ? `${currentMemberProfile.h2k_band_color} Band`
+      : "Band not set";
+    bandBadge.classList.toggle("hidden", currentMemberProfile?.member_type !== "h2k");
+  }
 }
 
 function updateProfileFieldVisibility() {
