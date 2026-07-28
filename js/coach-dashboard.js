@@ -9,6 +9,9 @@ let coachHabits = [];
 let coachWorkoutReviewRows = [];
 let coachReviewMembers = [];
 let coachReviewGroups = [];
+let coachReviewFilterOptions = {
+  targets: new Map()
+};
 
 const COACH_WORKOUT_ASSIGNMENT_SELECT = `
   id,
@@ -136,7 +139,8 @@ async function loadApprovedH2KMembers(facilityId) {
       profile:profiles!facility_members_profile_id_fkey (
         id,
         full_name,
-        email
+        email,
+        profile_picture_url
       ),
       member_profile:member_profiles (
         id,
@@ -203,6 +207,7 @@ function buildMemberScoreRows(members, logs) {
       memberProfileId,
       name: member.profile?.full_name || "Unnamed Member",
       email: member.profile?.email || "",
+      profilePictureUrl: member.profile?.profile_picture_url || "",
       todayScore,
       weeklyScore,
       maxDailyScore,
@@ -256,9 +261,12 @@ function renderCoachMemberList(rows) {
 
     return `
       <article class="coach-member-card">
-        <div>
-          <h4>${window.RipCityUI.text(row.name)}</h4>
-          <p>${window.RipCityUI.text(row.email)}</p>
+        <div class="coach-member-card-heading">
+          ${window.RipCityUI.avatarMarkup(row.name, row.profilePictureUrl, "coach-member-avatar")}
+          <div>
+            <h4>${window.RipCityUI.text(row.name)}</h4>
+            <p>${window.RipCityUI.text(row.email)}</p>
+          </div>
         </div>
 
         <div class="coach-score-grid">
@@ -300,7 +308,8 @@ async function loadApprovedFacilityMembers(facilityId) {
       profile:profiles!facility_members_profile_id_fkey (
         id,
         full_name,
-        email
+        email,
+        profile_picture_url
       ),
       member_profile:member_profiles (
         id,
@@ -325,6 +334,7 @@ async function loadApprovedFacilityMembers(facilityId) {
       memberType: memberProfile?.member_type || member.role,
       name: member.profile?.full_name || "Unnamed Member",
       email: member.profile?.email || "",
+      profilePictureUrl: member.profile?.profile_picture_url || "",
       sport: memberProfile?.sport || "",
       ageGroup: memberProfile?.age_group || ""
     };
@@ -362,11 +372,31 @@ async function loadRecentWorkoutAssignmentsForCoach(facilityId) {
     .select(COACH_WORKOUT_ASSIGNMENT_SELECT)
     .lte("assigned_date", getTodayString())
     .order("assigned_date", { ascending: false })
-    .limit(15);
+    .limit(60);
 
   if (error) throw error;
 
   return (data || []).filter(assignment => assignment.workout?.facility_id === facilityId);
+}
+
+function formatMemberTypeLabel(memberType) {
+  return memberType === "h2k" ? "H2K" : "Athlete";
+}
+
+function getMemberCompletionStatus(member) {
+  if (member.summary.isComplete) return "complete";
+  if (member.summary.completedSets > 0) return "in_progress";
+  return "not_started";
+}
+
+function getMemberCompletionStatusLabel(status) {
+  const labels = {
+    complete: "Complete",
+    in_progress: "In Progress",
+    not_started: "Not Started"
+  };
+
+  return labels[status] || "Not Started";
 }
 
 function getAssignedMembersForWorkout(assignment, members, groupMemberships, facilityId) {
@@ -392,7 +422,7 @@ function getAssignedMembersForWorkout(assignment, members, groupMemberships, fac
 }
 
 function buildCoachWorkoutReviewRows(assignments, members, groupMemberships, logs, facilityId) {
-  return assignments.map(assignment => {
+  return assignments.map((assignment, index) => {
     // Assignment targets are intentionally expanded on the client for the MVP.
     // Future analytics can move this into a view/RPC once RLS is enabled.
     const assignedMembers = getAssignedMembersForWorkout(
@@ -414,10 +444,12 @@ function buildCoachWorkoutReviewRows(assignments, members, groupMemberships, log
         assignmentId: assignment.id,
         workoutId: assignment.workout?.id,
         workoutTitle: assignment.workout?.title || "Untitled Workout",
-        assignedDate: assignment.assigned_date,
-        logs: memberLogs,
-        summary
-      };
+      assignedDate: assignment.assigned_date,
+      targetKey: getAssignmentFilterKey(assignment),
+      originalIndex: index,
+      logs: memberLogs,
+      summary
+    };
     });
 
     const completedMembers = memberRows.filter(row => row.summary.isComplete).length;
@@ -433,9 +465,91 @@ function buildCoachWorkoutReviewRows(assignments, members, groupMemberships, log
       assignedMembers: memberRows,
       completedMembers,
       activeMembers,
-      latestLog
+      latestLog,
+      targetKey: getAssignmentFilterKey(assignment),
+      originalIndex: index
     };
   });
+}
+
+function getAssignmentFilterKey(assignment) {
+  if (assignment.target_type === "group") return `group:${assignment.target_group_id || ""}`;
+  if (assignment.target_type === "member") return `member:${assignment.target_member_profile_id || ""}`;
+  if (assignment.target_type === "facility") return `facility:${assignment.target_facility_id || ""}`;
+  return "assignment:unknown";
+}
+
+function buildCoachReviewFilterOptions(rows) {
+  const targets = new Map();
+
+  rows.forEach(row => {
+    targets.set(row.targetKey, formatAssignmentTarget(row.assignment));
+  });
+
+  coachReviewFilterOptions = { targets };
+  renderCoachReviewFilters();
+}
+
+function renderCoachReviewFilters() {
+  const dateFilter = document.getElementById("coach-review-date-filter");
+  const targetFilter = document.getElementById("coach-review-target-filter");
+  if (!dateFilter || !targetFilter) return;
+
+  const selectedTarget = targetFilter.value;
+
+  if (!dateFilter.value) {
+    dateFilter.value = getTodayString();
+  }
+
+  targetFilter.innerHTML = `
+    <option value="all">All assignments</option>
+    ${Array.from(coachReviewFilterOptions.targets.entries()).map(([key, label]) => `
+      <option value="${window.RipCityUI.attr(key)}">${window.RipCityUI.text(label)}</option>
+    `).join("")}
+  `;
+
+  if (coachReviewFilterOptions.targets.has(selectedTarget)) {
+    targetFilter.value = selectedTarget;
+  }
+}
+
+function getCoachReviewFilters() {
+  return {
+    memberType: document.getElementById("coach-review-member-type-filter")?.value || "all",
+    selectedDate: document.getElementById("coach-review-date-filter")?.value || getTodayString(),
+    targetKey: document.getElementById("coach-review-target-filter")?.value || "all",
+    status: document.getElementById("coach-review-status-filter")?.value || "all"
+  };
+}
+
+function getFilteredMembersForReviewRow(row, filters) {
+  return row.assignedMembers.filter(member => {
+    const status = getMemberCompletionStatus(member);
+
+    if (filters.memberType !== "all" && member.memberType !== filters.memberType) return false;
+    if (filters.status !== "all" && status !== filters.status) return false;
+
+    return true;
+  });
+}
+
+function getFilteredWorkoutReviewRows(rows, filters) {
+  return rows
+    .filter(row => {
+      if (filters.targetKey !== "all" && row.targetKey !== filters.targetKey) return false;
+      return getFilteredMembersForReviewRow(row, filters).length > 0;
+    })
+    .map(row => ({
+      ...row,
+      filteredMembers: getFilteredMembersForReviewRow(row, filters)
+    }));
+}
+
+function getReviewSectionCounts(rows) {
+  const assignmentCount = rows.length;
+  const memberCount = rows.reduce((total, row) => total + row.filteredMembers.length, 0);
+
+  return `${assignmentCount} ${assignmentCount === 1 ? "assignment" : "assignments"} · ${memberCount} ${memberCount === 1 ? "member" : "members"}`;
 }
 
 async function refreshCoachWorkoutReview() {
@@ -466,27 +580,85 @@ async function refreshCoachWorkoutReview() {
       facilityId
     );
 
+    buildCoachReviewFilterOptions(coachWorkoutReviewRows);
     renderCoachWorkoutReview(coachWorkoutReviewRows);
     showCoachWorkoutReviewMessage("");
   } catch (error) {
     console.error(error);
     showCoachWorkoutReviewMessage(error.message || "Could not load workout completion.", true);
     list.innerHTML = `<div class="empty-state">Could not load workout completion.</div>`;
+    const previousList = document.getElementById("coach-workout-previous-list");
+    if (previousList) {
+      previousList.innerHTML = `<div class="empty-state">Could not load previous workout completion.</div>`;
+    }
   }
 }
 
 function renderCoachWorkoutReview(rows) {
   const list = document.getElementById("coach-workout-review-list");
+  const previousList = document.getElementById("coach-workout-previous-list");
+  const todayCount = document.getElementById("coach-review-today-count");
+  const previousCount = document.getElementById("coach-review-previous-count");
+  const selectedDateHeading = document.getElementById("coach-review-selected-date-heading");
+  const filters = getCoachReviewFilters();
+  const today = getTodayString();
+
+  const filteredRows = getFilteredWorkoutReviewRows(rows, filters);
+  const selectedDateRows = filteredRows.filter(row =>
+    row.assignment.assigned_date === filters.selectedDate
+  );
+  const previousRows = filteredRows.filter(row =>
+    row.assignment.assigned_date < today &&
+    row.assignment.assigned_date !== filters.selectedDate
+  );
+
+  if (selectedDateHeading) {
+    selectedDateHeading.textContent = filters.selectedDate === today
+      ? "Today's Workout Completion"
+      : `${window.RipCityWorkoutData.formatDateLabel(filters.selectedDate)} Completion`;
+  }
+
+  if (todayCount) todayCount.textContent = getReviewSectionCounts(selectedDateRows);
+  if (previousCount) previousCount.textContent = previousRows.length ? getReviewSectionCounts(previousRows) : "No previous matches";
+
+  renderCoachWorkoutReviewList(
+    list,
+    selectedDateRows,
+    "No workouts assigned for this date match these filters."
+  );
+
+  renderCoachWorkoutReviewList(
+    previousList,
+    previousRows,
+    "No previous workouts match these filters."
+  );
+
+  bindCoachWorkoutDetailButtons();
+}
+
+function renderCoachWorkoutReviewList(list, rows, emptyText) {
+  if (!list) return;
 
   if (!rows.length) {
-    list.innerHTML = `<div class="empty-state">No assigned workouts found yet.</div>`;
+    list.innerHTML = `<div class="empty-state">${window.RipCityUI.text(emptyText)}</div>`;
     return;
   }
 
-  list.innerHTML = rows.map((row, rowIndex) => {
-    const memberCount = row.assignedMembers.length;
+  list.innerHTML = rows.map(row => {
+    const members = row.filteredMembers || row.assignedMembers;
+    const memberCount = members.length;
+    const completedMembers = members
+      .filter(member => getMemberCompletionStatus(member) === "complete")
+      .length;
+    const activeMembers = members
+      .filter(member => getMemberCompletionStatus(member) === "in_progress")
+      .length;
+    const latestLog = members
+      .map(member => member.summary.lastLoggedAt)
+      .filter(Boolean)
+      .sort((a, b) => new Date(b) - new Date(a))[0] || null;
     const completionPercent = memberCount
-      ? Math.round((row.completedMembers / memberCount) * 100)
+      ? Math.round((completedMembers / memberCount) * 100)
       : 0;
 
     return `
@@ -499,9 +671,9 @@ function renderCoachWorkoutReview(rows) {
           </div>
 
           <div class="coach-workout-review-summary">
-            <span><strong>${row.completedMembers}/${memberCount}</strong> Complete</span>
-            <span><strong>${row.activeMembers}</strong> Started</span>
-            <span><strong>${window.RipCityUI.text(window.RipCityWorkoutData.formatDateTimeLabel(row.latestLog))}</strong> Latest</span>
+            <span><strong>${completedMembers}/${memberCount}</strong> Complete</span>
+            <span><strong>${activeMembers}</strong> In Progress</span>
+            <span><strong>${window.RipCityUI.text(window.RipCityWorkoutData.formatDateTimeLabel(latestLog))}</strong> Latest</span>
           </div>
         </div>
 
@@ -510,12 +682,14 @@ function renderCoachWorkoutReview(rows) {
         </div>
 
         <div class="coach-workout-member-table">
-          ${row.assignedMembers.map(member => renderCoachWorkoutMemberRow(member, rowIndex)).join("")}
+          ${members.map(member => renderCoachWorkoutMemberRow(member, row.originalIndex)).join("")}
         </div>
       </article>
     `;
   }).join("");
+}
 
+function bindCoachWorkoutDetailButtons() {
   document.querySelectorAll("[data-review-row][data-member-id]").forEach(button => {
     button.addEventListener("click", () => {
       const rowIndex = Number(button.dataset.reviewRow);
@@ -526,25 +700,24 @@ function renderCoachWorkoutReview(rows) {
 }
 
 function renderCoachWorkoutMemberRow(member, rowIndex) {
-  const status = member.summary.isComplete
-    ? "Complete"
-    : member.summary.completedSets > 0
-      ? "In Progress"
-      : "Not Started";
-  const statusClass = member.summary.isComplete
+  const status = getMemberCompletionStatus(member);
+  const statusClass = status === "complete"
     ? "is-complete"
-    : member.summary.completedSets > 0
+    : status === "in_progress"
       ? "is-active"
       : "is-empty";
 
   return `
     <div class="coach-workout-member-row">
-      <div>
-        <strong>${window.RipCityUI.text(member.name)}</strong>
-        <span>${window.RipCityUI.text(member.memberType)} ${member.sport ? `· ${window.RipCityUI.text(member.sport)}` : ""}</span>
+      <div class="coach-review-member-cell">
+        ${window.RipCityUI.avatarMarkup(member.name, member.profilePictureUrl, "coach-review-avatar")}
+        <div>
+          <strong>${window.RipCityUI.text(member.name)}</strong>
+          <span>${window.RipCityUI.text(member.memberType)} ${member.sport ? `· ${window.RipCityUI.text(member.sport)}` : ""}</span>
+        </div>
       </div>
 
-      <span class="coach-review-status ${statusClass}">${window.RipCityUI.text(status)}</span>
+      <span class="coach-review-status ${statusClass}">${window.RipCityUI.text(getMemberCompletionStatusLabel(status))}</span>
       <span>${member.summary.completedSets}/${member.summary.totalSets} sets</span>
       <span>${member.summary.completionPercent}%</span>
       <span>${window.RipCityUI.text(window.RipCityWorkoutData.formatDateTimeLabel(member.summary.lastLoggedAt))}</span>
@@ -724,6 +897,17 @@ document.addEventListener("DOMContentLoaded", () => {
   document
     .getElementById("refresh-workout-review-btn")
     ?.addEventListener("click", refreshCoachWorkoutReview);
+
+  [
+    "coach-review-member-type-filter",
+    "coach-review-date-filter",
+    "coach-review-target-filter",
+    "coach-review-status-filter"
+  ].forEach(id => {
+    document
+      .getElementById(id)
+      ?.addEventListener("input", () => renderCoachWorkoutReview(coachWorkoutReviewRows));
+  });
 
   document
     .getElementById("coach-logout-btn")

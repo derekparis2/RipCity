@@ -212,23 +212,92 @@
           <button class="outline-btn full-btn" type="submit">Save Exercise</button>
         </form>
 
+        <div class="exercise-library-search-panel">
+          <label>
+            Search Saved Exercises
+            <input
+              type="search"
+              id="exercise-library-search"
+              placeholder="Type exercise name, category, equipment..."
+              autocomplete="off"
+            />
+          </label>
+
+          <div class="form-row">
+            <label>
+              Category
+              <select id="exercise-library-category-filter">
+                <option value="all">All categories</option>
+              </select>
+            </label>
+
+            <label>
+              Input Type
+              <select id="exercise-library-input-filter">
+                <option value="all">All input types</option>
+                <option value="completion">Completion</option>
+                <option value="weight_reps">Weight + Reps</option>
+                <option value="band_color">Band Color</option>
+                <option value="time">Time</option>
+                <option value="distance">Distance</option>
+                <option value="custom">Custom</option>
+              </select>
+            </label>
+          </div>
+
+          <span id="exercise-library-count" class="muted-small">Search to edit saved exercises.</span>
+        </div>
+
         <div id="exercise-library-list" class="exercise-library-list">
           <div class="empty-state">Loading exercise library...</div>
         </div>
       </article>
 
-      <article class="panel">
-        <div class="panel-heading">
-          <div>
-            <p class="eyebrow">RECENT WORKOUTS</p>
-            <h3>Created Workouts</h3>
+      <details class="panel recent-workouts-panel" id="recent-workouts-panel">
+        <summary>
+          <span>
+            <span class="eyebrow">RECENT WORKOUTS</span>
+            <strong>Created Workouts</strong>
+          </span>
+          <span id="recent-workouts-count">Click to view</span>
+        </summary>
+
+        <div class="recent-workouts-content">
+          <div class="recent-workout-filter-grid">
+            <label>
+              Search
+              <input
+                id="recent-workout-search"
+                type="search"
+                placeholder="Workout title, focus, assignment..."
+                autocomplete="off"
+              />
+            </label>
+
+            <label>
+              Assigned Date
+              <input id="recent-workout-date-filter" type="date" />
+            </label>
+
+            <label>
+              Assignment
+              <select id="recent-workout-target-filter">
+                <option value="all">All assignments</option>
+                <option value="group">Groups</option>
+                <option value="member">Individual members</option>
+                <option value="facility">Entire facility</option>
+                <option value="unassigned">Unassigned</option>
+              </select>
+            </label>
+
+            <button class="outline-btn" id="refresh-workouts-btn" type="button">Refresh</button>
           </div>
 
-          <button class="outline-btn" id="refresh-workouts-btn">Refresh</button>
+          <div id="recent-workouts-list" class="recent-workouts-list">
+            <div class="empty-state">Loading workouts...</div>
+          </div>
         </div>
-
-        <div id="recent-workouts-list" class="recent-workouts-list"></div>
-      </article>
+      </details>
     </section>
   </main>
 

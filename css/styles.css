@@ -1586,6 +1586,25 @@ td {
     border-radius: 14px;
     padding: 18px;
   }
+
+  .coach-member-card-heading,
+  .coach-review-member-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  .coach-member-avatar,
+  .coach-review-avatar {
+    flex: 0 0 auto;
+  }
+
+  .coach-review-avatar {
+    width: 34px;
+    height: 34px;
+    font-size: 13px;
+  }
   
   .coach-member-card h4 {
     margin: 0 0 5px;
@@ -2236,6 +2255,45 @@ td {
     border-color: var(--text);
   }
 
+  .exercise-library-search-panel {
+    display: grid;
+    gap: 12px;
+    margin-top: 18px;
+    border: 1px solid var(--border);
+    background: rgba(18, 18, 20, 0.72);
+    border-radius: 14px;
+    padding: 14px;
+  }
+
+  .exercise-library-search-panel label {
+    display: grid;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+
+  .exercise-library-search-panel input,
+  .exercise-library-search-panel select {
+    width: 100%;
+    min-height: 44px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text);
+    border-radius: 12px;
+    padding: 11px 13px;
+    outline: none;
+    font: inherit;
+    font-weight: 800;
+  }
+
+  .exercise-library-search-panel input:focus,
+  .exercise-library-search-panel select:focus {
+    border-color: var(--text);
+  }
+
   .exercise-library-list {
     display: grid;
     gap: 12px;
@@ -2320,6 +2378,80 @@ td {
     display: grid;
     gap: 14px;
     margin-top: 18px;
+  }
+
+  .recent-workouts-panel summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .recent-workouts-panel summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .recent-workouts-panel summary strong {
+    display: block;
+    margin-top: 4px;
+    font-family: "Barlow Condensed", sans-serif;
+    font-size: 28px;
+    line-height: 0.95;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .recent-workouts-panel summary > span:last-child {
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    border-radius: 999px;
+    padding: 8px 10px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  .recent-workouts-content {
+    margin-top: 18px;
+  }
+
+  .recent-workout-filter-grid {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) minmax(160px, 0.5fr) minmax(170px, 0.55fr) auto;
+    gap: 12px;
+    align-items: end;
+  }
+
+  .recent-workout-filter-grid label {
+    display: grid;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+
+  .recent-workout-filter-grid input,
+  .recent-workout-filter-grid select {
+    width: 100%;
+    min-height: 46px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text);
+    border-radius: 12px;
+    padding: 11px 13px;
+    outline: none;
+    font: inherit;
+    font-weight: 800;
+  }
+
+  .recent-workout-filter-grid input:focus,
+  .recent-workout-filter-grid select:focus {
+    border-color: var(--text);
   }
   
   .recent-workout-card {
@@ -2689,6 +2821,89 @@ td {
     display: grid;
     gap: 14px;
     margin-top: 18px;
+  }
+
+  .coach-review-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 18px;
+  }
+
+  .coach-review-filter-grid label {
+    display: grid;
+    gap: 7px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+
+  .coach-review-filter-grid select,
+  .coach-review-filter-grid input {
+    min-width: 0;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    border-radius: 12px;
+    color: var(--text);
+    padding: 12px 13px;
+    font: inherit;
+    font-weight: 800;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  .coach-review-section {
+    margin-top: 22px;
+  }
+
+  .coach-review-subheading,
+  .coach-review-previous summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .coach-review-subheading h4,
+  .coach-review-previous summary strong {
+    display: block;
+    margin: 4px 0 0;
+    font-family: "Barlow Condensed", sans-serif;
+    font-size: 26px;
+    line-height: 0.95;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .coach-review-subheading > span,
+  .coach-review-previous summary > span:last-child {
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    border-radius: 999px;
+    padding: 8px 10px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  .coach-review-previous {
+    margin-top: 18px;
+    border: 1px solid var(--border);
+    background: rgba(18, 18, 20, 0.72);
+    border-radius: 18px;
+    padding: 16px;
+  }
+
+  .coach-review-previous summary {
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .coach-review-previous summary::-webkit-details-marker {
+    display: none;
   }
 
   .workout-history-card,
@@ -3069,7 +3284,9 @@ td {
 
     .workout-history-main,
     .coach-workout-review-header,
-    .coach-workout-detail-heading {
+    .coach-workout-detail-heading,
+    .coach-review-subheading,
+    .coach-review-previous summary {
       flex-direction: column;
     }
 
@@ -4038,6 +4255,8 @@ body {
   .auth-grid,
   .member-type-grid,
   .roster-filter-grid,
+  .coach-review-filter-grid,
+  .recent-workout-filter-grid,
   .form-row,
   .set-log-fields,
   .set-input-grid,

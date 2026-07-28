@@ -51,6 +51,22 @@
       .join("");
   }
 
+  function avatarMarkup(name, imageUrl = "", extraClass = "") {
+    const classes = ["avatar", extraClass, imageUrl ? "has-image" : ""]
+      .filter(Boolean)
+      .join(" ");
+
+    if (imageUrl) {
+      return `
+        <div class="${attr(classes)}">
+          <img src="${attr(imageUrl)}" alt="${attr(`${name || "Member"} profile photo`)}" loading="lazy" />
+        </div>
+      `;
+    }
+
+    return `<div class="${attr(classes)}">${text(safeInitials(name))}</div>`;
+  }
+
   function setupFeedbackLinks() {
     document.querySelectorAll("[data-feedback-link]").forEach(link => {
       if (!FEEDBACK_FORM_URL) {
@@ -70,6 +86,7 @@
 
   window.RipCityUI = {
     attr,
+    avatarMarkup,
     escapeHtml,
     feedbackFormUrl: FEEDBACK_FORM_URL,
     percent,

@@ -15,6 +15,7 @@ Use this checklist when walking Rip City testers through the app.
 - Review pending signups and approve a test member.
 - Open Roster.
 - Confirm members appear in the right program type: Athlete or H2K.
+- Confirm member profile pictures appear in roster cards when uploaded.
 - Add or change a member's groups.
 - Change an H2K member's band color.
 - Create a workout from the Workout Builder.
@@ -23,6 +24,7 @@ Use this checklist when walking Rip City testers through the app.
 - Assign a workout to multiple groups.
 - Reuse or reassign an existing workout.
 - Open Coach Dashboard and review workout completion.
+- Submit one coach feedback form response from a coach page.
 
 ## H2K Member Tests
 
@@ -38,6 +40,7 @@ Use this checklist when walking Rip City testers through the app.
 - Open Past Workouts and review a previous workout.
 - Upload or change a profile picture.
 - Confirm the profile picture appears on the dashboard.
+- Confirm the profile picture appears to coaches on roster/dashboard cards.
 
 ## Athlete Tests
 
@@ -50,6 +53,7 @@ Use this checklist when walking Rip City testers through the app.
 - Refresh the workout and confirm saved set results reload.
 - Open Future Workouts and Past Workouts.
 - Upload or change a profile picture.
+- Confirm the profile picture appears on the dashboard.
 
 ## Feedback Questions
 

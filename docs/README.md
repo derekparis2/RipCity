@@ -32,6 +32,8 @@ For the product roadmap, start with `docs/BUILD_PLAN.md`.
 
 - `docs/BUILD_PLAN.md` - product direction and phases
 - `docs/BETA_TEST_CHECKLIST.md` - walkthrough checklist for early testers
+- `docs/BETA_LAUNCH_PLAN.md` - readiness checklist before inviting testers
+- `docs/DEPLOYMENT_PREP.md` - live URL, Supabase Auth, storage, and final deploy checks
 - `docs/PRODUCT_DECISIONS.md` - current product rules and tenant decisions
 - `docs/old/` - historical notes that are no longer the current source of truth
 - `sql/supabase_schema.sql` - current intended database schema
@@ -78,11 +80,11 @@ Use approved Supabase test accounts for end-to-end checks.
 - Save one set.
 - Save all sets.
 - Refresh and confirm saved set logs reload.
+- Upload a profile picture and confirm it appears on the profile and member dashboard.
 - Check mobile width for member dashboard and workout session.
 
 ## Current Known Gaps
 
 - Calculated maxes, volume tracking, and PR tracking still need product/math decisions before showing official numbers.
 - Goals, progress charts, leaderboards, coach notes, and community features are mostly future-facing.
-- Profile image upload is not implemented; profile picture is URL-only for now.
 - Platform owner/support mode needs explicit UX and policies before cross-facility operations are added.

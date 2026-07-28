@@ -154,7 +154,8 @@ function buildRosterMemberSelect(includeBandColor = true) {
     profile:profiles!facility_members_profile_id_fkey (
       id,
       full_name,
-      email
+      email,
+      profile_picture_url
     ),
     member_profile:member_profiles (
       id,
@@ -211,6 +212,7 @@ async function loadRosterMembers(facilityId) {
       status: member.status,
       name: member.profile?.full_name || "Unnamed Member",
       email: member.profile?.email || "",
+      profilePictureUrl: member.profile?.profile_picture_url || "",
       memberProfile
     };
   }).filter(member => member.memberProfileId);
@@ -390,7 +392,7 @@ function renderRosterMemberCard(member) {
   return `
     <article class="roster-member-card" data-roster-member-card="${window.RipCityUI.attr(member.memberProfileId)}">
       <div class="roster-member-main">
-        <div class="avatar roster-avatar">${window.RipCityUI.text(window.RipCityUI.safeInitials(member.name))}</div>
+        ${window.RipCityUI.avatarMarkup(member.name, member.profilePictureUrl, "roster-avatar")}
 
         <div>
           <div class="roster-member-heading">

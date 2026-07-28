@@ -10,6 +10,7 @@ let availableMembers = [];
 let availableGroupMemberships = [];
 let exerciseTemplates = [];
 let exerciseLibraryAvailable = false;
+let recentWorkoutRows = [];
 
 // ----------------------------
 // Small helper functions
@@ -375,11 +376,80 @@ function refreshExerciseTemplatePickers() {
   });
 }
 
+function formatInputTypeLabel(inputType) {
+  const labels = {
+    completion: "Completion",
+    weight_reps: "Weight + Reps",
+    band_color: "Band Color",
+    time: "Time",
+    distance: "Distance",
+    custom: "Custom"
+  };
+
+  return labels[inputType] || inputType || "Completion";
+}
+
+function getLibrarySearchFilters() {
+  return {
+    search: getInputValue("exercise-library-search").toLowerCase(),
+    category: getInputValue("exercise-library-category-filter") || "all",
+    inputType: getInputValue("exercise-library-input-filter") || "all"
+  };
+}
+
+function renderExerciseLibraryFilters() {
+  const categoryFilter = document.getElementById("exercise-library-category-filter");
+  if (!categoryFilter) return;
+
+  const currentValue = categoryFilter.value || "all";
+  const categories = Array.from(new Set(
+    exerciseTemplates
+      .map(template => template.category)
+      .filter(Boolean)
+  )).sort((a, b) => a.localeCompare(b));
+
+  categoryFilter.innerHTML = `
+    <option value="all">All categories</option>
+    ${categories.map(category => `
+      <option value="${window.RipCityUI.attr(category)}">${window.RipCityUI.text(category)}</option>
+    `).join("")}
+  `;
+
+  if (categories.includes(currentValue)) {
+    categoryFilter.value = currentValue;
+  } else {
+    categoryFilter.value = "all";
+  }
+}
+
+function getFilteredExerciseTemplates() {
+  const filters = getLibrarySearchFilters();
+
+  return exerciseTemplates.filter(template => {
+    const searchableText = [
+      template.name,
+      template.category,
+      template.equipment,
+      template.input_type,
+      template.description,
+      template.coach_note
+    ].filter(Boolean).join(" ").toLowerCase();
+
+    if (filters.search && !searchableText.includes(filters.search)) return false;
+    if (filters.category !== "all" && template.category !== filters.category) return false;
+    if (filters.inputType !== "all" && template.input_type !== filters.inputType) return false;
+
+    return true;
+  });
+}
+
 function renderExerciseLibraryList() {
   const list = document.getElementById("exercise-library-list");
+  const count = document.getElementById("exercise-library-count");
   if (!list) return;
 
   if (!exerciseLibraryAvailable) {
+    if (count) count.textContent = "Exercise library migration not detected.";
     list.innerHTML = `
       <div class="empty-state">
         Exercise library tables are not installed yet. Coaches can keep typing exercises manually.
@@ -389,11 +459,35 @@ function renderExerciseLibraryList() {
   }
 
   if (!exerciseTemplates.length) {
+    if (count) count.textContent = "No saved exercises yet.";
     list.innerHTML = `<div class="empty-state">No library exercises yet. Save one above.</div>`;
     return;
   }
 
-  list.innerHTML = exerciseTemplates.map(template => `
+  renderExerciseLibraryFilters();
+
+  const filteredTemplates = getFilteredExerciseTemplates();
+  const hasActiveSearch = Boolean(
+    getInputValue("exercise-library-search") ||
+    getInputValue("exercise-library-category-filter") !== "all" ||
+    getInputValue("exercise-library-input-filter") !== "all"
+  );
+  const visibleTemplates = hasActiveSearch
+    ? filteredTemplates
+    : filteredTemplates.slice(0, 8);
+
+  if (count) {
+    count.textContent = hasActiveSearch
+      ? `${filteredTemplates.length} of ${exerciseTemplates.length} exercises shown.`
+      : `Showing ${visibleTemplates.length} recent exercises. Search or filter to edit the full library.`;
+  }
+
+  if (!filteredTemplates.length) {
+    list.innerHTML = `<div class="empty-state">No exercises match that search.</div>`;
+    return;
+  }
+
+  list.innerHTML = visibleTemplates.map(template => `
     <article class="exercise-library-card">
       <div>
         <h4>${window.RipCityUI.text(template.name)}</h4>
@@ -401,7 +495,7 @@ function renderExerciseLibraryList() {
       </div>
 
       <div class="workout-meta-row">
-        <span>${window.RipCityUI.text(template.input_type)}</span>
+        <span>${window.RipCityUI.text(formatInputTypeLabel(template.input_type))}</span>
         ${template.category ? `<span>${window.RipCityUI.text(template.category)}</span>` : ""}
         ${template.equipment ? `<span>${window.RipCityUI.text(template.equipment)}</span>` : ""}
       </div>
@@ -1377,16 +1471,81 @@ async function loadRecentWorkouts() {
 
   if (error) {
     console.error(error);
+    recentWorkoutRows = [];
+    renderRecentWorkouts();
     list.innerHTML = `<div class="empty-state">Could not load workouts.</div>`;
     return;
   }
 
-  if (!data.length) {
+  recentWorkoutRows = data || [];
+  renderRecentWorkouts();
+}
+
+function getRecentWorkoutFilters() {
+  return {
+    search: getInputValue("recent-workout-search").toLowerCase(),
+    assignedDate: getInputValue("recent-workout-date-filter"),
+    targetType: getInputValue("recent-workout-target-filter") || "all"
+  };
+}
+
+function workoutMatchesRecentFilters(workout, filters) {
+  const assignments = workout.workout_assignments || [];
+  const targetLabels = assignments.map(getAssignmentTargetLabel);
+  const searchableText = [
+    workout.title,
+    workout.focus,
+    workout.description,
+    ...targetLabels,
+    ...(workout.workout_blocks || []).map(block => block.name),
+    ...(workout.workout_blocks || []).flatMap(block =>
+      (block.workout_exercises || []).map(exercise => exercise.name)
+    )
+  ].filter(Boolean).join(" ").toLowerCase();
+
+  if (filters.search && !searchableText.includes(filters.search)) return false;
+
+  if (filters.assignedDate && !assignments.some(row => row.assigned_date === filters.assignedDate)) {
+    return false;
+  }
+
+  if (filters.targetType === "unassigned") {
+    return assignments.length === 0;
+  }
+
+  if (filters.targetType !== "all" && !assignments.some(row => row.target_type === filters.targetType)) {
+    return false;
+  }
+
+  return true;
+}
+
+function renderRecentWorkouts() {
+  const list = document.getElementById("recent-workouts-list");
+  const count = document.getElementById("recent-workouts-count");
+  if (!list) return;
+
+  if (!recentWorkoutRows.length) {
+    if (count) count.textContent = "No workouts yet";
     list.innerHTML = `<div class="empty-state">No workouts created yet.</div>`;
     return;
   }
 
-  list.innerHTML = data.map(workout => {
+  const filters = getRecentWorkoutFilters();
+  const filteredWorkouts = recentWorkoutRows.filter(workout =>
+    workoutMatchesRecentFilters(workout, filters)
+  );
+
+  if (count) {
+    count.textContent = `${filteredWorkouts.length} of ${recentWorkoutRows.length} shown`;
+  }
+
+  if (!filteredWorkouts.length) {
+    list.innerHTML = `<div class="empty-state">No created workouts match those filters.</div>`;
+    return;
+  }
+
+  list.innerHTML = filteredWorkouts.map(workout => {
     const assignments = workout.workout_assignments || [];
     const targetLabels = assignments.map(getAssignmentTargetLabel);
     const targetLabel = targetLabels.length
@@ -1518,14 +1677,14 @@ async function loadRecentWorkouts() {
 
   list.querySelectorAll("[data-assign-existing-workout]").forEach(button => {
     button.addEventListener("click", () => {
-      const workout = data.find(row => row.id === button.dataset.assignExistingWorkout);
+      const workout = recentWorkoutRows.find(row => row.id === button.dataset.assignExistingWorkout);
       assignExistingWorkout(workout);
     });
   });
 
   list.querySelectorAll("[data-load-workout-template]").forEach(button => {
     button.addEventListener("click", () => {
-      const workout = data.find(row => row.id === button.dataset.loadWorkoutTemplate);
+      const workout = recentWorkoutRows.find(row => row.id === button.dataset.loadWorkoutTemplate);
       loadWorkoutIntoBuilder(workout);
     });
   });
@@ -1731,6 +1890,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("add-block-btn").addEventListener("click", addBlockCard);
   document.getElementById("exercise-library-form").addEventListener("submit", saveExerciseTemplate);
+  document.getElementById("exercise-library-search")?.addEventListener("input", renderExerciseLibraryList);
+  document.getElementById("exercise-library-category-filter")?.addEventListener("change", renderExerciseLibraryList);
+  document.getElementById("exercise-library-input-filter")?.addEventListener("change", renderExerciseLibraryList);
+  document.getElementById("recent-workout-search")?.addEventListener("input", renderRecentWorkouts);
+  document.getElementById("recent-workout-date-filter")?.addEventListener("change", renderRecentWorkouts);
+  document.getElementById("recent-workout-target-filter")?.addEventListener("change", renderRecentWorkouts);
   document.getElementById("workout-audience-filter").addEventListener("change", refreshAssignmentOptions);
   document.getElementById("workout-target-type").addEventListener("change", updateAssignmentControls);
   document.getElementById("workout-form").addEventListener("submit", createWorkoutWithAssignment);
