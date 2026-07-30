@@ -362,7 +362,7 @@ function renderH2KBandEditor(member) {
     <label class="roster-band-editor">
       <span>H2K Band</span>
       <select data-h2k-band-select="${window.RipCityUI.attr(member.memberProfileId)}">
-        <option value="">Band not set</option>
+        <option value="">No Band</option>
         ${H2K_BAND_COLORS.map(color => `
           <option value="${window.RipCityUI.attr(color)}" ${currentBand === color ? "selected" : ""}>
             ${window.RipCityUI.text(color)} Band
@@ -399,7 +399,7 @@ function renderRosterMemberCard(member) {
             <h4>${window.RipCityUI.text(member.name)}</h4>
             <span class="status-pill">${window.RipCityUI.text(formatMemberType(member.memberType))}</span>
             ${member.memberType === "h2k" ? `
-              <span class="h2k-band-badge">${window.RipCityUI.text(memberProfile.h2k_band_color ? `${memberProfile.h2k_band_color} Band` : "Band not set")}</span>
+              <span class="h2k-band-badge">${window.RipCityUI.text(memberProfile.h2k_band_color ? `${memberProfile.h2k_band_color} Band` : "No Band")}</span>
             ` : ""}
           </div>
           <p>${window.RipCityUI.text(member.email)}</p>

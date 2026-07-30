@@ -212,6 +212,14 @@ nav {
   align-items: center;
 }
 
+.member-main-content .topbar-actions .outline-btn {
+  min-height: 56px;
+  padding: 15px 30px;
+  border-radius: 12px;
+  font-size: 17px;
+  font-weight: 900;
+}
+
 .topbar h2 {
   margin: 6px 0 0;
   font-family: "Barlow Condensed", sans-serif;
@@ -944,6 +952,19 @@ td {
   text-decoration: none;
 }
 
+.profile-shell-nav {
+  margin: 0;
+}
+
+.mobile-nav-icon,
+.mobile-nav-text {
+  display: none;
+}
+
+.desktop-nav-text {
+  display: inline;
+}
+
 .member-sidebar .mode-card .outline-link {
   width: 100%;
   justify-content: center;
@@ -1646,9 +1667,194 @@ td {
   .coach-progress-bar {
     margin-top: 14px;
   }
+
+  .weekly-score-list {
+    display: grid;
+    gap: 10px;
+  }
+
+  .weekly-score-card {
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    border-radius: 14px;
+    padding: 14px;
+  }
+
+  .weekly-score-card.is-current-week {
+    border-color: rgba(126, 231, 135, 0.36);
+    background: rgba(126, 231, 135, 0.055);
+  }
+
+  .weekly-score-main {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .weekly-score-main h4 {
+    margin: 4px 0;
+    font-size: 18px;
+  }
+
+  .weekly-score-main span,
+  .weekly-score-main small,
+  .coach-weekly-selected-member small {
+    display: block;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .weekly-score-main small {
+    margin-top: 4px;
+  }
+
+  .weekly-score-main strong {
+    font-family: "Barlow Condensed", sans-serif;
+    font-size: 34px;
+    line-height: 1;
+  }
+
+  .weekly-score-progress {
+    margin-top: 12px;
+  }
+
+  .coach-weekly-history-layout {
+    display: grid;
+    grid-template-columns: minmax(260px, 0.44fr) minmax(0, 1fr);
+    gap: 18px;
+    align-items: start;
+    margin-top: 18px;
+  }
+
+  .coach-member-search-panel,
+  .coach-member-score-history {
+    display: grid;
+    gap: 12px;
+  }
+
+  .coach-member-search-panel label {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .coach-member-search-panel input,
+  .coach-member-search-panel select {
+    width: 100%;
+    min-height: 48px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text);
+    border-radius: 12px;
+    padding: 12px 14px;
+    outline: none;
+  }
+
+  .coach-member-search-panel input:focus,
+  .coach-member-search-panel select:focus {
+    border-color: var(--text);
+  }
+
+  .coach-weekly-member-results {
+    display: grid;
+    gap: 8px;
+  }
+
+  .coach-weekly-member-option {
+    width: 100%;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 10px;
+    align-items: center;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text);
+    border-radius: 12px;
+    padding: 10px;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .coach-weekly-member-option.active {
+    border-color: rgba(255, 255, 255, 0.55);
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .coach-weekly-member-option strong,
+  .coach-weekly-member-option small,
+  .coach-weekly-selected-member span,
+  .coach-weekly-selected-member strong,
+  .coach-weekly-selected-member small {
+    display: block;
+  }
+
+  .coach-weekly-member-option small {
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .coach-weekly-selected-member {
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    border-radius: 14px;
+    padding: 14px;
+    color: var(--muted);
+  }
+
+  .coach-weekly-selected-member strong {
+    margin: 4px 0;
+    color: var(--text);
+    font-size: 20px;
+  }
+
+  .weekly-history-stepper {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 12px;
+    align-items: center;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.035);
+    border-radius: 14px;
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+
+  .weekly-history-stepper .icon-btn {
+    width: 42px;
+    height: 42px;
+    min-height: 42px;
+    border-radius: 50%;
+    font-size: 24px;
+  }
+
+  .weekly-history-stepper .icon-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.35;
+  }
+
+  .weekly-history-stepper strong {
+    display: block;
+    margin-top: 4px;
+    color: var(--text);
+    font-family: "Barlow Condensed", sans-serif;
+    font-size: 24px;
+    line-height: 1;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  .weekly-history-stepper .eyebrow {
+    display: block;
+    text-align: center;
+  }
   
   @media (max-width: 700px) {
     .coach-score-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .coach-weekly-history-layout {
       grid-template-columns: 1fr;
     }
   }
@@ -2065,6 +2271,14 @@ td {
   justify-self: start;
 }
 
+.profile-main-content .h2k-hero {
+  margin-bottom: 22px;
+}
+
+.profile-dashboard-grid {
+  align-items: start;
+}
+
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -2152,8 +2366,79 @@ td {
     grid-template-columns: 1fr;
   }
 
+  .profile-main-content .h2k-hero {
+    display: none;
+  }
+
+  .profile-dashboard-grid {
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .profile-form {
+    gap: 12px;
+    margin-top: 14px;
+  }
+
+  .profile-form label {
+    gap: 6px;
+    font-size: 13px;
+  }
+
+  .profile-form input,
+  .profile-form select,
+  .profile-form textarea {
+    min-height: 46px;
+    border-radius: 10px;
+    padding: 11px 12px;
+    font-size: 16px;
+  }
+
+  .profile-form textarea {
+    min-height: 96px;
+  }
+
+  .profile-form .primary-btn {
+    width: 100%;
+    margin-top: 2px;
+  }
+
+  .profile-photo-editor {
+    gap: 8px;
+  }
+
+  .profile-photo-editor .outline-btn {
+    width: 100%;
+  }
+
   .profile-preview-card {
     grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 14px;
+    margin: 14px 0;
+  }
+
+  .profile-preview-heading {
+    gap: 8px;
+  }
+
+  .profile-preview-heading h3 {
+    font-size: 24px;
+  }
+
+  .profile-avatar {
+    width: 56px;
+    height: 56px;
+    font-size: 30px;
+  }
+
+  .profile-detail-list {
+    gap: 8px;
+    margin: 14px 0 0;
+  }
+
+  .profile-detail-list div {
+    padding: 12px;
   }
 }
 
@@ -2978,10 +3263,16 @@ td {
     overflow: hidden;
   }
 
+  .training-calendar-layout {
+    display: grid;
+    grid-template-columns: minmax(280px, 0.95fr) minmax(300px, 1.05fr);
+    gap: 18px;
+    align-items: start;
+  }
+
   .future-calendar {
     display: grid;
     gap: 14px;
-    margin-top: 12px;
   }
 
   .future-calendar-month {
@@ -3023,7 +3314,7 @@ td {
   .future-calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, minmax(0, 1fr));
-    gap: 6px;
+    gap: 7px;
   }
 
   .future-calendar-day-label {
@@ -3036,21 +3327,41 @@ td {
   }
 
   .future-calendar-cell {
-    min-height: 54px;
+    display: grid;
+    min-height: 72px;
     border: 1px solid var(--border);
     background: var(--surface-2);
     border-radius: 8px;
     padding: 6px;
+    color: var(--text);
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
   }
 
   .future-calendar-cell.is-empty {
     border-color: transparent;
     background: transparent;
+    pointer-events: none;
   }
 
   .future-calendar-cell.has-workout {
     border-color: rgba(126, 231, 135, 0.45);
     background: rgba(126, 231, 135, 0.07);
+  }
+
+  .future-calendar-cell.is-today {
+    border-color: rgba(255, 255, 255, 0.32);
+  }
+
+  .future-calendar-cell.is-selected {
+    border-color: var(--text);
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  .future-calendar-cell:hover {
+    transform: translateY(-1px);
+    border-color: rgba(255, 255, 255, 0.34);
   }
 
   .future-calendar-date {
@@ -3071,7 +3382,10 @@ td {
     font-size: 10px;
     font-weight: 900;
     line-height: 1.2;
+    overflow: hidden;
     text-decoration: none;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .future-calendar-workout + .future-calendar-workout {
@@ -3083,6 +3397,25 @@ td {
     color: var(--muted);
     font-size: 13px;
     text-align: center;
+  }
+
+  .training-calendar-day {
+    display: grid;
+    gap: 12px;
+    border: 1px solid var(--border);
+    background: rgba(18, 18, 20, 0.72);
+    border-radius: 14px;
+    padding: 14px;
+  }
+
+  .training-calendar-day-heading strong {
+    display: block;
+    margin-top: 4px;
+    color: var(--text);
+    font-family: var(--heading-font);
+    font-size: 26px;
+    line-height: 1;
+    text-transform: uppercase;
   }
 
   .compact-history-panel summary {
@@ -3303,17 +3636,54 @@ td {
       flex-direction: column;
     }
 
-    .future-calendar-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+    .training-calendar-layout {
+      grid-template-columns: 1fr;
+      gap: 12px;
     }
 
-    .future-calendar-day-label,
-    .future-calendar-cell.is-empty {
-      display: none;
+    .future-calendar-grid {
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 4px;
+    }
+
+    .future-calendar-day-label {
+      font-size: 8px;
     }
 
     .future-calendar-cell {
-      min-height: auto;
+      min-height: 36px;
+      padding: 5px;
+      place-items: start;
+    }
+
+    .future-calendar-cell.is-empty {
+      display: block;
+    }
+
+    .future-calendar-date {
+      margin-bottom: 0;
+      font-size: 9px;
+    }
+
+    .future-calendar-workout {
+      width: 7px;
+      height: 7px;
+      margin-top: 4px;
+      border: 0;
+      border-radius: 999px;
+      padding: 0;
+      background: #7ee787;
+      overflow: hidden;
+      color: transparent;
+      text-indent: -999px;
+    }
+
+    .training-calendar-day {
+      padding: 12px;
+    }
+
+    .training-calendar-day-heading strong {
+      font-size: 22px;
     }
 
     .compact-workout-row .outline-link {
@@ -4219,36 +4589,75 @@ body {
 }
 
 @media (max-width: 700px) {
+  .member-dashboard-body {
+    display: block;
+    padding-bottom: calc(94px + env(safe-area-inset-bottom));
+  }
+
+  .profile-body {
+    padding-bottom: calc(94px + env(safe-area-inset-bottom));
+  }
+
   .coach-page,
   .h2k-page,
   .approval-page,
   .workout-session-page {
-    width: min(100% - 24px, 1180px);
-    padding-top: 18px;
+    width: min(100% - 18px, 1180px);
+    padding-top: 12px;
     padding-bottom: 48px;
   }
 
   .member-main-content,
   .main-content {
-    padding: 22px 14px 48px;
+    padding: 16px 10px 44px;
   }
 
   .panel,
   .auth-card,
   .hero-card,
   .stat-card {
-    padding: 18px;
+    padding: 16px;
   }
 
   .hero-card h3,
   .auth-heading h2,
   .approval-header h2 {
-    font-size: 38px;
+    font-size: 34px;
+    line-height: 0.98;
   }
 
   .panel-heading h3,
   .section-intro h3 {
+    font-size: 24px;
+  }
+
+  .h2k-header {
+    margin-bottom: 18px;
+  }
+
+  .auth-brand {
+    align-items: center;
+  }
+
+  .auth-brand img {
+    width: 48px;
+    height: 48px;
+  }
+
+  .auth-brand h1 {
     font-size: 26px;
+  }
+
+  .hero-card {
+    min-height: 0;
+    gap: 12px;
+  }
+
+  .hero-card p:not(.eyebrow),
+  .feedback-panel p,
+  .panel p:not(.eyebrow) {
+    font-size: 14px;
+    line-height: 1.5;
   }
 
   .stats-grid,
@@ -4264,6 +4673,18 @@ body {
     grid-template-columns: 1fr;
   }
 
+  .stat-card strong {
+    font-size: 30px;
+  }
+
+  .outline-btn,
+  .primary-btn,
+  .outline-link,
+  .primary-link {
+    min-height: 44px;
+    padding: 11px 13px;
+  }
+
   .today-workout-meta,
   .workout-meta-row,
   .workout-history-stats,
@@ -4272,9 +4693,570 @@ body {
     gap: 7px;
   }
 
+  .coach-review-subheading,
+  .coach-review-previous summary,
+  .recent-workouts-panel summary,
+  .compact-history-panel summary {
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .coach-review-subheading > span,
+  .coach-review-previous summary > span:last-child,
+  .recent-workouts-panel summary > span:last-child,
+  .history-summary-hint {
+    width: max-content;
+    max-width: 100%;
+    white-space: normal;
+  }
+
+  .coach-workout-review-card,
+  .recent-workout-card,
+  .exercise-library-card,
+  .roster-member-card {
+    padding: 14px;
+  }
+
+  .coach-workout-review-card h4,
+  .recent-workout-card h4 {
+    font-size: 22px;
+  }
+
+  .coach-workout-review-summary span,
+  .workout-meta-row span,
+  .workout-history-stats span {
+    width: 100%;
+    border-radius: 10px;
+  }
+
+  .coach-workout-member-row {
+    gap: 8px;
+  }
+
+  .coach-review-member-cell {
+    align-items: center;
+  }
+
+  .recent-workout-actions,
+  .exercise-template-edit-actions {
+    flex-direction: column;
+  }
+
+  .recent-workout-actions > *,
+  .exercise-template-edit-actions > * {
+    width: 100%;
+  }
+
+  .recent-reassign-card,
+  .exercise-template-edit-form,
+  .recent-workout-edit-form {
+    padding: 12px;
+  }
+
+  .exercise-library-search-panel,
+  .recent-workout-filter-grid {
+    gap: 10px;
+  }
+
+  .exercise-library-form input,
+  .exercise-library-form select,
+  .exercise-library-form textarea,
+  .exercise-library-search-panel input,
+  .exercise-library-search-panel select,
+  .recent-workout-filter-grid input,
+  .recent-workout-filter-grid select,
+  .coach-review-filter-grid input,
+  .coach-review-filter-grid select {
+    min-height: 46px;
+    font-size: 16px;
+  }
+
   .mobile-session-save-bar {
     right: 10px;
     bottom: 10px;
     left: 10px;
+  }
+
+  .member-dashboard-body .member-sidebar {
+    position: static;
+    display: block;
+    width: calc(100% - 20px);
+    min-height: 0;
+    margin: 10px auto 0;
+    padding: 0;
+    border-right: 0;
+    background: transparent;
+  }
+
+  .member-dashboard-body .member-main-content {
+    display: block;
+    width: 100%;
+    min-height: 0;
+    margin: 0;
+    padding: 0 10px calc(94px + env(safe-area-inset-bottom));
+  }
+
+  .member-dashboard-body .member-main-content > * {
+    width: 100%;
+    margin-right: 0;
+    margin-left: 0;
+  }
+
+  .member-sidebar .brand {
+    width: 100%;
+    margin: 0 0 8px;
+    gap: 10px;
+  }
+
+  .member-sidebar .brand-mark {
+    width: 34px;
+    height: 34px;
+  }
+
+  .member-sidebar .brand-mark img {
+    width: 24px;
+    height: 24px;
+  }
+
+  .member-sidebar .brand h1 {
+    font-size: 18px;
+    letter-spacing: 1.8px;
+  }
+
+  .member-sidebar .brand p {
+    display: block;
+    font-size: 10px;
+  }
+
+  .member-sidebar .mode-card {
+    display: none;
+  }
+
+  .member-shell-nav {
+    position: fixed !important;
+    top: auto !important;
+    right: 8px;
+    bottom: calc(8px + env(safe-area-inset-bottom));
+    left: 8px;
+    z-index: 100;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(58px, 1fr));
+    gap: 4px;
+    width: auto;
+    margin: 0;
+    padding: 7px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: rgba(18, 18, 20, 0.96);
+    box-shadow: 0 -14px 32px rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(12px);
+    transform: translateZ(0);
+  }
+
+  .profile-shell-nav {
+    margin: 0;
+  }
+
+  .member-shell-nav .nav-link {
+    display: grid;
+    place-items: center;
+    gap: 3px;
+    min-height: 48px;
+    padding: 5px 3px;
+    border-color: var(--border);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    font-size: 9px;
+    font-weight: 800;
+    line-height: 1.15;
+    text-align: center;
+  }
+
+  .member-shell-nav .nav-link.active {
+    background: var(--surface-2);
+  }
+
+  .desktop-nav-text {
+    display: none;
+  }
+
+  .mobile-nav-icon {
+    display: grid;
+    width: 22px;
+    height: 22px;
+    place-items: center;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--text);
+    font-family: "Barlow Condensed", sans-serif;
+    font-size: 13px;
+    font-weight: 900;
+    line-height: 1;
+  }
+
+  .member-shell-nav .nav-link.active .mobile-nav-icon {
+    background: var(--text);
+    color: var(--bg);
+  }
+
+  .mobile-nav-icon svg {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+  }
+
+  .mobile-nav-text {
+    display: block;
+  }
+
+  .member-sidebar .user-card {
+    display: none;
+  }
+
+  .member-sidebar .avatar {
+    width: 34px;
+    height: 34px;
+    font-size: 12px;
+  }
+
+  .member-sidebar .user-card strong {
+    font-size: 13px;
+  }
+
+  .member-sidebar .user-card span {
+    font-size: 10px;
+  }
+
+  .member-main-content .topbar {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+    align-items: end;
+    width: 100%;
+    margin: 0 0 10px;
+    padding: 8px 0 10px;
+    border-bottom: 0;
+  }
+
+  .member-main-content .topbar h2 {
+    margin-top: 2px;
+    font-size: 30px;
+  }
+
+  .member-main-content .topbar-actions {
+    justify-content: flex-end;
+    width: auto;
+  }
+
+  .member-main-content .topbar-actions .outline-link,
+  .member-main-content .topbar-actions .outline-btn {
+    min-height: 46px;
+    padding: 10px 22px;
+    border-radius: 10px;
+    font-size: 14px;
+  }
+
+  .member-main-content .topbar .eyebrow {
+    font-size: 10px;
+  }
+
+  .member-dashboard-body .h2k-hero {
+    display: none;
+  }
+
+  .member-dashboard-body .dashboard-grid,
+  .member-dashboard-body .stats-grid {
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .member-dashboard-body .feedback-panel {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+    align-items: center;
+    padding: 13px 14px;
+  }
+
+  .member-dashboard-body .feedback-panel h3 {
+    margin: 2px 0 0;
+    font-size: 16px;
+  }
+
+  .member-dashboard-body .feedback-panel p {
+    display: none;
+  }
+
+  .member-dashboard-body .feedback-panel .primary-link {
+    width: auto;
+    min-height: 38px;
+    padding: 9px 12px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .member-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .member-dashboard-body .stat-card {
+    min-height: 96px;
+    padding: 13px;
+  }
+
+  .member-dashboard-body .stat-card:last-child {
+    grid-column: 1 / -1;
+    min-height: 82px;
+  }
+
+  .member-dashboard-body.member-type-athlete .stat-card:last-child {
+    grid-column: auto;
+    min-height: 96px;
+  }
+
+  .member-dashboard-body .stat-card span,
+  .member-dashboard-body .stat-card small {
+    font-size: 11px;
+  }
+
+  .member-dashboard-body .stat-card strong {
+    margin: 6px 0;
+    font-size: 36px;
+    line-height: 0.95;
+  }
+
+  .member-dashboard-body.member-type-athlete #h2k-status {
+    font-size: 32px;
+  }
+
+  .member-dashboard-body .stat-card strong span {
+    font-size: inherit;
+    line-height: inherit;
+  }
+
+  .member-dashboard-body .today-workout-panel .panel-heading,
+  .member-dashboard-body #h2k-habits-section .panel-heading {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+  }
+
+  .member-dashboard-body .today-workout-panel .panel-heading h3,
+  .member-dashboard-body #h2k-habits-section .panel-heading h3 {
+    font-size: 22px;
+  }
+
+  .member-dashboard-body .today-workout-panel .panel-heading .outline-btn,
+  .member-dashboard-body #h2k-habits-section .panel-heading .outline-btn {
+    width: auto;
+    min-height: 38px;
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .member-dashboard-body .today-workout-container {
+    margin-top: 12px;
+  }
+
+  .member-dashboard-body .today-workout-card {
+    border-color: rgba(255, 255, 255, 0.1);
+    background: transparent;
+    padding: 0;
+  }
+
+  .member-dashboard-body .today-workout-header {
+    display: grid;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .member-dashboard-body .today-workout-header h3 {
+    font-size: 24px;
+  }
+
+  .member-dashboard-body .today-workout-header p:not(.eyebrow) {
+    font-size: 13px;
+  }
+
+  .member-dashboard-body .today-workout-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .member-dashboard-body .today-workout-meta {
+    justify-content: flex-start;
+  }
+
+  .member-dashboard-body .workout-open-link {
+    min-height: 38px;
+    padding: 9px 12px;
+    font-size: 13px;
+  }
+
+  .member-dashboard-body .today-workout-blocks {
+    gap: 10px;
+  }
+
+  .member-dashboard-body .today-workout-block {
+    padding: 12px;
+    border-radius: 12px;
+  }
+
+  .member-dashboard-body .today-workout-block h4 {
+    margin-bottom: 8px;
+    font-size: 18px;
+  }
+
+  .member-dashboard-body .today-exercise-list {
+    gap: 8px;
+  }
+
+  .member-dashboard-body .today-exercise-card {
+    padding: 11px;
+    border-radius: 10px;
+  }
+
+  .member-dashboard-body .today-exercise-card strong {
+    font-size: 14px;
+  }
+
+  .member-dashboard-body .today-exercise-card p {
+    font-size: 12px;
+  }
+
+  .member-dashboard-body .today-exercise-meta {
+    gap: 5px;
+    margin-top: 8px;
+  }
+
+  .member-dashboard-body .today-exercise-meta span {
+    padding: 5px 7px;
+    font-size: 10px;
+  }
+
+  .member-dashboard-body .empty-state {
+    min-height: 64px;
+    padding: 14px;
+    font-size: 13px;
+  }
+
+  .member-dashboard-body .h2k-habit-list {
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .member-dashboard-body .h2k-habit-card {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 10px;
+  }
+
+  .member-dashboard-body .h2k-habit-card h4 {
+    font-size: 15px;
+  }
+
+  .member-dashboard-body .h2k-habit-card p {
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  .member-dashboard-body .h2k-habit-card .check-btn {
+    width: 34px;
+    min-height: 34px;
+    height: 34px;
+  }
+
+  .member-dashboard-body .compact-history-panel {
+    margin-top: 8px;
+  }
+
+  .member-dashboard-body .compact-history-panel summary strong {
+    margin-top: 3px;
+    font-size: 24px;
+  }
+
+  .member-dashboard-body .history-summary-hint {
+    padding: 7px 9px;
+    font-size: 11px;
+  }
+
+  .member-dashboard-body .compact-history-content {
+    margin-top: 12px;
+    padding-top: 12px;
+  }
+
+  .member-dashboard-body .compact-history-actions {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .member-dashboard-body .weekly-score-list {
+    gap: 8px;
+  }
+
+  .member-dashboard-body .weekly-score-card {
+    padding: 11px;
+    border-radius: 12px;
+  }
+
+  .member-dashboard-body .weekly-score-main {
+    gap: 10px;
+  }
+
+  .member-dashboard-body .weekly-score-main h4 {
+    font-size: 15px;
+  }
+
+  .member-dashboard-body .weekly-score-main span {
+    font-size: 11px;
+  }
+
+  .member-dashboard-body .weekly-score-main strong {
+    font-size: 28px;
+  }
+
+  .member-dashboard-body .weekly-score-main small {
+    font-size: 11px;
+  }
+
+  .member-dashboard-body .weekly-history-stepper {
+    gap: 8px;
+    padding: 10px;
+    border-radius: 12px;
+  }
+
+  .member-dashboard-body .weekly-history-stepper .icon-btn {
+    width: 36px;
+    height: 36px;
+    min-height: 36px;
+    font-size: 20px;
+  }
+
+  .member-dashboard-body .weekly-history-stepper strong {
+    font-size: 18px;
+  }
+
+  .member-dashboard-body .compact-workout-row {
+    padding: 11px;
+  }
+
+  .member-dashboard-body .compact-workout-row h4 {
+    font-size: 16px;
+  }
+
+  .member-dashboard-body .compact-workout-row p {
+    font-size: 12px;
+  }
+
+  .member-dashboard-body .compact-workout-row .primary-link {
+    min-height: 36px;
+    padding: 8px 10px;
+    font-size: 12px;
   }
 }

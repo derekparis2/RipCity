@@ -10,22 +10,93 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/styles.css?v=member-history-1" />
 </head>
 
-<body class="auth-body">
-  <main class="h2k-page">
-    <header class="h2k-header">
-      <div class="auth-brand">
+<body class="auth-body member-dashboard-body profile-body">
+  <aside class="sidebar member-sidebar">
+    <div class="brand">
+      <div class="brand-mark">
         <img src="assets/rip-city-logo.png" alt="Rip City logo">
-        <div>
-          <h1>RIP CITY</h1>
-          <p>Member Profile</p>
-        </div>
+      </div>
+      <div>
+        <h1>RIP CITY</h1>
+        <p id="profile-brand-subtitle">Member Profile</p>
+      </div>
+    </div>
+
+    <div class="mode-card">
+      <span>Current View</span>
+      <strong id="profile-program-label">Profile</strong>
+      <a class="outline-link small-btn" href="member-dashboard.html#member-dashboard-top">Dashboard</a>
+    </div>
+
+    <nav class="member-shell-nav profile-shell-nav">
+      <a class="nav-link nav-link-anchor" href="member-dashboard.html#member-dashboard-top">
+        <span class="mobile-nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false">
+            <path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"></path>
+          </svg>
+        </span>
+        <span class="desktop-nav-text">Dashboard</span>
+        <span class="mobile-nav-text">Dash</span>
+      </a>
+      <a class="nav-link nav-link-anchor" href="member-dashboard.html#training-calendar-panel">
+        <span class="mobile-nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false">
+            <path d="M2 10h3v4H2zM19 10h3v4h-3zM6 7h3v10H6zM15 7h3v10h-3zM9 11h6v2H9z"></path>
+          </svg>
+        </span>
+        <span class="desktop-nav-text">Training Calendar</span>
+        <span class="mobile-nav-text">Training</span>
+      </a>
+      <a class="nav-link nav-link-anchor" href="member-dashboard.html#h2k-habits-section" id="profile-habits-nav-link">
+        <span class="mobile-nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false">
+            <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm-1.3 13.4-4-4 1.4-1.4 2.6 2.6 5.2-5.2 1.4 1.4z"></path>
+          </svg>
+        </span>
+        <span class="desktop-nav-text">Habits</span>
+        <span class="mobile-nav-text">Habits</span>
+      </a>
+      <a class="nav-link nav-link-anchor" href="member-dashboard.html#member-history-section">
+        <span class="mobile-nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false">
+            <path d="M5 3h14v3H5zM5 8h9v3H5zM5 13h14v3H5zM5 18h9v3H5z"></path>
+          </svg>
+        </span>
+        <span class="desktop-nav-text">Member History</span>
+        <span class="mobile-nav-text">History</span>
+      </a>
+      <a class="nav-link nav-link-anchor active" href="profile.html">
+        <span class="mobile-nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false">
+            <path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.4 0-8 2.2-8 5v1h16v-1c0-2.8-3.6-5-8-5Z"></path>
+          </svg>
+        </span>
+        <span class="desktop-nav-text">Profile</span>
+        <span class="mobile-nav-text">Profile</span>
+      </a>
+    </nav>
+
+    <div class="user-card">
+      <div class="avatar" id="profile-sidebar-avatar">RC</div>
+      <div>
+        <strong id="profile-sidebar-name">Member</strong>
+        <span class="h2k-band-badge hidden" id="profile-sidebar-band">No Band</span>
+        <span id="profile-sidebar-role">Approved</span>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main-content member-main-content profile-main-content">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">PROFILE</p>
+        <h2>Member Profile</h2>
       </div>
 
-      <div class="h2k-header-actions">
-        <a class="outline-link" href="member-dashboard.html">Dashboard</a>
+      <div class="topbar-actions">
         <button class="outline-btn" id="profile-logout-btn">Log Out</button>
       </div>
     </header>
@@ -40,13 +111,40 @@
       </div>
     </section>
 
-    <section class="dashboard-grid member-dashboard-grid">
+    <section class="dashboard-grid member-dashboard-grid profile-dashboard-grid">
       <article class="panel">
-        <div class="panel-heading">
+        <p class="eyebrow">PUBLIC PREVIEW</p>
+        <div class="profile-preview-heading">
+          <h3 id="preview-name">Member Name</h3>
+          <span class="h2k-band-badge hidden" id="preview-h2k-band">No Band</span>
+        </div>
+
+        <div class="profile-preview-card">
+          <div class="profile-avatar" id="profile-avatar">?</div>
+
           <div>
-            <p class="eyebrow">EDIT PROFILE</p>
-            <h3>Member Info</h3>
+            <h4 id="preview-username">@username</h4>
+            <p id="preview-bio">Your bio will show here.</p>
           </div>
+        </div>
+
+        <div class="profile-detail-list">
+          <div>
+            <span>Birthday</span>
+            <strong id="preview-birthday">Not added</strong>
+          </div>
+
+          <div>
+            <span>Program</span>
+            <strong id="preview-program">Member</strong>
+          </div>
+        </div>
+      </article>
+
+      <article class="panel">
+        <div>
+          <p class="eyebrow">EDIT PROFILE</p>
+          <h3>Member Info</h3>
         </div>
 
         <p id="profile-message" class="auth-message"></p>
@@ -155,35 +253,6 @@
           <button class="primary-btn" type="submit">Save Profile</button>
         </form>
       </article>
-
-      <article class="panel">
-        <p class="eyebrow">PUBLIC PREVIEW</p>
-        <div class="profile-preview-heading">
-          <h3 id="preview-name">Member Name</h3>
-          <span class="h2k-band-badge hidden" id="preview-h2k-band">Band not set</span>
-        </div>
-
-        <div class="profile-preview-card">
-          <div class="profile-avatar" id="profile-avatar">?</div>
-
-          <div>
-            <h4 id="preview-username">@username</h4>
-            <p id="preview-bio">Your bio will show here.</p>
-          </div>
-        </div>
-
-        <div class="profile-detail-list">
-          <div>
-            <span>Birthday</span>
-            <strong id="preview-birthday">Not added</strong>
-          </div>
-
-          <div>
-            <span>Program</span>
-            <strong id="preview-program">Member</strong>
-          </div>
-        </div>
-      </article>
     </section>
   </main>
 
@@ -191,6 +260,6 @@
   <script src="js/supabaseClient.js"></script>
   <script src="js/ui-utils.js"></script>
   <script src="js/access-control.js"></script>
-  <script src="js/profile.js"></script>
+  <script src="js/profile.js?v=profile-shell-2"></script>
 </body>
 </html>

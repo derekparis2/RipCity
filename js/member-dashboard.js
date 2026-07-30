@@ -10,10 +10,15 @@ let currentMemberGroupIds = [];
 let h2kHabits = [];
 let todayLogs = [];
 let todayWorkoutAssignments = [];
-let futureWorkoutAssignments = [];
-let futureCalendarMonth = getMonthStart(new Date());
-let workoutHistoryAssignments = [];
-let workoutHistoryLogs = [];
+let workoutCalendarAssignments = [];
+let workoutCalendarLogs = [];
+let workoutCalendarMonth = getMonthStart(new Date());
+let selectedWorkoutDate = getTodayString();
+let memberHistoryWeeks = [];
+let memberHistoryLogs = [];
+let selectedMemberHistoryWeekIndex = 0;
+
+const MEMBER_WEEKLY_HISTORY_WEEKS = 8;
 
 const MEMBER_WORKOUT_ASSIGNMENT_SELECT = `
   id,
@@ -90,6 +95,42 @@ function getEndOfWeekString() {
   return formatLocalDate(start);
 }
 
+function addDays(date, days) {
+  const nextDate = new Date(date);
+  nextDate.setDate(nextDate.getDate() + days);
+  return nextDate;
+}
+
+function buildRecentWeekRanges(weekCount) {
+  const currentWeekStart = getStartOfWeekDate();
+
+  return Array.from({ length: weekCount }, (_, index) => {
+    const start = addDays(currentWeekStart, index * -7);
+    const end = addDays(start, 6);
+
+    return {
+      start,
+      end,
+      startKey: formatLocalDate(start),
+      endKey: formatLocalDate(end),
+      isCurrentWeek: index === 0
+    };
+  });
+}
+
+function formatWeekRangeLabel(week) {
+  const startLabel = week.start.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric"
+  });
+  const endLabel = week.end.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric"
+  });
+
+  return `${startLabel} - ${endLabel}`;
+}
+
 // Shows messages on the H2K page.
 function showH2KMessage(message, isError = false) {
   const element = document.getElementById("h2k-message");
@@ -149,22 +190,51 @@ async function loadWeeklyLogs(memberProfileId) {
   return data || [];
 }
 
+async function loadHabitLogsForRange(memberProfileId, startDate, endDate) {
+  const { data, error } = await db
+    .from("habit_logs")
+    .select("*")
+    .eq("member_profile_id", memberProfileId)
+    .gte("log_date", startDate)
+    .lte("log_date", endDate);
+
+  if (error) throw error;
+  return data || [];
+}
+
 // Checks if a habit has already been completed today.
 function isHabitCompleteToday(habitId) {
   return todayLogs.some(log => log.habit_id === habitId && log.completed);
 }
 
+function getMemberTypeLabel(profileTypeValue = currentMemberProfile?.member_type) {
+  const profileType = String(profileTypeValue || "").toLowerCase();
+  const role = String(currentAccess?.membership?.role || "").toLowerCase();
+
+  if (profileType === "h2k" || role === "h2k_member") return "H2K Member";
+  if (profileType === "athlete" || role === "athlete") return "Athlete";
+
+  return "Member";
+}
+
+function setMemberTypeText(memberType) {
+  document.getElementById("member-program-label").textContent = memberType;
+  document.getElementById("member-sidebar-role").textContent = memberType;
+
+  const brandSubtitle = document.getElementById("member-brand-subtitle");
+  if (brandSubtitle) {
+    brandSubtitle.textContent = memberType;
+  }
+}
+
 function updateMemberShell() {
   const profile = currentAccess?.profile;
-  const memberType = currentMemberProfile?.member_type === "h2k"
-    ? "H2K Member"
-    : "Athlete";
+  const memberType = getMemberTypeLabel();
   const bandBadge = document.getElementById("member-band-color");
   const bandColor = currentMemberProfile?.h2k_band_color;
 
-  document.getElementById("member-program-label").textContent = memberType;
+  setMemberTypeText(memberType);
   document.getElementById("member-sidebar-name").textContent = profile?.full_name || "Member";
-  document.getElementById("member-sidebar-role").textContent = memberType;
 
   const avatar = document.getElementById("member-avatar");
   if (profile?.profile_picture_url) {
@@ -185,7 +255,7 @@ function updateMemberShell() {
   }
 
   if (bandBadge) {
-    bandBadge.textContent = bandColor ? `${bandColor} Band` : "Band not set";
+    bandBadge.textContent = bandColor ? `${bandColor} Band` : "No Band";
     bandBadge.classList.toggle("hidden", currentMemberProfile?.member_type !== "h2k");
   }
 
@@ -221,20 +291,38 @@ function setupFeedbackLink() {
 
 function setActiveMemberNav(hash) {
   const normalizedHash = hash || "#member-dashboard-top";
-  const historyPanel = document.getElementById("workout-history-panel");
-  const futurePanel = document.getElementById("future-workouts-panel");
+  const calendarPanel = document.getElementById("training-calendar-panel");
 
   document.querySelectorAll(".member-shell-nav .nav-link").forEach(link => {
     link.classList.toggle("active", link.getAttribute("href") === normalizedHash);
   });
 
-  if (normalizedHash === "#workout-history-panel" && historyPanel) {
-    historyPanel.open = true;
+  if (normalizedHash === "#training-calendar-panel" && calendarPanel) {
+    selectedWorkoutDate = getTodayString();
+    workoutCalendarMonth = getMonthStart(parseAssignmentDate(selectedWorkoutDate));
+    calendarPanel.open = true;
+    renderTrainingCalendar();
   }
 
-  if (normalizedHash === "#future-workouts-panel" && futurePanel) {
-    futurePanel.open = true;
+  if (normalizedHash === "#member-history-section") {
+    const historyPanel = document.getElementById("member-history-section");
+    if (historyPanel) historyPanel.open = true;
   }
+}
+
+function scrollMemberHashIntoView() {
+  const hash = window.location.hash;
+  if (!hash) return;
+
+  const target = document.querySelector(hash);
+  if (!target) return;
+
+  requestAnimationFrame(() => {
+    target.scrollIntoView({
+      block: "start",
+      behavior: "smooth"
+    });
+  });
 }
 
 function setupMemberSidebarNav() {
@@ -309,6 +397,7 @@ async function toggleHabit(habitId) {
     if (error) throw error;
 
     await refreshH2KDashboard();
+    await loadMemberWeeklyHistory();
     showH2KMessage("");
   } catch (error) {
     console.error(error);
@@ -351,12 +440,181 @@ async function refreshH2KDashboard() {
   await updateScores();
 }
 
+function showMemberWeeklyHistoryMessage(message, isError = false) {
+  const element = document.getElementById("member-weekly-history-message");
+  if (!element) return;
+
+  element.textContent = message;
+  element.classList.toggle("error-message", isError);
+}
+
+async function loadMemberWeeklyHistory() {
+  const list = document.getElementById("member-weekly-history-list");
+  if (!list || !currentMemberProfile) return;
+
+  showMemberWeeklyHistoryMessage("Loading member history...");
+
+  try {
+    memberHistoryWeeks = buildRecentWeekRanges(MEMBER_WEEKLY_HISTORY_WEEKS);
+    selectedMemberHistoryWeekIndex = Math.min(
+      selectedMemberHistoryWeekIndex,
+      memberHistoryWeeks.length - 1
+    );
+
+    if (currentMemberProfile.member_type === "h2k") {
+      memberHistoryLogs = await loadHabitLogsForRange(
+        currentMemberProfile.id,
+        memberHistoryWeeks[memberHistoryWeeks.length - 1].startKey,
+        memberHistoryWeeks[0].endKey
+      );
+    } else {
+      memberHistoryLogs = workoutCalendarLogs;
+    }
+
+    renderMemberWeeklyHistory();
+    showMemberWeeklyHistoryMessage("");
+  } catch (error) {
+    console.error(error);
+    showMemberWeeklyHistoryMessage(error.message || "Could not load member history.", true);
+    list.innerHTML = `<div class="empty-state">Could not load member history.</div>`;
+  }
+}
+
+function renderMemberWeeklyHistory() {
+  const list = document.getElementById("member-weekly-history-list");
+  if (!list) return;
+
+  const week = memberHistoryWeeks[selectedMemberHistoryWeekIndex];
+  if (!week) {
+    list.innerHTML = `<div class="empty-state">No member history available yet.</div>`;
+    return;
+  }
+
+  updateMemberHistoryStepper(week);
+
+  const row = currentMemberProfile.member_type === "h2k"
+    ? buildH2KWeeklyScoreRow(week, memberHistoryLogs, h2kHabits.length * 7)
+    : buildTrainingWeeklyScoreRow(week);
+
+  list.innerHTML = renderWeeklyScoreCard(row);
+}
+
+function updateMemberHistoryStepper(week) {
+  const context = document.getElementById("member-history-week-context");
+  const label = document.getElementById("member-history-week-label");
+  const eyebrow = document.getElementById("member-history-eyebrow");
+  const previousButton = document.getElementById("member-history-prev-week");
+  const nextButton = document.getElementById("member-history-next-week");
+
+  if (context) context.textContent = week.isCurrentWeek ? "CURRENT WEEK" : "WEEK";
+  if (label) label.textContent = formatWeekRangeLabel(week);
+  if (eyebrow) {
+    eyebrow.textContent = currentMemberProfile?.member_type === "h2k"
+      ? "H2K PROGRESS"
+      : "TRAINING PROGRESS";
+  }
+  if (previousButton) previousButton.disabled = selectedMemberHistoryWeekIndex >= memberHistoryWeeks.length - 1;
+  if (nextButton) nextButton.disabled = selectedMemberHistoryWeekIndex <= 0;
+}
+
+function changeMemberHistoryWeek(direction) {
+  if (!memberHistoryWeeks.length) return;
+
+  selectedMemberHistoryWeekIndex += direction === "previous" ? 1 : -1;
+  selectedMemberHistoryWeekIndex = Math.max(
+    0,
+    Math.min(selectedMemberHistoryWeekIndex, memberHistoryWeeks.length - 1)
+  );
+
+  renderMemberWeeklyHistory();
+}
+
+function buildH2KWeeklyScoreRow(week, logs, maxWeeklyScore) {
+  const weekLogs = logs.filter(log =>
+    log.log_date >= week.startKey &&
+    log.log_date <= week.endKey
+  );
+  const score = weekLogs
+    .filter(log => log.completed)
+    .reduce((total, log) => total + Number(log.points_earned || 0), 0);
+  const loggedDays = new Set(
+    weekLogs
+      .filter(log => log.completed)
+      .map(log => log.log_date)
+  ).size;
+
+  return {
+    label: formatWeekRangeLabel(week),
+    typeLabel: "H2K Score",
+    score,
+    maxScore: maxWeeklyScore,
+    percent: maxWeeklyScore ? Math.round((score / maxWeeklyScore) * 100) : 0,
+    loggedDays,
+    detail: `${loggedDays}/7 days logged`,
+    isCurrentWeek: week.isCurrentWeek
+  };
+}
+
+function buildTrainingWeeklyScoreRow(week) {
+  const weekAssignments = workoutCalendarAssignments.filter(assignment =>
+    assignment.assigned_date >= week.startKey &&
+    assignment.assigned_date <= week.endKey
+  );
+  const pastOrCurrentAssignments = weekAssignments.filter(assignment =>
+    assignment.assigned_date <= getTodayString()
+  );
+  const summaries = pastOrCurrentAssignments.map(assignment => {
+    const logs = workoutCalendarLogs.filter(log => log.workout_assignment_id === assignment.id);
+    return window.RipCityWorkoutData.summarizeSetLogs(logs, assignment.workout);
+  });
+  const completedWorkouts = summaries.filter(summary => summary.isComplete).length;
+  const completedSets = summaries.reduce((total, summary) => total + summary.completedSets, 0);
+  const totalSets = summaries.reduce((total, summary) => total + summary.totalSets, 0);
+  const assignedCount = pastOrCurrentAssignments.length;
+
+  return {
+    label: formatWeekRangeLabel(week),
+    typeLabel: "Training Week",
+    score: completedWorkouts,
+    maxScore: assignedCount,
+    percent: totalSets ? Math.round((completedSets / totalSets) * 100) : 0,
+    loggedDays: new Set(pastOrCurrentAssignments.map(assignment => assignment.assigned_date)).size,
+    detail: `${completedSets}/${totalSets} sets logged`,
+    secondaryDetail: `${assignedCount} assigned workout${assignedCount === 1 ? "" : "s"}`,
+    isCurrentWeek: week.isCurrentWeek
+  };
+}
+
+function renderWeeklyScoreCard(row) {
+  return `
+    <article class="weekly-score-card ${row.isCurrentWeek ? "is-current-week" : ""}">
+      <div class="weekly-score-main">
+        <div>
+          <p class="eyebrow">${window.RipCityUI.text(row.typeLabel)}</p>
+          <h4>${window.RipCityUI.text(row.label)}</h4>
+          <span>${window.RipCityUI.text(row.detail)}</span>
+          ${row.secondaryDetail ? `<small>${window.RipCityUI.text(row.secondaryDetail)}</small>` : ""}
+        </div>
+
+        <strong>${row.score}/${row.maxScore}</strong>
+      </div>
+
+      <div class="progress-bar weekly-score-progress">
+        <div style="width: ${window.RipCityUI.percent(row.percent)}%"></div>
+      </div>
+    </article>
+  `;
+}
+
 function toggleH2KModuleVisibility() {
   const isH2K = currentMemberProfile?.member_type === "h2k";
   const habitsSection = document.getElementById("h2k-habits-section");
   const habitsNavLink = document.getElementById("member-habits-nav-link");
   const statsSection = document.getElementById("member-stats-section");
   const trainingProgressCard = document.getElementById("member-training-progress-card");
+
+  document.body.classList.toggle("member-type-h2k", isH2K);
+  document.body.classList.toggle("member-type-athlete", !isH2K);
 
   if (statsSection) {
     statsSection.classList.remove("hidden");
@@ -407,8 +665,10 @@ function toggleH2KModuleVisibility() {
 function updateSharedWorkoutStats() {
   if (currentMemberProfile?.member_type === "h2k") return;
 
-  const summaries = workoutHistoryAssignments.map(assignment => {
-    const logs = workoutHistoryLogs.filter(log => log.workout_assignment_id === assignment.id);
+  const today = getTodayString();
+  const trackableAssignments = workoutCalendarAssignments.filter(assignment => assignment.assigned_date <= today);
+  const summaries = trackableAssignments.map(assignment => {
+    const logs = workoutCalendarLogs.filter(log => log.workout_assignment_id === assignment.id);
     return window.RipCityWorkoutData.summarizeSetLogs(logs, assignment.workout);
   });
   const completedCount = summaries.filter(summary => summary.isComplete).length;
@@ -457,7 +717,7 @@ async function getCurrentMemberGroupIds(memberProfileId) {
 async function loadTodayAssignedWorkouts() {
   const container = document.getElementById("today-workout-container");
 
-  if (!container || !currentMemberProfile) return;
+  if (!currentMemberProfile) return;
 
   showTodayWorkoutMessage("Loading today’s workout...");
 
@@ -497,16 +757,19 @@ async function loadTodayAssignedWorkouts() {
     console.error(error);
     showTodayWorkoutMessage(error.message || "Could not load today’s workout.", true);
 
-    container.innerHTML = `
-      <div class="empty-state">
-        Could not load today’s workout.
-      </div>
-    `;
+    if (container) {
+      container.innerHTML = `
+        <div class="empty-state">
+          Could not load today’s workout.
+        </div>
+      `;
+    }
   }
 }
 
 function renderTodayWorkouts(assignments) {
   const container = document.getElementById("today-workout-container");
+  if (!container) return;
 
   if (!assignments.length) {
     container.innerHTML = `
@@ -592,11 +855,10 @@ function renderTodayWorkouts(assignments) {
 }
 
 // =====================================================
-// FUTURE + PAST WORKOUTS
+// TRAINING CALENDAR
 // =====================================================
-// Future and past workout lists use the same assignment visibility as today's
-// workout. Past rows join saved set logs to show completion without trusting
-// client-only state.
+// The calendar uses the same assignment visibility as today's workout, then
+// combines past, present, and future sessions into one member schedule.
 
 function showWorkoutHistoryMessage(message, isError = false) {
   const element = document.getElementById("workout-history-message");
@@ -608,9 +870,9 @@ function showWorkoutHistoryMessage(message, isError = false) {
 
 async function loadWorkoutHistory() {
   const list = document.getElementById("workout-history-list");
-  const futureList = document.getElementById("future-workout-list");
+  const calendar = document.getElementById("future-workout-list");
 
-  if ((!list && !futureList) || !currentMemberProfile) return;
+  if ((!list && !calendar) || !currentMemberProfile) return;
 
   showWorkoutHistoryMessage("Loading assigned workouts...");
 
@@ -643,52 +905,68 @@ async function loadWorkoutHistory() {
     const assignments = window.RipCityWorkoutData
       .dedupeAssignmentsByWorkoutDate(visibleAssignments)
       .sort((a, b) => b.assigned_date.localeCompare(a.assigned_date));
-    const pastAssignments = assignments.filter(assignment => assignment.assigned_date < today);
-    const currentOrPastAssignments = assignments.filter(assignment => assignment.assigned_date <= today);
-    const upcomingAssignments = assignments
-      .filter(assignment => assignment.assigned_date > today)
-      .sort((a, b) => a.assigned_date.localeCompare(b.assigned_date));
 
     const logs = await window.RipCityWorkoutData.loadSetLogsForAssignments(
-      currentOrPastAssignments.map(assignment => assignment.id),
+      assignments.map(assignment => assignment.id),
       currentMemberProfile.id
     );
-    futureWorkoutAssignments = upcomingAssignments;
-    workoutHistoryAssignments = currentOrPastAssignments;
-    workoutHistoryLogs = logs;
+    workoutCalendarAssignments = assignments;
+    workoutCalendarLogs = logs;
 
-    renderFutureWorkouts(upcomingAssignments);
-    renderWorkoutHistory(pastAssignments, logs);
+    if (!selectedWorkoutDate) {
+      selectedWorkoutDate = today;
+    }
+
+    renderTrainingCalendar();
+    updateTrainingCalendarDefaultOpen(assignments, today);
     updateSharedWorkoutStats();
     showWorkoutHistoryMessage("");
   } catch (error) {
     console.error(error);
     showWorkoutHistoryMessage(error.message || "Could not load assigned workouts.", true);
-    if (futureList) futureList.innerHTML = `<div class="empty-state">Could not load upcoming workouts.</div>`;
-    if (list) list.innerHTML = `<div class="empty-state">Could not load past workouts.</div>`;
+    if (calendar) calendar.innerHTML = `<div class="empty-state">Could not load assigned workouts.</div>`;
+    if (list) list.innerHTML = `<div class="empty-state">Could not load schedule details.</div>`;
   }
 }
 
-function renderFutureWorkouts(assignments) {
-  const list = document.getElementById("future-workout-list");
-  if (!list) return;
+function updateTrainingCalendarDefaultOpen(assignments, today) {
+  const calendarPanel = document.getElementById("training-calendar-panel");
+  if (!calendarPanel) return;
 
-  const visibleAssignments = assignments.filter(assignment => {
+  const hasTodayWorkout = assignments.some(assignment => assignment.assigned_date === today);
+
+  if (window.location.hash === "#training-calendar-panel" || hasTodayWorkout) {
+    calendarPanel.open = true;
+    return;
+  }
+
+  calendarPanel.open = false;
+}
+
+function renderTrainingCalendar() {
+  renderWorkoutCalendarMonth();
+  renderWorkoutCalendarDay();
+}
+
+function renderWorkoutCalendarMonth() {
+  const calendar = document.getElementById("future-workout-list");
+  if (!calendar) return;
+
+  const visibleAssignments = workoutCalendarAssignments.filter(assignment => {
     const date = parseAssignmentDate(assignment.assigned_date);
-    return date.getFullYear() === futureCalendarMonth.getFullYear()
-      && date.getMonth() === futureCalendarMonth.getMonth();
+    return date.getFullYear() === workoutCalendarMonth.getFullYear()
+      && date.getMonth() === workoutCalendarMonth.getMonth();
   });
-  const month = buildCalendarMonth(futureCalendarMonth, visibleAssignments);
-  const canGoBack = futureCalendarMonth > getMonthStart(new Date());
+  const month = buildCalendarMonth(workoutCalendarMonth, visibleAssignments);
 
-  list.innerHTML = `
+  calendar.innerHTML = `
     <section class="future-calendar-month">
       <div class="future-calendar-heading">
-        <button class="icon-btn future-month-btn" type="button" data-future-month="prev" ${canGoBack ? "" : "disabled"} aria-label="Previous month">
+        <button class="icon-btn future-month-btn" type="button" data-workout-calendar-month="prev" aria-label="Previous month">
           ‹
         </button>
         <h4>${window.RipCityUI.text(month.label)}</h4>
-        <button class="icon-btn future-month-btn" type="button" data-future-month="next" aria-label="Next month">
+        <button class="icon-btn future-month-btn" type="button" data-workout-calendar-month="next" aria-label="Next month">
           ›
         </button>
       </div>
@@ -700,37 +978,130 @@ function renderFutureWorkouts(assignments) {
 
         ${month.cells.map(cell => {
           if (!cell) return `<span class="future-calendar-cell is-empty"></span>`;
+          const dateKey = formatLocalDate(cell.date);
+          const isSelected = dateKey === selectedWorkoutDate;
+          const isToday = dateKey === getTodayString();
+          const firstWorkoutTitle = cell.assignments[0]?.workout?.title;
 
           return `
-            <article class="future-calendar-cell ${cell.assignments.length ? "has-workout" : ""}">
+            <button
+              class="future-calendar-cell ${cell.assignments.length ? "has-workout" : ""} ${isSelected ? "is-selected" : ""} ${isToday ? "is-today" : ""}"
+              type="button"
+              data-workout-calendar-date="${window.RipCityUI.attr(dateKey)}"
+              aria-label="${window.RipCityUI.attr(formatCalendarAriaLabel(dateKey, cell.assignments.length))}"
+            >
               <span class="future-calendar-date">${cell.day}</span>
-
-              ${cell.assignments.map(assignment => `
-                <a class="future-calendar-workout" href="workout-session.html?assignment=${window.RipCityUI.attr(assignment.id)}">
-                  ${window.RipCityUI.text(assignment.workout?.title, "Untitled Workout")}
-                </a>
-              `).join("")}
-            </article>
+              ${cell.assignments.length ? `
+                <span class="future-calendar-workout">
+                  ${window.RipCityUI.text(firstWorkoutTitle, "Workout")}
+                </span>
+              ` : ""}
+            </button>
           `;
         }).join("")}
       </div>
 
-      ${visibleAssignments.length ? "" : `<p class="future-calendar-empty">No future workouts this month.</p>`}
+      ${visibleAssignments.length ? "" : `<p class="future-calendar-empty">No assigned workouts this month.</p>`}
     </section>
   `;
 
-  document.querySelectorAll("[data-future-month]").forEach(button => {
-    button.addEventListener("click", () => changeFutureCalendarMonth(button.dataset.futureMonth));
+  document.querySelectorAll("[data-workout-calendar-month]").forEach(button => {
+    button.addEventListener("click", () => changeWorkoutCalendarMonth(button.dataset.workoutCalendarMonth));
+  });
+
+  document.querySelectorAll("[data-workout-calendar-date]").forEach(button => {
+    button.addEventListener("click", () => {
+      selectedWorkoutDate = button.dataset.workoutCalendarDate;
+      renderTrainingCalendar();
+    });
   });
 }
 
-function changeFutureCalendarMonth(direction) {
-  const nextMonth = new Date(futureCalendarMonth);
+function renderWorkoutCalendarDay() {
+  const list = document.getElementById("workout-history-list");
+  const heading = document.getElementById("training-calendar-selected-date");
+  if (!list) return;
+
+  const selectedAssignments = workoutCalendarAssignments
+    .filter(assignment => assignment.assigned_date === selectedWorkoutDate)
+    .sort((a, b) => (a.workout?.title || "").localeCompare(b.workout?.title || ""));
+  const dateLabel = window.RipCityWorkoutData.formatDateLabel(selectedWorkoutDate);
+
+  if (heading) {
+    heading.textContent = dateLabel;
+  }
+
+  if (!selectedAssignments.length) {
+    list.innerHTML = `<div class="empty-state compact-empty-state">No workouts assigned for ${window.RipCityUI.text(dateLabel)}.</div>`;
+    return;
+  }
+
+  list.innerHTML = selectedAssignments.map(assignment => renderWorkoutCalendarRow(assignment)).join("");
+}
+
+function renderWorkoutCalendarRow(assignment) {
+  const workout = assignment.workout;
+  const assignmentLogs = workoutCalendarLogs.filter(log => log.workout_assignment_id === assignment.id);
+  const summary = window.RipCityWorkoutData.summarizeSetLogs(assignmentLogs, workout);
+  const today = getTodayString();
+  const isFuture = assignment.assigned_date > today;
+  const isToday = assignment.assigned_date === today;
+  const status = getWorkoutCalendarStatus(summary, isFuture, isToday);
+  const actionLabel = isFuture ? "Preview" : isToday ? "Open Workout" : "Review";
+
+  return `
+    <article class="workout-history-card compact-workout-row">
+      <div class="workout-history-main">
+        <div>
+          <p class="eyebrow">${window.RipCityUI.text(window.RipCityWorkoutData.formatDateLabel(assignment.assigned_date))}</p>
+          <h4>${window.RipCityUI.text(workout?.title, "Untitled Workout")}</h4>
+          <p>${window.RipCityUI.text(status)} · ${summary.completedSets}/${summary.totalSets} sets</p>
+        </div>
+
+        <a class="outline-link workout-open-link" href="workout-session.html?assignment=${window.RipCityUI.attr(assignment.id)}">
+          ${window.RipCityUI.text(actionLabel)}
+        </a>
+      </div>
+    </article>
+  `;
+}
+
+function getWorkoutCalendarStatus(summary, isFuture, isToday) {
+  if (isFuture) return "Scheduled";
+  if (summary.isComplete) return "Complete";
+  if (summary.completedSets > 0) return "In Progress";
+  if (isToday) return "Ready";
+  return "Not Started";
+}
+
+function formatCalendarAriaLabel(dateKey, assignmentCount) {
+  const label = window.RipCityWorkoutData.formatDateLabel(dateKey);
+  if (!assignmentCount) return `${label}, no workouts`;
+  return `${label}, ${assignmentCount} workout${assignmentCount === 1 ? "" : "s"}`;
+}
+
+function changeWorkoutCalendarMonth(direction) {
+  const nextMonth = new Date(workoutCalendarMonth);
   nextMonth.setMonth(nextMonth.getMonth() + (direction === "next" ? 1 : -1));
-  futureCalendarMonth = nextMonth < getMonthStart(new Date())
-    ? getMonthStart(new Date())
-    : nextMonth;
-  renderFutureWorkouts(futureWorkoutAssignments);
+  workoutCalendarMonth = nextMonth;
+
+  const selectedDate = parseAssignmentDate(selectedWorkoutDate);
+  const selectedDateIsVisible = selectedDate.getFullYear() === workoutCalendarMonth.getFullYear()
+    && selectedDate.getMonth() === workoutCalendarMonth.getMonth();
+
+  if (!selectedDateIsVisible) {
+    const firstAssignmentInMonth = workoutCalendarAssignments
+      .filter(assignment => {
+        const date = parseAssignmentDate(assignment.assigned_date);
+        return date.getFullYear() === workoutCalendarMonth.getFullYear()
+          && date.getMonth() === workoutCalendarMonth.getMonth();
+      })
+      .sort((a, b) => a.assigned_date.localeCompare(b.assigned_date))[0];
+
+    selectedWorkoutDate = firstAssignmentInMonth?.assigned_date || formatLocalDate(workoutCalendarMonth);
+  }
+
+  renderTrainingCalendar();
 }
 
 function buildCalendarMonth(monthDate, assignments) {
@@ -755,7 +1126,9 @@ function buildCalendarMonth(monthDate, assignments) {
   const cells = Array.from({ length: firstDay.getDay() }, () => null);
 
   for (let day = 1; day <= daysInMonth; day += 1) {
+    const date = new Date(year, month, day);
     cells.push({
+      date,
       day,
       assignments: assignmentsByDay.get(day) || []
     });
@@ -770,42 +1143,6 @@ function buildCalendarMonth(monthDate, assignments) {
 function parseAssignmentDate(dateString) {
   const [year, month, day] = String(dateString).split("-").map(Number);
   return new Date(year, month - 1, day);
-}
-
-function renderWorkoutHistory(assignments, logs) {
-  const list = document.getElementById("workout-history-list");
-
-  if (!assignments.length) {
-    list.innerHTML = `<div class="empty-state compact-empty-state">No past workouts yet.</div>`;
-    return;
-  }
-
-  list.innerHTML = assignments.map(assignment => {
-    const workout = assignment.workout;
-    const assignmentLogs = logs.filter(log => log.workout_assignment_id === assignment.id);
-    const summary = window.RipCityWorkoutData.summarizeSetLogs(assignmentLogs, workout);
-    const status = summary.isComplete
-      ? "Complete"
-      : summary.completedSets > 0
-        ? "In Progress"
-        : "Not Started";
-
-    return `
-      <article class="workout-history-card compact-workout-row">
-        <div class="workout-history-main">
-          <div>
-            <p class="eyebrow">${window.RipCityUI.text(window.RipCityWorkoutData.formatDateLabel(assignment.assigned_date))}</p>
-            <h4>${window.RipCityUI.text(workout?.title, "Untitled Workout")}</h4>
-            <p>${window.RipCityUI.text(status)} · ${summary.completedSets}/${summary.totalSets} sets</p>
-          </div>
-
-          <a class="outline-link workout-open-link" href="workout-session.html?assignment=${window.RipCityUI.attr(assignment.id)}">
-            Review
-          </a>
-        </div>
-      </article>
-    `;
-  }).join("");
 }
 
 function formatInputType(inputType) {
@@ -830,6 +1167,7 @@ async function initH2KDashboard() {
     currentAccess = await getApprovedUserAccess();
     if (!currentAccess) return;
 
+    setMemberTypeText(getMemberTypeLabel());
     currentMemberProfile = await getMemberProfile(currentAccess.membership.id);
     updateMemberShell();
 
@@ -842,11 +1180,14 @@ async function initH2KDashboard() {
 
     await loadTodayAssignedWorkouts();
     await loadWorkoutHistory();
+    await loadMemberWeeklyHistory();
 
     if (currentMemberProfile.member_type === "h2k") {
       await refreshH2KDashboard();
     }
 
+    setActiveMemberNav(window.location.hash);
+    scrollMemberHashIntoView();
     showH2KMessage("");
   } catch (error) {
     console.error(error);
@@ -865,9 +1206,11 @@ document.addEventListener("DOMContentLoaded", () => {
   setupFeedbackLink();
   initH2KDashboard();
 
-  document.getElementById("refresh-workout-btn")?.addEventListener("click", loadTodayAssignedWorkouts);
-  document.getElementById("refresh-workout-lists-btn")?.addEventListener("click", loadWorkoutHistory);
-  document.getElementById("refresh-history-btn")?.addEventListener("click", loadWorkoutHistory);
-  document.getElementById("refresh-habits-btn")?.addEventListener("click", refreshH2KDashboard);
+  document
+    .getElementById("member-history-prev-week")
+    ?.addEventListener("click", () => changeMemberHistoryWeek("previous"));
+  document
+    .getElementById("member-history-next-week")
+    ?.addEventListener("click", () => changeMemberHistoryWeek("next"));
   document.getElementById("h2k-logout-btn")?.addEventListener("click", logoutH2K);
 });

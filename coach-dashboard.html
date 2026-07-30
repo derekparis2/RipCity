@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/styles.css?v=member-history-1" />
 </head>
 
 <body class="auth-body">
@@ -77,6 +77,63 @@
         <span>Needs Attention</span>
         <strong id="coach-needs-attention">0</strong>
         <small>No habits logged today</small>
+      </article>
+    </section>
+
+    <section class="dashboard-grid h2k-dashboard-grid">
+      <article class="panel coach-weekly-history-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">MEMBER PROGRESS</p>
+            <h3>Weekly Member History</h3>
+          </div>
+
+          <button class="outline-btn" id="refresh-coach-weekly-history-btn" type="button">Refresh</button>
+        </div>
+
+        <p id="coach-weekly-history-message" class="auth-message"></p>
+
+        <div class="coach-weekly-history-layout">
+          <div class="coach-member-search-panel">
+            <label for="coach-weekly-member-type-filter">Member Type</label>
+            <select id="coach-weekly-member-type-filter">
+              <option value="all">All members</option>
+              <option value="athlete">Athletes</option>
+              <option value="h2k">H2K members</option>
+            </select>
+
+            <label for="coach-weekly-member-search">Search Member</label>
+            <input
+              type="search"
+              id="coach-weekly-member-search"
+              placeholder="Type a member name..."
+              autocomplete="off"
+            />
+
+            <div id="coach-weekly-member-results" class="coach-weekly-member-results">
+              <div class="empty-state">Loading members...</div>
+            </div>
+          </div>
+
+          <div class="coach-member-score-history">
+            <div class="coach-weekly-selected-member" id="coach-weekly-selected-member">
+              Select a member to view weekly scores.
+            </div>
+
+            <div class="weekly-history-stepper" id="coach-weekly-history-stepper">
+              <button class="icon-btn" id="coach-weekly-prev-week" type="button" aria-label="Previous week">‹</button>
+              <div>
+                <span class="eyebrow" id="coach-weekly-week-context">CURRENT WEEK</span>
+                <strong id="coach-weekly-week-label">This Week</strong>
+              </div>
+              <button class="icon-btn" id="coach-weekly-next-week" type="button" aria-label="Next week">›</button>
+            </div>
+
+            <div id="coach-weekly-history-list" class="weekly-score-list">
+              <div class="empty-state">Select a member to view weekly scores.</div>
+            </div>
+          </div>
+        </div>
       </article>
     </section>
 
@@ -207,6 +264,6 @@
   <script src="js/ui-utils.js"></script>
   <script src="js/access-control.js"></script>
   <script src="js/workout-data.js"></script>
-  <script src="js/coach-dashboard.js"></script>
+  <script src="js/coach-dashboard.js?v=member-history-1"></script>
 </body>
 </html>

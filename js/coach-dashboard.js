@@ -6,12 +6,19 @@
 
 let coachAccess = null;
 let coachHabits = [];
+let coachHistoryMembers = [];
+let selectedCoachWeeklyMemberId = null;
+let coachWeeklyHistoryWeeks = [];
+let coachWeeklyHistoryLogs = [];
+let selectedCoachWeeklyWeekIndex = 0;
 let coachWorkoutReviewRows = [];
 let coachReviewMembers = [];
 let coachReviewGroups = [];
 let coachReviewFilterOptions = {
   targets: new Map()
 };
+
+const COACH_WEEKLY_HISTORY_WEEKS = 12;
 
 const COACH_WORKOUT_ASSIGNMENT_SELECT = `
   id,
@@ -76,6 +83,42 @@ function getEndOfWeekString() {
   const start = getStartOfWeekDate();
   start.setDate(start.getDate() + 6);
   return formatLocalDate(start);
+}
+
+function addDays(date, days) {
+  const nextDate = new Date(date);
+  nextDate.setDate(nextDate.getDate() + days);
+  return nextDate;
+}
+
+function buildRecentWeekRanges(weekCount) {
+  const currentWeekStart = getStartOfWeekDate();
+
+  return Array.from({ length: weekCount }, (_, index) => {
+    const start = addDays(currentWeekStart, index * -7);
+    const end = addDays(start, 6);
+
+    return {
+      start,
+      end,
+      startKey: formatLocalDate(start),
+      endKey: formatLocalDate(end),
+      isCurrentWeek: index === 0
+    };
+  });
+}
+
+function formatWeekRangeLabel(week) {
+  const startLabel = week.start.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric"
+  });
+  const endLabel = week.end.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric"
+  });
+
+  return `${startLabel} - ${endLabel}`;
 }
 
 function showCoachDashboardMessage(message, isError = false) {
@@ -175,6 +218,18 @@ async function loadHabitLogsForMembers(memberProfileIds) {
   return data || [];
 }
 
+async function loadHabitLogsForMemberRange(memberProfileId, startDate, endDate) {
+  const { data, error } = await db
+    .from("habit_logs")
+    .select("*")
+    .eq("member_profile_id", memberProfileId)
+    .gte("log_date", startDate)
+    .lte("log_date", endDate);
+
+  if (error) throw error;
+  return data || [];
+}
+
 // Calculates each member's today and weekly score.
 function buildMemberScoreRows(members, logs) {
   const today = getTodayString();
@@ -216,6 +271,18 @@ function buildMemberScoreRows(members, logs) {
       perfectToday: maxDailyScore > 0 && todayScore === maxDailyScore
     };
   });
+}
+
+function buildCoachWeeklyMemberOptionsFromApproved(members) {
+  return members.map(member => ({
+    facilityMemberId: member.facilityMemberId,
+    memberProfileId: member.memberProfileId,
+    memberType: member.memberType,
+    name: member.name,
+    email: member.email,
+    profilePictureUrl: member.profilePictureUrl,
+    searchText: `${member.name || ""} ${member.email || ""} ${member.memberType || ""}`.toLowerCase()
+  })).filter(member => member.memberProfileId);
 }
 
 // Updates the top stat cards.
@@ -292,6 +359,272 @@ function renderCoachMemberList(rows) {
       </article>
     `;
   }).join("");
+}
+
+function showCoachWeeklyHistoryMessage(message, isError = false) {
+  const element = document.getElementById("coach-weekly-history-message");
+  if (!element) return;
+
+  element.textContent = message;
+  element.classList.toggle("error-message", isError);
+}
+
+function renderCoachWeeklyMemberResults() {
+  const results = document.getElementById("coach-weekly-member-results");
+  const search = document.getElementById("coach-weekly-member-search");
+  const memberTypeFilter = document.getElementById("coach-weekly-member-type-filter");
+  if (!results) return;
+
+  const query = String(search?.value || "").trim().toLowerCase();
+  const selectedType = memberTypeFilter?.value || "all";
+  const matchingMembers = coachHistoryMembers
+    .filter(member => selectedType === "all" || member.memberType === selectedType)
+    .filter(member => !query || member.searchText.includes(query))
+    .slice(0, 8);
+
+  if (!coachHistoryMembers.length) {
+    results.innerHTML = `<div class="empty-state">No approved members found yet.</div>`;
+    return;
+  }
+
+  if (!matchingMembers.length) {
+    results.innerHTML = `<div class="empty-state">No members match that search.</div>`;
+    return;
+  }
+
+  results.innerHTML = matchingMembers.map(member => `
+    <button
+      class="coach-weekly-member-option ${member.memberProfileId === selectedCoachWeeklyMemberId ? "active" : ""}"
+      type="button"
+      data-coach-weekly-member-id="${window.RipCityUI.attr(member.memberProfileId)}"
+    >
+      ${window.RipCityUI.avatarMarkup(member.name, member.profilePictureUrl, "coach-review-avatar")}
+      <span>
+        <strong>${window.RipCityUI.text(member.name)}</strong>
+        <small>${window.RipCityUI.text(formatMemberTypeLabel(member.memberType))} · ${window.RipCityUI.text(member.email)}</small>
+      </span>
+    </button>
+  `).join("");
+
+  results.querySelectorAll("[data-coach-weekly-member-id]").forEach(button => {
+    button.addEventListener("click", async () => {
+      selectedCoachWeeklyMemberId = button.dataset.coachWeeklyMemberId;
+      renderCoachWeeklyMemberResults();
+      await refreshCoachWeeklyHistory();
+    });
+  });
+}
+
+async function refreshCoachWeeklyHistory() {
+  const list = document.getElementById("coach-weekly-history-list");
+  const selectedMemberElement = document.getElementById("coach-weekly-selected-member");
+  if (!list) return;
+
+  if (!selectedCoachWeeklyMemberId && coachHistoryMembers.length) {
+    selectedCoachWeeklyMemberId = coachHistoryMembers[0].memberProfileId;
+  }
+
+  const selectedMember = coachHistoryMembers.find(member =>
+    member.memberProfileId === selectedCoachWeeklyMemberId
+  );
+
+  if (!selectedMember) {
+    if (selectedMemberElement) {
+      selectedMemberElement.textContent = "Select a member to view weekly scores.";
+    }
+    list.innerHTML = `<div class="empty-state">Select a member to view weekly scores.</div>`;
+    return;
+  }
+
+  if (selectedMemberElement) {
+    selectedMemberElement.innerHTML = `
+      <span class="eyebrow">SELECTED MEMBER</span>
+      <strong>${window.RipCityUI.text(selectedMember.name)}</strong>
+      <small>${window.RipCityUI.text(formatMemberTypeLabel(selectedMember.memberType))} · ${window.RipCityUI.text(selectedMember.email)}</small>
+    `;
+  }
+
+  showCoachWeeklyHistoryMessage("Loading weekly history...");
+
+  try {
+    coachWeeklyHistoryWeeks = buildRecentWeekRanges(COACH_WEEKLY_HISTORY_WEEKS);
+    selectedCoachWeeklyWeekIndex = Math.min(
+      selectedCoachWeeklyWeekIndex,
+      coachWeeklyHistoryWeeks.length - 1
+    );
+    if (selectedMember.memberType === "h2k") {
+      coachWeeklyHistoryLogs = await loadHabitLogsForMemberRange(
+        selectedMember.memberProfileId,
+        coachWeeklyHistoryWeeks[coachWeeklyHistoryWeeks.length - 1].startKey,
+        coachWeeklyHistoryWeeks[0].endKey
+      );
+    } else {
+      coachWeeklyHistoryLogs = await loadCoachMemberTrainingHistoryLogs(
+        selectedMember,
+        coachWeeklyHistoryWeeks
+      );
+    }
+
+    renderCoachWeeklyHistory();
+    showCoachWeeklyHistoryMessage("");
+  } catch (error) {
+    console.error(error);
+    showCoachWeeklyHistoryMessage(error.message || "Could not load weekly history.", true);
+    list.innerHTML = `<div class="empty-state">Could not load weekly history.</div>`;
+  }
+}
+
+function renderCoachWeeklyHistory() {
+  const list = document.getElementById("coach-weekly-history-list");
+  if (!list) return;
+
+  const week = coachWeeklyHistoryWeeks[selectedCoachWeeklyWeekIndex];
+  if (!week) {
+    list.innerHTML = `<div class="empty-state">No weekly scores available yet.</div>`;
+    return;
+  }
+
+  updateCoachWeeklyHistoryStepper(week);
+
+  const selectedMember = coachHistoryMembers.find(member =>
+    member.memberProfileId === selectedCoachWeeklyMemberId
+  );
+  const row = selectedMember?.memberType === "h2k"
+    ? buildWeeklyScoreRow(week, coachWeeklyHistoryLogs, coachHabits.length * 7)
+    : buildCoachTrainingWeeklyScoreRow(week);
+
+  list.innerHTML = renderWeeklyScoreCard(row);
+}
+
+async function loadCoachMemberTrainingHistoryLogs(member, weeks) {
+  const facilityId = coachAccess.membership.facility_id;
+  const earliestWeek = weeks[weeks.length - 1];
+  const latestWeek = weeks[0];
+  const groupMemberships = await loadFacilityGroupMemberships([member.memberProfileId]);
+  const groupIds = groupMemberships.map(row => row.group_id);
+
+  const { data, error } = await db
+    .from("workout_assignments")
+    .select(COACH_WORKOUT_ASSIGNMENT_SELECT)
+    .gte("assigned_date", earliestWeek.startKey)
+    .lte("assigned_date", latestWeek.endKey)
+    .order("assigned_date", { ascending: false });
+
+  if (error) throw error;
+
+  const assignments = window.RipCityWorkoutData
+    .dedupeAssignmentsByWorkoutDate((data || []).filter(assignment => {
+      if (assignment.workout?.facility_id !== facilityId) return false;
+      if (assignment.target_type === "facility") return assignment.target_facility_id === facilityId;
+      if (assignment.target_type === "member") return assignment.target_member_profile_id === member.memberProfileId;
+      if (assignment.target_type === "group") return groupIds.includes(assignment.target_group_id);
+      return false;
+    }));
+  const logs = await window.RipCityWorkoutData.loadSetLogsForAssignments(
+    assignments.map(assignment => assignment.id),
+    member.memberProfileId
+  );
+
+  return { assignments, logs };
+}
+
+function updateCoachWeeklyHistoryStepper(week) {
+  const context = document.getElementById("coach-weekly-week-context");
+  const label = document.getElementById("coach-weekly-week-label");
+  const previousButton = document.getElementById("coach-weekly-prev-week");
+  const nextButton = document.getElementById("coach-weekly-next-week");
+
+  if (context) context.textContent = week.isCurrentWeek ? "CURRENT WEEK" : "WEEK";
+  if (label) label.textContent = formatWeekRangeLabel(week);
+  if (previousButton) previousButton.disabled = selectedCoachWeeklyWeekIndex >= coachWeeklyHistoryWeeks.length - 1;
+  if (nextButton) nextButton.disabled = selectedCoachWeeklyWeekIndex <= 0;
+}
+
+function changeCoachWeeklyHistoryWeek(direction) {
+  if (!coachWeeklyHistoryWeeks.length) return;
+
+  selectedCoachWeeklyWeekIndex += direction === "previous" ? 1 : -1;
+  selectedCoachWeeklyWeekIndex = Math.max(
+    0,
+    Math.min(selectedCoachWeeklyWeekIndex, coachWeeklyHistoryWeeks.length - 1)
+  );
+
+  renderCoachWeeklyHistory();
+}
+
+function buildWeeklyScoreRow(week, logs, maxWeeklyScore) {
+  const weekLogs = logs.filter(log =>
+    log.log_date >= week.startKey &&
+    log.log_date <= week.endKey
+  );
+  const score = weekLogs
+    .filter(log => log.completed)
+    .reduce((total, log) => total + Number(log.points_earned || 0), 0);
+  const loggedDays = new Set(
+    weekLogs
+      .filter(log => log.completed)
+      .map(log => log.log_date)
+  ).size;
+
+  return {
+    label: formatWeekRangeLabel(week),
+    typeLabel: "H2K Score",
+    score,
+    maxScore: maxWeeklyScore,
+    percent: maxWeeklyScore ? Math.round((score / maxWeeklyScore) * 100) : 0,
+    loggedDays,
+    detail: `${loggedDays}/7 days logged`,
+    isCurrentWeek: week.isCurrentWeek
+  };
+}
+
+function buildCoachTrainingWeeklyScoreRow(week) {
+  const assignments = coachWeeklyHistoryLogs.assignments || [];
+  const logs = coachWeeklyHistoryLogs.logs || [];
+  const weekAssignments = assignments.filter(assignment =>
+    assignment.assigned_date >= week.startKey &&
+    assignment.assigned_date <= week.endKey &&
+    assignment.assigned_date <= getTodayString()
+  );
+  const summaries = weekAssignments.map(assignment => {
+    const assignmentLogs = logs.filter(log => log.workout_assignment_id === assignment.id);
+    return window.RipCityWorkoutData.summarizeSetLogs(assignmentLogs, assignment.workout);
+  });
+  const completedWorkouts = summaries.filter(summary => summary.isComplete).length;
+  const completedSets = summaries.reduce((total, summary) => total + summary.completedSets, 0);
+  const totalSets = summaries.reduce((total, summary) => total + summary.totalSets, 0);
+
+  return {
+    label: formatWeekRangeLabel(week),
+    typeLabel: "Training Week",
+    score: completedWorkouts,
+    maxScore: weekAssignments.length,
+    percent: totalSets ? Math.round((completedSets / totalSets) * 100) : 0,
+    detail: `${completedSets}/${totalSets} sets logged`,
+    secondaryDetail: `${weekAssignments.length} assigned workout${weekAssignments.length === 1 ? "" : "s"}`,
+    isCurrentWeek: week.isCurrentWeek
+  };
+}
+
+function renderWeeklyScoreCard(row) {
+  return `
+    <article class="weekly-score-card ${row.isCurrentWeek ? "is-current-week" : ""}">
+      <div class="weekly-score-main">
+        <div>
+          <p class="eyebrow">${window.RipCityUI.text(row.typeLabel)}</p>
+          <h4>${window.RipCityUI.text(row.label)}</h4>
+          <span>${window.RipCityUI.text(row.detail)}</span>
+          ${row.secondaryDetail ? `<small>${window.RipCityUI.text(row.secondaryDetail)}</small>` : ""}
+        </div>
+
+        <strong>${row.score}/${row.maxScore}</strong>
+      </div>
+
+      <div class="progress-bar weekly-score-progress">
+        <div style="width: ${window.RipCityUI.percent(row.percent)}%"></div>
+      </div>
+    </article>
+  `;
 }
 
 // =====================================================
@@ -854,8 +1187,19 @@ async function refreshCoachDashboard() {
     const logs = await loadHabitLogsForMembers(memberProfileIds);
     const rows = buildMemberScoreRows(members, logs);
 
+    const historyMembers = await loadApprovedFacilityMembers(coachAccess.membership.facility_id);
+    coachHistoryMembers = buildCoachWeeklyMemberOptionsFromApproved(historyMembers);
+    if (
+      selectedCoachWeeklyMemberId &&
+      !coachHistoryMembers.some(member => member.memberProfileId === selectedCoachWeeklyMemberId)
+    ) {
+      selectedCoachWeeklyMemberId = null;
+    }
+
     updateCoachStats(rows);
     renderCoachMemberList(rows);
+    renderCoachWeeklyMemberResults();
+    await refreshCoachWeeklyHistory();
     await refreshCoachWorkoutReview();
 
     showCoachDashboardMessage("");
@@ -897,6 +1241,38 @@ document.addEventListener("DOMContentLoaded", () => {
   document
     .getElementById("refresh-workout-review-btn")
     ?.addEventListener("click", refreshCoachWorkoutReview);
+
+  document
+    .getElementById("refresh-coach-weekly-history-btn")
+    ?.addEventListener("click", refreshCoachWeeklyHistory);
+
+  document
+    .getElementById("coach-weekly-prev-week")
+    ?.addEventListener("click", () => changeCoachWeeklyHistoryWeek("previous"));
+
+  document
+    .getElementById("coach-weekly-next-week")
+    ?.addEventListener("click", () => changeCoachWeeklyHistoryWeek("next"));
+
+  document
+    .getElementById("coach-weekly-member-search")
+    ?.addEventListener("input", renderCoachWeeklyMemberResults);
+
+  document
+    .getElementById("coach-weekly-member-type-filter")
+    ?.addEventListener("input", async () => {
+      const selectedType = document.getElementById("coach-weekly-member-type-filter")?.value || "all";
+      const selectedMember = coachHistoryMembers.find(member =>
+        member.memberProfileId === selectedCoachWeeklyMemberId
+      );
+
+      if (selectedType !== "all" && selectedMember?.memberType !== selectedType) {
+        selectedCoachWeeklyMemberId = null;
+      }
+
+      renderCoachWeeklyMemberResults();
+      await refreshCoachWeeklyHistory();
+    });
 
   [
     "coach-review-member-type-filter",

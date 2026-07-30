@@ -67,6 +67,15 @@ function getInputValue(id) {
   return element.value.trim();
 }
 
+function getInitials(name) {
+  return String(name || "Member")
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(part => part.charAt(0).toUpperCase())
+    .join("") || "M";
+}
+
 function setProfilePicturePreview(url, fallbackName) {
   const avatar = document.getElementById("profile-avatar");
   if (!avatar) return;
@@ -114,7 +123,7 @@ function updateProfilePreview() {
   if (bandBadge) {
     bandBadge.textContent = currentMemberProfile?.h2k_band_color
       ? `${currentMemberProfile.h2k_band_color} Band`
-      : "Band not set";
+      : "No Band";
     bandBadge.classList.toggle("hidden", currentMemberProfile?.member_type !== "h2k");
   }
 }
@@ -124,6 +133,75 @@ function updateProfileFieldVisibility() {
   document.querySelectorAll(".athlete-profile-fields").forEach(element => {
     element.classList.toggle("hidden", !isAthlete);
   });
+}
+
+function getProfileMemberTypeLabel() {
+  const profileType = String(currentMemberProfile?.member_type || "").toLowerCase();
+  const role = String(profileAccess?.membership?.role || "").toLowerCase();
+
+  if (profileType === "h2k" || role === "h2k_member") return "H2K Member";
+  if (profileType === "athlete" || role === "athlete") return "Athlete";
+
+  return "Member";
+}
+
+function updateProfileShellNav() {
+  const isH2K = currentMemberProfile?.member_type === "h2k";
+  const habitsNavLink = document.getElementById("profile-habits-nav-link");
+  const subtitle = document.getElementById("profile-brand-subtitle");
+  const programLabel = document.getElementById("profile-program-label");
+  const sidebarName = document.getElementById("profile-sidebar-name");
+  const sidebarRole = document.getElementById("profile-sidebar-role");
+  const sidebarBand = document.getElementById("profile-sidebar-band");
+  const sidebarAvatar = document.getElementById("profile-sidebar-avatar");
+  const memberTypeLabel = getProfileMemberTypeLabel();
+  const fullName = profileAccess?.profile?.full_name || "Member";
+  const pictureUrl = profileAccess?.profile?.profile_picture_url;
+
+  if (subtitle) {
+    subtitle.textContent = memberTypeLabel;
+  }
+
+  if (programLabel) {
+    programLabel.textContent = memberTypeLabel;
+  }
+
+  if (sidebarName) {
+    sidebarName.textContent = fullName;
+  }
+
+  if (sidebarRole) {
+    sidebarRole.textContent = memberTypeLabel;
+  }
+
+  if (sidebarBand) {
+    sidebarBand.textContent = currentMemberProfile?.h2k_band_color
+      ? `${currentMemberProfile.h2k_band_color} Band`
+      : "No Band";
+    sidebarBand.classList.toggle("hidden", !isH2K);
+  }
+
+  if (sidebarAvatar) {
+    sidebarAvatar.textContent = "";
+    sidebarAvatar.classList.toggle("has-image", Boolean(pictureUrl));
+
+    if (pictureUrl) {
+      const image = document.createElement("img");
+      image.src = pictureUrl;
+      image.alt = `${fullName} profile picture`;
+      image.addEventListener("error", () => {
+        sidebarAvatar.classList.remove("has-image");
+        sidebarAvatar.textContent = getInitials(fullName);
+      });
+      sidebarAvatar.appendChild(image);
+    } else {
+      sidebarAvatar.textContent = getInitials(fullName);
+    }
+  }
+
+  if (habitsNavLink) {
+    habitsNavLink.classList.toggle("hidden", !isH2K);
+  }
 }
 
 function updateGenderFieldState() {
@@ -297,6 +375,7 @@ async function saveProfile(event) {
     currentMemberProfile = await getMemberProfile(profileAccess.membership.id);
     selectedProfilePictureFile = null;
 
+    updateProfileShellNav();
     fillProfileForm();
     showProfileMessage("Profile saved.");
   } catch (error) {
@@ -320,6 +399,7 @@ async function initProfilePage() {
 
     currentMemberProfile = await getMemberProfile(profileAccess.membership.id);
 
+    updateProfileShellNav();
     fillProfileForm();
     showProfileMessage("");
   } catch (error) {
