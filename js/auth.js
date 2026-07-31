@@ -1,6 +1,7 @@
 const RIP_CITY_SLUG = "rip-city";
 let signupFacility = null;
 let signupGroups = [];
+let signupGroupsLoaded = false;
 
 // This file is only for public auth pages:
 // signup.html, login.html, and pending.html.
@@ -78,6 +79,15 @@ function renderSignupGroups(groups) {
       <option value="${group.id}">${escapeOptionText(group.name)}</option>
     `).join("")}
   `;
+}
+
+async function ensureSignupGroupsLoaded() {
+  if (signupGroupsLoaded) return;
+
+  signupFacility = signupFacility || await getRipCityFacility();
+  signupGroups = await loadSignupGroups(signupFacility.id);
+  signupGroupsLoaded = true;
+  renderSignupGroups(signupGroups);
 }
 
 async function getCurrentUserProfile(userId) {
@@ -320,18 +330,42 @@ function updateSignupMemberTypeFields() {
   const selected = document.querySelector("input[name='member-type']:checked").value;
   const athleteFields = document.querySelectorAll(".athlete-only");
   const trainingGroup = document.getElementById("signup-training-group");
+  const isAthlete = selected === "athlete";
 
   athleteFields.forEach(field => {
-    field.classList.toggle("hidden", selected !== "athlete");
+    field.classList.toggle("hidden", !isAthlete);
+
+    field.querySelectorAll("input, select, textarea").forEach(input => {
+      input.disabled = !isAthlete;
+    });
   });
 
   if (trainingGroup) {
-    trainingGroup.required = selected === "athlete";
-    trainingGroup.disabled = selected !== "athlete";
+    trainingGroup.required = isAthlete;
 
-    if (selected !== "athlete") {
+    if (!isAthlete) {
       trainingGroup.value = "";
     }
+  }
+}
+
+async function handleSignupMemberTypeChange() {
+  updateSignupMemberTypeFields();
+
+  if (document.querySelector("input[name='member-type']:checked")?.value !== "athlete") {
+    showMessage("signup-message", "");
+    return;
+  }
+
+  showMessage("signup-message", "Loading training groups...");
+
+  try {
+    await ensureSignupGroupsLoaded();
+    showMessage("signup-message", "");
+  } catch (error) {
+    console.error(error);
+    renderSignupGroups([]);
+    showMessage("signup-message", "Could not load training groups. Ask a coach to check signup group access.", true);
   }
 }
 
@@ -339,7 +373,7 @@ function setupMemberTypeToggle() {
   const memberTypeInputs = document.querySelectorAll("input[name='member-type']");
 
   memberTypeInputs.forEach(input => {
-    input.addEventListener("change", updateSignupMemberTypeFields);
+    input.addEventListener("change", handleSignupMemberTypeChange);
   });
 
   updateSignupMemberTypeFields();
@@ -364,13 +398,16 @@ async function setupSignupPage() {
 
   try {
     signupFacility = await getRipCityFacility();
-    signupGroups = await loadSignupGroups(signupFacility.id);
-    renderSignupGroups(signupGroups);
+    if (document.querySelector("input[name='member-type']:checked")?.value === "athlete") {
+      await ensureSignupGroupsLoaded();
+    }
     updateSignupMemberTypeFields();
   } catch (error) {
     console.error(error);
     renderSignupGroups([]);
-    showMessage("signup-message", "Could not load signup groups. Try refreshing the page.", true);
+    if (document.querySelector("input[name='member-type']:checked")?.value === "athlete") {
+      showMessage("signup-message", "Could not load training groups. Ask a coach to check signup group access.", true);
+    }
   }
 
   document.getElementById("signup-form").addEventListener("submit", handleSignup);

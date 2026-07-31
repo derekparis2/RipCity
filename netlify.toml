@@ -1,0 +1,59 @@
+[[redirects]]
+  from = "/login"
+  to = "/login.html"
+  status = 200
+
+[[redirects]]
+  from = "/signup"
+  to = "/signup.html"
+  status = 200
+
+[[redirects]]
+  from = "/pending"
+  to = "/pending.html"
+  status = 200
+
+[[redirects]]
+  from = "/dashboard"
+  to = "/member-dashboard.html"
+  status = 200
+
+[[redirects]]
+  from = "/member-dashboard"
+  to = "/member-dashboard.html"
+  status = 200
+
+[[redirects]]
+  from = "/profile"
+  to = "/profile.html"
+  status = 200
+
+[[redirects]]
+  from = "/workout-session"
+  to = "/workout-session.html"
+  status = 200
+
+[[redirects]]
+  from = "/coach"
+  to = "/coach-dashboard.html"
+  status = 200
+
+[[redirects]]
+  from = "/coach-dashboard"
+  to = "/coach-dashboard.html"
+  status = 200
+
+[[redirects]]
+  from = "/coach-roster"
+  to = "/coach-roster.html"
+  status = 200
+
+[[redirects]]
+  from = "/coach-workouts"
+  to = "/coach-workouts.html"
+  status = 200
+
+[[redirects]]
+  from = "/coach-approvals"
+  to = "/coach-approvals.html"
+  status = 200
