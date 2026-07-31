@@ -137,6 +137,64 @@ function showCoachWorkoutReviewMessage(message, isError = false) {
   element.classList.toggle("error-message", isError);
 }
 
+function showCoachSignupLinkMessage(message, isError = false) {
+  const element = document.getElementById("coach-signup-link-message");
+  if (!element) return;
+
+  element.textContent = message;
+  element.classList.toggle("error-message", isError);
+}
+
+function buildCoachSignupLink(type) {
+  const signupUrl = new URL("signup.html", window.location.href);
+
+  if (type === "athlete" || type === "h2k") {
+    signupUrl.searchParams.set("type", type);
+  }
+
+  return signupUrl.href;
+}
+
+async function copyTextToClipboard(text) {
+  if (navigator.clipboard?.writeText && window.isSecureContext) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+
+  const input = document.createElement("textarea");
+  input.value = text;
+  input.setAttribute("readonly", "");
+  input.style.position = "fixed";
+  input.style.left = "-9999px";
+  document.body.appendChild(input);
+  input.select();
+
+  const copied = document.execCommand("copy");
+  input.remove();
+
+  if (!copied) {
+    throw new Error("Copy failed. Select and copy the link manually.");
+  }
+}
+
+async function copyCoachSignupLink(type) {
+  const link = buildCoachSignupLink(type);
+
+  try {
+    await copyTextToClipboard(link);
+    const labels = {
+      athlete: "Athlete signup link copied.",
+      h2k: "H2K signup link copied.",
+      general: "General signup link copied."
+    };
+
+    showCoachSignupLinkMessage(labels[type] || "Signup link copied.");
+  } catch (error) {
+    console.error(error);
+    showCoachSignupLinkMessage(link, true);
+  }
+}
+
 // Gets the current logged-in user.
 async function getCurrentSession() {
   return window.RipCityAccess.getSession();
@@ -1233,6 +1291,10 @@ async function initCoachDashboard() {
 
 document.addEventListener("DOMContentLoaded", () => {
   initCoachDashboard();
+
+  document.querySelectorAll("[data-copy-signup-link]").forEach(button => {
+    button.addEventListener("click", () => copyCoachSignupLink(button.dataset.copySignupLink));
+  });
 
   document
     .getElementById("refresh-coach-dashboard-btn")

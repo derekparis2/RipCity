@@ -1022,6 +1022,44 @@ td {
   pointer-events: none;
 }
 
+.coach-signup-link-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: center;
+}
+
+.coach-signup-link-panel h3,
+.coach-signup-link-panel p {
+  margin: 0;
+}
+
+.coach-signup-link-panel h3 {
+  margin-top: 4px;
+}
+
+.coach-signup-link-panel p:not(.eyebrow) {
+  margin-top: 8px;
+  color: var(--muted);
+}
+
+.coach-signup-link-panel .auth-message {
+  min-height: 18px;
+  margin-top: 10px;
+}
+
+.coach-signup-link-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.coach-signup-link-actions button {
+  min-height: 46px;
+  white-space: nowrap;
+}
+
 .auth-page {
   min-height: 100vh;
   display: grid;
@@ -4775,6 +4813,7 @@ body {
   .h2k-header,
   .approval-header,
   .feedback-panel,
+  .coach-signup-link-panel,
   .today-workout-header,
   .workout-history-main,
   .coach-workout-review-header,
@@ -4880,9 +4919,19 @@ body {
 
   .hero-card p:not(.eyebrow),
   .feedback-panel p,
+  .coach-signup-link-panel p:not(.eyebrow),
   .panel p:not(.eyebrow) {
     font-size: 14px;
     line-height: 1.5;
+  }
+
+  .coach-signup-link-actions {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .coach-signup-link-actions > * {
+    flex: 1 1 100%;
   }
 
   .stats-grid,

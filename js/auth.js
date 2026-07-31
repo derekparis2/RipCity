@@ -345,8 +345,22 @@ function setupMemberTypeToggle() {
   updateSignupMemberTypeFields();
 }
 
+function applySignupTypeFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const type = String(params.get("type") || "").toLowerCase();
+
+  if (!["athlete", "h2k"].includes(type)) return;
+
+  const input = document.querySelector(`input[name='member-type'][value='${type}']`);
+  if (!input) return;
+
+  input.checked = true;
+  updateSignupMemberTypeFields();
+}
+
 async function setupSignupPage() {
   setupMemberTypeToggle();
+  applySignupTypeFromUrl();
 
   try {
     signupFacility = await getRipCityFacility();
