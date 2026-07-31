@@ -1202,6 +1202,20 @@ td {
   font-weight: 800;
 }
 
+.auth-text-btn {
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-weight: 800;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.auth-text-btn:hover {
+  color: var(--muted);
+}
+
 .member-type-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

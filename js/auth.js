@@ -8,7 +8,8 @@ let signupGroupsLoaded = false;
 // Coach approval logic lives in coach-approvals.js.
 
 function getCurrentPage() {
-  return window.location.pathname.split("/").pop();
+  const page = window.location.pathname.split("/").pop() || "index";
+  return page.replace(/\.html$/, "");
 }
 
 function showMessage(elementId, message, isError = false) {
@@ -110,6 +111,43 @@ async function getCurrentUserProfile(userId) {
 
   if (error) throw error;
   return data;
+}
+
+async function redirectByProfile(userId) {
+  const profile = await getCurrentUserProfile(userId);
+  const membership =
+    profile.facility_members?.[0] ||
+    profile["facility_members!facility_members_profile_id_fkey"]?.[0];
+
+  if (!membership || membership.status !== "approved") {
+    window.location.href = "pending.html";
+    return;
+  }
+
+  if (membership.role === "coach" || membership.role === "admin") {
+    window.location.href = "coach-dashboard.html";
+    return;
+  }
+
+  // Athletes and H2K members share the member dashboard. Program-specific
+  // modules such as H2K habits are enabled from member profile data.
+  window.location.href = "member-dashboard.html";
+}
+
+function getPasswordRedirectUrl() {
+  return `${window.location.origin}/set-password.html`;
+}
+
+function getAuthLinkHash() {
+  return window.__ripAuthHash || window.location.hash || "";
+}
+
+function shouldHandlePasswordLink() {
+  const params = new URLSearchParams(getAuthLinkHash().replace(/^#/, ""));
+  return (
+    params.has("access_token") &&
+    ["invite", "recovery"].includes(String(params.get("type") || "").toLowerCase())
+  );
 }
 
 function normalizeUsername(value) {
@@ -290,35 +328,86 @@ async function handleLogin(event) {
 
     if (error) throw error;
 
-    const profile = await getCurrentUserProfile(data.user.id);
-    const membership =
-      profile.facility_members?.[0] ||
-      profile["facility_members!facility_members_profile_id_fkey"]?.[0];
-
-    if (!membership || membership.status !== "approved") {
-      window.location.href = "pending.html";
-      return;
-    }
-
-    if (membership.role === "coach" || membership.role === "admin") {
-      window.location.href = "coach-dashboard.html";
-      return;
-    }
-
-    // Athletes and H2K members share the member dashboard. Program-specific
-    // modules such as H2K habits are enabled from member profile data.
-    if (membership.role === "h2k_member" || membership.role === "athlete") {
-      window.location.href = "member-dashboard.html";
-      return;
-    }
-
-    // Unknown approved facility roles should still land on a real app surface,
-    // not the archived prototype.
-    window.location.href = "member-dashboard.html";
+    await redirectByProfile(data.user.id);
   } catch (error) {
     console.error(error);
     showMessage("login-message", error.message || "Login failed.", true);
   }
+}
+
+async function handleForgotPassword() {
+  const identifier = document.getElementById("login-identifier").value.trim();
+
+  if (!identifier) {
+    showMessage("login-message", "Enter your email or username first, then reset your password.", true);
+    return;
+  }
+
+  showMessage("login-message", "Sending password setup link...");
+
+  try {
+    const email = await resolveLoginEmail(identifier);
+    const { error } = await db.auth.resetPasswordForEmail(email, {
+      redirectTo: getPasswordRedirectUrl()
+    });
+
+    if (error) throw error;
+    showMessage("login-message", "Check your email for a password setup link.");
+  } catch (error) {
+    console.error(error);
+    showMessage("login-message", error.message || "Could not send password setup link.", true);
+  }
+}
+
+async function handleSetPassword(event) {
+  event.preventDefault();
+
+  const password = document.getElementById("new-password").value;
+  const confirmPassword = document.getElementById("confirm-new-password").value;
+
+  if (password !== confirmPassword) {
+    showMessage("set-password-message", "Passwords must match.", true);
+    return;
+  }
+
+  showMessage("set-password-message", "Saving password...");
+
+  try {
+    const { data: sessionData } = await db.auth.getSession();
+
+    if (!sessionData.session?.user) {
+      showMessage("set-password-message", "This password setup link is expired. Use Forgot password to send a new link.", true);
+      return;
+    }
+
+    const { data, error } = await db.auth.updateUser({ password });
+    if (error) throw error;
+
+    showMessage("set-password-message", "Password saved. Taking you to Rip City...");
+    await redirectByProfile(data.user.id);
+  } catch (error) {
+    console.error(error);
+    showMessage("set-password-message", error.message || "Could not save password.", true);
+  }
+}
+
+async function setupSetPasswordPage() {
+  showMessage("set-password-message", "Checking your password setup link...");
+
+  try {
+    const { data } = await db.auth.getSession();
+
+    if (!data.session?.user) {
+      showMessage("set-password-message", "This password setup link is expired. Use Forgot password from the login page to send a new one.", true);
+    } else {
+      showMessage("set-password-message", "Create a password for your Rip City account.");
+    }
+  } catch (error) {
+    console.error(error);
+    showMessage("set-password-message", "Could not verify this password setup link.", true);
+  }
+
+  document.getElementById("set-password-form").addEventListener("submit", handleSetPassword);
 }
 
 async function handlePendingLogout() {
@@ -416,15 +505,25 @@ async function setupSignupPage() {
 document.addEventListener("DOMContentLoaded", () => {
   const currentPage = getCurrentPage();
 
-  if (currentPage === "signup.html") {
+  if (currentPage === "signup") {
     setupSignupPage();
   }
 
-  if (currentPage === "login.html") {
+  if (currentPage === "login") {
+    if (shouldHandlePasswordLink()) {
+      window.location.replace(`set-password.html${getAuthLinkHash()}`);
+      return;
+    }
+
     document.getElementById("login-form").addEventListener("submit", handleLogin);
+    document.getElementById("forgot-password-btn").addEventListener("click", handleForgotPassword);
   }
 
-  if (currentPage === "pending.html") {
+  if (currentPage === "set-password" || currentPage === "reset-password") {
+    setupSetPasswordPage();
+  }
+
+  if (currentPage === "pending") {
     document.getElementById("pending-logout-btn").addEventListener("click", handlePendingLogout);
   }
 });
