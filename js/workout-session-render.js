@@ -70,7 +70,9 @@ function renderWorkoutSession() {
         <div>
           <p class="eyebrow">SET BY SET</p>
           <h3>Step ${currentSessionStepIndex + 1} of ${steps.length}</h3>
+          <small>${window.RipCityUI.text(workout.title)}</small>
         </div>
+        <span>${getCompletedSetCount()}/${getTotalSetCount()} saved</span>
       </div>
 
       <div class="session-step-progress">
@@ -280,6 +282,7 @@ function renderSetLogger(exercise, setNumber, stepIndex = null) {
   const existing = findExistingLog(exercise.id, setNumber);
   const completed = existing?.completed || false;
   const showNoteInput = exercise.input_type !== "custom";
+  const showCompletedInput = exercise.input_type === "completion";
   const hasStepperActions = Number.isInteger(stepIndex);
   const totalSteps = hasStepperActions
     ? getWorkoutSessionSteps(workoutAssignment.workout).length
@@ -296,7 +299,7 @@ function renderSetLogger(exercise, setNumber, stepIndex = null) {
       <div class="set-log-title">
         <div>
           <strong>Set ${setNumber}</strong>
-          <span>Member actuals</span>
+          <span>Enter actual result</span>
         </div>
         <em>${completed ? "Saved" : "Not saved"}</em>
       </div>
@@ -304,14 +307,16 @@ function renderSetLogger(exercise, setNumber, stepIndex = null) {
       <div class="set-log-fields">
         ${renderInputsForExerciseType(exercise, existing, setNumber)}
 
-        <label class="set-complete-check">
-          <input
-            type="checkbox"
-            class="set-completed-input"
-            ${completed ? "checked" : ""}
-          />
-          Completed
-        </label>
+        ${showCompletedInput ? `
+          <label class="set-complete-check">
+            <input
+              type="checkbox"
+              class="set-completed-input"
+              ${completed ? "checked" : ""}
+            />
+            Completed
+          </label>
+        ` : ""}
 
         <label>
           Difficulty

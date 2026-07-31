@@ -166,6 +166,30 @@ async function logoutWorkoutSession() {
   window.location.href = "login.html";
 }
 
+function getWorkoutSessionMemberTypeLabel() {
+  const profileType = String(workoutMemberProfile?.member_type || "").toLowerCase();
+  const role = String(workoutSessionAccess?.membership?.role || "").toLowerCase();
+
+  if (profileType === "h2k" || role === "h2k_member") return "H2K Member";
+  if (profileType === "athlete" || role === "athlete") return "Athlete";
+
+  return "Member";
+}
+
+function updateWorkoutSessionShell() {
+  const subtitle = document.getElementById("workout-session-brand-subtitle");
+  const habitsNavLink = document.getElementById("workout-session-habits-nav-link");
+  const isH2K = workoutMemberProfile?.member_type === "h2k";
+
+  if (subtitle) {
+    subtitle.textContent = getWorkoutSessionMemberTypeLabel();
+  }
+
+  if (habitsNavLink) {
+    habitsNavLink.classList.toggle("hidden", !isH2K);
+  }
+}
+
 async function initWorkoutSessionPage() {
   showWorkoutSessionMessage("Checking access...");
 
@@ -175,6 +199,7 @@ async function initWorkoutSessionPage() {
     if (!workoutSessionAccess) return;
 
     workoutMemberProfile = await getWorkoutMemberProfile(workoutSessionAccess.membership.id);
+    updateWorkoutSessionShell();
 
     await refreshWorkoutSession();
   } catch (error) {
@@ -187,7 +212,5 @@ document.addEventListener("DOMContentLoaded", () => {
   initWorkoutSessionPage();
 
   document.getElementById("refresh-session-btn")?.addEventListener("click", refreshWorkoutSession);
-  document.getElementById("save-all-sets-btn")?.addEventListener("click", saveAllSetLogs);
-  document.getElementById("mobile-save-all-sets-btn")?.addEventListener("click", saveAllSetLogs);
   document.getElementById("workout-session-logout-btn")?.addEventListener("click", logoutWorkoutSession);
 });
