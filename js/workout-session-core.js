@@ -59,6 +59,43 @@ function getExerciseTargetText(exercise) {
   return `${sets} x ${reps}`;
 }
 
+function getSetTargetText(exercise, setNumber) {
+  const targetValue = getSetTargetValue(exercise, setNumber);
+
+  if (targetValue) {
+    return targetValue.isPerSet
+      ? `Set ${setNumber}: ${targetValue.value}`
+      : getExerciseTargetText(exercise);
+  }
+
+  return getExerciseTargetText(exercise);
+}
+
+function getSetTargetValue(exercise, setNumber) {
+  const reps = String(exercise.reps || "").trim();
+
+  if (!reps) {
+    return null;
+  }
+
+  const setTargets = reps
+    .split(",")
+    .map(value => value.trim())
+    .filter(Boolean);
+
+  if (setTargets.length > 1) {
+    return {
+      value: setTargets[setNumber - 1] || setTargets[setTargets.length - 1],
+      isPerSet: true
+    };
+  }
+
+  return {
+    value: reps,
+    isPerSet: false
+  };
+}
+
 function findExistingLog(exerciseId, setNumber) {
   return existingSetLogs.find(log =>
     log.exercise_id === exerciseId &&

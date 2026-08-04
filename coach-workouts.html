@@ -10,11 +10,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/styles.css?v=coach-workouts-v1-fix-1" />
+  <link rel="stylesheet" href="css/styles.css?v=coach-workouts-exercise-flow-4" />
 </head>
 
 <body class="auth-body">
-  <main class="coach-page">
+  <main class="coach-page coach-workouts-page">
     <header class="h2k-header">
       <div class="auth-brand">
         <img src="assets/rip-city-logo.png" alt="Rip City logo">
@@ -55,7 +55,7 @@
       </article>
     </section>
 
-    <section class="dashboard-grid member-dashboard-grid">
+    <section class="dashboard-grid member-dashboard-grid coach-workouts-builder-grid">
       <article class="panel coach-workout-builder-panel">
         <div class="panel-heading">
           <div>
@@ -121,13 +121,13 @@
           </div>
 
           <div class="form-row">
-            <label id="workout-group-field">
-              Groups
-              <select id="workout-group" multiple size="5" required>
-                <option value="">Loading groups...</option>
-              </select>
+            <div id="workout-group-field" class="form-field">
+              <span class="field-label">Groups</span>
+              <div id="workout-group" class="assignment-checkbox-list">
+                <div class="muted-small">Loading groups...</div>
+              </div>
               <small class="field-help">Select one or more groups.</small>
-            </label>
+            </div>
 
             <label id="workout-member-field" class="hidden">
               Member
@@ -164,53 +164,63 @@
 
         <p id="exercise-library-message" class="auth-message"></p>
 
-        <form id="exercise-library-form" class="exercise-library-form">
-          <label>
-            Exercise Name
-            <input type="text" id="library-exercise-name" placeholder="Trap Bar Deadlift" />
-          </label>
+        <details class="exercise-library-create-panel">
+          <summary>
+            <span>
+              <span class="eyebrow">ADD TO LIBRARY</span>
+              <strong>Save a Custom Exercise</strong>
+            </span>
+            <span>Open</span>
+          </summary>
 
-          <div class="form-row">
+          <form id="exercise-library-form" class="exercise-library-form">
             <label>
-              Category
-              <input type="text" id="library-exercise-category" placeholder="Strength, power, mobility..." />
+              Exercise Name
+              <input type="text" id="library-exercise-name" placeholder="Trap Bar Deadlift" />
+            </label>
+
+            <div class="form-row">
+              <label>
+                Category
+                <input type="text" id="library-exercise-category" placeholder="Strength, power, mobility..." />
+              </label>
+
+              <label>
+                Equipment
+                <input type="text" id="library-exercise-equipment" placeholder="Trap bar, DB, bands..." />
+              </label>
+            </div>
+
+            <label>
+              Default Input Type
+              <select id="library-exercise-input-type">
+                <option value="completion">Completion</option>
+                <option value="weight_reps">Weight + Reps</option>
+                <option value="band_color">Band Color</option>
+                <option value="time">Time</option>
+                <option value="distance">Distance</option>
+                <option value="custom">Custom</option>
+              </select>
             </label>
 
             <label>
-              Equipment
-              <input type="text" id="library-exercise-equipment" placeholder="Trap bar, DB, bands..." />
+              Description / Cues
+              <textarea id="library-exercise-description" rows="3" placeholder="Setup, coaching cues, or intent..."></textarea>
             </label>
-          </div>
 
-          <label>
-            Default Input Type
-            <select id="library-exercise-input-type">
-              <option value="completion">Completion</option>
-              <option value="weight_reps">Weight + Reps</option>
-              <option value="band_color">Band Color</option>
-              <option value="time">Time</option>
-              <option value="distance">Distance</option>
-              <option value="custom">Custom</option>
-            </select>
-          </label>
+            <label>
+              Demo Video URL
+              <input type="text" id="library-exercise-video" placeholder="Optional demo link" />
+            </label>
 
-          <label>
-            Description / Cues
-            <textarea id="library-exercise-description" rows="3" placeholder="Setup, coaching cues, or intent..."></textarea>
-          </label>
+            <label>
+              Default Coach Note
+              <textarea id="library-exercise-coach-note" rows="2" placeholder="Optional note that can load into workouts..."></textarea>
+            </label>
 
-          <label>
-            Demo Video URL
-            <input type="text" id="library-exercise-video" placeholder="Optional demo link" />
-          </label>
-
-          <label>
-            Default Coach Note
-            <textarea id="library-exercise-coach-note" rows="2" placeholder="Optional note that can load into workouts..."></textarea>
-          </label>
-
-          <button class="outline-btn full-btn" type="submit">Save Exercise</button>
-        </form>
+            <button class="outline-btn full-btn" type="submit">Save Exercise</button>
+          </form>
+        </details>
 
         <div class="exercise-library-search-panel">
           <label>
@@ -306,6 +316,6 @@
   <script src="js/ui-utils.js"></script>
   <script src="js/access-control.js"></script>
   <script src="js/workout-data.js"></script>
-  <script src="js/coach-workouts.js?v=coach-workouts-v1-fix-1"></script>
+  <script src="js/coach-workouts.js?v=coach-workouts-exercise-flow-2"></script>
 </body>
 </html>
