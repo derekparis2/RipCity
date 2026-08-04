@@ -65,6 +65,19 @@ function formatLocalDate(date) {
   return `${year}-${month}-${day}`;
 }
 
+function formatDisplayDate(dateKey) {
+  if (!dateKey) return "No date";
+
+  const [year, month, day] = dateKey.split("-").map(Number);
+  if (!year || !month || !day) return dateKey;
+
+  return new Date(year, month - 1, day).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric"
+  });
+}
+
 function setTodayAsDefaultDate() {
   const dateInput = document.getElementById("workout-date");
   if (!dateInput) return;
@@ -1252,6 +1265,44 @@ function filterDuplicateAssignmentRows(rows, existingAssignments = []) {
   return rows.filter(row => !existingKeys.has(getAssignmentKey(row)));
 }
 
+function getTargetLabelForDraft(targetType, groupIds = [], memberProfileId = "") {
+  if (targetType === "facility") {
+    return "Entire Facility";
+  }
+
+  if (targetType === "member") {
+    const member = availableMembers.find(row => row.memberProfileId === memberProfileId);
+    return member ? member.name : "Selected member";
+  }
+
+  const selectedGroups = availableGroups.filter(group => groupIds.includes(group.id));
+
+  if (selectedGroups.length === 1) {
+    return selectedGroups[0].name;
+  }
+
+  return `${selectedGroups.length} groups`;
+}
+
+function getAssignmentSuccessMessage({ title, targetType, groupIds, memberProfileId, assignedDate }) {
+  const targetLabel = getTargetLabelForDraft(targetType, groupIds, memberProfileId);
+  return `Workout "${title}" created and assigned to ${targetLabel} for ${formatDisplayDate(assignedDate)}.`;
+}
+
+function confirmWorkoutCreate({ title, targetType, groupIds, memberProfileId, assignedDate }) {
+  const targetLabel = getTargetLabelForDraft(targetType, groupIds, memberProfileId);
+
+  return window.confirm(
+    [
+      "Create and assign this workout?",
+      "",
+      `Title: ${title}`,
+      `Date: ${formatDisplayDate(assignedDate)}`,
+      `Assigned to: ${targetLabel}`
+    ].join("\n")
+  );
+}
+
 function buildRecentWorkoutSelect(includeExerciseTemplateColumn = true) {
   const exerciseTemplateColumn = includeExerciseTemplateColumn
     ? "exercise_template_id,"
@@ -1316,7 +1367,8 @@ async function createWorkoutWithAssignment(event) {
   event.preventDefault();
   updateAssignmentControls();
 
-  showWorkoutMessage("Creating workout...");
+  const submitButton = event.submitter || document.querySelector("#workout-form button[type='submit']");
+  const originalSubmitText = submitButton?.textContent;
 
   try {
     const title = getInputValue("workout-title");
@@ -1349,6 +1401,18 @@ async function createWorkoutWithAssignment(event) {
         showWorkoutMessage("Add at least one block with at least one exercise.", true);
         return;
     }
+
+    if (!confirmWorkoutCreate({ title, targetType, groupIds, memberProfileId, assignedDate })) {
+      showWorkoutMessage("Workout creation cancelled.");
+      return;
+    }
+
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.textContent = "Creating...";
+    }
+
+    showWorkoutMessage("Creating workout...");
 
     const workoutId = createClientId();
 
@@ -1434,13 +1498,24 @@ async function createWorkoutWithAssignment(event) {
 
     if (assignmentError) throw assignmentError;
 
-    showWorkoutMessage("Workout created and assigned.");
+    showWorkoutMessage(getAssignmentSuccessMessage({
+      title,
+      targetType,
+      groupIds,
+      memberProfileId,
+      assignedDate
+    }));
 
     resetWorkoutForm();
     await loadRecentWorkouts();
   } catch (error) {
     console.error(error);
     showWorkoutMessage(error.message || "Could not create workout.", true);
+  } finally {
+    if (submitButton) {
+      submitButton.disabled = false;
+      submitButton.textContent = originalSubmitText || "Create & Assign Workout";
+    }
   }
 }
 
@@ -1567,16 +1642,40 @@ function renderRecentWorkouts() {
         <div class="workout-meta-row">
           <span>${workout.estimated_minutes || "—"} min</span>
           <span>${window.RipCityUI.text(targetLabel)}</span>
-          <span>${window.RipCityUI.text(assignedDate)}</span>
+          <span>${window.RipCityUI.text(formatDisplayDate(assignedDate))}</span>
         </div>
 
         <div class="recent-workout-actions">
+          <button class="outline-btn small-inline-btn" type="button" data-toggle-reassign-workout="${window.RipCityUI.attr(workout.id)}">
+            Assign Again
+          </button>
           <button class="outline-btn small-inline-btn" type="button" data-load-workout-template="${window.RipCityUI.attr(workout.id)}">
             Load in Builder
           </button>
           <button class="outline-btn small-inline-btn" type="button" data-toggle-workout-edit="${window.RipCityUI.attr(workout.id)}">
             Edit Details
           </button>
+          <button class="outline-btn small-inline-btn danger-outline-btn" type="button" data-delete-workout="${window.RipCityUI.attr(workout.id)}">
+            Delete Workout
+          </button>
+        </div>
+
+        <div class="recent-assignment-list">
+          <div class="recent-assignment-heading">
+            <strong>Calendar Assignments</strong>
+            <span>${assignments.length ? `${assignments.length} assignment${assignments.length === 1 ? "" : "s"}` : "No assignments"}</span>
+          </div>
+          ${assignments.length ? assignments.map(assignment => `
+            <div class="recent-assignment-row">
+              <span>
+                <strong>${window.RipCityUI.text(formatDisplayDate(assignment.assigned_date))}</strong>
+                ${window.RipCityUI.text(getAssignmentTargetLabel(assignment))}
+              </span>
+              <button class="outline-btn small-inline-btn danger-outline-btn" type="button" data-remove-assignment="${window.RipCityUI.attr(assignment.id)}">
+                Remove Assignment
+              </button>
+            </div>
+          `).join("") : `<div class="empty-state compact-empty-state">This workout is saved but not assigned to a date.</div>`}
         </div>
 
         <form class="recent-workout-edit-form hidden" data-workout-edit-form="${window.RipCityUI.attr(workout.id)}">
@@ -1604,7 +1703,7 @@ function renderRecentWorkouts() {
           </div>
         </form>
 
-        <div class="recent-reassign-card">
+        <div class="recent-reassign-card hidden" data-reassign-workout-card="${window.RipCityUI.attr(workout.id)}">
           <div>
             <strong>Assign this workout again</strong>
             <span>Reuse the same blocks and exercises for another date, group, or athlete.</span>
@@ -1646,7 +1745,13 @@ function renderRecentWorkouts() {
           </button>
         </div>
 
-        <div class="workout-block-preview">
+        <details class="workout-preview-details">
+          <summary>
+            <span>Workout Preview</span>
+            <small>${blocks.reduce((total, block) => total + (block.workout_exercises || []).length, 0)} exercises</small>
+          </summary>
+
+          <div class="workout-block-preview">
             ${blocks.map(block => {
                 const exercises = [...(block.workout_exercises || [])]
                 .sort((a, b) => a.exercise_order - b.exercise_order);
@@ -1665,7 +1770,8 @@ function renderRecentWorkouts() {
                 </div>
                 `;
             }).join("")}
-        </div>
+          </div>
+        </details>
       </article>
     `;
   }).join("");
@@ -1680,6 +1786,22 @@ function renderRecentWorkouts() {
       const workout = recentWorkoutRows.find(row => row.id === button.dataset.assignExistingWorkout);
       assignExistingWorkout(workout);
     });
+  });
+
+  list.querySelectorAll("[data-toggle-reassign-workout]").forEach(button => {
+    button.addEventListener("click", () => {
+      const panel = document.querySelector(`[data-reassign-workout-card="${button.dataset.toggleReassignWorkout}"]`);
+      const isHidden = panel?.classList.toggle("hidden");
+      button.textContent = isHidden ? "Assign Again" : "Hide Assign";
+    });
+  });
+
+  list.querySelectorAll("[data-remove-assignment]").forEach(button => {
+    button.addEventListener("click", () => removeWorkoutAssignment(button.dataset.removeAssignment));
+  });
+
+  list.querySelectorAll("[data-delete-workout]").forEach(button => {
+    button.addEventListener("click", () => deleteWorkout(button.dataset.deleteWorkout));
   });
 
   list.querySelectorAll("[data-load-workout-template]").forEach(button => {
@@ -1708,6 +1830,101 @@ function renderRecentWorkouts() {
   list.querySelectorAll("[data-workout-edit-form]").forEach(form => {
     form.addEventListener("submit", event => saveWorkoutDetails(event, form.dataset.workoutEditForm));
   });
+}
+
+async function removeWorkoutAssignment(assignmentId) {
+  const assignment = recentWorkoutRows
+    .flatMap(workout => (workout.workout_assignments || []).map(row => ({ ...row, workout })))
+    .find(row => row.id === assignmentId);
+
+  if (!assignment) return;
+
+  const logWarning = await getAssignmentLogWarning(assignmentId);
+  const confirmed = window.confirm(
+    [
+      "Remove this assignment?",
+      "",
+      `Workout: ${assignment.workout.title}`,
+      `Date: ${formatDisplayDate(assignment.assigned_date)}`,
+      `Assigned to: ${getAssignmentTargetLabel(assignment)}`,
+      "",
+      "The workout will stay saved and can be assigned again later.",
+      logWarning
+    ].filter(Boolean).join("\n")
+  );
+
+  if (!confirmed) return;
+
+  showWorkoutMessage("Removing assignment...");
+
+  try {
+    const { error } = await db
+      .from("workout_assignments")
+      .delete()
+      .eq("id", assignmentId);
+
+    if (error) throw error;
+
+    showWorkoutMessage("Assignment removed. The workout is still saved.");
+    await loadRecentWorkouts();
+  } catch (error) {
+    console.error(error);
+    showWorkoutMessage(error.message || "Could not remove assignment.", true);
+  }
+}
+
+async function getAssignmentLogWarning(assignmentId) {
+  try {
+    const { count, error } = await db
+      .from("exercise_set_logs")
+      .select("id", { count: "exact", head: true })
+      .eq("workout_assignment_id", assignmentId);
+
+    if (error || !count) return "";
+
+    return `Warning: this also removes ${count} saved set log${count === 1 ? "" : "s"} for this assignment.`;
+  } catch (error) {
+    console.error(error);
+    return "";
+  }
+}
+
+async function deleteWorkout(workoutId) {
+  const workout = recentWorkoutRows.find(row => row.id === workoutId);
+  if (!workout) return;
+
+  const assignmentCount = workout.workout_assignments?.length || 0;
+  const confirmed = window.confirm(
+    [
+      "Delete this workout?",
+      "",
+      `Workout: ${workout.title}`,
+      assignmentCount ? `Assignments: ${assignmentCount}` : "Assignments: none",
+      "",
+      "This removes the workout, exercises, assignments, and any saved member logs.",
+      "This cannot be undone."
+    ].join("\n")
+  );
+
+  if (!confirmed) return;
+
+  showWorkoutMessage("Deleting workout...");
+
+  try {
+    const { error } = await db
+      .from("workouts")
+      .delete()
+      .eq("id", workoutId)
+      .eq("facility_id", workoutCoachAccess.membership.facility_id);
+
+    if (error) throw error;
+
+    showWorkoutMessage("Workout deleted.");
+    await loadRecentWorkouts();
+  } catch (error) {
+    console.error(error);
+    showWorkoutMessage(error.message || "Could not delete workout.", true);
+  }
 }
 
 async function saveWorkoutDetails(event, workoutId) {

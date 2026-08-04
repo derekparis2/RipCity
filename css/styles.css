@@ -2842,6 +2842,62 @@ td {
     margin: 14px 0;
   }
 
+  .danger-outline-btn {
+    border-color: rgba(255, 107, 107, 0.45);
+    color: #ffb4b4;
+  }
+
+  .danger-outline-btn:hover {
+    border-color: rgba(255, 107, 107, 0.8);
+    background: rgba(255, 107, 107, 0.1);
+    color: var(--text);
+  }
+
+  .recent-assignment-list {
+    display: grid;
+    gap: 10px;
+    margin: 14px 0;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(18, 18, 20, 0.64);
+    border-radius: 12px;
+    padding: 12px;
+  }
+
+  .recent-assignment-heading,
+  .recent-assignment-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .recent-assignment-heading strong,
+  .recent-assignment-row strong {
+    display: block;
+    color: var(--text);
+  }
+
+  .recent-assignment-heading span {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .recent-assignment-row {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 10px;
+  }
+
+  .recent-assignment-row > span {
+    color: var(--muted);
+    line-height: 1.35;
+  }
+
+  .compact-empty-state {
+    min-height: 0;
+    padding: 12px;
+  }
+
   .recent-workout-edit-form {
     display: grid;
     gap: 12px;
@@ -2923,6 +2979,40 @@ td {
     border-radius: 10px;
     padding: 10px 12px;
   }
+
+  .workout-preview-details {
+    margin-top: 14px;
+  }
+
+  .workout-preview-details summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 12px 14px;
+    list-style: none;
+    cursor: pointer;
+  }
+
+  .workout-preview-details summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .workout-preview-details summary span {
+    font-weight: 900;
+  }
+
+  .workout-preview-details summary small {
+    color: var(--muted);
+    font-weight: 800;
+  }
+
+  .workout-preview-details[open] summary {
+    border-color: rgba(255, 255, 255, 0.32);
+  }
   
   .workout-meta-row {
     display: flex;
@@ -2964,6 +3054,12 @@ td {
 
     .recent-reassign-grid {
       grid-template-columns: 1fr;
+    }
+
+    .recent-assignment-heading,
+    .recent-assignment-row {
+      align-items: stretch;
+      flex-direction: column;
     }
   }
 
