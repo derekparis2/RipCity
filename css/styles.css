@@ -1556,6 +1556,40 @@ td {
     gap: 14px;
     margin-top: 18px;
   }
+
+  .habit-date-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .habit-date-controls label {
+    display: grid;
+    gap: 5px;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .habit-date-controls input {
+    min-height: 42px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text);
+    border-radius: 10px;
+    padding: 9px 11px;
+    font: inherit;
+    font-weight: 800;
+  }
+
+  .habit-date-controls .outline-btn {
+    min-height: 42px;
+    padding: 9px 12px;
+  }
   
   .h2k-habit-card {
     border: 1px solid var(--border);
@@ -5784,6 +5818,12 @@ body {
     align-items: center;
   }
 
+  .member-dashboard-body #h2k-habits-section .panel-heading {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    align-items: stretch;
+  }
+
   .member-dashboard-body .today-workout-panel .panel-heading h3,
   .member-dashboard-body #h2k-habits-section .panel-heading h3 {
     font-size: 22px;
@@ -5888,6 +5928,47 @@ body {
   .member-dashboard-body .h2k-habit-list {
     gap: 8px;
     margin-top: 10px;
+  }
+
+  .member-dashboard-body .habit-date-controls {
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 10px minmax(0, 1fr);
+    gap: 6px;
+    justify-content: stretch;
+  }
+
+  .member-dashboard-body .habit-date-controls label {
+    order: -1;
+    grid-column: 1 / -1;
+    flex: 1 1 100%;
+    gap: 4px;
+    font-size: 10px;
+  }
+
+  .member-dashboard-body .habit-date-controls input {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    min-height: 38px;
+    padding: 8px 10px;
+    font-size: 14px;
+    text-align: center;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .member-dashboard-body .habit-date-controls .outline-btn {
+    width: 100%;
+    min-width: 0;
+    min-height: 38px;
+    padding-right: 6px;
+    padding-left: 6px;
+    font-size: 12px;
+  }
+
+  .member-dashboard-body #habit-today-btn {
+    grid-column: 4;
   }
 
   .member-dashboard-body .h2k-habit-card {

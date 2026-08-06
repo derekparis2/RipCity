@@ -14,6 +14,7 @@ let workoutCalendarAssignments = [];
 let workoutCalendarLogs = [];
 let workoutCalendarMonth = getMonthStart(new Date());
 let selectedWorkoutDate = getTodayString();
+let selectedHabitDate = getTodayString();
 let memberHistoryWeeks = [];
 let memberHistoryLogs = [];
 let selectedMemberHistoryWeekIndex = 0;
@@ -78,19 +79,18 @@ function getMonthStart(date) {
 }
 
 // H2K weekly scoring is Monday through Sunday.
-function getStartOfWeekDate() {
-  const today = new Date();
-  const day = today.getDay();
-  const diff = today.getDate() - day + (day === 0 ? -6 : 1);
-  return new Date(today.getFullYear(), today.getMonth(), diff);
+function getStartOfWeekDate(anchorDate = new Date()) {
+  const day = anchorDate.getDay();
+  const diff = anchorDate.getDate() - day + (day === 0 ? -6 : 1);
+  return new Date(anchorDate.getFullYear(), anchorDate.getMonth(), diff);
 }
 
-function getStartOfWeekString() {
-  return formatLocalDate(getStartOfWeekDate());
+function getStartOfWeekString(anchorDate = new Date()) {
+  return formatLocalDate(getStartOfWeekDate(anchorDate));
 }
 
-function getEndOfWeekString() {
-  const start = getStartOfWeekDate();
+function getEndOfWeekString(anchorDate = new Date()) {
+  const start = getStartOfWeekDate(anchorDate);
   start.setDate(start.getDate() + 6);
   return formatLocalDate(start);
 }
@@ -131,6 +131,18 @@ function formatWeekRangeLabel(week) {
   return `${startLabel} - ${endLabel}`;
 }
 
+function formatShortDateLabel(dateKey) {
+  const date = parseAssignmentDate(dateKey);
+  return date.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric"
+  });
+}
+
+function isTodayDate(dateKey) {
+  return dateKey === getTodayString();
+}
+
 // Shows messages on the H2K page.
 function showH2KMessage(message, isError = false) {
   const element = document.getElementById("h2k-message");
@@ -166,25 +178,25 @@ async function loadHabits(facilityId) {
   return data || [];
 }
 
-// Loads today's habit logs for the current member.
-async function loadTodayLogs(memberProfileId) {
+// Loads habit logs for the selected dashboard date.
+async function loadHabitLogsForDate(memberProfileId, dateKey = selectedHabitDate) {
   const { data, error } = await db
     .from("habit_logs")
     .select("*")
     .eq("member_profile_id", memberProfileId)
-    .eq("log_date", getTodayString());
+    .eq("log_date", dateKey);
 
   if (error) throw error;
   return data || [];
 }
 
-async function loadWeeklyLogs(memberProfileId) {
+async function loadWeeklyLogs(memberProfileId, anchorDate = new Date()) {
   const { data, error } = await db
     .from("habit_logs")
     .select("*")
     .eq("member_profile_id", memberProfileId)
-    .gte("log_date", getStartOfWeekString())
-    .lte("log_date", getEndOfWeekString());
+    .gte("log_date", getStartOfWeekString(anchorDate))
+    .lte("log_date", getEndOfWeekString(anchorDate));
 
   if (error) throw error;
   return data || [];
@@ -202,8 +214,8 @@ async function loadHabitLogsForRange(memberProfileId, startDate, endDate) {
   return data || [];
 }
 
-// Checks if a habit has already been completed today.
-function isHabitCompleteToday(habitId) {
+// Checks if a habit has already been completed for the selected habit date.
+function isHabitCompleteForSelectedDate(habitId) {
   return todayLogs.some(log => log.habit_id === habitId && log.completed);
 }
 
@@ -339,6 +351,75 @@ function setupMemberSidebarNav() {
   setActiveMemberNav(window.location.hash);
 }
 
+function updateHabitDateControls() {
+  const dateInput = document.getElementById("habit-date-input");
+  const eyebrow = document.getElementById("h2k-habit-date-eyebrow");
+  const detail = document.getElementById("h2k-habit-date-detail");
+  const todayButton = document.getElementById("habit-today-btn");
+  const nextButton = document.getElementById("habit-next-day-btn");
+  const selectedDateIsToday = isTodayDate(selectedHabitDate);
+  const selectedDateLabel = formatShortDateLabel(selectedHabitDate);
+
+  if (dateInput) {
+    dateInput.value = selectedHabitDate;
+    dateInput.max = getTodayString();
+  }
+
+  if (eyebrow) {
+    eyebrow.textContent = selectedDateIsToday
+      ? "TODAY"
+      : selectedDateLabel.toUpperCase();
+  }
+
+  if (detail) {
+    detail.textContent = selectedDateIsToday
+      ? "Editing today"
+      : `Editing ${selectedDateLabel}`;
+  }
+
+  if (todayButton) {
+    todayButton.disabled = selectedDateIsToday;
+  }
+
+  if (nextButton) {
+    nextButton.disabled = selectedDateIsToday;
+  }
+}
+
+async function setHabitDate(dateKey) {
+  if (!currentMemberProfile || currentMemberProfile.member_type !== "h2k") return;
+
+  const today = getTodayString();
+  selectedHabitDate = dateKey > today ? today : dateKey;
+  updateHabitDateControls();
+  await refreshH2KDashboard();
+}
+
+function setupHabitDateControls() {
+  const dateInput = document.getElementById("habit-date-input");
+  const previousButton = document.getElementById("habit-prev-day-btn");
+  const nextButton = document.getElementById("habit-next-day-btn");
+  const todayButton = document.getElementById("habit-today-btn");
+
+  dateInput?.addEventListener("change", () => {
+    if (dateInput.value) setHabitDate(dateInput.value);
+  });
+
+  previousButton?.addEventListener("click", () => {
+    setHabitDate(formatLocalDate(addDays(parseAssignmentDate(selectedHabitDate), -1)));
+  });
+
+  nextButton?.addEventListener("click", () => {
+    setHabitDate(formatLocalDate(addDays(parseAssignmentDate(selectedHabitDate), 1)));
+  });
+
+  todayButton?.addEventListener("click", () => {
+    setHabitDate(getTodayString());
+  });
+
+  updateHabitDateControls();
+}
+
 // Renders the list of six habits as checkable cards.
 function renderHabitCards() {
   const list = document.getElementById("h2k-habit-list");
@@ -349,13 +430,13 @@ function renderHabitCards() {
   }
 
   list.innerHTML = h2kHabits.map(habit => {
-    const completed = isHabitCompleteToday(habit.id);
+    const completed = isHabitCompleteForSelectedDate(habit.id);
 
     return `
       <article class="h2k-habit-card ${completed ? "complete" : ""}">
         <div>
           <h4>${window.RipCityUI.text(habit.name)}</h4>
-          <p>${window.RipCityUI.text(habit.description, "Complete this habit for today.")}</p>
+          <p>${window.RipCityUI.text(habit.description, "Complete this habit for the selected date.")}</p>
         </div>
 
         <button class="check-btn ${completed ? "complete" : ""}" data-habit-id="${window.RipCityUI.attr(habit.id)}">
@@ -370,11 +451,11 @@ function renderHabitCards() {
   });
 }
 
-// Saves or updates a habit log for today.
+// Saves or updates a habit log for the selected habit date.
 // If checked, completed = true and points_earned = 1.
 // If unchecked, completed = false and points_earned = 0.
 async function toggleHabit(habitId) {
-  const completedNow = !isHabitCompleteToday(habitId);
+  const completedNow = !isHabitCompleteForSelectedDate(habitId);
 
   showH2KMessage("Saving habit...");
 
@@ -385,7 +466,7 @@ async function toggleHabit(habitId) {
         {
           member_profile_id: currentMemberProfile.id,
           habit_id: habitId,
-          log_date: getTodayString(),
+          log_date: selectedHabitDate,
           completed: completedNow,
           points_earned: completedNow ? 1 : 0
         },
@@ -407,8 +488,9 @@ async function toggleHabit(habitId) {
 
 // Updates H2K habit status values used for daily feedback.
 async function updateScores() {
+  const currentDayLogs = await loadHabitLogsForDate(currentMemberProfile.id, getTodayString());
   const weeklyLogs = await loadWeeklyLogs(currentMemberProfile.id);
-  const todayScore = todayLogs.filter(log => log.completed).length;
+  const todayScore = currentDayLogs.filter(log => log.completed).length;
   const weeklyScore = weeklyLogs.reduce((total, log) => total + Number(log.points_earned || 0), 0);
   const weeklyMax = h2kHabits.length * 7;
 
@@ -416,6 +498,9 @@ async function updateScores() {
   document.getElementById("weekly-score-h2k").textContent = weeklyScore;
   document.getElementById("member-stat-one-suffix").textContent = `/${h2kHabits.length}`;
   document.getElementById("member-stat-two-suffix").textContent = `/${weeklyMax}`;
+  document.getElementById("member-stat-one-label").textContent = "Today’s Score";
+  document.getElementById("member-stat-one-detail").textContent = "Habits completed today";
+  document.getElementById("member-stat-two-detail").textContent = "Possible weekly points";
 
   const status = document.getElementById("h2k-status");
   const detail = document.getElementById("h2k-status-detail");
@@ -431,11 +516,12 @@ async function updateScores() {
   }
 }
 
-// Reloads today logs, re-renders cards, and updates scores.
+// Reloads selected-date logs, re-renders cards, and updates scores.
 async function refreshH2KDashboard() {
   // Habits and status are refreshed together so the dashboard state matches
   // the checkmark cards below.
-  todayLogs = await loadTodayLogs(currentMemberProfile.id);
+  todayLogs = await loadHabitLogsForDate(currentMemberProfile.id, selectedHabitDate);
+  updateHabitDateControls();
   renderHabitCards();
   await updateScores();
 }
@@ -1013,6 +1099,9 @@ function renderWorkoutCalendarMonth() {
     button.addEventListener("click", () => {
       selectedWorkoutDate = button.dataset.workoutCalendarDate;
       renderTrainingCalendar();
+      if (currentMemberProfile?.member_type === "h2k" && selectedWorkoutDate <= getTodayString()) {
+        setHabitDate(selectedWorkoutDate);
+      }
     });
   });
 }
@@ -1167,6 +1256,7 @@ async function initH2KDashboard() {
     currentAccess = await getApprovedUserAccess();
     if (!currentAccess) return;
 
+    selectedHabitDate = getTodayString();
     setMemberTypeText(getMemberTypeLabel());
     currentMemberProfile = await getMemberProfile(currentAccess.membership.id);
     updateMemberShell();
@@ -1204,6 +1294,7 @@ async function logoutH2K() {
 document.addEventListener("DOMContentLoaded", () => {
   setupMemberSidebarNav();
   setupFeedbackLink();
+  setupHabitDateControls();
   initH2KDashboard();
 
   document
