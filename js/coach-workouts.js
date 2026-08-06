@@ -34,9 +34,19 @@ function getSelectedValues(id) {
   const element = document.getElementById(id);
   if (!element) return [];
 
-  return Array.from(element.selectedOptions)
-    .map(option => option.value)
-    .filter(Boolean);
+  if (element.matches("select")) {
+    return Array.from(element.selectedOptions)
+      .map(option => option.value)
+      .filter(Boolean);
+  }
+
+  if (element.matches("[data-checkbox-list], .assignment-checkbox-list")) {
+    return Array.from(element.querySelectorAll("input[type='checkbox']:checked"))
+      .map(input => input.value)
+      .filter(Boolean);
+  }
+
+  return [];
 }
 
 function getCardInputValue(card, selector) {
@@ -63,6 +73,19 @@ function formatLocalDate(date) {
   const day = String(date.getDate()).padStart(2, "0");
 
   return `${year}-${month}-${day}`;
+}
+
+function formatDisplayDate(dateKey) {
+  if (!dateKey) return "No date";
+
+  const [year, month, day] = dateKey.split("-").map(Number);
+  if (!year || !month || !day) return dateKey;
+
+  return new Date(year, month - 1, day).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric"
+  });
 }
 
 function setTodayAsDefaultDate() {
@@ -235,22 +258,38 @@ function updateAssignmentContext() {
 }
 
 function renderGroupOptions() {
-  const select = document.getElementById("workout-group");
+  const groupList = document.getElementById("workout-group");
   const groups = getFilteredGroups();
+  if (!groupList) return;
 
   if (!groups.length) {
-    select.innerHTML = `<option value="" disabled>No compatible groups found</option>`;
+    groupList.innerHTML = `<div class="muted-small">No compatible groups found</div>`;
     updateAssignmentContext();
     return;
   }
 
-  select.innerHTML = `
+  const selectedIds = new Set(getSelectedValues("workout-group"));
+
+  groupList.dataset.checkboxList = "true";
+  groupList.innerHTML = `
     ${groups.map(group => `
-      <option value="${window.RipCityUI.attr(group.id)}">
-        ${window.RipCityUI.text(group.name)} · ${window.RipCityUI.text(group.member_type)}
-      </option>
+      <label class="assignment-checkbox-chip">
+        <span>
+          <strong>${window.RipCityUI.text(group.name)}</strong>
+          <small>${window.RipCityUI.text(group.member_type)}</small>
+        </span>
+        <input
+          type="checkbox"
+          value="${window.RipCityUI.attr(group.id)}"
+          ${selectedIds.has(group.id) ? "checked" : ""}
+        />
+      </label>
     `).join("")}
   `;
+
+  groupList.querySelectorAll("input[type='checkbox']").forEach(input => {
+    input.addEventListener("change", updateAssignmentContext);
+  });
 
   updateAssignmentContext();
 }
@@ -339,7 +378,8 @@ function findExerciseTemplateByName(name) {
 function renderExerciseTemplatePicker(input) {
   if (!input) return;
 
-  const list = input.closest(".exercise-library-picker")?.querySelector("datalist");
+  const list = input.parentElement?.querySelector("datalist") ||
+    input.closest("[data-exercise-card]")?.querySelector("datalist");
 
   if (!exerciseLibraryAvailable) {
     input.placeholder = "Library migration not run yet";
@@ -474,7 +514,7 @@ function renderExerciseLibraryList() {
   );
   const visibleTemplates = hasActiveSearch
     ? filteredTemplates
-    : filteredTemplates.slice(0, 8);
+    : filteredTemplates.slice(0, 4);
 
   if (count) {
     count.textContent = hasActiveSearch
@@ -505,7 +545,7 @@ function renderExerciseLibraryList() {
         type="button"
         data-add-template-to-builder="${window.RipCityUI.attr(template.id)}"
       >
-        Add to Builder
+        Add
       </button>
 
       <button
@@ -513,7 +553,7 @@ function renderExerciseLibraryList() {
         type="button"
         data-toggle-template-edit="${window.RipCityUI.attr(template.id)}"
       >
-        Edit Exercise
+        Edit
       </button>
 
       <form class="exercise-template-edit-form hidden" data-template-edit-form="${window.RipCityUI.attr(template.id)}">
@@ -649,6 +689,7 @@ function applyExerciseTemplateToCard(card, templateId) {
   card.querySelector(".exercise-input-type").value = template.input_type || "completion";
   card.querySelector(".exercise-video").value = template.video_url || "";
   card.querySelector(".exercise-coach-note").value = template.coach_note || "";
+  updateExerciseTargetField(card);
 }
 
 function applyExerciseTemplateSearch(card) {
@@ -785,20 +826,19 @@ function updateAssignmentControls() {
   const targetType = getInputValue("workout-target-type") || "group";
   const groupField = document.getElementById("workout-group-field");
   const memberField = document.getElementById("workout-member-field");
-  const groupSelect = document.getElementById("workout-group");
+  const groupList = document.getElementById("workout-group");
   const memberSelect = document.getElementById("workout-member");
 
   groupField?.classList.toggle("hidden", targetType !== "group");
   memberField?.classList.toggle("hidden", targetType !== "member");
 
-  if (groupSelect) {
+  if (groupList) {
     const isGroupTarget = targetType === "group";
-    groupSelect.required = isGroupTarget;
-    groupSelect.disabled = !isGroupTarget;
+    groupList.classList.toggle("is-disabled", !isGroupTarget);
 
     if (!isGroupTarget) {
-      Array.from(groupSelect.options).forEach(option => {
-        option.selected = false;
+      groupList.querySelectorAll("input[type='checkbox']").forEach(input => {
+        input.checked = false;
       });
     }
   }
@@ -826,23 +866,213 @@ function refreshAssignmentOptions() {
 // Block / Exercise form UI
 // ----------------------------
 
+function getBlockDefaultName(index) {
+  const names = ["Warmup", "A Block", "B Block", "C Block", "Finisher"];
+  return names[index - 1] || `Block ${index}`;
+}
+
+function getExerciseRowLabel(index) {
+  return String(index + 1);
+}
+
+function getExerciseTargetLabel(inputType) {
+  const labels = {
+    weight_reps: "Reps / Set Targets",
+    band_color: "Band / Rep Target",
+    time: "Time Target",
+    distance: "Distance Target",
+    completion: "Task Target",
+    custom: "Target"
+  };
+
+  return labels[inputType] || "Reps / Set Targets";
+}
+
+function getExerciseTargetPlaceholder(inputType) {
+  const placeholders = {
+    weight_reps: "5 or 5,4,3,4,5",
+    band_color: "ex: light band or 8 reps",
+    time: "ex: 20 sec or 20,25,30",
+    distance: "ex: 20 yards",
+    completion: "ex: 3 rounds or complete",
+    custom: "Enter target"
+  };
+
+  return placeholders[inputType] || placeholders.weight_reps;
+}
+
+function getSetTargetHint(repsValue, setsValue) {
+  const raw = String(repsValue || "").trim();
+  if (!raw) return "Add target";
+
+  const targets = raw
+    .split(",")
+    .map(item => item.trim())
+    .filter(Boolean);
+  const sets = Number(setsValue || 0);
+
+  if (targets.length > 1) {
+    return `${targets.length} set targets: ${targets.join(" / ")}`;
+  }
+
+  if (sets > 1) {
+    return `${sets} sets x ${raw}`;
+  }
+
+  return raw;
+}
+
+function getExerciseSummary(card, index) {
+  const name = card.querySelector(".exercise-name")?.value.trim() || `Exercise ${index + 1}`;
+  const sets = card.querySelector(".exercise-sets")?.value || "";
+  const reps = card.querySelector(".exercise-reps")?.value || "";
+  const inputType = card.querySelector(".exercise-input-type")?.value || "weight_reps";
+
+  return {
+    label: getExerciseRowLabel(index),
+    name,
+    target: getSetTargetHint(reps, sets),
+    inputType: formatInputTypeLabel(inputType)
+  };
+}
+
+function getBlockSummary(blockCard) {
+  const exerciseCards = Array.from(blockCard.querySelectorAll("[data-exercise-card]"));
+  const exerciseNames = exerciseCards
+    .map((card, index) => getExerciseSummary(card, index).name)
+    .filter(Boolean);
+  const maxSets = Math.max(
+    0,
+    ...exerciseCards.map(card => Number(card.querySelector(".exercise-sets")?.value || 0))
+  );
+
+  return {
+    exerciseCount: exerciseCards.length,
+    maxSets,
+    exerciseNames
+  };
+}
+
+function updateExerciseSummary(card) {
+  const blockCard = card.closest("[data-block-card]");
+  const exerciseCards = Array.from(blockCard?.querySelectorAll("[data-exercise-card]") || []);
+  const index = Math.max(0, exerciseCards.indexOf(card));
+  const summary = getExerciseSummary(card, index);
+
+  card.querySelector("[data-exercise-row-label]").textContent = summary.label;
+  card.querySelector("[data-exercise-summary-name]").textContent = summary.name;
+  card.querySelector("[data-exercise-summary-target]").textContent = summary.target;
+  card.querySelector("[data-exercise-summary-input]").textContent = summary.inputType;
+
+  updateBlockSummary(blockCard);
+}
+
+function updateBlockSummary(blockCard) {
+  if (!blockCard) return;
+
+  const summary = getBlockSummary(blockCard);
+  const exerciseCount = blockCard.querySelector("[data-block-exercise-count]");
+  const roundCount = blockCard.querySelector("[data-block-round-count]");
+  const preview = blockCard.querySelector("[data-block-preview]");
+  const blockName = blockCard.querySelector(".block-name")?.value.trim() || "Block";
+  const headingName = blockCard.querySelector("[data-block-summary-name]");
+
+  if (headingName) headingName.textContent = blockName;
+  if (exerciseCount) {
+    exerciseCount.textContent = `${summary.exerciseCount} exercise${summary.exerciseCount === 1 ? "" : "s"}`;
+  }
+  if (roundCount) {
+    roundCount.textContent = summary.maxSets
+      ? `${summary.maxSets} round${summary.maxSets === 1 ? "" : "s"}`
+      : "Rounds not set";
+  }
+  if (preview) {
+    preview.textContent = summary.exerciseNames.length
+      ? summary.exerciseNames.slice(0, 4).join(", ")
+      : "Add exercises to this block";
+  }
+}
+
+function updateExerciseTargetField(card) {
+  const inputType = card.querySelector(".exercise-input-type")?.value || "weight_reps";
+  const label = card.querySelector("[data-exercise-target-label]");
+  const repsInput = card.querySelector(".exercise-reps");
+
+  if (label) label.textContent = getExerciseTargetLabel(inputType);
+  if (repsInput) repsInput.placeholder = getExerciseTargetPlaceholder(inputType);
+}
+
+function setOpenBlock(activeBlock) {
+  document.querySelectorAll("[data-block-card]").forEach(blockCard => {
+    const shouldOpen = blockCard === activeBlock;
+    blockCard.classList.toggle("is-collapsed", !shouldOpen);
+    const toggleButton = blockCard.querySelector("[data-toggle-block]");
+    if (toggleButton) toggleButton.textContent = shouldOpen ? "Collapse" : "Edit Block";
+  });
+}
+
+function attachBlockEvents(blockCard) {
+  blockCard
+    .querySelector(".add-exercise-to-block-btn")
+    .addEventListener("click", () => {
+      setOpenBlock(blockCard);
+      addExerciseToBlock(blockCard);
+    });
+
+  blockCard
+    .querySelector(".remove-block-btn")
+    .addEventListener("click", () => {
+      blockCard.remove();
+      refreshBlockAndExerciseNumbers();
+      const firstBlock = document.querySelector("[data-block-card]");
+      if (firstBlock) setOpenBlock(firstBlock);
+    });
+
+  blockCard
+    .querySelector("[data-toggle-block]")
+    .addEventListener("click", () => {
+      const isCollapsed = blockCard.classList.contains("is-collapsed");
+      if (isCollapsed) {
+        setOpenBlock(blockCard);
+      } else {
+        blockCard.classList.add("is-collapsed");
+        blockCard.querySelector("[data-toggle-block]").textContent = "Edit Block";
+      }
+    });
+
+  blockCard
+    .querySelector(".block-name")
+    .addEventListener("input", () => updateBlockSummary(blockCard));
+}
+
 function createBlockCard(index) {
   // A block is a coach-facing group such as Warmup, A Block, or Finisher.
+  const defaultName = getBlockDefaultName(index);
+
   return `
     <article class="workout-block-card" data-block-card>
       <div class="block-card-heading">
         <div>
           <p class="eyebrow">BLOCK ${index}</p>
+          <h4 data-block-summary-name>${window.RipCityUI.text(defaultName)}</h4>
           <input
             type="text"
             class="block-name"
-            value="${index === 1 ? "Warmup" : `Block ${index}`}"
+            value="${window.RipCityUI.attr(defaultName)}"
             placeholder="Warmup, A Block, B Block, Finisher..."
             required
           />
+          <div class="block-summary-meta">
+            <span data-block-exercise-count>0 exercises</span>
+            <span data-block-round-count>Rounds not set</span>
+          </div>
+          <p class="block-summary-preview" data-block-preview>Add exercises to this block</p>
         </div>
 
         <div class="block-actions">
+          <button class="outline-btn" type="button" data-toggle-block>
+            Collapse
+          </button>
           <button class="outline-btn add-exercise-to-block-btn" type="button">
             Add Exercise
           </button>
@@ -860,52 +1090,71 @@ function createBlockCard(index) {
 function createExerciseCard(index) {
   // Exercise fields map directly to workout_exercises columns.
   const templateListId = `exercise-template-list-${createClientId()}`;
+  const exerciseLabel = getExerciseRowLabel(index - 1);
 
   return `
     <article class="exercise-builder-card" data-exercise-card>
-      <div class="exercise-card-heading">
-        <h4>Exercise ${index}</h4>
-        <button class="outline-btn remove-exercise-btn" type="button">Remove</button>
-      </div>
+      <div class="exercise-quick-row">
+        <div class="exercise-row-label" data-exercise-row-label>${exerciseLabel}</div>
 
-      <input type="hidden" class="exercise-template-id" />
-
-      <div class="exercise-library-picker">
-        <label>
-          Exercise Library
+        <label class="exercise-name-label">
+          Exercise
           <input
             type="text"
-            class="exercise-template-search"
+            class="exercise-name exercise-template-search"
             list="${window.RipCityUI.attr(templateListId)}"
-            placeholder="Loading library..."
+            placeholder="Type to search library..."
             autocomplete="off"
+            required
           />
           <datalist id="${window.RipCityUI.attr(templateListId)}"></datalist>
-          <small class="field-help">Type to search, or keep typing to use a custom exercise.</small>
         </label>
-      </div>
 
-      <label>
-        Exercise Name
-        <input type="text" class="exercise-name" placeholder="Trap Bar Deadlift" required />
-      </label>
-
-      <label>
-        Description / Details
-        <textarea class="exercise-description" rows="2" placeholder="Coaching cues, setup, or notes..."></textarea>
-      </label>
-
-      <div class="form-row">
         <label>
           Sets
           <input type="number" class="exercise-sets" placeholder="3" />
         </label>
 
         <label>
-          Reps
-          <input type="text" class="exercise-reps" placeholder="5, 8 each side, 30 sec..." />
+          <span data-exercise-target-label>Reps / Set Targets</span>
+          <input type="text" class="exercise-reps" placeholder="5 or 5,4,3,4,5" />
         </label>
+
+        <label>
+          Input
+          <select class="exercise-input-type">
+            <option value="weight_reps">Weight + Reps</option>
+            <option value="completion">Completion</option>
+            <option value="band_color">Band Color</option>
+            <option value="time">Time</option>
+            <option value="distance">Distance</option>
+            <option value="custom">Custom</option>
+          </select>
+        </label>
+
+        <div class="exercise-row-actions">
+          <button class="outline-btn small-inline-btn toggle-exercise-details-btn" type="button">
+            Details
+          </button>
+          <button class="outline-btn small-inline-btn remove-exercise-btn" type="button">
+            Remove
+          </button>
+        </div>
       </div>
+
+      <input type="hidden" class="exercise-template-id" />
+
+      <div class="exercise-row-summary">
+        <strong data-exercise-summary-name>Exercise ${exerciseLabel}</strong>
+        <span data-exercise-summary-target>Add target</span>
+        <span data-exercise-summary-input>Weight + Reps</span>
+      </div>
+
+      <div class="exercise-details-panel hidden" data-exercise-details>
+      <label>
+        Description / Details
+        <textarea class="exercise-description" rows="2" placeholder="Coaching cues, setup, or notes..."></textarea>
+      </label>
 
       <div class="form-row">
         <label>
@@ -921,18 +1170,6 @@ function createExerciseCard(index) {
 
       <div class="form-row">
         <label>
-          Input Type
-          <select class="exercise-input-type">
-            <option value="completion">Completion</option>
-            <option value="weight_reps">Weight + Reps</option>
-            <option value="band_color">Band Color</option>
-            <option value="time">Time</option>
-            <option value="distance">Distance</option>
-            <option value="custom">Custom</option>
-          </select>
-        </label>
-
-        <label>
           Video URL
           <input type="text" class="exercise-video" placeholder="Optional demo link" />
         </label>
@@ -942,6 +1179,7 @@ function createExerciseCard(index) {
         Coach Note
         <input type="text" class="exercise-coach-note" placeholder="Optional note for members" />
       </label>
+      </div>
     </article>
   `;
 }
@@ -953,9 +1191,11 @@ function refreshBlockAndExerciseNumbers() {
     if (eyebrow) eyebrow.textContent = `BLOCK ${blockIndex + 1}`;
 
     blockCard.querySelectorAll("[data-exercise-card]").forEach((exerciseCard, exerciseIndex) => {
-      const heading = exerciseCard.querySelector("h4");
-      if (heading) heading.textContent = `Exercise ${exerciseIndex + 1}`;
+      exerciseCard.querySelector("[data-exercise-row-label]").textContent = getExerciseRowLabel(exerciseIndex);
+      updateExerciseSummary(exerciseCard);
     });
+
+    updateBlockSummary(blockCard);
   });
 }
 
@@ -968,6 +1208,7 @@ function addExerciseToBlock(blockCard) {
   const newestCard = list.lastElementChild;
   const removeButton = newestCard.querySelector(".remove-exercise-btn");
   const templateSearch = newestCard.querySelector(".exercise-template-search");
+  const detailsButton = newestCard.querySelector(".toggle-exercise-details-btn");
 
   renderExerciseTemplatePicker(templateSearch);
 
@@ -977,12 +1218,32 @@ function addExerciseToBlock(blockCard) {
 
   templateSearch.addEventListener("change", () => {
     applyExerciseTemplateSearch(newestCard);
+    updateExerciseSummary(newestCard);
+  });
+
+  newestCard.querySelectorAll("input, select, textarea").forEach(input => {
+    input.addEventListener("input", () => updateExerciseSummary(newestCard));
+    input.addEventListener("change", () => updateExerciseSummary(newestCard));
+  });
+
+  newestCard.querySelector(".exercise-input-type")?.addEventListener("change", () => {
+    updateExerciseTargetField(newestCard);
+    updateExerciseSummary(newestCard);
+  });
+
+  detailsButton.addEventListener("click", () => {
+    const panel = newestCard.querySelector("[data-exercise-details]");
+    const hidden = panel.classList.toggle("hidden");
+    detailsButton.textContent = hidden ? "Details" : "Hide Details";
   });
 
   removeButton.addEventListener("click", () => {
     newestCard.remove();
     refreshBlockAndExerciseNumbers();
   });
+
+  updateExerciseSummary(newestCard);
+  updateExerciseTargetField(newestCard);
 }
 
 function setExerciseCardValues(card, exercise = {}) {
@@ -995,9 +1256,11 @@ function setExerciseCardValues(card, exercise = {}) {
   card.querySelector(".exercise-reps").value = exercise.reps || "";
   card.querySelector(".exercise-tempo").value = exercise.tempo || "";
   card.querySelector(".exercise-rest").value = exercise.rest_time || "";
-  card.querySelector(".exercise-input-type").value = exercise.input_type || "completion";
+  card.querySelector(".exercise-input-type").value = exercise.input_type || "weight_reps";
   card.querySelector(".exercise-video").value = exercise.video_url || "";
   card.querySelector(".exercise-coach-note").value = exercise.coach_note || "";
+  updateExerciseTargetField(card);
+  updateExerciseSummary(card);
 }
 
 function addBlockCard() {
@@ -1008,19 +1271,11 @@ function addBlockCard() {
 
   const newestBlock = list.lastElementChild;
 
-  newestBlock
-    .querySelector(".add-exercise-to-block-btn")
-    .addEventListener("click", () => addExerciseToBlock(newestBlock));
-
-  newestBlock
-    .querySelector(".remove-block-btn")
-    .addEventListener("click", () => {
-      newestBlock.remove();
-      refreshBlockAndExerciseNumbers();
-    });
+  attachBlockEvents(newestBlock);
 
   // Start every new block with one exercise so the coach can type immediately.
   addExerciseToBlock(newestBlock);
+  setOpenBlock(newestBlock);
 }
 
 function loadWorkoutIntoBuilder(workout) {
@@ -1047,16 +1302,7 @@ function loadWorkoutIntoBuilder(workout) {
     const blockCard = list.lastElementChild;
     blockCard.querySelector(".block-name").value = block.name || `Block ${blockIndex + 1}`;
 
-    blockCard
-      .querySelector(".add-exercise-to-block-btn")
-      .addEventListener("click", () => addExerciseToBlock(blockCard));
-
-    blockCard
-      .querySelector(".remove-block-btn")
-      .addEventListener("click", () => {
-        blockCard.remove();
-        refreshBlockAndExerciseNumbers();
-      });
+    attachBlockEvents(blockCard);
 
     const exercises = [...(block.workout_exercises || [])]
       .sort((a, b) => a.exercise_order - b.exercise_order);
@@ -1070,7 +1316,12 @@ function loadWorkoutIntoBuilder(workout) {
       addExerciseToBlock(blockCard);
       setExerciseCardValues(blockCard.querySelector("[data-block-exercise-list]").lastElementChild, exercise);
     });
+
+    updateBlockSummary(blockCard);
   });
+
+  const firstBlock = document.querySelector("[data-block-card]");
+  if (firstBlock) setOpenBlock(firstBlock);
 
   document.getElementById("workout-form")?.scrollIntoView({
     behavior: "smooth",
@@ -1252,6 +1503,44 @@ function filterDuplicateAssignmentRows(rows, existingAssignments = []) {
   return rows.filter(row => !existingKeys.has(getAssignmentKey(row)));
 }
 
+function getTargetLabelForDraft(targetType, groupIds = [], memberProfileId = "") {
+  if (targetType === "facility") {
+    return "Entire Facility";
+  }
+
+  if (targetType === "member") {
+    const member = availableMembers.find(row => row.memberProfileId === memberProfileId);
+    return member ? member.name : "Selected member";
+  }
+
+  const selectedGroups = availableGroups.filter(group => groupIds.includes(group.id));
+
+  if (selectedGroups.length === 1) {
+    return selectedGroups[0].name;
+  }
+
+  return `${selectedGroups.length} groups`;
+}
+
+function getAssignmentSuccessMessage({ title, targetType, groupIds, memberProfileId, assignedDate }) {
+  const targetLabel = getTargetLabelForDraft(targetType, groupIds, memberProfileId);
+  return `Workout "${title}" created and assigned to ${targetLabel} for ${formatDisplayDate(assignedDate)}.`;
+}
+
+function confirmWorkoutCreate({ title, targetType, groupIds, memberProfileId, assignedDate }) {
+  const targetLabel = getTargetLabelForDraft(targetType, groupIds, memberProfileId);
+
+  return window.confirm(
+    [
+      "Create and assign this workout?",
+      "",
+      `Title: ${title}`,
+      `Date: ${formatDisplayDate(assignedDate)}`,
+      `Assigned to: ${targetLabel}`
+    ].join("\n")
+  );
+}
+
 function buildRecentWorkoutSelect(includeExerciseTemplateColumn = true) {
   const exerciseTemplateColumn = includeExerciseTemplateColumn
     ? "exercise_template_id,"
@@ -1316,7 +1605,8 @@ async function createWorkoutWithAssignment(event) {
   event.preventDefault();
   updateAssignmentControls();
 
-  showWorkoutMessage("Creating workout...");
+  const submitButton = event.submitter || document.querySelector("#workout-form button[type='submit']");
+  const originalSubmitText = submitButton?.textContent;
 
   try {
     const title = getInputValue("workout-title");
@@ -1349,6 +1639,18 @@ async function createWorkoutWithAssignment(event) {
         showWorkoutMessage("Add at least one block with at least one exercise.", true);
         return;
     }
+
+    if (!confirmWorkoutCreate({ title, targetType, groupIds, memberProfileId, assignedDate })) {
+      showWorkoutMessage("Workout creation cancelled.");
+      return;
+    }
+
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.textContent = "Creating...";
+    }
+
+    showWorkoutMessage("Creating workout...");
 
     const workoutId = createClientId();
 
@@ -1434,13 +1736,24 @@ async function createWorkoutWithAssignment(event) {
 
     if (assignmentError) throw assignmentError;
 
-    showWorkoutMessage("Workout created and assigned.");
+    showWorkoutMessage(getAssignmentSuccessMessage({
+      title,
+      targetType,
+      groupIds,
+      memberProfileId,
+      assignedDate
+    }));
 
     resetWorkoutForm();
     await loadRecentWorkouts();
   } catch (error) {
     console.error(error);
     showWorkoutMessage(error.message || "Could not create workout.", true);
+  } finally {
+    if (submitButton) {
+      submitButton.disabled = false;
+      submitButton.textContent = originalSubmitText || "Create & Assign Workout";
+    }
   }
 }
 
@@ -1567,16 +1880,40 @@ function renderRecentWorkouts() {
         <div class="workout-meta-row">
           <span>${workout.estimated_minutes || "—"} min</span>
           <span>${window.RipCityUI.text(targetLabel)}</span>
-          <span>${window.RipCityUI.text(assignedDate)}</span>
+          <span>${window.RipCityUI.text(formatDisplayDate(assignedDate))}</span>
         </div>
 
         <div class="recent-workout-actions">
+          <button class="outline-btn small-inline-btn" type="button" data-toggle-reassign-workout="${window.RipCityUI.attr(workout.id)}">
+            Assign Again
+          </button>
           <button class="outline-btn small-inline-btn" type="button" data-load-workout-template="${window.RipCityUI.attr(workout.id)}">
             Load in Builder
           </button>
           <button class="outline-btn small-inline-btn" type="button" data-toggle-workout-edit="${window.RipCityUI.attr(workout.id)}">
             Edit Details
           </button>
+          <button class="outline-btn small-inline-btn danger-outline-btn" type="button" data-delete-workout="${window.RipCityUI.attr(workout.id)}">
+            Delete Workout
+          </button>
+        </div>
+
+        <div class="recent-assignment-list">
+          <div class="recent-assignment-heading">
+            <strong>Calendar Assignments</strong>
+            <span>${assignments.length ? `${assignments.length} assignment${assignments.length === 1 ? "" : "s"}` : "No assignments"}</span>
+          </div>
+          ${assignments.length ? assignments.map(assignment => `
+            <div class="recent-assignment-row">
+              <span>
+                <strong>${window.RipCityUI.text(formatDisplayDate(assignment.assigned_date))}</strong>
+                ${window.RipCityUI.text(getAssignmentTargetLabel(assignment))}
+              </span>
+              <button class="outline-btn small-inline-btn danger-outline-btn" type="button" data-remove-assignment="${window.RipCityUI.attr(assignment.id)}">
+                Remove Assignment
+              </button>
+            </div>
+          `).join("") : `<div class="empty-state compact-empty-state">This workout is saved but not assigned to a date.</div>`}
         </div>
 
         <form class="recent-workout-edit-form hidden" data-workout-edit-form="${window.RipCityUI.attr(workout.id)}">
@@ -1604,7 +1941,7 @@ function renderRecentWorkouts() {
           </div>
         </form>
 
-        <div class="recent-reassign-card">
+        <div class="recent-reassign-card hidden" data-reassign-workout-card="${window.RipCityUI.attr(workout.id)}">
           <div>
             <strong>Assign this workout again</strong>
             <span>Reuse the same blocks and exercises for another date, group, or athlete.</span>
@@ -1646,7 +1983,13 @@ function renderRecentWorkouts() {
           </button>
         </div>
 
-        <div class="workout-block-preview">
+        <details class="workout-preview-details">
+          <summary>
+            <span>Workout Preview</span>
+            <small>${blocks.reduce((total, block) => total + (block.workout_exercises || []).length, 0)} exercises</small>
+          </summary>
+
+          <div class="workout-block-preview">
             ${blocks.map(block => {
                 const exercises = [...(block.workout_exercises || [])]
                 .sort((a, b) => a.exercise_order - b.exercise_order);
@@ -1665,7 +2008,8 @@ function renderRecentWorkouts() {
                 </div>
                 `;
             }).join("")}
-        </div>
+          </div>
+        </details>
       </article>
     `;
   }).join("");
@@ -1680,6 +2024,22 @@ function renderRecentWorkouts() {
       const workout = recentWorkoutRows.find(row => row.id === button.dataset.assignExistingWorkout);
       assignExistingWorkout(workout);
     });
+  });
+
+  list.querySelectorAll("[data-toggle-reassign-workout]").forEach(button => {
+    button.addEventListener("click", () => {
+      const panel = document.querySelector(`[data-reassign-workout-card="${button.dataset.toggleReassignWorkout}"]`);
+      const isHidden = panel?.classList.toggle("hidden");
+      button.textContent = isHidden ? "Assign Again" : "Hide Assign";
+    });
+  });
+
+  list.querySelectorAll("[data-remove-assignment]").forEach(button => {
+    button.addEventListener("click", () => removeWorkoutAssignment(button.dataset.removeAssignment));
+  });
+
+  list.querySelectorAll("[data-delete-workout]").forEach(button => {
+    button.addEventListener("click", () => deleteWorkout(button.dataset.deleteWorkout));
   });
 
   list.querySelectorAll("[data-load-workout-template]").forEach(button => {
@@ -1708,6 +2068,101 @@ function renderRecentWorkouts() {
   list.querySelectorAll("[data-workout-edit-form]").forEach(form => {
     form.addEventListener("submit", event => saveWorkoutDetails(event, form.dataset.workoutEditForm));
   });
+}
+
+async function removeWorkoutAssignment(assignmentId) {
+  const assignment = recentWorkoutRows
+    .flatMap(workout => (workout.workout_assignments || []).map(row => ({ ...row, workout })))
+    .find(row => row.id === assignmentId);
+
+  if (!assignment) return;
+
+  const logWarning = await getAssignmentLogWarning(assignmentId);
+  const confirmed = window.confirm(
+    [
+      "Remove this assignment?",
+      "",
+      `Workout: ${assignment.workout.title}`,
+      `Date: ${formatDisplayDate(assignment.assigned_date)}`,
+      `Assigned to: ${getAssignmentTargetLabel(assignment)}`,
+      "",
+      "The workout will stay saved and can be assigned again later.",
+      logWarning
+    ].filter(Boolean).join("\n")
+  );
+
+  if (!confirmed) return;
+
+  showWorkoutMessage("Removing assignment...");
+
+  try {
+    const { error } = await db
+      .from("workout_assignments")
+      .delete()
+      .eq("id", assignmentId);
+
+    if (error) throw error;
+
+    showWorkoutMessage("Assignment removed. The workout is still saved.");
+    await loadRecentWorkouts();
+  } catch (error) {
+    console.error(error);
+    showWorkoutMessage(error.message || "Could not remove assignment.", true);
+  }
+}
+
+async function getAssignmentLogWarning(assignmentId) {
+  try {
+    const { count, error } = await db
+      .from("exercise_set_logs")
+      .select("id", { count: "exact", head: true })
+      .eq("workout_assignment_id", assignmentId);
+
+    if (error || !count) return "";
+
+    return `Warning: this also removes ${count} saved set log${count === 1 ? "" : "s"} for this assignment.`;
+  } catch (error) {
+    console.error(error);
+    return "";
+  }
+}
+
+async function deleteWorkout(workoutId) {
+  const workout = recentWorkoutRows.find(row => row.id === workoutId);
+  if (!workout) return;
+
+  const assignmentCount = workout.workout_assignments?.length || 0;
+  const confirmed = window.confirm(
+    [
+      "Delete this workout?",
+      "",
+      `Workout: ${workout.title}`,
+      assignmentCount ? `Assignments: ${assignmentCount}` : "Assignments: none",
+      "",
+      "This removes the workout, exercises, assignments, and any saved member logs.",
+      "This cannot be undone."
+    ].join("\n")
+  );
+
+  if (!confirmed) return;
+
+  showWorkoutMessage("Deleting workout...");
+
+  try {
+    const { error } = await db
+      .from("workouts")
+      .delete()
+      .eq("id", workoutId)
+      .eq("facility_id", workoutCoachAccess.membership.facility_id);
+
+    if (error) throw error;
+
+    showWorkoutMessage("Workout deleted.");
+    await loadRecentWorkouts();
+  } catch (error) {
+    console.error(error);
+    showWorkoutMessage(error.message || "Could not delete workout.", true);
+  }
 }
 
 async function saveWorkoutDetails(event, workoutId) {

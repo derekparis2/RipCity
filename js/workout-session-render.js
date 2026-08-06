@@ -183,9 +183,9 @@ function renderWorkoutStep(step, index) {
       <div class="session-block-heading">
         <div>
           <p class="eyebrow">${window.RipCityUI.text(step.block.name)}</p>
-          <h3>Round ${step.roundNumber}: ${label} Movement</h3>
+          <h3>Round ${step.roundNumber}: ${label} Exercise</h3>
         </div>
-        <span>${step.roundExerciseCount} movement${step.roundExerciseCount === 1 ? "" : "s"} this round</span>
+        <span>${step.roundExerciseCount} exercise${step.roundExerciseCount === 1 ? "" : "s"} this round</span>
       </div>
 
       <div class="round-exercise-item">
@@ -220,7 +220,7 @@ function renderBlockRounds(exercises) {
             <p class="eyebrow">ROUND ${roundNumber}</p>
             <h4>Set ${roundNumber}</h4>
           </div>
-          <span>${exercisesForRound.length} movement${exercisesForRound.length === 1 ? "" : "s"}</span>
+          <span>${exercisesForRound.length} exercise${exercisesForRound.length === 1 ? "" : "s"}</span>
         </div>
 
         <div class="session-round-exercises">
@@ -244,7 +244,7 @@ function renderBlockRounds(exercises) {
 
 function renderExerciseSetLogger(exercise, setNumber, stepIndex = null) {
   const targetDetails = [
-    `<span><strong>Target</strong>${getExerciseTargetText(exercise)}</span>`,
+    `<span><strong>Target</strong>${getSetTargetText(exercise, setNumber)}</span>`,
     exercise.tempo ? `<span><strong>Tempo</strong>${exercise.tempo}</span>` : "",
     exercise.rest_time ? `<span><strong>Rest</strong>${exercise.rest_time}</span>` : "",
     exercise.percentage ? `<span><strong>Load</strong>${exercise.percentage}</span>` : "",
@@ -380,6 +380,8 @@ function renderSetLogger(exercise, setNumber, stepIndex = null) {
 }
 
 function renderInputsForExerciseType(exercise, existing, setNumber) {
+  const setTarget = getSetTargetValue(exercise, setNumber)?.value || exercise.reps || "";
+
   if (exercise.input_type === "weight_reps") {
     const previousWeight = findPreviousWeightForExercise(exercise.id, setNumber);
     const previousReps = findPreviousRepsForExercise(exercise.id, setNumber);
@@ -405,7 +407,7 @@ function renderInputsForExerciseType(exercise, existing, setNumber) {
             type="number"
             class="set-reps-input"
             value="${window.RipCityUI.attr(repsValue || "")}"
-            placeholder="${window.RipCityUI.attr(exercise.reps || "reps")}"
+            placeholder="${window.RipCityUI.attr(setTarget || "reps")}"
           />
         </label>
       </div>
@@ -420,7 +422,7 @@ function renderInputsForExerciseType(exercise, existing, setNumber) {
           type="text"
           class="set-band-input"
           value="${window.RipCityUI.attr(existing?.band_color || "")}"
-          placeholder="Red, black, green..."
+          placeholder="${window.RipCityUI.attr(setTarget || "Red, black, green...")}"
         />
       </label>
     `;
@@ -434,7 +436,7 @@ function renderInputsForExerciseType(exercise, existing, setNumber) {
           type="text"
           class="set-time-input"
           value="${window.RipCityUI.attr(existing?.time_value || "")}"
-          placeholder="${window.RipCityUI.attr(exercise.reps || "ex: 10.4 sec")}"
+          placeholder="${window.RipCityUI.attr(setTarget || "ex: 10.4 sec")}"
         />
       </label>
     `;
@@ -448,7 +450,7 @@ function renderInputsForExerciseType(exercise, existing, setNumber) {
           type="text"
           class="set-distance-input"
           value="${window.RipCityUI.attr(existing?.distance_value || "")}"
-          placeholder="${window.RipCityUI.attr(exercise.reps || "ex: 20 yards")}"
+          placeholder="${window.RipCityUI.attr(setTarget || "ex: 20 yards")}"
         />
       </label>
     `;
