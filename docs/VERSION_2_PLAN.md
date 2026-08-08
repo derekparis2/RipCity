@@ -5,6 +5,7 @@ logger into a fuller athlete development platform.
 
 Core V2 direction:
 
+- Platform / multi-facility configuration
 - Goals
 - Leaderboards
 - Progress tracking
@@ -15,7 +16,76 @@ Do not start coding these sections until the product rules below are filled in.
 
 ---
 
-## 1. Goals
+## 1. Platform / Multi-Facility Direction
+
+### Product Purpose
+
+Rip City is the first beta facility, not the full identity of the product. The product should become a facility-configurable coaching platform that can support many gyms, academies, teams, and training programs without rebuilding the app for each one.
+
+The long-term goal is for a facility to choose its modules, colors, logo, groups, member types, and terminology with little or no custom code work from Derek.
+
+### Decisions
+
+- Rip City stays the beta/proof facility.
+- New shared features should be built for any facility first, then configured for Rip City.
+- Facility-specific features should be optional modules, not hardcoded platform behavior.
+- H2K habits should remain a Rip City/member-type module unless another facility enables a similar habit module.
+- Derek/global admin should be the only role that can see or manage all facilities unless a future support/admin mode is intentionally added.
+- Facility coaches/admins should only manage their own facility.
+- Members should only see their own facility experience.
+- Facility branding should move toward data/config-driven behavior instead of one-off CSS edits.
+- Manual setup is acceptable early, but V2 should avoid choices that block future self-serve setup.
+
+### V2 Modifications Needed
+
+Facility config:
+
+- Add or prepare for a facility settings layer that controls logo, colors, display name, enabled modules, and member terminology.
+- Decide which config belongs in the existing `facilities` table and which config needs a new table later.
+- Keep the first version simple enough that Derek can manually configure a facility in Supabase if needed.
+
+Module config:
+
+- Treat workouts, habits, goals, leaderboards, announcements, progress, scheduling, and payments as modules that can eventually be enabled or disabled by facility.
+- Make H2K habits optional and member-type-aware.
+- Avoid showing modules to members whose facility or member type does not use them.
+
+Branding/UI:
+
+- Replace hardcoded Rip City labels where they should be facility labels.
+- Keep Rip City visual style as the current design inspiration, but make colors/logo configurable over time.
+- Avoid building future pages that assume every facility is baseball-only or H2K-only.
+- Keep facility branding separate from core layout structure.
+
+Signup/invites:
+
+- Make facility invite links the normal path for new coaches and members.
+- Ensure signup can route users into the correct facility, member type, and default groups.
+- Keep future support for facility-specific signup questions, such as sport, position, age group, or program.
+
+Data/security:
+
+- Keep every new table facility-aware where the data belongs to a facility.
+- Keep RLS policies facility-scoped before any new feature becomes production-ready.
+- Avoid cross-facility queries unless they are only for Derek/global admin.
+- Test every new V2 feature with at least two facilities in staging before production.
+
+Developer workflow:
+
+- Use staging Supabase to create fake second facilities and test customization.
+- Add comments around code paths where facility config changes what the user sees.
+- Track any remaining hardcoded Rip City assumptions during the cleanup pass.
+
+### Done Criteria
+
+- A second facility can exist in staging without seeing Rip City data.
+- The app can show different facility names/logos/colors from config, even if setup is still manual.
+- H2K-specific modules do not leak into facilities/member types that should not see them.
+- New V2 features are designed as shared platform modules unless intentionally marked facility-specific.
+
+---
+
+## 2. Goals
 
 ### Product Purpose
 
@@ -120,7 +190,7 @@ Coach side:
 
 ---
 
-## 2. Leaderboards
+## 3. Leaderboards
 
 ### Product Purpose
 
@@ -197,7 +267,7 @@ coach leaderboard dashboard with filters.
 
 ---
 
-## 3. Progress Tracking
+## 4. Progress Tracking
 
 ### Product Purpose
 
@@ -239,7 +309,7 @@ official calculated maxes until the formula and coaching language are approved.
 
 ---
 
-## 4. Coach Announcements And Notes
+## 5. Coach Announcements And Notes
 
 ### Product Purpose
 
@@ -329,7 +399,7 @@ dashboard announcements with dismiss support.
 
 ---
 
-## 5. Profile And Community
+## 6. Profile And Community
 
 ### Product Purpose
 
@@ -367,7 +437,7 @@ Keep community controlled in V2:
 
 ---
 
-## 6. Staging And Release Safety
+## 7. Staging And Release Safety
 
 Before larger V2 development, create a separate Supabase staging project so new
 schema changes, RLS policies, seeded data, and risky workflow changes can be
@@ -421,7 +491,7 @@ Every database change should go through this order:
 
 ---
 
-## 7. Beta Feedback Polish Queue
+## 8. Beta Feedback Polish Queue
 
 These are items that came from the first live beta feedback or from testing on
 mobile. They should be cleaned up during V2, but they do not need to block the
@@ -476,7 +546,7 @@ V2 direction:
 
 ---
 
-## 8. Codebase Cleanup And Maintainability
+## 9. Codebase Cleanup And Maintainability
 
 Before V2 gets much larger, clean the project so it is easier for Derek, future teammates, and any outside help to understand and safely change.
 
@@ -544,13 +614,14 @@ The live beta was built quickly, and that was the right move. V2 should make the
 ## Suggested V2 Build Order
 
 1. Create the staging Supabase project and release-safety workflow.
-2. Complete the codebase cleanup and maintainability pass.
-3. Finish the beta feedback polish queue that affects daily use.
-4. Goals database migration and RLS updates.
-5. Coach member detail foundation.
-6. Member goals UI.
-7. Coach goals UI inside member detail.
-8. Leaderboard decisions and first coach-visible leaderboard.
-9. Progress tracking decisions and first progress UI.
-10. Coach notes inside member detail.
-11. Profile/community upgrades once privacy rules are clear.
+2. Complete the platform/multi-facility config audit.
+3. Complete the codebase cleanup and maintainability pass.
+4. Finish the beta feedback polish queue that affects daily use.
+5. Goals database migration and RLS updates.
+6. Coach member detail foundation.
+7. Member goals UI.
+8. Coach goals UI inside member detail.
+9. Leaderboard decisions and first coach-visible leaderboard.
+10. Progress tracking decisions and first progress UI.
+11. Coach notes inside member detail.
+12. Profile/community upgrades once privacy rules are clear.
