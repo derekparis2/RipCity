@@ -476,15 +476,81 @@ V2 direction:
 
 ---
 
+## 8. Codebase Cleanup And Maintainability
+
+Before V2 gets much larger, clean the project so it is easier for Derek, future teammates, and any outside help to understand and safely change.
+
+### Product Purpose
+
+The live beta was built quickly, and that was the right move. V2 should make the codebase easier to maintain before adding bigger systems like goals, leaderboards, announcements, and staging environments.
+
+### Cleanup Goals
+
+- Make the repo easier to understand when someone opens it for the first time.
+- Reduce unused or duplicate code where it is safe to do so.
+- Add comments around complicated data loading, Supabase queries, RLS-sensitive logic, workout assignment logic, habit scoring, and workout completion math and all other functions to make it easy to look back and see what the code does.
+- Split files only when it clearly improves readability.
+- Keep working production behavior intact while cleaning.
+- Avoid cleanup-only rewrites that create huge risky diffs.
+
+### SQL Folder Cleanup
+
+- Audit every file in `sql/`.
+- Identify which SQL files are active migrations, seed files, old experiments, or one-time troubleshooting scripts.
+- Keep production/staging migrations clearly named and ordered.
+- Move old or unused SQL into an archive folder if we still want the history.
+- Add a short SQL README explaining what should be run, what should not be run, and which files are historical.
+- Do not delete SQL history until production and staging are both confirmed.
+- Never run SQL cleanup against production without an explicit checklist.
+
+### Docs Folder Cleanup
+
+- Audit `docs/` for old plans, duplicated notes, and outdated instructions.
+- Keep `BUILD_PLAN.md`, `VERSION_2_PLAN.md`, beta launch notes, setup docs, and current testing checklists easy to find.
+- Move older planning docs into `docs/old/` when they are no longer current.
+- Add short summaries at the top of important docs so the purpose is obvious.
+- Make the V2 plan the main roadmap while V2 is being built.
+
+### JavaScript And CSS Cleanup
+
+- Add concise comments to explain complex sections, not obvious one-line code.
+- Split very large JavaScript files into helper modules where it makes future work safer.
+- Look for repeated auth, facility-access, date, assignment, scoring, rendering, and Supabase-query logic that can be shared.
+- Keep shared member platform behavior separate from H2K-only behavior.
+- Keep coach-only features separate from member-facing features.
+- Clean dead CSS selectors and old layout classes after confirming they are not used.
+- Avoid broad reformatting until formatting rules are agreed on, so diffs stay reviewable.
+
+### Suggested Cleanup Order
+
+1. Repo inventory: list active pages, JS files, CSS sections, SQL files, and docs.
+2. SQL audit: label active migrations vs archive/troubleshooting files.
+3. Docs audit: consolidate the current roadmap and move old files aside.
+4. Code comments: explain complex Supabase and workflow logic.
+5. Small dead-code removal: remove clearly unused selectors/functions.
+6. File splitting: only split large files after tests confirm behavior.
+7. Add contributor notes for future Derek/Sam workflow.
+
+### Done Criteria
+
+- A new developer can understand the repo structure from the docs.
+- SQL files are not confusing or dangerous to run accidentally.
+- Main workflow files have comments around the hard parts.
+- Large files are either split or clearly organized with section comments.
+- Production behavior is unchanged after cleanup.
+
+---
+
 ## Suggested V2 Build Order
 
 1. Create the staging Supabase project and release-safety workflow.
-2. Finish the beta feedback polish queue that affects daily use.
-3. Goals database migration and RLS updates.
-4. Coach member detail foundation.
-5. Member goals UI.
-6. Coach goals UI inside member detail.
-7. Leaderboard decisions and first coach-visible leaderboard.
-8. Progress tracking decisions and first progress UI.
-9. Coach notes inside member detail.
-10. Profile/community upgrades once privacy rules are clear.
+2. Complete the codebase cleanup and maintainability pass.
+3. Finish the beta feedback polish queue that affects daily use.
+4. Goals database migration and RLS updates.
+5. Coach member detail foundation.
+6. Member goals UI.
+7. Coach goals UI inside member detail.
+8. Leaderboard decisions and first coach-visible leaderboard.
+9. Progress tracking decisions and first progress UI.
+10. Coach notes inside member detail.
+11. Profile/community upgrades once privacy rules are clear.
