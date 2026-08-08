@@ -77,6 +77,17 @@ Current signup-link decision:
 - Do not assume the existing `facility_invites` table powers this UI; it does not
   currently do so and must be resolved during the schema audit.
 
+Production Supabase audit status:
+
+- A read-only live audit was completed on 2026-08-08 and is recorded in
+  `docs/SUPABASE_AUDIT_2026-08-08.md`.
+- All 21 public tables are represented in repository SQL, but the repo does not
+  yet provide a verified clean rebuild.
+- Production has no recorded Supabase migrations and the Free plan provides no
+  scheduled dashboard backups.
+- Do not rerun exercise-library SQL until its broad grants and policy-name drift
+  are corrected and tested in staging.
+
 ## V2 Cleanup Track
 
 Derek wants a cleanup pass before the app grows too much.

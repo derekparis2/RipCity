@@ -35,6 +35,8 @@ For the product roadmap, start with `docs/BUILD_PLAN.md`.
 - `docs/BETA_LAUNCH_PLAN.md` - readiness checklist before inviting testers
 - `docs/DEPLOYMENT_PREP.md` - live URL, Supabase Auth, storage, and final deploy checks
 - `docs/PRODUCT_DECISIONS.md` - current product rules and tenant decisions
+- `docs/SUPABASE_AUDIT_2026-08-08.md` - read-only production schema/SQL audit,
+  verified drift, recovery risks, and staging recommendations
 - `docs/old/` - historical notes that are no longer the current source of truth
 - `sql/supabase_schema.sql` - current intended database schema
 - `sql/README.md` - SQL file guide, migration order, and audit queries

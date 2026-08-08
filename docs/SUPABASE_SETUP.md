@@ -48,14 +48,11 @@ triggers, views, enums, extensions, grants, RLS policies, storage buckets, and
 storage policies. Compare those results with both the SQL folder and all app
 queries before classifying or removing anything.
 
-Known current drift from the repo base schema:
-
-- The live project appears to already include profile UI fields such as
-  `profiles.username`, `profiles.bio`, `profiles.birthday`,
-  `profiles.profile_picture_url`, `member_profiles.height`,
-  `member_profiles.training_focus`, and `member_profiles.favorite_lift`.
-- The live project does not appear to have the proposed exercise library tables
-  or `workout_exercises.exercise_template_id` yet.
+The 2026-08-08 live audit verified that production includes the profile fields,
+both exercise-library tables,
+`workout_exercises.exercise_template_id`, 93 exercise templates, H2K band
+support, gender support, username login, and the profile-picture bucket. See
+`docs/SUPABASE_AUDIT_2026-08-08.md` before planning any new database work.
 
 ## RLS Status
 
@@ -66,9 +63,14 @@ project. The rollout was verified with:
 - Existing H2K member login, habits, workout dashboard, and session access.
 - Existing athlete login with H2K UI hidden.
 - New signup, pending approval, coach approval, and approved member login.
-- `anon` table grants reduced to only `facilities SELECT`.
+- `anon` access intentionally includes `facilities SELECT` and `groups SELECT`
+  for the current signup flow.
 - `authenticated` grants reduced to normal app CRUD, with row access filtered
   by RLS policies.
+
+The later-created exercise-library tables inherited broader default grants than
+this original RLS rollout intended. RLS still blocks anonymous exercise rows,
+but grant cleanup is required in staging; see the dated audit.
 
 Signup currently depends on public Rip City signup:
 
@@ -107,6 +109,12 @@ Treat production recovery separately. SQL migrations do not themselves restore
 Supabase Auth identities, uploaded Storage objects, secrets, redirect URLs, or
 all project-level settings. Maintain and verify backup/recovery instructions for
 those resources before V2 production release.
+
+The production project currently uses the Supabase Free plan, and the dashboard
+reports that scheduled backups are not included. A paid plan is not required to
+continue planning V2, but do not begin risky production migrations without a
+tested manual backup/recovery procedure. All destructive testing belongs in the
+fake-data staging project.
 
 ## Manual App Smoke Test
 

@@ -550,6 +550,11 @@ test accounts, test workouts, or half-finished migrations.
 Before reorganizing or removing any SQL, compare the repository with the live
 production project using read-only inspection.
 
+Status: completed read-only on 2026-08-08. See
+`docs/SUPABASE_AUDIT_2026-08-08.md` for the verified live inventory, SQL-file
+classification, grant/policy drift, backup status, and staging recommendations.
+No production cleanup was performed during the audit.
+
 Audit inventory:
 
 - Public tables, columns, types, defaults, constraints, foreign keys, and indexes.
