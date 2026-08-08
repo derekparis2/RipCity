@@ -35,6 +35,50 @@ The long-term goal is for a facility to choose its modules, colors, logo, groups
 - Members should only see their own facility experience.
 - Facility branding should move toward data/config-driven behavior instead of one-off CSS edits.
 - Manual setup is acceptable early, but V2 should avoid choices that block future self-serve setup.
+- Only Derek/global admin can create facilities in V2.
+- The data model may support more than one facility membership, but ordinary
+  members should use one facility. Multiple memberships are reserved for Derek
+  and coaches/admins who legitimately work with more than one facility.
+- A person's role belongs to each facility membership. The same person may be a
+  facility admin in one facility and a coach in another.
+- Reactivating a membership should restore its historical facility, group,
+  workout, goal, and other authorized relationships rather than create a new
+  disconnected identity.
+
+### V2 Roles And Permissions Foundation
+
+Create one maintained permissions matrix before adding major V2 features. It
+must be used by both the UI and RLS design; hiding a control in the UI is not a
+security boundary.
+
+Initial role direction:
+
+- `platform_owner`: Derek-only global role. Can create and configure facilities.
+  Cross-facility member-data access should remain intentional and should move
+  toward an explicit support mode rather than an accidental universal bypass.
+- `admin`: facility-scoped role. A facility admin can perform coaching work and
+  broadly manage that facility, including coaches, members, groups, settings,
+  and facility content.
+- `coach`: facility-scoped role. Can manage approved coaching workflows in the
+  facilities where the coach has an active membership, but does not receive
+  platform-wide access.
+- `athlete` / `h2k_member`: current member-facing facility roles. V2 may later
+  separate access role from configurable member type if the schema audit shows
+  that is safer and clearer.
+- `parent`: future role with no V2 access until parent visibility rules and RLS
+  are intentionally implemented.
+
+Membership status direction:
+
+- Keep pending approval for new signups.
+- Keep approved/active access separate from role.
+- Deactivation preserves history and blocks normal access.
+- Reactivation restores the existing membership and history.
+- Rejection does not grant facility access.
+
+The permissions matrix must explicitly cover view, create, edit, delete,
+archive, approve, role-management, and facility-settings actions for every
+module before that module is production-ready.
 
 ### V2 Modifications Needed
 
@@ -59,9 +103,41 @@ Branding/UI:
 
 Signup/invites:
 
-- Make facility invite links the normal path for new coaches and members.
+- Preserve the current V1 experience where a coach copies an Athlete, H2K, or
+  general signup link and sends it to prospective members.
+- Copied signup links may be shared; accepting or using one must never bypass
+  the existing pending approval step.
 - Ensure signup can route users into the correct facility, member type, and default groups.
 - Keep future support for facility-specific signup questions, such as sport, position, age group, or program.
+- Do not require email-bound, single-use invitations in V2 unless this product
+  decision is intentionally revisited.
+- The existing `facility_invites` table is not used by the current copied-link
+  flow. Its live status and intended future use must be resolved during the SQL
+  audit before new invite behavior is built on it.
+
+Facility time and date rules:
+
+- Every facility has one authoritative IANA time zone.
+- Rip City's time zone is `America/New_York`.
+- Store event timestamps in UTC, but calculate facility days, workout dates,
+  habit days, Monday-Sunday weeks, streaks, announcement visibility, and
+  leaderboard periods using the facility time zone.
+- Audit current browser-local date calculations before changing them. V1
+  currently protects local calendar dates from `toISOString()` rollover, but it
+  does not yet use a facility time-zone setting.
+
+Lifecycle rules:
+
+- Deactivate coaches and members rather than deleting their identity or history.
+- Archive facilities and groups instead of deleting them once they have history.
+- Allow coaches to delete unused/draft workouts.
+- Prefer archiving a workout that has assignments or member logs so it leaves
+  normal UI without destroying history. If permanent deletion remains
+  available, require a clear warning about all cascading data removal.
+- Keep the existing goal and coach-note deletion decisions unless intentionally
+  revised for a later audit requirement.
+- Each major table must receive an explicit delete, archive, deactivate, and
+  retention rule during the schema audit.
 
 Data/security:
 
@@ -82,6 +158,10 @@ Developer workflow:
 - The app can show different facility names/logos/colors from config, even if setup is still manual.
 - H2K-specific modules do not leak into facilities/member types that should not see them.
 - New V2 features are designed as shared platform modules unless intentionally marked facility-specific.
+- The roles/permissions matrix is documented and matches tested RLS behavior.
+- Facility-local dates remain correct for users whose device time zone differs
+  from the facility time zone and across daylight-saving changes.
+- Deactivated users can be reactivated without losing their historical relationships.
 
 ---
 
@@ -460,6 +540,58 @@ test accounts, test workouts, or half-finished migrations.
   destructive cleanup tests.
 - Keep production connected to the deployed V1 site until a V2 release is ready.
 - Do not run experimental SQL against production first.
+- Staging uses entirely fake data, not copied or anonymized production member data.
+- Only Derek creates new facilities in V2.
+- The repository should be able to recreate the application database structure
+  in a new Supabase project without relying on undocumented SQL Editor history.
+
+### Production Schema And SQL Audit
+
+Before reorganizing or removing any SQL, compare the repository with the live
+production project using read-only inspection.
+
+Audit inventory:
+
+- Public tables, columns, types, defaults, constraints, foreign keys, and indexes.
+- Functions, triggers, views, enums, extensions, and generated behavior.
+- RLS enablement, policies, grants, and storage policies.
+- Storage buckets used by the app.
+- Auth-dependent functions and signup assumptions.
+- Objects in production that are missing from source control.
+- SQL in source control that is historical, superseded, optional, unapplied, or
+  unsafe to rerun.
+- Application references to each table/column before declaring it unused.
+
+Do not delete a production object only because the current UI does not visibly
+use it. Check code, policies, functions, triggers, foreign keys, stored data,
+and future product intent first. Any removal must be a reviewed V2 migration
+tested on staging.
+
+### Reproducible Supabase Setup
+
+The target repository structure should clearly separate:
+
+- Ordered schema migrations.
+- Required platform/facility seed data.
+- Fake staging/test seed data.
+- Read-only diagnostics and verification queries.
+- Archived experiments and one-time fixes that must not be rerun.
+- A SQL README with exact fresh-project and upgrade instructions.
+
+A clean rebuild must include schema objects, RLS, functions, triggers, indexes,
+required storage buckets/policies, and required seed configuration. SQL alone
+does not restore Auth users, uploaded storage objects, secrets, redirect URLs,
+or every Supabase project setting, so recovery documentation must cover those
+separately.
+
+Maintain two distinct safety plans:
+
+1. Recreate the platform structure in a new Supabase project.
+2. Recover production data, Auth identities, and stored files from backups.
+
+The first staging milestone is a clean project created from the repository,
+seeded with at least two fake facilities and fake global admin, facility admin,
+coach, athlete, H2K, pending, inactive, and cross-facility coach scenarios.
 
 ### Setup Direction
 
@@ -488,6 +620,38 @@ Every database change should go through this order:
 3. Test coach, H2K member, athlete, and pending-user flows on staging.
 4. Confirm RLS still blocks unauthorized access.
 5. Only then run the approved migration on production.
+
+### V2 Regression And Release Checklist
+
+Create a repeatable checklist covering:
+
+- Signup links, signup, login, logout, password reset, pending access, approval,
+  rejection, deactivation, and reactivation.
+- Platform-owner, facility-admin, coach, member, and cross-facility isolation.
+- Facility, group, and member workout assignments and logged history.
+- H2K visibility, habit logging, Monday-Sunday scoring, and date backfill.
+- Workout creation, editing, deletion/archive behavior, session logging, and history.
+- Facility branding, module visibility, and time-zone boundaries.
+- Loading, empty, error, offline, and permission-denied states.
+- Supported mobile and desktop layouts.
+- Migration verification, backup confirmation, rollback/recovery instructions,
+  and post-deploy smoke tests.
+
+### Accessibility Standard
+
+V2 features should include keyboard access, visible focus states, semantic form
+labels, accessible dialogs, adequate touch targets, sufficient contrast, and
+status communication that does not depend on color alone. Facility-configured
+brand colors must be checked for readable contrast.
+
+### Notification Direction
+
+- V2 starts with in-app notifications only.
+- Email and push notifications remain future options and may be pulled forward
+  if scope and development capacity allow.
+- Keep announcements as source content and notifications as per-user delivery/read state.
+- Notification records should be facility-scoped and support recipient,
+  notification type, related item/link, created time, and read time.
 
 ---
 
@@ -613,15 +777,21 @@ The live beta was built quickly, and that was the right move. V2 should make the
 
 ## Suggested V2 Build Order
 
-1. Create the staging Supabase project and release-safety workflow.
-2. Complete the platform/multi-facility config audit.
-3. Complete the codebase cleanup and maintainability pass.
-4. Finish the beta feedback polish queue that affects daily use.
-5. Goals database migration and RLS updates.
-6. Coach member detail foundation.
-7. Member goals UI.
-8. Coach goals UI inside member detail.
-9. Leaderboard decisions and first coach-visible leaderboard.
-10. Progress tracking decisions and first progress UI.
-11. Coach notes inside member detail.
-12. Profile/community upgrades once privacy rules are clear.
+1. Document the roles/permissions matrix, lifecycle rules, time-zone rules, and
+   current signup-link behavior.
+2. Perform a read-only production schema/SQL audit and classify every SQL file.
+3. Create the staging Supabase project and reproducible release-safety workflow.
+4. Rebuild staging from repository-controlled migrations and fake seed data;
+   verify two-facility isolation and all important roles.
+5. Complete the platform/multi-facility and module-configuration implementation audit.
+6. Complete the codebase cleanup and maintainability pass.
+7. Create the repeatable regression, accessibility, migration, and release checklist.
+8. Finish the beta feedback polish queue that affects daily use.
+9. Goals database migration and RLS updates.
+10. Coach member detail foundation.
+11. Member goals UI.
+12. Coach goals UI inside member detail.
+13. Leaderboard decisions and first coach-visible leaderboard.
+14. Progress tracking decisions and first progress UI.
+15. Coach notes and in-app notification foundation.
+16. Profile/community upgrades once privacy rules are clear.

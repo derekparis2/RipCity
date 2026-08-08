@@ -35,6 +35,19 @@ Optional/current migrations:
 Before applying any migration to the current project, run the read-only audit
 queries in `sql/README.md` and compare the output to this repo.
 
+The repository currently contains a browser publishable key but no linked
+Supabase CLI project configuration. The publishable key is appropriate for app
+testing but cannot provide a complete, authoritative inventory of internal
+schema objects and policies. A full audit therefore requires read-only catalog
+queries run through the production Supabase SQL Editor or another explicitly
+approved authenticated database connection. The audit must not modify
+production.
+
+The audit should capture tables/columns, constraints, indexes, functions,
+triggers, views, enums, extensions, grants, RLS policies, storage buckets, and
+storage policies. Compare those results with both the SQL folder and all app
+queries before classifying or removing anything.
+
 Known current drift from the repo base schema:
 
 - The live project appears to already include profile UI fields such as
@@ -83,6 +96,17 @@ After any RLS or signup change:
    data bypass.
 7. Confirm parents have no app data access unless a secure parent policy is
    intentionally introduced.
+
+## Recovery Scope
+
+Repository-controlled SQL should be sufficient to create a clean application
+schema, RLS policies, database functions/triggers, required storage setup, and
+required seed configuration in a new Supabase project.
+
+Treat production recovery separately. SQL migrations do not themselves restore
+Supabase Auth identities, uploaded Storage objects, secrets, redirect URLs, or
+all project-level settings. Maintain and verify backup/recovery instructions for
+those resources before V2 production release.
 
 ## Manual App Smoke Test
 

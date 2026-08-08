@@ -60,18 +60,22 @@ Core direction:
 
 See `docs/VERSION_2_PLAN.md` for the detailed roadmap. Current build order:
 
-1. Create staging Supabase and release-safety workflow.
-2. Complete platform/multi-facility config audit.
-3. Complete codebase cleanup and maintainability pass.
-4. Finish beta feedback polish that affects daily use.
-5. Goals database migration and RLS updates.
-6. Coach member detail foundation.
-7. Member goals UI.
-8. Coach goals UI inside member detail.
-9. Leaderboard decisions and first coach-visible leaderboard.
-10. Progress tracking decisions and first progress UI.
-11. Coach notes inside member detail.
-12. Profile/community upgrades once privacy rules are clear.
+1. Document platform foundations: permissions, lifecycle, signup links, modules,
+   facility time zones, testing, accessibility, and notifications.
+2. Audit the live production schema read-only against every SQL file and app query.
+3. Create staging Supabase and a reproducible rebuild/release-safety workflow.
+4. Verify two-facility isolation using entirely fake staging data.
+5. Complete platform/multi-facility config and codebase cleanup audits.
+6. Finish beta feedback polish that affects daily use.
+7. Continue with goals, coach member detail, leaderboards, progress, notes, and
+   profile/community work in the order defined by `docs/VERSION_2_PLAN.md`.
+
+Current signup-link decision:
+
+- Preserve the V1 coach workflow that copies Athlete, H2K, or general signup links.
+- Links remain shareable, and every resulting signup still requires approval.
+- Do not assume the existing `facility_invites` table powers this UI; it does not
+  currently do so and must be resolved during the schema audit.
 
 ## V2 Cleanup Track
 
