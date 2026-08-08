@@ -367,13 +367,124 @@ Keep community controlled in V2:
 
 ---
 
+## 6. Staging And Release Safety
+
+Before larger V2 development, create a separate Supabase staging project so new
+schema changes, RLS policies, seeded data, and risky workflow changes can be
+tested without touching the live beta database.
+
+### Product Purpose
+
+The live V1 app is now being used by real coaches and members. V2 development
+should not risk breaking the production Supabase project or polluting it with
+test accounts, test workouts, or half-finished migrations.
+
+### Decisions
+
+- Create a second Supabase project for staging.
+- Keep production and staging as separate databases.
+- Keep production and staging auth users separate.
+- Keep production and staging storage buckets separate.
+- Use staging for V2 schema migrations before running anything on production.
+- Use staging for test members, test coaches, fake workouts, fake goals, and
+  destructive cleanup tests.
+- Keep production connected to the deployed V1 site until a V2 release is ready.
+- Do not run experimental SQL against production first.
+
+### Setup Direction
+
+- Create a Supabase staging project.
+- Run the current production schema migrations into staging.
+- Run seed data needed for Rip City, default groups, H2K habits, exercise
+  library, and test users.
+- Add staging URL and anon/publishable key to local development config.
+- Add staging redirect URLs for local testing and any staging Netlify deploy.
+- Keep production keys separate and clearly labeled.
+- Add a simple environment switch plan before V2 code depends on staging.
+
+### Recommended Naming
+
+- Production Supabase: `rip-city-production`
+- Staging Supabase: `rip-city-staging`
+- Production Netlify: public beta URL
+- Staging Netlify: private or unshared preview URL
+
+### Release Rule
+
+Every database change should go through this order:
+
+1. Create migration file in the repo.
+2. Run migration on staging.
+3. Test coach, H2K member, athlete, and pending-user flows on staging.
+4. Confirm RLS still blocks unauthorized access.
+5. Only then run the approved migration on production.
+
+---
+
+## 7. Beta Feedback Polish Queue
+
+These are items that came from the first live beta feedback or from testing on
+mobile. They should be cleaned up during V2, but they do not need to block the
+current beta as long as the core workflow still works.
+
+### H2K Habit Backfill
+
+Current V1 behavior lets members move backward or forward by day and edit missed
+habit logs. This solves the immediate problem, but the UI should be redesigned
+for V2.
+
+V2 direction:
+
+- Keep Today's Score and Weekly Score tied to the real current day/current week.
+- Let members edit a specific habit date without changing the dashboard stats.
+- Replace the temporary Back / Forward / Today controls with a cleaner picker.
+- Consider a compact mini-calendar, missed-day prompt, or "Log another day"
+  drawer.
+- Make the selected date obvious so members do not accidentally log the wrong
+  day.
+- Keep Monday through Sunday as the H2K training week.
+
+### Member Mobile Dashboard
+
+The member dashboard is usable on mobile, but V2 should make it feel more like a
+native app.
+
+V2 direction:
+
+- Keep the bottom mobile nav.
+- Consider splitting Dashboard, Training, Habits, History, and Profile into
+  clearer page-level views.
+- Reduce tall stacked cards where a compact row or summary will work better.
+- Keep the desktop dashboard layout separate where it already feels good.
+- Make the training calendar the main place to find today, past, and future
+  workouts.
+
+### Workout Session Mobile
+
+The workout session works on mobile, but V2 should keep improving the live
+training experience.
+
+V2 direction:
+
+- Keep the mobile bottom nav consistent with member dashboard/profile.
+- Keep set progress clear through the step circles instead of extra saved-set
+  sections.
+- Auto-mark sets complete when the required actual result is entered, while
+  still supporting completion-only exercises.
+- Keep Previous / Save Set / Save & Next stable and easy to reach.
+- Continue making target vs actual clearer on small screens.
+
+---
+
 ## Suggested V2 Build Order
 
-1. Goals database migration and RLS updates.
-2. Coach member detail foundation.
-3. Member goals UI.
-4. Coach goals UI inside member detail.
-5. Leaderboard decisions and first coach-visible leaderboard.
-6. Progress tracking decisions and first progress UI.
-7. Coach notes inside member detail.
-8. Profile/community upgrades once privacy rules are clear.
+1. Create the staging Supabase project and release-safety workflow.
+2. Finish the beta feedback polish queue that affects daily use.
+3. Goals database migration and RLS updates.
+4. Coach member detail foundation.
+5. Member goals UI.
+6. Coach goals UI inside member detail.
+7. Leaderboard decisions and first coach-visible leaderboard.
+8. Progress tracking decisions and first progress UI.
+9. Coach notes inside member detail.
+10. Profile/community upgrades once privacy rules are clear.
