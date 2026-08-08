@@ -193,28 +193,12 @@ async function loadAssignableGroupMemberships(memberProfileIds) {
   return data || [];
 }
 
-function getAudienceFilter() {
-  return getInputValue("workout-audience-filter") || "all";
-}
-
-function groupMatchesAudience(group, audience) {
-  return audience === "all" ||
-    group.member_type === "both" ||
-    group.member_type === audience;
-}
-
-function memberMatchesAudience(member, audience) {
-  return audience === "all" || member.memberType === audience;
-}
-
 function getFilteredGroups() {
-  const audience = getAudienceFilter();
-  return availableGroups.filter(group => groupMatchesAudience(group, audience));
+  return availableGroups;
 }
 
 function getFilteredMembers() {
-  const audience = getAudienceFilter();
-  return availableMembers.filter(member => memberMatchesAudience(member, audience));
+  return availableMembers;
 }
 
 function getMemberGroupNames(memberProfileId) {
@@ -229,34 +213,6 @@ function getMemberGroupNames(memberProfileId) {
     .map(group => group.name);
 }
 
-function updateAssignmentContext() {
-  const element = document.getElementById("assignment-context");
-  if (!element) return;
-
-  const targetType = getInputValue("workout-target-type") || "group";
-  const groups = getFilteredGroups();
-  const members = getFilteredMembers();
-  const audience = getAudienceFilter();
-
-  const audienceLabel = audience === "all"
-    ? "all approved members"
-    : audience === "h2k"
-      ? "H2K members"
-      : "athletes";
-
-  if (targetType === "facility") {
-    element.textContent = `Facility assignment will reach ${members.length} ${audienceLabel}.`;
-    return;
-  }
-
-  if (targetType === "member") {
-    element.textContent = `${members.length} ${audienceLabel} available for individual assignment.`;
-    return;
-  }
-
-  element.textContent = `${groups.length} compatible groups available for ${audienceLabel}.`;
-}
-
 function renderGroupOptions() {
   const groupList = document.getElementById("workout-group");
   const groups = getFilteredGroups();
@@ -264,7 +220,6 @@ function renderGroupOptions() {
 
   if (!groups.length) {
     groupList.innerHTML = `<div class="muted-small">No compatible groups found</div>`;
-    updateAssignmentContext();
     return;
   }
 
@@ -287,11 +242,6 @@ function renderGroupOptions() {
     `).join("")}
   `;
 
-  groupList.querySelectorAll("input[type='checkbox']").forEach(input => {
-    input.addEventListener("change", updateAssignmentContext);
-  });
-
-  updateAssignmentContext();
 }
 
 function renderMemberOptions() {
@@ -302,7 +252,6 @@ function renderMemberOptions() {
 
   if (!members.length) {
     select.innerHTML = `<option value="">No compatible approved members found</option>`;
-    updateAssignmentContext();
     return;
   }
 
@@ -320,7 +269,6 @@ function renderMemberOptions() {
     }).join("")}
   `;
 
-  updateAssignmentContext();
 }
 
 function showExerciseLibraryMessage(message, isError = false) {
@@ -853,7 +801,6 @@ function updateAssignmentControls() {
     }
   }
 
-  updateAssignmentContext();
 }
 
 function refreshAssignmentOptions() {
@@ -2351,7 +2298,6 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("recent-workout-search")?.addEventListener("input", renderRecentWorkouts);
   document.getElementById("recent-workout-date-filter")?.addEventListener("change", renderRecentWorkouts);
   document.getElementById("recent-workout-target-filter")?.addEventListener("change", renderRecentWorkouts);
-  document.getElementById("workout-audience-filter").addEventListener("change", refreshAssignmentOptions);
   document.getElementById("workout-target-type").addEventListener("change", updateAssignmentControls);
   document.getElementById("workout-form").addEventListener("submit", createWorkoutWithAssignment);
   document.getElementById("refresh-workouts-btn").addEventListener("click", loadRecentWorkouts);
