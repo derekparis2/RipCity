@@ -1,3 +1,4 @@
+-- ARCHIVED COMPONENT SOURCE: superseded by the verified initial migration.
 -- =====================================================
 -- Profile fields used by the current Rip City profile UI
 -- =====================================================

@@ -1,3 +1,4 @@
+-- ARCHIVED COMPONENT SOURCE: superseded by the verified initial migration.
 -- =====================================================
 -- H2K BAND COLOR V1
 -- =====================================================

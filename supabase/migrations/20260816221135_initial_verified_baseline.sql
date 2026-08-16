@@ -1,11 +1,11 @@
--- GENERATED FILE: do not edit directly.
--- Build with: bash scripts/build-staging-baseline.sh
--- Fresh empty staging projects only. Never run blindly on production.
+-- RIP CITY VERIFIED INITIAL BASELINE
+-- Verified in Rip City Staging on 2026-08-16.
+-- Fresh empty projects only. Never run blindly on production.
 
 begin;
 
 -- =====================================================
--- SOURCE: sql/supabase_schema.sql
+-- ARCHIVED SOURCE: sql/archive/applied/supabase_schema.sql
 -- =====================================================
 
 create extension if not exists "pgcrypto";
@@ -374,7 +374,7 @@ create index coach_notes_facility_date_idx on coach_notes(facility_id, note_date
 create index ai_summaries_facility_date_idx on ai_summaries(facility_id, summary_date);
 
 -- =====================================================
--- SOURCE: sql/profile_fields_v1.sql
+-- ARCHIVED SOURCE: sql/archive/applied/profile_fields_v1.sql
 -- =====================================================
 
 -- =====================================================
@@ -406,7 +406,7 @@ alter table public.member_profiles
 
 
 -- =====================================================
--- SOURCE: sql/profile_gender_v1.sql
+-- ARCHIVED SOURCE: sql/archive/applied/profile_gender_v1.sql
 -- =====================================================
 
 -- =====================================================
@@ -430,7 +430,7 @@ alter table public.member_profiles
 
 
 -- =====================================================
--- SOURCE: sql/profile_gender_v2_remove_nonbinary.sql
+-- ARCHIVED SOURCE: sql/archive/applied/profile_gender_v2_remove_nonbinary.sql
 -- =====================================================
 
 -- =====================================================
@@ -455,7 +455,7 @@ alter table public.member_profiles
 
 
 -- =====================================================
--- SOURCE: sql/rls_policies_v1.sql
+-- ARCHIVED SOURCE: sql/archive/applied/rls_policies_v1.sql
 -- =====================================================
 
 -- =====================================================
@@ -1939,7 +1939,7 @@ using (app_private.is_facility_coach(facility_id));
 
 
 -- =====================================================
--- SOURCE: sql/signup_group_selection_v1.sql
+-- ARCHIVED SOURCE: sql/archive/applied/signup_group_selection_v1.sql
 -- =====================================================
 
 -- =====================================================
@@ -2014,7 +2014,7 @@ with check (
 
 
 -- =====================================================
--- SOURCE: sql/username_login_v1.sql
+-- ARCHIVED SOURCE: sql/archive/applied/username_login_v1.sql
 -- =====================================================
 
 -- =====================================================
@@ -2045,7 +2045,7 @@ grant execute on function public.resolve_login_identifier(text) to anon, authent
 
 
 -- =====================================================
--- SOURCE: sql/h2k_band_color_v1.sql
+-- ARCHIVED SOURCE: sql/archive/applied/h2k_band_color_v1.sql
 -- =====================================================
 
 -- =====================================================
@@ -2128,7 +2128,7 @@ revoke all on function app_private.prevent_member_h2k_band_self_update() from pu
 
 
 -- =====================================================
--- SOURCE: sql/h2k_band_color_v2_levels.sql
+-- ARCHIVED SOURCE: sql/archive/applied/h2k_band_color_v2_levels.sql
 -- =====================================================
 
 -- =====================================================
@@ -2160,7 +2160,7 @@ alter table public.member_profiles
 
 
 -- =====================================================
--- SOURCE: sql/exercise_library_v1.sql
+-- ARCHIVED SOURCE: sql/archive/applied/exercise_library_v1.sql
 -- =====================================================
 
 -- =====================================================
@@ -2415,7 +2415,7 @@ using (
 
 
 -- =====================================================
--- SOURCE: sql/profile_picture_storage_v1.sql
+-- ARCHIVED SOURCE: sql/archive/applied/profile_picture_storage_v1.sql
 -- =====================================================
 
 -- =====================================================
@@ -2497,7 +2497,7 @@ using (
 
 
 -- =====================================================
--- SOURCE: sql/seed_rip_city.sql
+-- ARCHIVED SOURCE: sql/archive/applied/seed_rip_city.sql
 -- =====================================================
 
 -- Seed Rip City facility
@@ -2574,7 +2574,7 @@ where slug = 'rip-city'
 on conflict (facility_id, name) do nothing;
 
 -- =====================================================
--- SOURCE: sql/exercise_library_seed_rip_city_v1.sql
+-- ARCHIVED SOURCE: sql/archive/applied/exercise_library_seed_rip_city_v1.sql
 -- =====================================================
 
 -- =====================================================

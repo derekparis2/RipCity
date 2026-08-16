@@ -1,3 +1,4 @@
+-- ARCHIVED COMPONENT SOURCE: superseded by the verified initial migration.
 -- =====================================================
 -- RIP CITY PROFILE GENDER OPTIONS V2
 -- =====================================================

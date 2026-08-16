@@ -1,7 +1,7 @@
 -- =====================================================
 -- RIP CITY STAGING BASELINE VERIFICATION
 -- =====================================================
--- Read-only. Run after generated/staging_baseline.sql in Rip City Staging.
+-- Read-only. Run after the verified initial migration in Rip City Staging.
 
 with actual_counts as (
   select 'public tables' as check_name, 21::bigint as expected, count(*)::bigint as actual

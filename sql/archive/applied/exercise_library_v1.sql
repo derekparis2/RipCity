@@ -1,8 +1,4 @@
--- GENERATED STAGING REPAIR: do not run on production.
--- Normalizes exercise-library grants and policy names atomically.
-
-begin;
-
+-- ARCHIVED COMPONENT SOURCE: superseded by the verified initial migration.
 -- =====================================================
 -- EXERCISE LIBRARY V1
 -- =====================================================
@@ -252,5 +248,3 @@ using (
 -- Add performed_exercise_template_id and substitution_reason to set logs, or
 -- create a workout_exercise_substitutions table. Start with coach-approved
 -- substitution options, not unrestricted athlete swaps.
-
-commit;

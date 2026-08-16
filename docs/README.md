@@ -40,8 +40,8 @@ For the product roadmap, start with `docs/BUILD_PLAN.md`.
 - `docs/STAGING_DATABASE_SETUP.md` - exact empty-project baseline build, run,
   and verification instructions for Rip City Staging
 - `docs/old/` - historical notes that are no longer the current source of truth
-- `sql/supabase_schema.sql` - current intended database schema
-- `sql/README.md` - SQL file guide, migration order, and audit queries
+- `supabase/migrations/` - active, ordered database migrations
+- `sql/README.md` - SQL diagnostics/archive guide and safety rules
 - `js/supabaseClient.js` - Supabase browser client setup
 - `js/access-control.js` - shared auth and facility membership guard helpers
 - `js/workout-data.js` - shared workout assignment, date, and completion helpers

@@ -32,4 +32,5 @@ Use this as the quick orientation guide before editing.
 
 - `old/prototype/index.html` and `old/prototype/app.js` are the old localStorage prototype. Keep them for design/history reference only.
 - `docs/old/` contains old planning notes.
-- `sql/old/` contains old prototype SQL that should not be run against the live Supabase project.
+- `sql/archive/` contains applied components, proposals, one-time fixes, and
+  prototype SQL that should not be run against staging or production.

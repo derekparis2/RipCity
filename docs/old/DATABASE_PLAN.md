@@ -1,6 +1,6 @@
 # Historical Database Plan
 
-This document is an older planning note from before the Supabase schema was implemented. Keep it for background, but treat `sql/supabase_schema.sql` and `docs/BUILD_PLAN.md` as the current source of truth.
+This document is an older planning note from before the Supabase schema was implemented. Keep it for background, but treat `supabase/migrations/` and `docs/BUILD_PLAN.md` as the current source of truth.
 
 ## Main Goal
 

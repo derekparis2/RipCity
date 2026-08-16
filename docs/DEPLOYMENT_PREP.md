@@ -31,7 +31,8 @@ Before inviting testers:
 
 Confirm these migrations/features are present in the live project:
 
-- Base schema and Rip City seed data.
+- Approved migrations from `supabase/migrations/` and required Rip City
+  configuration.
 - Profile fields.
 - Username login support.
 - Signup group selection support.

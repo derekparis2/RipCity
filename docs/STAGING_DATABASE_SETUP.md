@@ -17,12 +17,12 @@ Status: the baseline and every verification check passed in Rip City Staging on
 2026-08-16. The project contains required configuration but no Auth users or
 member/workout activity data.
 
-Never run the generated baseline against production. Production reference
+Never run the initial baseline against production. Production reference
 `fdzmfohcuratbuitkwoy` is intentionally different.
 
 ## What The Baseline Contains
 
-The generated baseline combines the repository-controlled schema, current
+The verified baseline combines the repository-controlled schema, current
 profile fields, final gender constraint, RLS helpers and policies, signup group
 support, username login, final H2K band constraint and protection trigger,
 exercise library, profile-picture Storage setup, and required Rip City seeds.
@@ -37,17 +37,14 @@ It also fixes the known rebuild problems identified in the 2026-08-08 audit:
 - Default privileges leave future public tables closed until reviewed grants
   and RLS policies are added.
 
-## Build The One-Run SQL File
+## Canonical One-Run Migration
 
-From the repository root:
+The complete verified migration is:
 
-```bash
-bash scripts/build-staging-baseline.sh
-```
+`supabase/migrations/20260816221135_initial_verified_baseline.sql`
 
-This creates `sql/generated/staging_baseline.sql`. The generated file is wrapped
-in one transaction: if a statement fails, PostgreSQL rolls the entire baseline
-back instead of leaving a partially created application schema.
+It is wrapped in one transaction: if a statement fails, PostgreSQL rolls the
+entire baseline back instead of leaving a partially created application schema.
 
 The baseline is for a fresh project. It is not an upgrade migration and should
 not be rerun over an existing application schema.
@@ -57,7 +54,8 @@ not be rerun over an existing application schema.
 1. Open **Rip City Staging** in the Supabase dashboard.
 2. Confirm the project reference is `xjgmjliqqkhfnqphigbk`.
 3. Open **SQL Editor** and create a new query.
-4. Open `sql/generated/staging_baseline.sql` locally and copy all of it.
+4. Open `supabase/migrations/20260816221135_initial_verified_baseline.sql`
+   locally and copy all of it.
 5. Paste it into the staging query.
 6. Reconfirm the browser URL contains `xjgmjliqqkhfnqphigbk`.
 7. Click **Run** once.
@@ -87,9 +85,7 @@ After the baseline succeeds, run the read-only file:
 
 `sql/diagnostics/verify_staging_baseline.sql`
 
-Every row in the first result should say `PASS`. The anon-grant result should
-list only `facilities: SELECT` and `groups: SELECT`. The final policy-drift query
-should return zero rows.
+Every row in its single result table must say `PASS`.
 
 Do not proceed to fake users or V2 migrations if any verification check fails.
 

@@ -47,14 +47,15 @@ After the baseline passes verification:
 5. Add V2 changes through new ordered migrations rather than editing the
    already-verified baseline without review.
 
-`sql/platform_owner_role_v1.sql` is not part of the current-production
-baseline. It remains a proposed V2 migration until the platform-owner RLS and
-support-mode design is ready for staging tests.
+The archived `sql/archive/proposals/platform_owner_role_v1.sql` is not part of
+the current-production baseline. It remains a historical proposal until the
+platform-owner RLS and support-mode design is rebuilt as a new migration.
 
 ## Existing Live Database Audit
 
-Before applying any migration to the current project, run the read-only audit
-queries in `sql/README.md` and compare the output to this repo.
+Before applying any migration to the current project, use the relevant read-only
+files in `sql/diagnostics/` and compare the output with the active migration
+history and dated audit.
 
 The repository currently contains a browser publishable key but no linked
 Supabase CLI project configuration. The publishable key is appropriate for app
@@ -66,8 +67,8 @@ production.
 
 The audit should capture tables/columns, constraints, indexes, functions,
 triggers, views, enums, extensions, grants, RLS policies, storage buckets, and
-storage policies. Compare those results with both the SQL folder and all app
-queries before classifying or removing anything.
+storage policies. Compare those results with active migrations, archived source
+history, and all app queries before classifying or removing anything.
 
 The 2026-08-08 live audit verified that production includes the profile fields,
 both exercise-library tables,

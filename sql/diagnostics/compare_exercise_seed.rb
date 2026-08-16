@@ -5,7 +5,7 @@ require "csv"
 production_export_path, seed_sql_path = ARGV
 
 unless production_export_path && seed_sql_path
-  warn "Usage: ruby scripts/audit-exercise-seed.rb PRODUCTION_EXPORT SEED_SQL"
+  warn "Usage: ruby sql/diagnostics/compare_exercise_seed.rb PRODUCTION_EXPORT SEED_SQL"
   exit 1
 end
 

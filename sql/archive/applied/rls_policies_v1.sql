@@ -1,3 +1,4 @@
+-- ARCHIVED COMPONENT SOURCE: superseded by the verified initial migration.
 -- =====================================================
 -- RIP CITY RLS POLICIES V1
 -- =====================================================

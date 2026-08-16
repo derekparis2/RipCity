@@ -19,7 +19,9 @@ The main risk is reproducibility and recovery, not a currently broken app:
 
 - Supabase shows no recorded migration history.
 - The Free plan currently provides no scheduled dashboard backups or point-in-time recovery.
-- The repository's base schema is not sufficient by itself to recreate production.
+- At audit time, the repository's base schema was not sufficient by itself to
+  recreate production. This was resolved by the verified initial staging
+  migration on 2026-08-16.
 - Several SQL files labeled as proposals have already been applied.
 - Two exercise-library tables inherited broader database grants than intended.
 - Three live exercise-substitution policy names appeared to differ from their
@@ -130,7 +132,7 @@ existing Derek/admin setup, not an orphaned record.
 ### Exercise Template Source Comparison - 2026-08-16
 
 A read-only production export was compared by name and editable seed field with
-`sql/exercise_library_seed_rip_city_v1.sql`:
+`sql/archive/applied/exercise_library_seed_rip_city_v1.sql`:
 
 - All 87 repository starter exercises are present in production.
 - Six additional templates have `created_by` populated, confirming that they
@@ -176,40 +178,40 @@ Verified Storage configuration:
 
 ### Applied / Active References
 
-- `sql/supabase_schema.sql`
+- `sql/archive/applied/supabase_schema.sql`
   - The original base for all 19 original public tables.
   - It is incomplete as a production rebuild because later columns, tables,
     functions, policies, Storage, and indexes live in separate files.
-- `sql/seed_rip_city.sql`
+- `sql/archive/applied/seed_rip_city.sql`
   - Rip City, five groups, and six habits match production.
-- `sql/rls_policies_v1.sql`
+- `sql/archive/applied/rls_policies_v1.sql`
   - The main policy set is live despite the file header calling it proposed.
-- `sql/signup_group_selection_v1.sql`
+- `sql/archive/applied/signup_group_selection_v1.sql`
   - Its public/pending group policies are live.
-- `sql/profile_picture_storage_v1.sql`
+- `sql/archive/applied/profile_picture_storage_v1.sql`
   - The bucket and four policies are live.
-- `sql/username_login_v1.sql`
+- `sql/archive/applied/username_login_v1.sql`
   - The function and `profiles_username_lower_unique` index are live.
-- `sql/exercise_library_v1.sql`
+- `sql/archive/applied/exercise_library_v1.sql`
   - Both tables, their columns, indexes, and policies are live.
   - The live policy names and database grants need cleanup in staging.
-- `sql/exercise_library_seed_rip_city_v1.sql`
+- `sql/archive/applied/exercise_library_seed_rip_city_v1.sql`
   - All 87 repository starter exercises are live.
   - Production contains six additional exercise templates that need separate
     export/classification as production data.
-- `sql/h2k_band_color_v1.sql`
+- `sql/archive/applied/h2k_band_color_v1.sql`
   - The column, function, trigger, and constraint are live.
-- `sql/h2k_band_color_v2_levels.sql`
+- `sql/archive/applied/h2k_band_color_v2_levels.sql`
   - The final band constraint is live; this follow-up is mostly historical/redundant.
-- `sql/profile_gender_v1.sql`
+- `sql/archive/applied/profile_gender_v1.sql`
   - Applied historical migration.
-- `sql/profile_gender_v2_remove_nonbinary.sql`
+- `sql/archive/applied/profile_gender_v2_remove_nonbinary.sql`
   - Applied historical/data-cleanup follow-up; the final constraint allows
     `female`, `male`, `other`, or null.
 
 ### Partially Represented Live State
 
-- `sql/profile_fields_v1.sql`
+- `sql/archive/applied/profile_fields_v1.sql`
   - Its profile/member columns are live.
   - Its `profiles_username_unique_idx` index is not live.
   - Production instead has the similar `profiles_username_lower_unique` index
@@ -218,14 +220,14 @@ Verified Storage configuration:
 
 ### Not Applied
 
-- `sql/platform_owner_role_v1.sql`
+- `sql/archive/proposals/platform_owner_role_v1.sql`
   - Production still restricts `profiles.global_role` to `member`, `coach`, or `admin`.
   - No production profile currently has `platform_owner`.
   - Apply only after V2 role/RLS design is tested in staging.
 
 ### Historical Only
 
-- `sql/old/starter_schema_v1.sql`
+- `sql/archive/experiments/starter_schema_v1.sql`
   - Old prototype schema. Never run against production or a new V2 database.
 
 ## Security And Migration Drift

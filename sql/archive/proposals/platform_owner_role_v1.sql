@@ -1,3 +1,4 @@
+-- ARCHIVED PROPOSAL: replace with a new ordered migration after V2 review.
 -- =====================================================
 -- PLATFORM OWNER ROLE PROPOSAL
 -- =====================================================
@@ -27,4 +28,3 @@ alter table public.profiles
 -- Do not grant platform_owner to facility coaches/admins. Facility-level roles
 -- should continue to live in facility_members.role and remain scoped by
 -- facility_members.facility_id.
-

@@ -38,7 +38,8 @@ For database/RLS work, also inspect:
 
 - `docs/SUPABASE_SETUP.md`
 - `docs/PRODUCT_DECISIONS.md`
-- `sql/`
+- `supabase/migrations/`
+- `sql/README.md` and `sql/diagnostics/`
 
 ## Big Product Direction
 
@@ -81,13 +82,12 @@ Production Supabase audit status:
 
 - A read-only live audit was completed on 2026-08-08 and is recorded in
   `docs/SUPABASE_AUDIT_2026-08-08.md`.
-- All 21 public tables are represented in repository SQL, but the repo does not
-  yet provide a verified clean rebuild.
+- The verified initial migration recreated all 21 public tables and passed the
+  full staging verification suite on 2026-08-16.
 - Production has no recorded Supabase migrations and the Free plan provides no
   scheduled dashboard backups.
-- The staging baseline candidate narrows exercise-library grants and replaces
-  overlong policy identifiers with short canonical names. Do not apply those
-  corrections to production until staging verification passes.
+- Staging now has narrower exercise-library grants and short canonical policy
+  names. Production remains unchanged until a separate release is approved.
 
 ## V2 Cleanup Track
 
@@ -95,8 +95,9 @@ Derek wants a cleanup pass before the app grows too much.
 
 Important cleanup goals:
 
-- Audit `sql/` and label active migrations vs old/experimental files.
-- Add a SQL README explaining what should and should not be run.
+- SQL organization completed 2026-08-16: active migrations now live under
+  `supabase/migrations/`; diagnostics and clearly labeled archives live under
+  `sql/`.
 - Clean up `docs/` and move old notes into `docs/old/` where appropriate.
 - Add helpful comments around complicated Supabase, RLS, assignment, habit scoring, workout logging, and aggregation logic.
 - Reduce repeated code where it is safe.

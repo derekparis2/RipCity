@@ -735,6 +735,10 @@ The live beta was built quickly, and that was the right move. V2 should make the
 
 ### SQL Folder Cleanup
 
+Status: completed 2026-08-16 for the audited V1 baseline. Active ordered
+migrations now live in `supabase/migrations/`; read-only diagnostics and labeled
+historical archives remain under `sql/`. Continue this structure for V2.
+
 - Audit every file in `sql/`.
 - Identify which SQL files are active migrations, seed files, old experiments, or one-time troubleshooting scripts.
 - Keep production/staging migrations clearly named and ordered.

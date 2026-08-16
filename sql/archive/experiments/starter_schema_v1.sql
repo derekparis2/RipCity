@@ -1,3 +1,4 @@
+-- ARCHIVED EXPERIMENT: never run against current staging or production.
 create extension if not exists "pgcrypto";
 
 create table users (

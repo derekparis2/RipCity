@@ -1,3 +1,4 @@
+-- ARCHIVED COMPONENT SOURCE: superseded by the verified initial migration.
 -- Seed Rip City facility
 insert into facilities (name, slug, primary_color, secondary_color)
 values ('Rip City', 'rip-city', '#ffffff', '#000000')

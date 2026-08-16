@@ -27,7 +27,8 @@ features getting in the way.
 
 ## Beta Setup Steps
 
-1. Run any pending SQL migrations listed in `sql/README.md`.
+1. Apply only approved, staging-tested migrations from `supabase/migrations/`
+   using the database release checklist.
 2. Confirm Row Level Security is enabled for all app tables.
 3. Confirm the `profile-pictures` storage bucket exists and has its policies.
 4. Create or confirm one coach/admin account.
