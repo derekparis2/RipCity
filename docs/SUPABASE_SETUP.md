@@ -11,6 +11,22 @@ it manually in Supabase SQL Editor, and test with real member and coach accounts
 The frontend must use the publishable anon key only. Never place the service
 role key in browser JavaScript.
 
+## Environment Projects
+
+| Environment | Project | Reference | Branch/data rule |
+| --- | --- | --- | --- |
+| Production | RipCity Project | `fdzmfohcuratbuitkwoy` | `main`; live Rip City data |
+| Staging | Rip City Staging | `xjgmjliqqkhfnqphigbk` | `v2-development`; fake data only |
+
+`js/supabaseClient.js` on `v2-development` intentionally points to staging.
+The deployed production app remains on `main` and must continue pointing to the
+production project. Before any future V2 production release, verify the target
+project as an explicit release-checklist item.
+
+Staging was created on 2026-08-16 with automatic RLS enabled. It started as an
+empty project and has not received production data. Do not store a database
+password, secret key, or `service_role` key in this repository.
+
 ## Fresh Database Setup
 
 For a new Supabase project:

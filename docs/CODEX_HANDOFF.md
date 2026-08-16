@@ -107,6 +107,15 @@ Important cleanup goals:
 
 V2 should create a second Supabase project before risky schema/product changes.
 
+Current status:
+
+- The staging project was created on 2026-08-16 as **Rip City Staging**.
+- Staging project reference: `xjgmjliqqkhfnqphigbk`.
+- Automatic RLS is enabled.
+- `v2-development` points to staging through `js/supabaseClient.js`.
+- The staging database is currently empty; build it only from reviewed,
+  repository-controlled migrations and entirely fake seed data.
+
 Goal:
 
 - Production Supabase remains connected to the live V1 beta.
