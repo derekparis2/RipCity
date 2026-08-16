@@ -94,6 +94,70 @@ Module config:
 - Make H2K habits optional and member-type-aware.
 - Avoid showing modules to members whose facility or member type does not use them.
 
+### Universal And Facility Exercise Library
+
+The exercise builder should present one combined exercise library. Coaches
+should not have to understand or navigate separate "universal" and "facility"
+lists.
+
+Decisions:
+
+- Derek/platform owner manages the universal exercise catalog.
+- Every facility can view and use universal exercises.
+- Coaches can add exercises that belong only to their facility; other
+  facilities must never see them.
+- When a coach edits a universal exercise, the app automatically creates or
+  updates a facility-specific override. The universal row remains unchanged,
+  and that facility sees only its customized version in the combined list.
+- When a coach deletes a universal exercise, the app hides it only for that
+  facility. It must not delete or modify the universal exercise for anyone
+  else.
+- Universal updates flow through to facilities that have not overridden or
+  hidden that exercise. Existing facility overrides remain unchanged.
+- A future "Reset to universal" action may remove the facility override/hide
+  record and restore the current universal version.
+- Existing workouts and logged history must remain stable when a catalog entry
+  is overridden, hidden, archived, or updated.
+
+Recommended data direction:
+
+- Continue using one `exercise_templates` system so workouts can reference
+  universal and facility exercises consistently.
+- Universal templates have no facility owner and can be changed only through a
+  trusted platform-owner workflow.
+- Facility-created templates have a facility owner and no universal source.
+- Facility overrides reference their universal source. An active override
+  supplies the facility version; an inactive override acts as a facility-only
+  hide record.
+- Enforce at most one override per facility/universal-template pair.
+- Build a facility-scoped merged catalog query that returns facility-created
+  exercises, active facility overrides, and only the universal exercises that
+  have not been overridden or hidden.
+- Perform edit-to-override and delete-to-hide operations transactionally so a
+  failed copy cannot leave the catalog in an ambiguous state.
+- RLS must allow facilities to read universal rows plus their own facility
+  rows, while preventing facility coaches from changing universal rows or any
+  other facility's rows.
+
+Current-data transition direction:
+
+- The 87 repository starter exercises are candidates for the universal catalog.
+- The six verified coach-created production exercises remain Rip City-specific.
+- Rip City's edited `Push-Up` and `Tempo Push-Up` values become facility
+  overrides if those production changes are confirmed as intentional.
+- Test the transition entirely in staging before preparing a production
+  migration.
+
+Done criteria:
+
+- Coaches see one exercise list without separate universal/facility sections.
+- Adding an exercise affects only the coach's facility.
+- Editing a universal exercise changes only that facility's visible version.
+- Deleting a universal exercise hides it only for that facility.
+- A second facility continues seeing the original universal exercise.
+- Cross-facility RLS tests prove that facility-created exercises and overrides
+  never leak.
+
 Branding/UI:
 
 - Replace hardcoded Rip City labels where they should be facility labels.

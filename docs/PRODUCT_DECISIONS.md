@@ -78,3 +78,16 @@ they are intentionally revisited.
 - Other facilities should not be assumed to use H2K.
 - H2K habits should remain optional program-specific functionality inside the
   shared member dashboard.
+
+## Exercise Library Inheritance
+
+- Coaches see one combined exercise library, not separate universal and
+  facility lists.
+- Derek/platform owner manages universal exercises.
+- Coaches may create exercises visible only to their own facility.
+- Editing a universal exercise automatically creates a facility override and
+  leaves the universal exercise unchanged for other facilities.
+- Deleting a universal exercise hides it only for that facility.
+- Facilities without an override continue receiving universal updates.
+- Exercise overrides, hiding, and catalog updates must not alter historical
+  workouts or logged results.
