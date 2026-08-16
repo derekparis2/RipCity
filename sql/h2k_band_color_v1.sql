@@ -70,3 +70,8 @@ before insert or update of h2k_band_color
 on public.member_profiles
 for each row
 execute function app_private.prevent_member_h2k_band_self_update();
+
+-- Trigger execution does not require callers to invoke this SECURITY DEFINER
+-- function directly. Remove the default PUBLIC execute privilege instead of
+-- relying only on the private-schema boundary.
+revoke all on function app_private.prevent_member_h2k_band_self_update() from public, anon, authenticated;

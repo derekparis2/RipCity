@@ -600,8 +600,9 @@ coach, athlete, H2K, pending, inactive, and cross-facility coach scenarios.
 
 ### Setup Direction
 
-- Create a Supabase staging project.
-- Run the current production schema migrations into staging.
+- Create a Supabase staging project. Completed 2026-08-16.
+- Rebuild the audited current-production structure in staging from the
+  repository-controlled baseline. Completed and fully verified 2026-08-16.
 - Run seed data needed for Rip City, default groups, H2K habits, exercise
   library, and test users.
 - Add staging URL and anon/publishable key to local development config.

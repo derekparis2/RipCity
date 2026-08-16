@@ -21,6 +21,6 @@ alter table public.member_profiles
   add column if not exists training_focus text,
   add column if not exists favorite_lift text;
 
-create unique index if not exists profiles_username_unique_idx
-  on public.profiles (lower(username))
-  where username is not null and length(trim(username)) > 0;
+-- The canonical case-insensitive username index is created by
+-- username_login_v1.sql. Keeping it there avoids two equivalent indexes in a
+-- fresh database rebuild.

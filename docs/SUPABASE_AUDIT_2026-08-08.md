@@ -22,7 +22,9 @@ The main risk is reproducibility and recovery, not a currently broken app:
 - The repository's base schema is not sufficient by itself to recreate production.
 - Several SQL files labeled as proposals have already been applied.
 - Two exercise-library tables inherited broader database grants than intended.
-- Three live exercise-substitution policy names differ from their repository names.
+- Three live exercise-substitution policy names appeared to differ from their
+  repository names; staging later confirmed PostgreSQL's 63-byte identifier
+  truncation was the cause.
 - Some live RLS policies must change before V2 goals and private coach notes are used.
 
 Do not make cleanup changes directly in production. Correct and verify them in a
@@ -115,7 +117,8 @@ existing Derek/admin setup, not an orphaned record.
 - 4 workouts
 - 4 workout assignments
 - 6 exercise set-log rows
-- 93 exercise templates
+- 93 exercise templates total: 87 from the repository starter seed and six
+  additional production records not represented by that seed
 - 0 exercise substitutions
 - 0 goals
 - 0 progress entries
@@ -123,6 +126,30 @@ existing Derek/admin setup, not an orphaned record.
 - 0 parent links
 - 0 AI summaries
 - 0 facility invite-code rows
+
+### Exercise Template Source Comparison - 2026-08-16
+
+A read-only production export was compared by name and editable seed field with
+`sql/exercise_library_seed_rip_city_v1.sql`:
+
+- All 87 repository starter exercises are present in production.
+- Six additional templates have `created_by` populated, confirming that they
+  were created through a coach/admin workflow rather than by the starter seed:
+  - `10-20-30 Shuttle Intervals`
+  - `Abductor Activation`
+  - `DB Suitcase Carry`
+  - `GOATA Ankle Series`
+  - `Half Hollow Hold`
+  - `Push Up to Sprint`
+- Two starter templates were edited in production after seeding:
+  - `Push-Up`: `input_type` changed from `completion` to `weight_reps`.
+  - `Tempo Push-Up`: `input_type` changed from `completion` to `weight_reps`.
+- No repository starter exercise is missing from production.
+
+The six coach-created rows and the two coach-edited values are mutable facility
+data, not missing baseline schema. Preserve them through production-data backup
+and recovery. Do not silently turn mutable coach content into universal starter
+defaults without a separate product decision.
 
 ## Authentication And Storage
 
@@ -167,7 +194,9 @@ Verified Storage configuration:
   - Both tables, their columns, indexes, and policies are live.
   - The live policy names and database grants need cleanup in staging.
 - `sql/exercise_library_seed_rip_city_v1.sql`
-  - All 93 starter exercises are live.
+  - All 87 repository starter exercises are live.
+  - Production contains six additional exercise templates that need separate
+    export/classification as production data.
 - `sql/h2k_band_color_v1.sql`
   - The column, function, trigger, and constraint are live.
 - `sql/h2k_band_color_v2_levels.sql`
@@ -228,8 +257,10 @@ The live insert, update, and delete policy names end with singular
 ending with plural `facility substitutions`.
 
 The policy expressions themselves match the intended facility-scoped behavior.
-The name mismatch matters because rerunning the repository file may fail to drop
-the live policies and then create additional policies under new names.
+Staging reconstruction on 2026-08-16 established that PostgreSQL's 63-byte
+identifier limit silently truncates the longer plural names. This was not
+independent policy-expression drift. The baseline now uses shorter canonical
+names so stored policy identifiers remain explicit and predictable.
 
 `exercise_substitutions` is a future, currently empty table that maps one
 facility exercise template to an approved alternative template. V1 does not use
@@ -286,11 +317,13 @@ administrative controls.
 3. Reorganize SQL into migrations, seeds, diagnostics, and archive.
 4. Build one verified staging baseline that recreates this audited live structure.
 5. Remove redundant username-index creation from the fresh setup.
-6. Correct exercise grants and policy-name drift in staging.
+6. Correct exercise grants and normalize the truncated policy names in staging.
 7. Seed two fake facilities and all required fake roles/statuses.
 8. Run cross-facility and RLS regression tests.
 9. Write and test a manual production-data backup procedure.
-10. Revisit paid managed backups with Rip City when budget and risk justify it.
+10. Include the six non-seed production exercise templates in that export and
+    determine whether they should become maintained seed/configuration data.
+11. Revisit paid managed backups with Rip City when budget and risk justify it.
 
 Do not run cleanup migrations on production until staging passes the full
 regression and release checklist.

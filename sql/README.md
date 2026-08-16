@@ -9,6 +9,23 @@ The live production comparison is recorded in
 `docs/SUPABASE_AUDIT_2026-08-08.md`. That audit is the current evidence for the
 classifications below.
 
+## Verified Staging Baseline
+
+For the new empty **Rip City Staging** project, do not manually guess an order
+from the classifications below. Follow `docs/STAGING_DATABASE_SETUP.md` and
+build the one-run candidate with:
+
+```bash
+bash scripts/build-staging-baseline.sh
+```
+
+The generated `sql/generated/staging_baseline.sql` is intended only for a new,
+empty staging project. It passed
+`sql/diagnostics/verify_staging_baseline.sql` in **Rip City Staging** on
+2026-08-16 and is now the verified fresh-project baseline. Future schema work
+should be added as ordered migrations and tested against staging rather than
+silently changing the verified baseline.
+
 ## Current Base Files
 
 - `supabase_schema.sql` - current base schema reference for a clean Rip City
@@ -23,8 +40,12 @@ classifications below.
 - `profile_picture_storage_v1.sql` - live profile-picture bucket and policies.
 - `username_login_v1.sql` - live username index and login resolver function.
 - `exercise_library_v1.sql` - live exercise-template/substitution schema and
-  policies. Do not rerun until grant and policy-name drift is corrected.
-- `exercise_library_seed_rip_city_v1.sql` - live 93-exercise Rip City seed.
+  policies. The staging candidate adds explicit grants and shorter policy names;
+  do not apply that cleanup to production until staging verification passes.
+- `exercise_library_seed_rip_city_v1.sql` - 87 repository-controlled Rip City
+  starter exercises are live. Production has six additional exercise templates
+  that are not represented by this seed and must be captured through the
+  production-data backup/audit process.
 - `h2k_band_color_v1.sql` - live H2K band column, trigger, and function.
 - `h2k_band_color_v2_levels.sql` - applied historical H2K constraint follow-up.
 - `profile_gender_v1.sql` - applied historical gender-field migration.
@@ -55,9 +76,10 @@ baseline has reproduced the audited production structure.
 - `exercise_templates` and `exercise_substitutions` inherited overly broad
   `anon` and `authenticated` table privileges. RLS blocks anonymous rows, but
   explicit grant cleanup is still required.
-- Three live `exercise_substitutions` policy names use singular `substitution`;
-  the repository uses plural `substitutions`. Rerunning the file may create
-  duplicate policies.
+- Three live `exercise_substitutions` policy names appear to end with singular
+  `substitution` because PostgreSQL silently truncated identifiers longer than
+  63 bytes. The staging candidate replaces all four substitution policies with
+  shorter canonical names.
 - The H2K trigger function inherited default public execute privilege, although
   `anon` has no usage on the `app_private` schema.
 - Production has no recorded Supabase migration history.

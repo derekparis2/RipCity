@@ -27,24 +27,29 @@ Staging was created on 2026-08-16 with automatic RLS enabled. It started as an
 empty project and has not received production data. Do not store a database
 password, secret key, or `service_role` key in this repository.
 
+The repository-generated staging baseline and its read-only verification suite
+both passed on 2026-08-16. Staging contains required Rip City configuration but
+no production users or activity data.
+
 ## Fresh Database Setup
 
-For a new Supabase project:
+For the empty staging project, follow `docs/STAGING_DATABASE_SETUP.md`. That
+runbook generates one transaction from the reviewed source files and provides
+read-only verification queries. Do not substitute the historical file order in
+`sql/README.md`.
 
-1. Create the Supabase project.
-2. In SQL Editor, run `sql/supabase_schema.sql`.
-3. Run `sql/seed_rip_city.sql`.
-4. Run `sql/profile_fields_v1.sql`.
-5. Create the first coach/admin auth user in Supabase Auth.
-6. Connect that auth user to `profiles` and `facility_members`.
-7. Confirm login, signup, coach approval, member dashboard, and workout logging.
+After the baseline passes verification:
 
-Optional/current migrations:
+1. Configure staging Auth URLs and email/password behavior.
+2. Create fake Auth users only.
+3. Connect those users to fake application profiles and memberships.
+4. Test signup, approval, member dashboards, and workout logging.
+5. Add V2 changes through new ordered migrations rather than editing the
+   already-verified baseline without review.
 
-- `sql/platform_owner_role_v1.sql` when platform-owner tooling is ready.
-- `sql/exercise_library_v1.sql` when saved exercise templates should be live.
-- `sql/rls_policies_v1.sql` has been applied to the live project and should be
-  kept as the current RLS source of truth.
+`sql/platform_owner_role_v1.sql` is not part of the current-production
+baseline. It remains a proposed V2 migration until the platform-owner RLS and
+support-mode design is ready for staging tests.
 
 ## Existing Live Database Audit
 

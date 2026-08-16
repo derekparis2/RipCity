@@ -85,8 +85,9 @@ Production Supabase audit status:
   yet provide a verified clean rebuild.
 - Production has no recorded Supabase migrations and the Free plan provides no
   scheduled dashboard backups.
-- Do not rerun exercise-library SQL until its broad grants and policy-name drift
-  are corrected and tested in staging.
+- The staging baseline candidate narrows exercise-library grants and replaces
+  overlong policy identifiers with short canonical names. Do not apply those
+  corrections to production until staging verification passes.
 
 ## V2 Cleanup Track
 
@@ -113,8 +114,12 @@ Current status:
 - Staging project reference: `xjgmjliqqkhfnqphigbk`.
 - Automatic RLS is enabled.
 - `v2-development` points to staging through `js/supabaseClient.js`.
-- The staging database is currently empty; build it only from reviewed,
-  repository-controlled migrations and entirely fake seed data.
+- The repository-generated baseline was installed and fully verified on
+  2026-08-16: 21 public tables, 194 columns, 55 indexes, 93 public-table RLS
+  policies, 18 private helpers, required Storage setup, and all expected grants
+  and Rip City starter configuration passed.
+- Staging currently has no Auth users or member/workout activity. Add only fake
+  people and activity data.
 
 Goal:
 
