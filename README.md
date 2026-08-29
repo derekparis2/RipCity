@@ -30,46 +30,38 @@ For the product roadmap, start with `docs/BUILD_PLAN.md`.
 
 ## Important Files
 
+- `CONTRIBUTING.md` - shared Derek/Sam branch, review, testing, and database workflow
 - `docs/BUILD_PLAN.md` - product direction and phases
 - `docs/BETA_TEST_CHECKLIST.md` - walkthrough checklist for early testers
-- `docs/BETA_LAUNCH_PLAN.md` - readiness checklist before inviting testers
+- `docs/archive/v1/BETA_LAUNCH_PLAN.md` - historical V1 beta launch checklist
 - `docs/DEPLOYMENT_PREP.md` - live URL, Supabase Auth, storage, and final deploy checks
 - `docs/PRODUCT_DECISIONS.md` - current product rules and tenant decisions
+- `docs/PERMISSIONS_MATRIX.md` - V2 role, status, module, and RLS access contract
 - `docs/SUPABASE_AUDIT_2026-08-08.md` - read-only production schema/SQL audit,
   verified drift, recovery risks, and staging recommendations
 - `docs/STAGING_DATABASE_SETUP.md` - exact empty-project baseline build, run,
   and verification instructions for Rip City Staging
-- `docs/old/` - historical notes that are no longer the current source of truth
+- `docs/STAGING_TEST_ACCOUNTS.md` - fake staging identities and role scenarios
 - `supabase/migrations/` - active, ordered database migrations
 - `sql/README.md` - SQL diagnostics/archive guide and safety rules
-- `js/supabaseClient.js` - Supabase browser client setup
-- `js/access-control.js` - shared auth and facility membership guard helpers
-- `js/workout-data.js` - shared workout assignment, date, and completion helpers
-- `js/ui-utils.js` - shared escaping and display helpers
-- `js/auth.js` - signup, login, and pending-page auth actions
-- `js/coach-approvals.js` - coach/admin approval workflow
-- `js/coach-roster.js` - coach roster, filters, group creation, and group membership management
-- `js/coach-dashboard.js` - coach H2K score and workout completion overview
-- `js/coach-workouts.js` - coach workout builder and assignment flow
-- `js/member-dashboard.js` - member dashboard, habits, today’s workout, and history
-- `js/workout-session-core.js` - workout session state, helpers, auth, and loaders
-- `js/workout-session-render.js` - workout session block/round/set rendering
-- `js/workout-session.js` - workout session save actions and page init
+- `js/shared/` - Supabase client, access control, UI, and workout-data helpers
+- `js/auth/` - signup, login, pending, and password actions
+- `js/coach/` - coach approval, dashboard, roster, and workout-builder behavior
+- `js/member/` - member dashboard, profile, and workout-session behavior
 - `css/styles.css` - shared visual system and page styles
-- `old/prototype/` - archived localStorage prototype kept only for design/history reference
 
 ## Running Locally
 
 This is a static frontend. From the repo root:
 
 ```bash
-python3 -m http.server 8000
+python3 -m http.server 3000
 ```
 
 Then open:
 
 ```text
-http://localhost:8000/login.html
+http://localhost:3000/login.html
 ```
 
 Use approved Supabase test accounts for end-to-end checks.

@@ -14,8 +14,9 @@ Target project:
 - Data rule: fake data only
 
 Status: the baseline and every verification check passed in Rip City Staging on
-2026-08-16. The project contains required configuration but no Auth users or
-member/workout activity data.
+2026-08-16. Staging Auth was configured on 2026-08-28. The project contains
+required configuration, nine fake test identities, and no workout/activity
+data.
 
 Never run the initial baseline against production. Production reference
 `fdzmfohcuratbuitkwoy` is intentionally different.
@@ -97,15 +98,56 @@ copying production secrets or real accounts:
 - Email/password sign-in enabled.
 - Email confirmation disabled for the current signup/approval workflow.
 - Anonymous sign-in disabled.
-- Site URL set to the local or staging site, never the production beta URL.
-- Local redirect URL added for the selected development port.
+- Site URL set to `http://localhost:3000` until a staging site exists, never the
+  production beta URL.
+- Exact local password-reset redirects added:
+  - `http://localhost:3000/set-password.html`
+  - `http://127.0.0.1:3000/set-password.html`
+
+Status: completed 2026-08-28. New-user email signups are enabled; email
+confirmation, anonymous sign-ins, and manual linking are disabled.
 
 Storage objects and Auth users must be created separately; SQL schema files do
 not restore them.
 
 ## Next Milestone
 
-After schema verification, create entirely fake Auth users and application rows
-for two facilities, all active roles, pending/inactive statuses, and a coach
-with memberships in both facilities. Then run the cross-facility RLS matrix
-before starting V2 feature migrations.
+After schema and Auth verification, run the staging-only seed:
+
+`supabase/seeds/staging/v2/01_two_facility_foundation.sql`
+
+Run it before creating fake Auth users. Its fail-closed guard requires the
+verified empty staging shape and rejects any database with existing Auth users
+or application profiles.
+
+Status: completed and verified in Rip City Staging on 2026-08-28. The result is:
+
+- Rip City: five groups and six habits.
+- Test Facility Alpha: two athlete groups and zero habits.
+- Total Auth users and application profiles remain zero.
+
+After the seed passes, create entirely fake Auth users and application rows for
+all active roles, pending/inactive statuses, and a coach with memberships in
+both facilities. Then run the cross-facility RLS matrix before starting V2
+feature migrations.
+
+Use the maintained fake identities and intended role/status mapping in
+`docs/STAGING_TEST_ACCOUNTS.md`. Store their shared password privately; never
+add it to the repository.
+
+After all nine fake Auth identities exist and are auto-confirmed, run:
+
+`supabase/seeds/staging/v2/02_test_account_profiles.sql`
+
+The fixture requires exactly those nine Auth users and an otherwise empty set
+of application profiles/memberships. It looks up Auth UUIDs by fake email and
+stores no password.
+
+Status: completed and verified in Rip City Staging on 2026-08-28. The result is
+nine profiles and ten memberships. `rccoach@example.com` has approved coach
+memberships in both facilities; pending and inactive test memberships retain
+their intended statuses.
+
+The manual role smoke tests and the repeatable read-only RLS suite were then
+completed. All 45 automated read checks passed, including cross-facility scope,
+member self-only records, and pending/inactive protected-data denial.

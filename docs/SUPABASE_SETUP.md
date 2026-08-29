@@ -1,6 +1,6 @@
 # Supabase Setup And Audit Guide
 
-Rip City is already connected to Supabase through `js/supabaseClient.js`. This
+Rip City is already connected to Supabase through `js/shared/supabaseClient.js`. This
 guide is for rebuilding, auditing, or safely applying proposed database changes.
 
 ## Current Rule
@@ -18,7 +18,7 @@ role key in browser JavaScript.
 | Production | RipCity Project | `fdzmfohcuratbuitkwoy` | `main`; live Rip City data |
 | Staging | Rip City Staging | `xjgmjliqqkhfnqphigbk` | `v2-development`; fake data only |
 
-`js/supabaseClient.js` on `v2-development` intentionally points to staging.
+`js/shared/supabaseClient.js` on `v2-development` intentionally points to staging.
 The deployed production app remains on `main` and must continue pointing to the
 production project. Before any future V2 production release, verify the target
 project as an explicit release-checklist item.
@@ -29,7 +29,18 @@ password, secret key, or `service_role` key in this repository.
 
 The repository-generated staging baseline and its read-only verification suite
 both passed on 2026-08-16. Staging contains required Rip City configuration but
-no production users or activity data.
+no production users or activity data. Nine entirely fake Auth identities and
+their two-facility role fixtures were added and verified on 2026-08-28.
+
+Staging Auth was configured on 2026-08-28:
+
+- Site URL: `http://localhost:3000`
+- Redirect URLs:
+  - `http://localhost:3000/set-password.html`
+  - `http://127.0.0.1:3000/set-password.html`
+- Email provider and new-user signups enabled.
+- Email confirmation disabled for the current signup/approval flow.
+- Anonymous sign-ins and manual linking disabled.
 
 ## Fresh Database Setup
 
@@ -40,7 +51,7 @@ read-only verification queries. Do not substitute the historical file order in
 
 After the baseline passes verification:
 
-1. Configure staging Auth URLs and email/password behavior.
+1. Configure staging Auth URLs and email/password behavior. Completed 2026-08-28.
 2. Create fake Auth users only.
 3. Connect those users to fake application profiles and memberships.
 4. Test signup, approval, member dashboards, and workout logging.
@@ -143,10 +154,10 @@ fake-data staging project.
 From the repo root:
 
 ```bash
-python3 -m http.server 8000
+python3 -m http.server 3000
 ```
 
-Open `http://localhost:8000/login.html`, then test:
+Open `http://localhost:3000/login.html`, then test:
 
 - Coach login and approval page.
 - Coach workout builder assignment to member, group, and facility.

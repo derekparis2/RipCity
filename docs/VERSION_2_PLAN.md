@@ -1,5 +1,9 @@
 # Rip City Version 2 Plan
 
+For the ordered implementation queue and current work status, see
+`docs/V2_BACKLOG.md`. This document remains the source of truth for detailed
+product decisions and feature requirements.
+
 Version 2 should build on the live beta by turning Rip City from a workout/habit
 logger into a fuller athlete development platform.
 
@@ -11,6 +15,19 @@ Core V2 direction:
 - Progress tracking
 - Coach notes
 - Profile and community upgrades
+
+### Version Boundary
+
+Version 2 is intended to stabilize the broad platform foundation and finalize
+the core workout creation, editing, assignment, logging, and history experience.
+"Finalize" means the workflow and data model are stable enough to build on;
+normal fixes and intentional improvements may still follow.
+
+Version 3 will focus on the deeper baseball-development side of the product,
+including baseball-specific metrics, throwing and arm-care programs, player
+cards, evaluations, recruiting/showcase data, and related workflows. V2 should
+avoid reopening its platform and workout foundations solely to pull forward
+unplanned baseball scope.
 
 Do not start coding these sections until the product rules below are filled in.
 
@@ -51,6 +68,9 @@ Create one maintained permissions matrix before adding major V2 features. It
 must be used by both the UI and RLS design; hiding a control in the UI is not a
 security boundary.
 
+The maintained matrix is `docs/PERMISSIONS_MATRIX.md`. It records both the V2
+access contract and known gaps in the verified staging baseline.
+
 Initial role direction:
 
 - `platform_owner`: Derek-only global role. Can create and configure facilities.
@@ -82,13 +102,13 @@ module before that module is production-ready.
 
 ### V2 Modifications Needed
 
-Facility config:
+#### Facility Config
 
 - Add or prepare for a facility settings layer that controls logo, colors, display name, enabled modules, and member terminology.
 - Decide which config belongs in the existing `facilities` table and which config needs a new table later.
 - Keep the first version simple enough that Derek can manually configure a facility in Supabase if needed.
 
-Module config:
+#### Module Config
 
 - Treat workouts, habits, goals, leaderboards, announcements, progress, scheduling, and payments as modules that can eventually be enabled or disabled by facility.
 - Make H2K habits optional and member-type-aware.
@@ -158,14 +178,14 @@ Done criteria:
 - Cross-facility RLS tests prove that facility-created exercises and overrides
   never leak.
 
-Branding/UI:
+#### Branding/UI
 
 - Replace hardcoded Rip City labels where they should be facility labels.
 - Keep Rip City visual style as the current design inspiration, but make colors/logo configurable over time.
 - Avoid building future pages that assume every facility is baseball-only or H2K-only.
 - Keep facility branding separate from core layout structure.
 
-Signup/invites:
+#### Signup/Invites
 
 - Preserve the current V1 experience where a coach copies an Athlete, H2K, or
   general signup link and sends it to prospective members.
@@ -179,7 +199,7 @@ Signup/invites:
   flow. Its live status and intended future use must be resolved during the SQL
   audit before new invite behavior is built on it.
 
-Facility time and date rules:
+#### Facility Time And Date Rules
 
 - Every facility has one authoritative IANA time zone.
 - Rip City's time zone is `America/New_York`.
@@ -190,7 +210,7 @@ Facility time and date rules:
   currently protects local calendar dates from `toISOString()` rollover, but it
   does not yet use a facility time-zone setting.
 
-Lifecycle rules:
+#### Lifecycle Rules
 
 - Deactivate coaches and members rather than deleting their identity or history.
 - Archive facilities and groups instead of deleting them once they have history.
@@ -203,14 +223,14 @@ Lifecycle rules:
 - Each major table must receive an explicit delete, archive, deactivate, and
   retention rule during the schema audit.
 
-Data/security:
+#### Data/Security
 
 - Keep every new table facility-aware where the data belongs to a facility.
 - Keep RLS policies facility-scoped before any new feature becomes production-ready.
 - Avoid cross-facility queries unless they are only for Derek/global admin.
 - Test every new V2 feature with at least two facilities in staging before production.
 
-Developer workflow:
+#### Developer Workflow
 
 - Use staging Supabase to create fake second facilities and test customization.
 - Add comments around code paths where facility config changes what the user sees.
@@ -815,7 +835,8 @@ historical archives remain under `sql/`. Continue this structure for V2.
 
 - Audit `docs/` for old plans, duplicated notes, and outdated instructions.
 - Keep `BUILD_PLAN.md`, `VERSION_2_PLAN.md`, beta launch notes, setup docs, and current testing checklists easy to find.
-- Move older planning docs into `docs/old/` when they are no longer current.
+- Move useful completed version notes into `docs/archive/` and delete obsolete
+  notes that Git history already preserves.
 - Add short summaries at the top of important docs so the purpose is obvious.
 - Make the V2 plan the main roadmap while V2 is being built.
 
@@ -837,7 +858,7 @@ historical archives remain under `sql/`. Continue this structure for V2.
 4. Code comments: explain complex Supabase and workflow logic.
 5. Small dead-code removal: remove clearly unused selectors/functions.
 6. File splitting: only split large files after tests confirm behavior.
-7. Add contributor notes for future Derek/Sam workflow.
+7. Maintain the Derek/Sam contributor workflow in `CONTRIBUTING.md`.
 
 ### Done Criteria
 

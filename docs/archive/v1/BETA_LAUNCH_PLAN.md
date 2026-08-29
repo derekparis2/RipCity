@@ -1,4 +1,7 @@
-# Rip City Beta Launch Plan
+# Archived V1 Beta Launch Plan
+
+Historical reference only. Rip City has already launched its V1 beta. Use the
+current release and staging documentation for future deployments.
 
 Use this before inviting Rip City testers.
 
