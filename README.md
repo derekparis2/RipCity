@@ -42,19 +42,10 @@ For the product roadmap, start with `docs/BUILD_PLAN.md`.
   and verification instructions for Rip City Staging
 - `supabase/migrations/` - active, ordered database migrations
 - `sql/README.md` - SQL diagnostics/archive guide and safety rules
-- `js/supabaseClient.js` - Supabase browser client setup
-- `js/access-control.js` - shared auth and facility membership guard helpers
-- `js/workout-data.js` - shared workout assignment, date, and completion helpers
-- `js/ui-utils.js` - shared escaping and display helpers
-- `js/auth.js` - signup, login, and pending-page auth actions
-- `js/coach-approvals.js` - coach/admin approval workflow
-- `js/coach-roster.js` - coach roster, filters, group creation, and group membership management
-- `js/coach-dashboard.js` - coach H2K score and workout completion overview
-- `js/coach-workouts.js` - coach workout builder and assignment flow
-- `js/member-dashboard.js` - member dashboard, habits, today’s workout, and history
-- `js/workout-session-core.js` - workout session state, helpers, auth, and loaders
-- `js/workout-session-render.js` - workout session block/round/set rendering
-- `js/workout-session.js` - workout session save actions and page init
+- `js/shared/` - Supabase client, access control, UI, and workout-data helpers
+- `js/auth/` - signup, login, pending, and password actions
+- `js/coach/` - coach approval, dashboard, roster, and workout-builder behavior
+- `js/member/` - member dashboard, profile, and workout-session behavior
 - `css/styles.css` - shared visual system and page styles
 
 ## Running Locally

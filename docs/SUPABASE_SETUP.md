@@ -1,6 +1,6 @@
 # Supabase Setup And Audit Guide
 
-Rip City is already connected to Supabase through `js/supabaseClient.js`. This
+Rip City is already connected to Supabase through `js/shared/supabaseClient.js`. This
 guide is for rebuilding, auditing, or safely applying proposed database changes.
 
 ## Current Rule
@@ -18,7 +18,7 @@ role key in browser JavaScript.
 | Production | RipCity Project | `fdzmfohcuratbuitkwoy` | `main`; live Rip City data |
 | Staging | Rip City Staging | `xjgmjliqqkhfnqphigbk` | `v2-development`; fake data only |
 
-`js/supabaseClient.js` on `v2-development` intentionally points to staging.
+`js/shared/supabaseClient.js` on `v2-development` intentionally points to staging.
 The deployed production app remains on `main` and must continue pointing to the
 production project. Before any future V2 production release, verify the target
 project as an explicit release-checklist item.

@@ -118,7 +118,7 @@ Current status:
 - The staging project was created on 2026-08-16 as **Rip City Staging**.
 - Staging project reference: `xjgmjliqqkhfnqphigbk`.
 - Automatic RLS is enabled.
-- `v2-development` points to staging through `js/supabaseClient.js`.
+- `v2-development` points to staging through `js/shared/supabaseClient.js`.
 - The repository-generated baseline was installed and fully verified on
   2026-08-16: 21 public tables, 194 columns, 55 indexes, 93 public-table RLS
   policies, 18 private helpers, required Storage setup, and all expected grants
