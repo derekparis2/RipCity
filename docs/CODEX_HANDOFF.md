@@ -45,6 +45,10 @@ For database/RLS work, also inspect:
 - `supabase/migrations/`
 - `sql/README.md` and `sql/diagnostics/`
 
+For current implementation order and work status, read:
+
+- `docs/V2_BACKLOG.md`
+
 ## Big Product Direction
 
 Rip City is the first beta facility, not the full product identity.
@@ -63,7 +67,9 @@ Core direction:
 
 ## Current V2 Priorities
 
-See `docs/VERSION_2_PLAN.md` for the detailed roadmap. Current build order:
+See `docs/VERSION_2_PLAN.md` for detailed product requirements and
+`docs/V2_BACKLOG.md` for the maintained implementation order and status. Current
+build order:
 
 1. Document platform foundations: permissions, lifecycle, signup links, modules,
    facility time zones, testing, accessibility, and notifications.
