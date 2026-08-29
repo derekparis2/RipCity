@@ -36,6 +36,7 @@ For the product roadmap, start with `docs/BUILD_PLAN.md`.
 - `docs/archive/v1/BETA_LAUNCH_PLAN.md` - historical V1 beta launch checklist
 - `docs/DEPLOYMENT_PREP.md` - live URL, Supabase Auth, storage, and final deploy checks
 - `docs/PRODUCT_DECISIONS.md` - current product rules and tenant decisions
+- `docs/PERMISSIONS_MATRIX.md` - V2 role, status, module, and RLS access contract
 - `docs/SUPABASE_AUDIT_2026-08-08.md` - read-only production schema/SQL audit,
   verified drift, recovery risks, and staging recommendations
 - `docs/STAGING_DATABASE_SETUP.md` - exact empty-project baseline build, run,

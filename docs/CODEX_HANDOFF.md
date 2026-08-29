@@ -41,6 +41,7 @@ For database/RLS work, also inspect:
 
 - `docs/SUPABASE_SETUP.md`
 - `docs/PRODUCT_DECISIONS.md`
+- `docs/PERMISSIONS_MATRIX.md`
 - `supabase/migrations/`
 - `sql/README.md` and `sql/diagnostics/`
 
@@ -125,6 +126,9 @@ Current status:
   and Rip City starter configuration passed.
 - Staging currently has no Auth users or member/workout activity. Add only fake
   people and activity data.
+- Staging Auth was configured on 2026-08-28 with local port `3000`, exact local
+  password-reset redirects, email signups enabled, email confirmation disabled,
+  and anonymous sign-ins disabled.
 
 Goal:
 

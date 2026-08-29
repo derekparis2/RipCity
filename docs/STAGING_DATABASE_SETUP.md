@@ -14,8 +14,8 @@ Target project:
 - Data rule: fake data only
 
 Status: the baseline and every verification check passed in Rip City Staging on
-2026-08-16. The project contains required configuration but no Auth users or
-member/workout activity data.
+2026-08-16. Staging Auth was configured on 2026-08-28. The project contains
+required configuration but no Auth users or member/workout activity data.
 
 Never run the initial baseline against production. Production reference
 `fdzmfohcuratbuitkwoy` is intentionally different.
@@ -102,6 +102,9 @@ copying production secrets or real accounts:
 - Exact local password-reset redirects added:
   - `http://localhost:3000/set-password.html`
   - `http://127.0.0.1:3000/set-password.html`
+
+Status: completed 2026-08-28. New-user email signups are enabled; email
+confirmation, anonymous sign-ins, and manual linking are disabled.
 
 Storage objects and Auth users must be created separately; SQL schema files do
 not restore them.

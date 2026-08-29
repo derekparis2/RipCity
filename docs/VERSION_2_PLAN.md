@@ -64,6 +64,9 @@ Create one maintained permissions matrix before adding major V2 features. It
 must be used by both the UI and RLS design; hiding a control in the UI is not a
 security boundary.
 
+The maintained matrix is `docs/PERMISSIONS_MATRIX.md`. It records both the V2
+access contract and known gaps in the verified staging baseline.
+
 Initial role direction:
 
 - `platform_owner`: Derek-only global role. Can create and configure facilities.

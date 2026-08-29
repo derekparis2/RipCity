@@ -31,6 +31,16 @@ The repository-generated staging baseline and its read-only verification suite
 both passed on 2026-08-16. Staging contains required Rip City configuration but
 no production users or activity data.
 
+Staging Auth was configured on 2026-08-28:
+
+- Site URL: `http://localhost:3000`
+- Redirect URLs:
+  - `http://localhost:3000/set-password.html`
+  - `http://127.0.0.1:3000/set-password.html`
+- Email provider and new-user signups enabled.
+- Email confirmation disabled for the current signup/approval flow.
+- Anonymous sign-ins and manual linking disabled.
+
 ## Fresh Database Setup
 
 For the empty staging project, follow `docs/STAGING_DATABASE_SETUP.md`. That
@@ -40,7 +50,7 @@ read-only verification queries. Do not substitute the historical file order in
 
 After the baseline passes verification:
 
-1. Configure staging Auth URLs and email/password behavior.
+1. Configure staging Auth URLs and email/password behavior. Completed 2026-08-28.
 2. Create fake Auth users only.
 3. Connect those users to fake application profiles and memberships.
 4. Test signup, approval, member dashboards, and workout logging.
