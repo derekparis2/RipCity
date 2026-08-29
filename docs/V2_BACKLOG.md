@@ -15,9 +15,12 @@ package, they create its branch from the latest `v2-development` and replace
 2. Pick the highest package marked **Ready** that does not conflict with active
    work.
 3. Add the owner, actual branch, and pull-request link when work begins.
-4. Change the status to **In review** when it is ready for the other contributor.
-5. Mark it **Complete** only after it is merged into `v2-development` and the
-   required staging tests pass.
+4. Change the status to **In review** while implementation or testing is still
+   receiving feedback.
+5. After implementation and required staging tests pass, mark the package
+   **Complete** in that same feature branch before requesting final approval.
+   Squash-merging the pull request then brings the completed status into
+   `v2-development` with the work it describes.
 
 Only one branch that changes the staging database schema should be active at a
 time. A documentation, deployment, or frontend-only package may run alongside
@@ -27,24 +30,27 @@ it when the contributors confirm their files and behavior do not overlap.
 
 ## 1. Contributor And Staging Foundation
 
-**Status:** In review  
-**Branch:** `derek/contributor-foundation`  
-**Plan detail:** [Staging and release safety](VERSION_2_PLAN.md#7-staging-and-release-safety) · [Codebase cleanup](VERSION_2_PLAN.md#9-codebase-cleanup-and-maintainability)
+- **Status:** Complete
+- **Branch:** `derek/contributor-foundation`
+- **Plan detail:** [Staging and release safety](VERSION_2_PLAN.md#7-staging-and-release-safety) · [Codebase cleanup](VERSION_2_PLAN.md#9-codebase-cleanup-and-maintainability)
 
 This package establishes the shared branch/review process, organizes the repo,
 rebuilds staging from source-controlled SQL, creates the fake two-facility test
 foundation, and verifies baseline read access and isolation.
 
-**Complete when:** The current pull request is reviewed and squash-merged into
-`v2-development`.
+**Completed:** The contributor workflow, repository cleanup, reproducible
+staging baseline, fake two-facility fixtures, manual role smoke tests, and all
+45 automated read-only RLS checks are documented and verified. The completed
+package will enter `v2-development` when this pull request is approved and
+squash-merged.
 
 ---
 
 ## 2. Staging Preview And Release Safety
 
-**Status:** Ready after Package 1  
-**Suggested branch:** `<name>/staging-release-safety`  
-**Plan detail:** [Staging and release safety](VERSION_2_PLAN.md#7-staging-and-release-safety) · [Regression and release checklist](VERSION_2_PLAN.md#v2-regression-and-release-checklist) · [Accessibility standard](VERSION_2_PLAN.md#accessibility-standard)
+- **Status:** Ready
+- **Suggested branch:** `<name>/staging-release-safety`
+- **Plan detail:** [Staging and release safety](VERSION_2_PLAN.md#7-staging-and-release-safety) · [Regression and release checklist](VERSION_2_PLAN.md#v2-regression-and-release-checklist) · [Accessibility standard](VERSION_2_PLAN.md#accessibility-standard)
 
 This package makes the staging environment usable and repeatable for both
 contributors. It includes the shared non-production web preview, staging-only
@@ -59,9 +65,9 @@ fake accounts, and follow one documented checklist without touching production.
 
 ## 3. Goals And Coach Member Detail
 
-**Status:** Ready after Package 1  
-**Suggested branch:** `<name>/goals-v2`  
-**Plan detail:** [Goals](VERSION_2_PLAN.md#2-goals) · [Coach member-detail requirements](VERSION_2_PLAN.md#first-ui-version)
+- **Status:** Ready
+- **Suggested branch:** `<name>/goals-v2`
+- **Plan detail:** [Goals](VERSION_2_PLAN.md#2-goals) · [Coach member-detail requirements](VERSION_2_PLAN.md#first-ui-version)
 
 This is one complete Goals feature rather than separate tiny database and UI
 branches. It includes the approved goal fields, member-created and coach-created
@@ -76,9 +82,9 @@ workflow in staging and direct RLS tests prove cross-facility access is denied.
 
 ## 4. Facility Access And Account Lifecycle
 
-**Status:** Planned  
-**Suggested branch:** `<name>/facility-access`  
-**Plan detail:** [Roles and permissions](VERSION_2_PLAN.md#v2-roles-and-permissions-foundation) · [Lifecycle rules](VERSION_2_PLAN.md#lifecycle-rules) · [Platform done criteria](VERSION_2_PLAN.md#done-criteria)
+- **Status:** Planned
+- **Suggested branch:** `<name>/facility-access`
+- **Plan detail:** [Roles and permissions](VERSION_2_PLAN.md#v2-roles-and-permissions-foundation) · [Lifecycle rules](VERSION_2_PLAN.md#lifecycle-rules) · [Platform done criteria](VERSION_2_PLAN.md#done-criteria)
 
 This package makes multi-facility access intentional. It includes the storable
 Derek-only platform-owner role, safe facility administration, an active-facility
@@ -93,9 +99,9 @@ restores the existing relationships.
 
 ## 5. Facility Configuration And Multi-Facility UI
 
-**Status:** Planned  
-**Suggested branch:** `<name>/facility-configuration`  
-**Plan detail:** [Facility and module configuration](VERSION_2_PLAN.md#v2-modifications-needed) · [Facility time and date rules](VERSION_2_PLAN.md#facility-time-and-date-rules) · [Branding and UI](VERSION_2_PLAN.md#brandingui)
+- **Status:** Planned
+- **Suggested branch:** `<name>/facility-configuration`
+- **Plan detail:** [Facility and module configuration](VERSION_2_PLAN.md#v2-modifications-needed) · [Facility time and date rules](VERSION_2_PLAN.md#facility-time-and-date-rules) · [Branding and UI](VERSION_2_PLAN.md#brandingui)
 
 This package turns the visible app into a real configurable platform. It
 includes facility display name, branding, terminology, enabled modules, member
@@ -111,9 +117,9 @@ features into each other.
 
 ## 6. Exercise Library And Workout V2 Finalization
 
-**Status:** Planned  
-**Suggested branch:** `<name>/workouts-v2`  
-**Plan detail:** [Universal and facility exercise library](VERSION_2_PLAN.md#universal-and-facility-exercise-library) · [Beta workout polish](VERSION_2_PLAN.md#8-beta-feedback-polish-queue)
+- **Status:** Planned
+- **Suggested branch:** `<name>/workouts-v2`
+- **Plan detail:** [Universal and facility exercise library](VERSION_2_PLAN.md#universal-and-facility-exercise-library) · [Beta workout polish](VERSION_2_PLAN.md#8-beta-feedback-polish-queue)
 
 This package completes the workout foundation that V2 is meant to stabilize. It
 includes one combined exercise library, facility-only exercises, universal
@@ -129,9 +135,9 @@ historical workouts.
 
 ## 7. Leaderboards
 
-**Status:** Planned  
-**Suggested branch:** `<name>/leaderboards-v2`  
-**Plan detail:** [Leaderboards](VERSION_2_PLAN.md#3-leaderboards)
+- **Status:** Planned
+- **Suggested branch:** `<name>/leaderboards-v2`
+- **Plan detail:** [Leaderboards](VERSION_2_PLAN.md#3-leaderboards)
 
 This package finalizes the first V2 metrics and builds the complete initial
 leaderboard experience: coach facility/group filters, separated H2K and athlete
@@ -145,9 +151,9 @@ member types, and time periods for their own facility.
 
 ## 8. Coach Communication
 
-**Status:** Planned  
-**Suggested branch:** `<name>/coach-communication`  
-**Plan detail:** [Coach announcements and notes](VERSION_2_PLAN.md#5-coach-announcements-and-notes) · [Notification direction](VERSION_2_PLAN.md#notification-direction)
+- **Status:** Planned
+- **Suggested branch:** `<name>/coach-communication`
+- **Plan detail:** [Coach announcements and notes](VERSION_2_PLAN.md#5-coach-announcements-and-notes) · [Notification direction](VERSION_2_PLAN.md#notification-direction)
 
 This package covers the connected communication system: private facility-scoped
 coach notes, targeted and expiring announcements, real coach sender identity,
@@ -162,9 +168,9 @@ only their own dismissal and read state.
 
 ## 9. Progress, Profiles, And Controlled Community
 
-**Status:** Blocked on product decisions  
-**Suggested branch:** `<name>/progress-community`  
-**Plan detail:** [Progress tracking](VERSION_2_PLAN.md#4-progress-tracking) · [Profile and community](VERSION_2_PLAN.md#6-profile-and-community)
+- **Status:** Blocked on product decisions
+- **Suggested branch:** `<name>/progress-community`
+- **Plan detail:** [Progress tracking](VERSION_2_PLAN.md#4-progress-tracking) · [Profile and community](VERSION_2_PLAN.md#6-profile-and-community)
 
 This package begins only after the remaining metric, write-permission, and
 privacy decisions are made. It combines the first useful progress experience
@@ -179,9 +185,9 @@ features into V2.
 
 ## 10. Final V2 Release Hardening
 
-**Status:** Planned  
-**Suggested branch:** `<name>/v2-release-hardening`  
-**Plan detail:** [Version boundary](VERSION_2_PLAN.md#version-boundary) · [Release rule](VERSION_2_PLAN.md#release-rule) · [V2 regression and release checklist](VERSION_2_PLAN.md#v2-regression-and-release-checklist)
+- **Status:** Planned
+- **Suggested branch:** `<name>/v2-release-hardening`
+- **Plan detail:** [Version boundary](VERSION_2_PLAN.md#version-boundary) · [Release rule](VERSION_2_PLAN.md#release-rule) · [V2 regression and release checklist](VERSION_2_PLAN.md#v2-regression-and-release-checklist)
 
 This final package is for integration fixes, security and accessibility gaps,
 mobile/desktop regression results, migration rehearsal, recovery verification,
