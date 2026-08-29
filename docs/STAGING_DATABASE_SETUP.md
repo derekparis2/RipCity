@@ -97,8 +97,11 @@ copying production secrets or real accounts:
 - Email/password sign-in enabled.
 - Email confirmation disabled for the current signup/approval workflow.
 - Anonymous sign-in disabled.
-- Site URL set to the local or staging site, never the production beta URL.
-- Local redirect URL added for the selected development port.
+- Site URL set to `http://localhost:3000` until a staging site exists, never the
+  production beta URL.
+- Exact local password-reset redirects added:
+  - `http://localhost:3000/set-password.html`
+  - `http://127.0.0.1:3000/set-password.html`
 
 Storage objects and Auth users must be created separately; SQL schema files do
 not restore them.

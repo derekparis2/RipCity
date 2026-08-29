@@ -20,9 +20,9 @@ Good beta options:
 Before inviting testers:
 
 1. Add the live site URL to Supabase Auth allowed redirect URLs.
-2. Add local development URLs if you still test locally:
-   - `http://localhost:8000`
-   - `http://127.0.0.1:8000`
+2. Add the exact local password-reset redirects if you still test locally:
+   - `http://localhost:3000/set-password.html`
+   - `http://127.0.0.1:3000/set-password.html`
 3. Confirm email confirmation behavior.
 4. If email confirmation is enabled, retest signup because app profile rows may
    need a server-side signup handler later.

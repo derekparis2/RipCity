@@ -12,6 +12,19 @@ Core V2 direction:
 - Coach notes
 - Profile and community upgrades
 
+### Version Boundary
+
+Version 2 is intended to stabilize the broad platform foundation and finalize
+the core workout creation, editing, assignment, logging, and history experience.
+"Finalize" means the workflow and data model are stable enough to build on;
+normal fixes and intentional improvements may still follow.
+
+Version 3 will focus on the deeper baseball-development side of the product,
+including baseball-specific metrics, throwing and arm-care programs, player
+cards, evaluations, recruiting/showcase data, and related workflows. V2 should
+avoid reopening its platform and workout foundations solely to pull forward
+unplanned baseball scope.
+
 Do not start coding these sections until the product rules below are filled in.
 
 ---
@@ -815,7 +828,8 @@ historical archives remain under `sql/`. Continue this structure for V2.
 
 - Audit `docs/` for old plans, duplicated notes, and outdated instructions.
 - Keep `BUILD_PLAN.md`, `VERSION_2_PLAN.md`, beta launch notes, setup docs, and current testing checklists easy to find.
-- Move older planning docs into `docs/old/` when they are no longer current.
+- Move useful completed version notes into `docs/archive/` and delete obsolete
+  notes that Git history already preserves.
 - Add short summaries at the top of important docs so the purpose is obvious.
 - Make the V2 plan the main roadmap while V2 is being built.
 
@@ -837,7 +851,7 @@ historical archives remain under `sql/`. Continue this structure for V2.
 4. Code comments: explain complex Supabase and workflow logic.
 5. Small dead-code removal: remove clearly unused selectors/functions.
 6. File splitting: only split large files after tests confirm behavior.
-7. Add contributor notes for future Derek/Sam workflow.
+7. Maintain the Derek/Sam contributor workflow in `CONTRIBUTING.md`.
 
 ### Done Criteria
 

@@ -12,7 +12,10 @@ Git branches:
 
 - `main` = live production branch deployed by Netlify.
 - `v2-development` = next-version work branch.
-- Future contributor branches can be named like `derek/goals-ui` or `sam/leaderboards` once Sam joins.
+- Derek and Sam work from feature branches such as `derek/facility-config` or
+  `sam/goals-v2`, then open pull requests into `v2-development`.
+- Follow `CONTRIBUTING.md` for the shared branch, review, migration, and merge
+  workflow.
 
 Netlify:
 
@@ -98,7 +101,8 @@ Important cleanup goals:
 - SQL organization completed 2026-08-16: active migrations now live under
   `supabase/migrations/`; diagnostics and clearly labeled archives live under
   `sql/`.
-- Clean up `docs/` and move old notes into `docs/old/` where appropriate.
+- Keep current guidance easy to find and move useful completed version notes
+  into `docs/archive/`; delete obsolete notes that Git history already preserves.
 - Add helpful comments around complicated Supabase, RLS, assignment, habit scoring, workout logging, and aggregation logic.
 - Reduce repeated code where it is safe.
 - Split huge JS files only when it clearly improves maintainability.
@@ -180,16 +184,21 @@ Coach notes / announcements:
 - Members can dismiss announcements.
 - Coach profiles need name/profile picture for announcements/community.
 
-## Derek / Sam Contributor Direction
+## Derek / Sam Contributor Workflow
 
-Sam may join later. Derek is considering a majority-owner setup where Derek keeps final decision authority. No code action is needed for this yet.
+Sam is now an active contributor. Derek and Sam are building the product
+together and may both work across frontend code, migrations, RLS, and staging.
+Neither contributor is limited to one technical area.
 
-If Sam joins:
-
-- Use feature branches such as `sam/leaderboards`.
-- Keep `main` protected as production.
-- Merge hotfixes from `main` back into `v2-development`.
-- Add contributor notes and recommended VS Code extensions/settings.
+- Use a separate feature branch for each focused unit of work.
+- Open a draft pull request into `v2-development` after the first commit.
+- Communicate before applying staging migrations or changing shared Supabase
+  behavior.
+- Keep one active staging schema migration in flight at a time.
+- Have the other contributor review and test before squash-merging.
+- Keep `main` as production and merge approved production hotfixes back into
+  `v2-development`.
+- Follow `CONTRIBUTING.md` as the maintained source of truth.
 
 ## Local Dev Notes
 
@@ -200,5 +209,5 @@ If a Codex session still has old workspace permissions, it may need approval to 
 Common local testing:
 
 - VS Code Live Server often runs on port `5500`.
-- Python phone-test servers may run on `8000` or `8001`; stop them when not needed.
+- The shared local server runs on port `3000`; stop it when not needed.
 - Use `git switch v2-development` for V2 work.

@@ -143,10 +143,10 @@ fake-data staging project.
 From the repo root:
 
 ```bash
-python3 -m http.server 8000
+python3 -m http.server 3000
 ```
 
-Open `http://localhost:8000/login.html`, then test:
+Open `http://localhost:3000/login.html`, then test:
 
 - Coach login and approval page.
 - Coach workout builder assignment to member, group, and facility.

@@ -30,16 +30,16 @@ For the product roadmap, start with `docs/BUILD_PLAN.md`.
 
 ## Important Files
 
+- `CONTRIBUTING.md` - shared Derek/Sam branch, review, testing, and database workflow
 - `docs/BUILD_PLAN.md` - product direction and phases
 - `docs/BETA_TEST_CHECKLIST.md` - walkthrough checklist for early testers
-- `docs/BETA_LAUNCH_PLAN.md` - readiness checklist before inviting testers
+- `docs/archive/v1/BETA_LAUNCH_PLAN.md` - historical V1 beta launch checklist
 - `docs/DEPLOYMENT_PREP.md` - live URL, Supabase Auth, storage, and final deploy checks
 - `docs/PRODUCT_DECISIONS.md` - current product rules and tenant decisions
 - `docs/SUPABASE_AUDIT_2026-08-08.md` - read-only production schema/SQL audit,
   verified drift, recovery risks, and staging recommendations
 - `docs/STAGING_DATABASE_SETUP.md` - exact empty-project baseline build, run,
   and verification instructions for Rip City Staging
-- `docs/old/` - historical notes that are no longer the current source of truth
 - `supabase/migrations/` - active, ordered database migrations
 - `sql/README.md` - SQL diagnostics/archive guide and safety rules
 - `js/supabaseClient.js` - Supabase browser client setup
@@ -56,20 +56,19 @@ For the product roadmap, start with `docs/BUILD_PLAN.md`.
 - `js/workout-session-render.js` - workout session block/round/set rendering
 - `js/workout-session.js` - workout session save actions and page init
 - `css/styles.css` - shared visual system and page styles
-- `old/prototype/` - archived localStorage prototype kept only for design/history reference
 
 ## Running Locally
 
 This is a static frontend. From the repo root:
 
 ```bash
-python3 -m http.server 8000
+python3 -m http.server 3000
 ```
 
 Then open:
 
 ```text
-http://localhost:8000/login.html
+http://localhost:3000/login.html
 ```
 
 Use approved Supabase test accounts for end-to-end checks.

@@ -30,7 +30,7 @@ Use this as the quick orientation guide before editing.
 
 ## Archived Reference
 
-- `old/prototype/index.html` and `old/prototype/app.js` are the old localStorage prototype. Keep them for design/history reference only.
-- `docs/old/` contains old planning notes.
+- `docs/archive/` contains completed version-specific plans that are retained
+  only when they still provide useful release history.
 - `sql/archive/` contains applied components, proposals, one-time fixes, and
   prototype SQL that should not be run against staging or production.

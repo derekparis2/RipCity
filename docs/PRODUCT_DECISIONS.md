@@ -3,6 +3,15 @@
 This file captures current product rules that should guide implementation until
 they are intentionally revisited.
 
+## Version Scope
+
+- V2 stabilizes the shared multi-facility platform and finalizes the core
+  workout creation, editing, assignment, logging, and history experience.
+- V3 is the planned deeper baseball-development expansion.
+- Baseball metrics, throwing and arm-care programs, player cards, evaluations,
+  recruiting, and related sport-specific workflows should wait for V3 unless
+  Derek and Sam intentionally change the roadmap.
+
 ## Facility Isolation
 
 - Rip City is the first facility, not a separate codebase.
