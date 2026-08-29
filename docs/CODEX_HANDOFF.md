@@ -124,11 +124,20 @@ Current status:
   2026-08-16: 21 public tables, 194 columns, 55 indexes, 93 public-table RLS
   policies, 18 private helpers, required Storage setup, and all expected grants
   and Rip City starter configuration passed.
-- Staging currently has no Auth users or member/workout activity. Add only fake
-  people and activity data.
+- Staging currently has nine documented fake Auth users and no workout/activity
+  data. Continue using only fake people and activity data.
 - Staging Auth was configured on 2026-08-28 with local port `3000`, exact local
   password-reset redirects, email signups enabled, email confirmation disabled,
   and anonymous sign-ins disabled.
+- The staging-only two-facility seed passed on 2026-08-28. Rip City has its five
+  groups and six H2K habits; Test Facility Alpha has two athlete groups and no
+  H2K habits.
+- The staging test-account fixture passed on 2026-08-28: nine fake profiles,
+  ten facility memberships, correct pending/inactive cases, and one coach with
+  approved memberships in both facilities.
+- Manual role smoke tests passed, followed by all 45 automated read-only RLS
+  checks. Confirmed UI gaps are hardcoded Rip City branding, a shared
+  pending/inactive message, and no multi-facility selector.
 
 Goal:
 

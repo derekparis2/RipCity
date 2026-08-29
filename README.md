@@ -41,6 +41,7 @@ For the product roadmap, start with `docs/BUILD_PLAN.md`.
   verified drift, recovery risks, and staging recommendations
 - `docs/STAGING_DATABASE_SETUP.md` - exact empty-project baseline build, run,
   and verification instructions for Rip City Staging
+- `docs/STAGING_TEST_ACCOUNTS.md` - fake staging identities and role scenarios
 - `supabase/migrations/` - active, ordered database migrations
 - `sql/README.md` - SQL diagnostics/archive guide and safety rules
 - `js/shared/` - Supabase client, access control, UI, and workout-data helpers

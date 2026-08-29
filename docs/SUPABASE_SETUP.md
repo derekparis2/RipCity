@@ -29,7 +29,8 @@ password, secret key, or `service_role` key in this repository.
 
 The repository-generated staging baseline and its read-only verification suite
 both passed on 2026-08-16. Staging contains required Rip City configuration but
-no production users or activity data.
+no production users or activity data. Nine entirely fake Auth identities and
+their two-facility role fixtures were added and verified on 2026-08-28.
 
 Staging Auth was configured on 2026-08-28:
 
