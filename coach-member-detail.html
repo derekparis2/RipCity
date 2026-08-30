@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Member Detail</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="auth-body">
+  <main class="coach-page">
+    <header class="h2k-header">
+      <div class="auth-brand">
+        <img src="assets/rip-city-logo.png" alt="Rip City logo">
+        <div><h1>RIP CITY</h1><p>Member Detail</p></div>
+      </div>
+      <div class="h2k-header-actions">
+        <a class="outline-link" href="coach-roster.html">Back to Roster</a>
+        <a class="outline-link" href="coach-dashboard.html">Coach Dashboard</a>
+        <button class="outline-btn" id="coach-member-detail-logout" type="button">Log Out</button>
+      </div>
+    </header>
+
+    <p class="auth-message" id="coach-member-detail-message" aria-live="polite"></p>
+    <section class="panel coach-member-detail-summary" id="coach-member-detail-summary">
+      <div class="empty-state">Loading member...</div>
+    </section>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/shared/supabaseClient.js"></script>
+  <script src="js/shared/ui-utils.js"></script>
+  <script src="js/shared/access-control.js"></script>
+  <script src="js/coach/coach-member-detail.js"></script>
+</body>
+</html>

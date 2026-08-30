@@ -422,6 +422,7 @@ function renderRosterMemberCard(member) {
         >
           Change Groups
         </button>
+        <a class="outline-link small-inline-btn roster-change-groups-btn" href="coach-member-detail.html?membership=${window.RipCityUI.attr(member.facilityMemberId)}">View Member</a>
       </div>
 
       <div class="roster-group-editor">
