@@ -18,6 +18,8 @@ let selectedHabitDate = getTodayString();
 let memberHistoryWeeks = [];
 let memberHistoryLogs = [];
 let selectedMemberHistoryWeekIndex = 0;
+let memberGoals = [];
+let goalCheckinsByGoalId = {};
 
 const MEMBER_WEEKLY_HISTORY_WEEKS = 8;
 
@@ -176,6 +178,373 @@ async function loadHabits(facilityId) {
 
   if (error) throw error;
   return data || [];
+}
+
+function showMemberGoalsMessage(message, isError = false) {
+  const element = document.getElementById("member-goals-message");
+  if (!element) return;
+
+  element.textContent = message;
+  element.classList.toggle("error-message", isError);
+}
+
+function normalizeGoalNumber(value) {
+  return value === "" ? null : Number(value);
+}
+
+function formatGoalDate(dateKey) {
+  if (!dateKey) return "No due date";
+
+  return new Date(`${dateKey}T12:00:00`).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric"
+  });
+}
+
+function formatGoalTimeline(timeline) {
+  return {
+    short_term: "Short term",
+    medium_term: "Medium term",
+    long_term: "Long term",
+    ongoing: "Ongoing"
+  }[timeline] || "Short term";
+}
+
+async function loadGoalCheckins() {
+  if (!currentMemberProfile) return;
+
+  const { data, error } = await db
+    .from("goal_checkins")
+    .select("*")
+    .eq("member_profile_id", currentMemberProfile.id)
+    .order("recorded_date", { ascending: true });
+
+  if (error) throw error;
+
+  goalCheckinsByGoalId = {};
+  (data || []).forEach(checkin => {
+    if (!goalCheckinsByGoalId[checkin.goal_id]) {
+      goalCheckinsByGoalId[checkin.goal_id] = [];
+    }
+    goalCheckinsByGoalId[checkin.goal_id].push(checkin);
+  });
+}
+
+async function loadMemberGoals() {
+  if (!currentMemberProfile) return;
+
+  showMemberGoalsMessage("Loading goals...");
+  const { data, error } = await db
+    .from("goals")
+    .select("*")
+    .eq("member_profile_id", currentMemberProfile.id)
+    .order("status", { ascending: true })
+    .order("due_date", { ascending: true, nullsFirst: false })
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+
+  memberGoals = data || [];
+  await loadGoalCheckins();
+  renderMemberGoals();
+  showMemberGoalsMessage("");
+}
+
+function renderGoalChart(goal) {
+  const points = (goalCheckinsByGoalId[goal.id] || []).slice().sort((a, b) => a.recorded_date.localeCompare(b.recorded_date));
+  const values = points.map(point => Number(point.value));
+  const targetValue = goal.target_value === null ? null : Number(goal.target_value);
+
+  if (!points.length) {
+    return `<div class="empty-state compact">No check-ins yet.</div>`;
+  }
+
+  const minValue = Math.min(...values, targetValue ?? 0, 0);
+  const maxValue = Math.max(...values, targetValue ?? 0, 1);
+  const padding = 18;
+  const width = 760;
+  const height = 130;
+  const chartHeight = height - padding * 2;
+  const valueRange = Math.max(maxValue - minValue, 1);
+  const latestValue = values[values.length - 1];
+  const targetY = targetValue === null
+    ? null
+    : height - padding - ((targetValue - minValue) / valueRange) * chartHeight;
+
+  const linePath = points.map((point, index) => {
+    const x = padding + ((index * (width - padding * 2)) / Math.max(points.length - 1, 1));
+    const y = height - padding - ((Number(point.value) - minValue) / valueRange) * chartHeight;
+    return `${index === 0 ? "M" : "L"}${x},${y}`;
+  }).join(" ");
+
+  const dots = points.map((point, index) => {
+    const x = padding + ((index * (width - padding * 2)) / Math.max(points.length - 1, 1));
+    const y = height - padding - ((Number(point.value) - minValue) / valueRange) * chartHeight;
+    return `<circle cx="${x}" cy="${y}" r="4" fill="#2d6cdf"></circle>`;
+  }).join("");
+
+  return `
+    <div class="goal-chart-wrap">
+      ${targetValue === null ? "" : `<div class="goal-chart-summary"><span>Latest ${latestValue}${goal.unit ? ` ${window.RipCityUI.text(goal.unit)}` : ""}</span><span>Target ${targetValue}${goal.unit ? ` ${window.RipCityUI.text(goal.unit)}` : ""}</span></div>`}
+      <svg viewBox="0 0 ${width} ${height}" class="goal-chart" role="img" aria-label="Goal progress chart">
+        ${targetY === null ? "" : `<line x1="${padding}" y1="${targetY}" x2="${width - padding}" y2="${targetY}" class="goal-chart-target-line"></line><text x="${width - padding}" y="${Math.max(targetY - 4, 10)}" text-anchor="end" class="goal-chart-target-label">Target</text>`}
+        <path d="${linePath}" fill="none" stroke="#2d6cdf" stroke-width="2"></path>
+        ${dots}
+      </svg>
+    </div>
+  `;
+}
+
+function renderMemberGoals() {
+  const activeList = document.getElementById("member-active-goal-list");
+  const completedList = document.getElementById("member-completed-goal-list");
+  const completedCount = document.getElementById("member-completed-goal-count");
+  if (!activeList || !completedList || !completedCount) return;
+
+  const activeGoals = memberGoals.filter(goal => goal.status !== "completed");
+  const completedGoals = memberGoals.filter(goal => goal.status === "completed");
+  completedCount.textContent = completedGoals.length;
+  activeList.innerHTML = activeGoals.length
+    ? activeGoals.map(renderMemberGoalCard).join("")
+    : `<div class="empty-state">No active goals yet. Add one above to get started.</div>`;
+  completedList.innerHTML = completedGoals.length
+    ? completedGoals.map(renderMemberGoalCard).join("")
+    : `<div class="empty-state">Completed goals will appear here.</div>`;
+
+  document.querySelectorAll("[data-goal-status]").forEach(select => {
+    select.addEventListener("change", () => updateMemberGoalStatus(select.dataset.goalStatus, select.value));
+  });
+  document.querySelectorAll("[data-edit-member-goal]").forEach(button => {
+    button.addEventListener("click", () => startMemberGoalEdit(button.dataset.editMemberGoal));
+  });
+  document.querySelectorAll("[data-delete-member-goal]").forEach(button => {
+    button.addEventListener("click", () => deleteMemberGoal(button.dataset.deleteMemberGoal));
+  });
+  document.querySelectorAll("[data-save-goal-checkin]").forEach(button => {
+    button.addEventListener("click", () => saveGoalCheckin(button.dataset.saveGoalCheckin));
+  });
+  document.querySelectorAll("[data-update-goal-checkin]").forEach(button => {
+    button.addEventListener("click", () => updateGoalCheckin(button.dataset.updateGoalCheckin));
+  });
+  document.querySelectorAll("[data-delete-goal-checkin]").forEach(button => {
+    button.addEventListener("click", () => deleteGoalCheckin(button.dataset.deleteGoalCheckin));
+  });
+}
+
+function renderMemberGoalCard(goal) {
+  const isOwnGoal = goal.source === "member" && goal.created_by === currentAccess.session.user.id;
+  const valueText = goal.target_value === null
+    ? "No target value"
+    : `${goal.current_value ?? 0} / ${goal.target_value}${goal.unit ? ` ${goal.unit}` : ""}`;
+
+  const checkins = goalCheckinsByGoalId[goal.id] || [];
+
+  return `
+    <article class="member-goal-card ${goal.status === "paused" ? "is-paused" : ""}">
+      <div class="member-goal-card-main">
+        <div class="member-goal-card-heading">
+          <h4>${window.RipCityUI.text(goal.name)}</h4>
+          <span class="status-pill">${window.RipCityUI.text(goal.source === "coach" ? "Coach goal" : "Your goal")}</span>
+        </div>
+        ${goal.description ? `<p>${window.RipCityUI.text(goal.description)}</p>` : ""}
+        <div class="member-goal-meta">
+          <span>${window.RipCityUI.text(formatGoalTimeline(goal.timeline))}</span>
+          <span>${window.RipCityUI.text(valueText)}</span>
+          <span>${window.RipCityUI.text(formatGoalDate(goal.due_date))}</span>
+        </div>
+        <div class="goal-checkin-chart">
+          ${renderGoalChart(goal)}
+        </div>
+      </div>
+      <div class="member-goal-actions">
+        <label>
+          Status
+          <select data-goal-status="${window.RipCityUI.attr(goal.id)}">
+            ${["active", "paused", "completed"].map(status => `<option value="${status}" ${goal.status === status ? "selected" : ""}>${status[0].toUpperCase() + status.slice(1)}</option>`).join("")}
+          </select>
+        </label>
+        <details class="goal-checkin-form">
+          <summary>Check in</summary>
+          <div class="goal-checkin-inline">
+            <input type="date" data-goal-checkin-date="${window.RipCityUI.attr(goal.id)}" value="${getTodayString()}" />
+            <input type="number" step="any" data-goal-checkin-value="${window.RipCityUI.attr(goal.id)}" placeholder="${goal.unit || "value"}" />
+            <button class="primary-btn small-btn" type="button" data-save-goal-checkin="${window.RipCityUI.attr(goal.id)}">Add</button>
+          </div>
+        </details>
+        ${isOwnGoal ? `<button class="outline-btn" type="button" data-edit-member-goal="${window.RipCityUI.attr(goal.id)}">Edit</button>` : ""}
+        ${isOwnGoal ? `<button class="outline-btn danger-outline-btn" type="button" data-delete-member-goal="${window.RipCityUI.attr(goal.id)}">Delete</button>` : ""}
+      </div>
+      ${checkins.length ? `<details class="goal-checkin-history">
+        <summary>Check-in history (${checkins.length})</summary>
+        <div class="goal-checkin-history-list">
+        ${checkins.map(checkin => `<div class="goal-checkin-history-item">
+          <input type="date" aria-label="Check-in date" data-edit-goal-checkin-date="${window.RipCityUI.attr(checkin.id)}" value="${window.RipCityUI.attr(checkin.recorded_date)}" />
+          <input type="number" aria-label="Check-in value" step="any" data-edit-goal-checkin-value="${window.RipCityUI.attr(checkin.id)}" value="${Number(checkin.value)}" />
+          ${goal.unit ? `<span class="goal-checkin-unit">${window.RipCityUI.text(goal.unit)}</span>` : ""}
+          <button class="outline-btn small-btn" type="button" data-update-goal-checkin="${window.RipCityUI.attr(checkin.id)}">Save</button>
+          <button class="outline-btn danger-outline-btn small-btn" type="button" data-delete-goal-checkin="${window.RipCityUI.attr(checkin.id)}">Delete</button>
+        </div>`).join("")}
+        </div>
+      </details>` : ""}
+    </article>
+  `;
+}
+
+function resetMemberGoalForm() {
+  const form = document.getElementById("member-goal-form");
+  form?.reset();
+  document.getElementById("member-goal-id").value = "";
+  document.getElementById("member-goal-submit").textContent = "Add Goal";
+  document.getElementById("member-goal-cancel").classList.add("hidden");
+}
+
+function startMemberGoalEdit(goalId) {
+  const goal = memberGoals.find(item => item.id === goalId);
+  if (!goal) return;
+
+  document.getElementById("member-goal-id").value = goal.id;
+  document.getElementById("member-goal-name").value = goal.name;
+  document.getElementById("member-goal-timeline").value = goal.timeline;
+  document.getElementById("member-goal-current-value").value = goal.current_value ?? "";
+  document.getElementById("member-goal-target-value").value = goal.target_value ?? "";
+  document.getElementById("member-goal-unit").value = goal.unit || "";
+  document.getElementById("member-goal-due-date").value = goal.due_date || "";
+  document.getElementById("member-goal-description").value = goal.description || "";
+  document.getElementById("member-goal-submit").textContent = "Save Goal";
+  document.getElementById("member-goal-cancel").classList.remove("hidden");
+  document.getElementById("member-goal-name").focus();
+}
+
+async function saveMemberGoal(event) {
+  event.preventDefault();
+  if (!currentMemberProfile) return;
+
+  const goalId = document.getElementById("member-goal-id").value;
+  const values = {
+    name: document.getElementById("member-goal-name").value.trim(),
+    description: document.getElementById("member-goal-description").value.trim() || null,
+    timeline: document.getElementById("member-goal-timeline").value,
+    current_value: normalizeGoalNumber(document.getElementById("member-goal-current-value").value),
+    target_value: normalizeGoalNumber(document.getElementById("member-goal-target-value").value),
+    unit: document.getElementById("member-goal-unit").value.trim() || null,
+    due_date: document.getElementById("member-goal-due-date").value || null
+  };
+
+  showMemberGoalsMessage("Saving goal...");
+  try {
+    const request = goalId
+      ? db.from("goals").update(values).eq("id", goalId)
+      : db.from("goals").insert({
+        ...values,
+        member_profile_id: currentMemberProfile.id,
+        created_by: currentAccess.session.user.id,
+        source: "member"
+      });
+    const { error } = await request;
+    if (error) throw error;
+
+    resetMemberGoalForm();
+    await loadMemberGoals();
+  } catch (error) {
+    console.error(error);
+    showMemberGoalsMessage(error.message || "Could not save goal.", true);
+  }
+}
+
+async function updateMemberGoalStatus(goalId, status) {
+  showMemberGoalsMessage("Updating goal...");
+  try {
+    const { error } = await db.from("goals").update({ status }).eq("id", goalId);
+    if (error) throw error;
+    await loadMemberGoals();
+  } catch (error) {
+    console.error(error);
+    showMemberGoalsMessage(error.message || "Could not update goal status.", true);
+  }
+}
+
+async function deleteMemberGoal(goalId) {
+  if (!window.confirm("Delete this goal permanently? This cannot be undone.")) return;
+
+  showMemberGoalsMessage("Deleting goal...");
+  try {
+    const { error } = await db.from("goals").delete().eq("id", goalId);
+    if (error) throw error;
+    await loadMemberGoals();
+  } catch (error) {
+    console.error(error);
+    showMemberGoalsMessage(error.message || "Could not delete goal.", true);
+  }
+}
+
+async function saveGoalCheckin(goalId) {
+  const dateInput = document.querySelector(`[data-goal-checkin-date="${goalId}"]`);
+  const valueInput = document.querySelector(`[data-goal-checkin-value="${goalId}"]`);
+  if (!dateInput || !valueInput) return;
+
+  const recordedDate = dateInput.value;
+  const value = Number(valueInput.value);
+  if (!recordedDate || Number.isNaN(value)) {
+    showMemberGoalsMessage("Choose a date and enter a numeric goal value.", true);
+    return;
+  }
+
+  showMemberGoalsMessage("Saving check-in...");
+  try {
+    const { error } = await db.from("goal_checkins").insert({
+      goal_id: goalId,
+      member_profile_id: currentMemberProfile.id,
+      recorded_date: recordedDate,
+      value,
+      created_by: currentAccess.session.user.id
+    });
+
+    if (error) throw error;
+    await loadMemberGoals();
+  } catch (error) {
+    console.error(error);
+    showMemberGoalsMessage(error.message || "Could not save goal check-in.", true);
+  }
+}
+
+async function updateGoalCheckin(checkinId) {
+  const dateInput = document.querySelector(`[data-edit-goal-checkin-date="${checkinId}"]`);
+  const valueInput = document.querySelector(`[data-edit-goal-checkin-value="${checkinId}"]`);
+  if (!dateInput || !valueInput) return;
+
+  const recordedDate = dateInput.value;
+  const value = Number(valueInput.value);
+  if (!recordedDate || Number.isNaN(value)) {
+    showMemberGoalsMessage("Choose a date and enter a numeric goal value.", true);
+    return;
+  }
+
+  showMemberGoalsMessage("Updating check-in...");
+  try {
+    const { error } = await db.from("goal_checkins")
+      .update({ recorded_date: recordedDate, value })
+      .eq("id", checkinId);
+    if (error) throw error;
+    await loadMemberGoals();
+  } catch (error) {
+    console.error(error);
+    showMemberGoalsMessage(error.message || "Could not update goal check-in.", true);
+  }
+}
+
+async function deleteGoalCheckin(checkinId) {
+  if (!window.confirm("Delete this check-in?")) return;
+
+  showMemberGoalsMessage("Deleting check-in...");
+  try {
+    const { error } = await db.from("goal_checkins").delete().eq("id", checkinId);
+    if (error) throw error;
+    await loadMemberGoals();
+  } catch (error) {
+    console.error(error);
+    showMemberGoalsMessage(error.message || "Could not delete goal check-in.", true);
+  }
 }
 
 // Loads habit logs for the selected dashboard date.
@@ -1271,6 +1640,7 @@ async function initH2KDashboard() {
     await loadTodayAssignedWorkouts();
     await loadWorkoutHistory();
     await loadMemberWeeklyHistory();
+    await loadMemberGoals();
 
     if (currentMemberProfile.member_type === "h2k") {
       await refreshH2KDashboard();
@@ -1295,6 +1665,8 @@ document.addEventListener("DOMContentLoaded", () => {
   setupMemberSidebarNav();
   setupFeedbackLink();
   setupHabitDateControls();
+  document.getElementById("member-goal-form")?.addEventListener("submit", saveMemberGoal);
+  document.getElementById("member-goal-cancel")?.addEventListener("click", resetMemberGoalForm);
   initH2KDashboard();
 
   document
