@@ -1,6 +1,7 @@
 let detailAccess = null;
 let detailMember = null;
 let detailGoals = [];
+let detailCheckinsByGoalId = {};
 
 function normalizeGoalNumber(value) {
   return value === "" ? null : Number(value);
@@ -28,15 +29,17 @@ function formatGoalTimeline(timeline) {
 function getGoalProgress(goal) {
   if (goal.status === "completed") return { percent: 100, tone: "good", label: "100%" };
 
-  const currentValue = Number(goal.current_value);
+  const checkins = detailCheckinsByGoalId[goal.id] || [];
+  const latestCheckin = checkins[checkins.length - 1];
+  const currentValue = Number(latestCheckin?.value ?? goal.current_value);
   const targetValue = Number(goal.target_value);
   if (!Number.isFinite(currentValue) || !Number.isFinite(targetValue) || targetValue <= 0) {
-    return { percent: null, tone: "warning", label: "Not set" };
+    return { percent: null, tone: "warning", label: "Not set", currentValue: null };
   }
 
   const percent = Math.max(0, Math.min(100, Math.round((currentValue / targetValue) * 100)));
   const tone = percent >= 80 ? "good" : percent >= 40 ? "warning" : "danger";
-  return { percent, tone, label: `${percent}%` };
+  return { percent, tone, label: `${percent}%`, currentValue };
 }
 
 function showDetailMessage(message, isError = false) {
@@ -63,7 +66,11 @@ function renderDetailGoals() {
   const assignedGoals = detailGoals.filter(goal => goal.status !== "completed" && goal.source === "coach");
   const createdGoals = detailGoals.filter(goal => goal.status !== "completed" && goal.source === "member");
   const completedGoals = detailGoals.filter(goal => goal.status === "completed");
-  const renderGoal = goal => `
+  const renderGoal = goal => {
+    const progress = getGoalProgress(goal);
+    const displayedCurrentValue = progress.currentValue ?? goal.current_value;
+
+    return `
     <article class="member-goal-card ${goal.status === "paused" ? "is-paused" : ""}">
       <div class="member-goal-card-main">
         <div class="member-goal-card-heading">
@@ -73,16 +80,13 @@ function renderDetailGoals() {
         ${goal.description ? `<p>${window.RipCityUI.text(goal.description)}</p>` : ""}
         <div class="member-goal-meta">
           <span>${window.RipCityUI.text(formatGoalTimeline(goal.timeline))}</span>
-          <span>${window.RipCityUI.text(goal.target_value === null ? "No target value" : `${goal.current_value ?? 0} / ${goal.target_value}${goal.unit ? ` ${goal.unit}` : ""}`)}</span>
+          <span>${window.RipCityUI.text(goal.target_value === null ? "No target value" : `${displayedCurrentValue ?? 0} / ${goal.target_value}${goal.unit ? ` ${goal.unit}` : ""}`)}</span>
           <span>${window.RipCityUI.text(formatGoalDate(goal.due_date))}</span>
         </div>
-        ${(() => {
-          const progress = getGoalProgress(goal);
-          return `<div class="coach-goal-progress" aria-label="Goal progress: ${progress.label}">
+        <div class="coach-goal-progress" aria-label="Goal progress: ${progress.label}">
             <div class="coach-goal-progress-heading"><span>Progress</span><strong class="status-${progress.tone}">${progress.label}</strong></div>
             <div class="progress-bar"><div class="status-${progress.tone}" style="width: ${progress.percent ?? 0}%"></div></div>
-          </div>`;
-        })()}
+        </div>
       </div>
       <div class="member-goal-actions">
         <label>Status
@@ -94,6 +98,7 @@ function renderDetailGoals() {
         <button class="outline-btn danger-outline-btn" type="button" data-delete-coach-goal="${window.RipCityUI.attr(goal.id)}">Delete</button>
       </div>
     </article>`;
+  };
 
   const renderSection = (title, goals) => goals.length
     ? `<section class="coach-goal-section"><h3>${title}</h3><div class="member-goal-list">${goals.map(renderGoal).join("")}</div></section>`
@@ -149,6 +154,18 @@ async function loadDetailGoals() {
 
   if (error) throw error;
   detailGoals = data || [];
+
+  const { data: checkins, error: checkinError } = await db.from("goal_checkins")
+    .select("goal_id, recorded_date, value")
+    .eq("member_profile_id", memberProfile.id)
+    .order("recorded_date", { ascending: true });
+
+  if (checkinError) throw checkinError;
+  detailCheckinsByGoalId = {};
+  (checkins || []).forEach(checkin => {
+    if (!detailCheckinsByGoalId[checkin.goal_id]) detailCheckinsByGoalId[checkin.goal_id] = [];
+    detailCheckinsByGoalId[checkin.goal_id].push(checkin);
+  });
   renderDetailGoals();
 }
 
