@@ -69,7 +69,15 @@ on public.goal_checkins
 for update
 to authenticated
 using (app_private.owns_member_profile(member_profile_id))
-with check (app_private.owns_member_profile(member_profile_id));
+with check (
+  app_private.owns_member_profile(member_profile_id)
+  and exists (
+    select 1
+    from public.goals g
+    where g.id = goal_checkins.goal_id
+      and g.member_profile_id = goal_checkins.member_profile_id
+  )
+);
 
 create policy "goal_checkins coaches can update facility checkins"
 on public.goal_checkins
