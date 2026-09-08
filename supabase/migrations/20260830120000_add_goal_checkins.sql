@@ -42,6 +42,7 @@ for insert
 to authenticated
 with check (
   app_private.owns_member_profile(member_profile_id)
+  and created_by = auth.uid()
   and exists (
     select 1
     from public.goals g
