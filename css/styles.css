@@ -1834,6 +1834,12 @@ td {
     font-weight: 800;
   }
 
+  .goal-chart-date-label {
+    fill: var(--muted);
+    font-size: 9px;
+    font-weight: 700;
+  }
+
   .goal-checkin-chart {
     margin-top: 12px;
   }
@@ -1850,7 +1856,7 @@ td {
   .goal-chart {
     display: block;
     width: 100%;
-    height: 130px;
+    height: 150px;
   }
 
   .goal-checkin-history {

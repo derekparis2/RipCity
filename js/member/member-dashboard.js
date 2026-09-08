@@ -263,9 +263,10 @@ function renderGoalChart(goal) {
   const minValue = Math.min(...values, targetValue ?? 0, 0);
   const maxValue = Math.max(...values, targetValue ?? 0, 1);
   const padding = 18;
+  const bottomPadding = 34;
   const width = 760;
-  const height = 130;
-  const chartHeight = height - padding * 2;
+  const height = 150;
+  const chartHeight = height - padding - bottomPadding;
   const valueRange = Math.max(maxValue - minValue, 1);
   const latestValue = values[values.length - 1];
   const targetY = targetValue === null
@@ -281,7 +282,19 @@ function renderGoalChart(goal) {
   const dots = points.map((point, index) => {
     const x = padding + ((index * (width - padding * 2)) / Math.max(points.length - 1, 1));
     const y = height - padding - ((Number(point.value) - minValue) / valueRange) * chartHeight;
-    return `<circle cx="${x}" cy="${y}" r="4" fill="#2d6cdf"></circle>`;
+    return `<circle cx="${x}" cy="${y}" r="4" fill="#2d6cdf"><title>${formatGoalDate(point.recorded_date)}: ${point.value}</title></circle>`;
+  }).join("");
+
+  const dateLabels = points.map((point, index) => {
+    const labelStep = Math.max(1, Math.ceil(points.length / 6));
+    if (index % labelStep !== 0 && index !== points.length - 1) return "";
+
+    const x = padding + ((index * (width - padding * 2)) / Math.max(points.length - 1, 1));
+    const label = new Date(`${point.recorded_date}T12:00:00`).toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric"
+    });
+    return `<text x="${x}" y="${height - 8}" text-anchor="middle" class="goal-chart-date-label">${label}</text>`;
   }).join("");
 
   return `
@@ -291,6 +304,7 @@ function renderGoalChart(goal) {
         ${targetY === null ? "" : `<line x1="${padding}" y1="${targetY}" x2="${width - padding}" y2="${targetY}" class="goal-chart-target-line"></line><text x="${width - padding}" y="${Math.max(targetY - 4, 10)}" text-anchor="end" class="goal-chart-target-label">Target</text>`}
         <path d="${linePath}" fill="none" stroke="#2d6cdf" stroke-width="2"></path>
         ${dots}
+        ${dateLabels}
       </svg>
     </div>
   `;
