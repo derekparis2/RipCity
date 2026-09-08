@@ -56,6 +56,7 @@ for insert
 to authenticated
 with check (
   app_private.is_facility_coach(app_private.member_profile_facility_id(member_profile_id))
+  and created_by = auth.uid()
   and exists (
     select 1
     from public.goals g
