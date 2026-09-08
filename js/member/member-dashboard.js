@@ -484,8 +484,9 @@ async function saveGoalCheckin(goalId) {
   if (!dateInput || !valueInput) return;
 
   const recordedDate = dateInput.value;
-  const value = Number(valueInput.value);
-  if (!recordedDate || Number.isNaN(value)) {
+  const rawValue = valueInput.value;
+  const value = Number(rawValue);
+  if (!recordedDate || rawValue === "" || Number.isNaN(value)) {
     showMemberGoalsMessage("Choose a date and enter a numeric goal value.", true);
     return;
   }
