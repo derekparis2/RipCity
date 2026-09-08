@@ -97,7 +97,7 @@ try {
 
   const alphaWrite = await request("goals?select=id", alphaCoachAuth.token, {
     method: "POST",
-    body: JSON.stringify({ member_profile_id: athleteProfileId, source: "coach", name: "Cross-facility goal", timeline: "short_term" })
+    body: JSON.stringify({ member_profile_id: athleteProfileId, created_by: alphaCoachAuth.userId, source: "coach", name: "Cross-facility goal", timeline: "short_term" })
   });
   assert(!alphaWrite.response.ok, "other-facility coach cannot create a goal for this member");
 } finally {
