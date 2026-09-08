@@ -45,8 +45,8 @@ with check (
   and exists (
     select 1
     from public.goals g
-    where g.id = goal_id
-      and g.member_profile_id = member_profile_id
+    where g.id = goal_checkins.goal_id
+      and g.member_profile_id = goal_checkins.member_profile_id
   )
 );
 
