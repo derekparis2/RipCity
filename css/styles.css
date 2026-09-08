@@ -1624,6 +1624,18 @@ td {
 
   .member-goals-panel {
     margin-top: 22px;
+    font-family: "Inter", sans-serif;
+  }
+
+  .member-goals-panel h2,
+  .member-goals-panel h3,
+  .member-goals-panel h4,
+  .member-goals-panel label,
+  .member-goals-panel button,
+  .member-goals-panel input,
+  .member-goals-panel select,
+  .member-goals-panel textarea {
+    font-family: "Inter", sans-serif;
   }
 
   .coach-member-detail-summary + .member-goals-panel {
@@ -1678,6 +1690,16 @@ td {
   .member-goal-list {
     display: grid;
     gap: 10px;
+  }
+
+  .coach-goal-section {
+    display: grid;
+    gap: 10px;
+  }
+
+  .coach-goal-section h3 {
+    margin: 12px 0 0;
+    font-size: 16px;
   }
 
   .member-goal-card {

@@ -60,7 +60,8 @@ function renderDetailGoals() {
   const list = document.getElementById("coach-goal-list");
   if (!list) return;
 
-  const activeGoals = detailGoals.filter(goal => goal.status !== "completed");
+  const assignedGoals = detailGoals.filter(goal => goal.status !== "completed" && goal.source === "coach");
+  const createdGoals = detailGoals.filter(goal => goal.status !== "completed" && goal.source === "member");
   const completedGoals = detailGoals.filter(goal => goal.status === "completed");
   const renderGoal = goal => `
     <article class="member-goal-card ${goal.status === "paused" ? "is-paused" : ""}">
@@ -94,8 +95,12 @@ function renderDetailGoals() {
       </div>
     </article>`;
 
-  list.innerHTML = activeGoals.length || completedGoals.length
-    ? `${activeGoals.map(renderGoal).join("")}${completedGoals.length ? `<details class="member-goal-achievements"><summary>Completed goals (${completedGoals.length})</summary><div class="member-goal-list">${completedGoals.map(renderGoal).join("")}</div></details>` : ""}`
+  const renderSection = (title, goals) => goals.length
+    ? `<section class="coach-goal-section"><h3>${title}</h3><div class="member-goal-list">${goals.map(renderGoal).join("")}</div></section>`
+    : "";
+
+  list.innerHTML = assignedGoals.length || createdGoals.length || completedGoals.length
+    ? `${renderSection("Assigned goals", assignedGoals)}${renderSection("Created goals", createdGoals)}${renderSection("Completed goals", completedGoals)}`
     : `<div class="empty-state">No goals assigned yet.</div>`;
 
   document.querySelectorAll("[data-coach-goal-status]").forEach(select => {
