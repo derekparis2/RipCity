@@ -368,7 +368,7 @@ function renderMemberGoalCard(goal) {
           <summary>Check in</summary>
           <div class="goal-checkin-inline">
             <input type="date" data-goal-checkin-date="${window.RipCityUI.attr(goal.id)}" value="${getTodayString()}" />
-            <input type="number" step="any" data-goal-checkin-value="${window.RipCityUI.attr(goal.id)}" placeholder="${goal.unit || "value"}" />
+            <input type="number" step="any" data-goal-checkin-value="${window.RipCityUI.attr(goal.id)}" placeholder="${window.RipCityUI.attr(goal.unit || "value")}" />
             <button class="primary-btn small-btn" type="button" data-save-goal-checkin="${window.RipCityUI.attr(goal.id)}">Add</button>
           </div>
         </details>
