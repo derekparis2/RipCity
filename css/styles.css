@@ -1626,6 +1626,10 @@ td {
     margin-top: 22px;
   }
 
+  .coach-member-detail-summary + .member-goals-panel {
+    margin-bottom: 32px;
+  }
+
   .member-goal-form {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1715,6 +1719,37 @@ td {
     margin-top: 10px;
     color: var(--muted);
     font-size: 12px;
+  }
+
+  .coach-goal-progress {
+    max-width: 420px;
+    margin-top: 14px;
+  }
+
+  .coach-goal-progress-heading {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 6px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .coach-goal-progress-heading strong {
+    font-weight: 800;
+  }
+
+  .coach-goal-progress .progress-bar div.status-good {
+    background: var(--success);
+  }
+
+  .coach-goal-progress .progress-bar div.status-warning {
+    background: var(--warning);
+  }
+
+  .coach-goal-progress .progress-bar div.status-danger {
+    background: var(--danger);
   }
 
   .member-goal-meta span:not(:last-child)::after {

@@ -27,6 +27,51 @@
     <section class="panel coach-member-detail-summary" id="coach-member-detail-summary">
       <div class="empty-state">Loading member...</div>
     </section>
+    <section class="panel member-goals-panel" id="coach-member-goals-panel">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Development</p>
+          <h2>Goals</h2>
+          <p>Assign and manage goals for this member.</p>
+        </div>
+      </div>
+      <form class="member-goal-form" id="coach-goal-form">
+        <input id="coach-goal-id" type="hidden" />
+        <label class="member-goal-name-field">Name
+          <input id="coach-goal-name" type="text" maxlength="160" required />
+        </label>
+        <label>Timeline
+          <select id="coach-goal-timeline">
+            <option value="short_term">Short term</option>
+            <option value="medium_term">Medium term</option>
+            <option value="long_term">Long term</option>
+            <option value="ongoing">Ongoing</option>
+          </select>
+        </label>
+        <label>Current value
+          <input id="coach-goal-current-value" type="number" step="any" />
+        </label>
+        <label>Target value
+          <input id="coach-goal-target-value" type="number" step="any" />
+        </label>
+        <label>Unit
+          <input id="coach-goal-unit" type="text" maxlength="40" placeholder="lbs, days, reps" />
+        </label>
+        <label>Due date
+          <input id="coach-goal-due-date" type="date" />
+        </label>
+        <label class="member-goal-description-field">Description
+          <textarea id="coach-goal-description" rows="3" maxlength="1000"></textarea>
+        </label>
+        <div class="member-goal-form-actions">
+          <button class="primary-btn" id="coach-goal-submit" type="submit">Assign Goal</button>
+          <button class="outline-btn hidden" id="coach-goal-cancel" type="button">Cancel</button>
+        </div>
+      </form>
+      <div class="member-goal-list" id="coach-goal-list">
+        <div class="empty-state">Loading goals...</div>
+      </div>
+    </section>
   </main>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/shared/supabaseClient.js"></script>
