@@ -28,7 +28,7 @@ as $$
 begin
   if app_private.is_facility_coach(app_private.member_profile_facility_id(old.member_profile_id)) then
     new.completed_at := case
-      when new.status = 'completed' then coalesce(new.completed_at, now())
+      when new.status = 'completed' then coalesce(new.completed_at, old.completed_at, now())
       else null
     end;
     return new;
