@@ -48,12 +48,24 @@ function showDetailMessage(message, isError = false) {
   element.classList.toggle("error-message", isError);
 }
 
+function getSafeImageUrl(url) {
+  if (!url) return "";
+
+  try {
+    const parsed = new URL(url, window.location.href);
+    return ["http:", "https:", "blob:"].includes(parsed.protocol) ? parsed.href : "";
+  } catch {
+    return "";
+  }
+}
+
 function renderDetailMember() {
   const profile = detailMember.member_profile?.[0] || detailMember.member_profile || {};
   const groups = (detailMember.group_members || []).map(item => item.group?.name).filter(Boolean);
+  const safeProfilePictureUrl = getSafeImageUrl(detailMember.profile?.profile_picture_url);
   document.getElementById("coach-member-detail-summary").innerHTML = `
     <div class="coach-member-detail-heading">
-      ${window.RipCityUI.avatarMarkup(detailMember.profile?.full_name, detailMember.profile?.profile_picture_url, "roster-avatar")}
+      ${window.RipCityUI.avatarMarkup(detailMember.profile?.full_name, safeProfilePictureUrl, "roster-avatar")}
       <div><p class="eyebrow">${window.RipCityUI.text(profile.member_type === "h2k" ? "H2K MEMBER" : "ATHLETE")}</p><h2>${window.RipCityUI.text(detailMember.profile?.full_name, "Unnamed Member")}</h2><p>${window.RipCityUI.text(detailMember.profile?.email)}</p></div>
     </div>
     <div class="member-goal-meta"><span>${window.RipCityUI.text(groups.join(", ") || "No groups")}</span>${profile.h2k_band_color ? `<span>${window.RipCityUI.text(`${profile.h2k_band_color} Band`)}</span>` : ""}</div>`;
