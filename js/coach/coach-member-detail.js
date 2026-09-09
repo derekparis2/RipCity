@@ -261,7 +261,15 @@ async function loadMember() {
 }
 
 async function init() {
-  try { detailAccess = await window.RipCityAccess.requireCoachAccess(); if (!detailAccess) return; await loadMember(); } catch (error) { showDetailMessage(error.message || "Could not load member.", true); }
+  try {
+    detailAccess = await window.RipCityAccess.requireCoachAccess();
+
+    if (!detailAccess) return;
+
+    await loadMember();
+  } catch (error) {
+    showDetailMessage(error.message || "Could not load member.", true);
+  }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
