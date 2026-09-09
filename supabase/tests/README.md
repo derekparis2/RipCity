@@ -27,3 +27,15 @@ key. It performs no insert, update, or delete operations.
 Platform-owner coverage remains pending its V2 migration and test identity.
 
 Status: all 45 read checks passed against Rip City Staging on 2026-08-28.
+
+## Goals CRUD And RLS Checks
+
+After applying the V2 Goals migration, run:
+
+```bash
+node supabase/tests/staging_goals_rls_checks.mjs
+```
+
+This staging-only test creates and cleans up fake goals while verifying member
+ownership, status-only updates to coach-created goals, and cross-facility write
+denial.
