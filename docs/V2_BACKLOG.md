@@ -184,7 +184,25 @@ features into V2.
 
 ---
 
-## 10. Final V2 Release Hardening
+## 10. Stylesheet And UI Structure Cleanup
+
+- **Status:** Planned
+- **Suggested branch:** `<name>/stylesheet-cleanup`
+- **Plan detail:** [Codebase cleanup and maintainability](VERSION_2_PLAN.md#9-codebase-cleanup-and-maintainability)
+
+This package begins after the major V2 feature branches are merged. It splits
+the large `css/styles.css` file into clearly ordered shared, component,
+authentication, coach, and member stylesheets so future contributors can find
+page styles quickly and parallel work creates fewer merge conflicts. The first
+pass is a mechanical reorganization with no intentional visual redesign.
+
+**Complete when:** Every active page loads the correct new stylesheets, the
+original cascade and appearance are preserved, desktop/mobile visual regression
+checks pass, and the old combined stylesheet can be removed safely.
+
+---
+
+## 11. Final V2 Release Hardening
 
 - **Status:** Planned
 - **Suggested branch:** `<name>/v2-release-hardening`
