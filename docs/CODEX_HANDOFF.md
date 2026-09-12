@@ -20,6 +20,12 @@ Git branches:
 Netlify:
 
 - Production deploy should point at `main`.
+- The separate V2 staging site is `https://ripcitystaging.netlify.app` and
+  deploys `v2-development`.
+- Pull requests into `v2-development` receive public Netlify Deploy Previews
+  after Netlify sees a push to the PR branch.
+- Follow `docs/STAGING_RELEASE_CHECKLIST.md` for preview, migration, recovery,
+  and post-deploy checks.
 - `codex-ui-polish` was the old production branch name and has been retired/deleted after `main` was updated.
 - `codex/beta-next` was renamed/deleted in favor of `v2-development`.
 
@@ -132,9 +138,10 @@ Current status:
   and Rip City starter configuration passed.
 - Staging currently has nine documented fake Auth users and no workout/activity
   data. Continue using only fake people and activity data.
-- Staging Auth was configured on 2026-08-28 with local port `3000`, exact local
-  password-reset redirects, email signups enabled, email confirmation disabled,
-  and anonymous sign-ins disabled.
+- Staging Auth uses `https://ripcitystaging.netlify.app` as its Site URL and
+  allows the stable staging domain, all Netlify Deploy Preview subdomains, and
+  optional localhost port `3000`. Email signups are enabled; email confirmation
+  and anonymous sign-ins are disabled.
 - The staging-only two-facility seed passed on 2026-08-28. Rip City has its five
   groups and six H2K habits; Test Facility Alpha has two athlete groups and no
   H2K habits.

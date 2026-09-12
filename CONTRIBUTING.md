@@ -18,6 +18,12 @@ safety boundaries.
 Production uses the live Supabase project. Version 2 uses **Rip City Staging**
 and entirely fake data until a production release is explicitly approved.
 
+The stable V2 site is `https://ripcitystaging.netlify.app`. A PR into
+`v2-development` receives a Netlify URL shaped like
+`https://deploy-preview-<PR>--ripcitystaging.netlify.app`. Follow
+`docs/STAGING_RELEASE_CHECKLIST.md`; every preview shares the same staging
+database even though its frontend code is isolated.
+
 ## Starting A Feature
 
 ```bash
@@ -129,6 +135,7 @@ http://127.0.0.1:3000/set-password.html
 - Check mobile and desktop layouts for visible UI changes.
 - Confirm no production URL, secret, real member data, or unrelated change was
   introduced.
+- Repeat the affected checks on the stable staging URL after the PR is merged.
 
 ## Product Scope
 
