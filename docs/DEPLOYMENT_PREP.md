@@ -2,6 +2,11 @@
 
 Use this checklist before putting Rip City on a live URL for testers.
 
+This file describes the original beta deployment checks. For V2 feature
+branches, Netlify Deploy Previews, staging Supabase migrations, recovery, and
+the eventual V2 production release gate, use
+`docs/STAGING_RELEASE_CHECKLIST.md`.
+
 ## Hosting Choice
 
 Rip City is currently a static frontend that talks directly to Supabase with the
