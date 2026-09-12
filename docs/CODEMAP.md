@@ -23,7 +23,11 @@ Use this as the quick orientation guide before editing.
 - `js/coach/coach-approvals.js` lets coaches/admins approve or reject pending members.
 - `js/coach/coach-roster.js` manages facility members, group membership, member status, and H2K band color.
 - `js/coach/coach-dashboard.js` powers H2K score review and coach workout completion review.
-- `js/coach/coach-workouts.js` powers workout creation, assignment, recent workout reuse, and the exercise library.
+- `js/coach/workouts/` powers workout creation, assignment, recent workout reuse,
+  and the exercise library. `page.js` is the page controller, with the form UI
+  in `builder.js`, assignment behavior in `assignments.js`, saved-workout
+  behavior in `history.js`, exercise-library behavior in `exercise-library.js`,
+  and common state/helpers in `core.js` and `data.js`.
 - `js/member/member-dashboard.js` powers member stats, H2K habits, today’s workout, workout history, and feedback link display.
 - `js/member/profile.js` powers member profile editing and the read-only H2K band display.
 - `js/member/workout-session-core.js`, `js/member/workout-session-render.js`, and

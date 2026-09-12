@@ -115,17 +115,18 @@ features into each other.
 
 ---
 
-## 6. Exercise Library And Workout V2 Finalization
+## 6. Workout Builder, Exercise Library, And History Finalization
 
-- **Status:** Planned
-- **Suggested branch:** `<name>/workouts-v2`
+- **Status:** In progress
+- **Branch:** `derek/workout-builder-refactor`
 - **Plan detail:** [Universal and facility exercise library](VERSION_2_PLAN.md#universal-and-facility-exercise-library) · [Beta workout polish](VERSION_2_PLAN.md#8-beta-feedback-polish-queue)
 
 This package completes the workout foundation that V2 is meant to stabilize. It
-includes one combined exercise library, facility-only exercises, universal
-edit-to-override and delete-to-hide behavior, stable workout history, workout
-editing and assignment cleanup, archive/delete rules, member history, mobile
-session polish, and workout-derived H2K behavior.
+includes a faster and clearer coach workout-builder flow, full workout-structure
+editing, assignment cleanup, one combined exercise library, facility-only
+exercises, universal edit-to-override and delete-to-hide behavior, stable
+workout history, archive/delete rules, member history, mobile session polish,
+and workout-derived H2K behavior.
 
 **Complete when:** The full coach-to-member workout lifecycle is stable on
 desktop and mobile, and exercise changes cannot leak across facilities or alter
@@ -183,7 +184,25 @@ features into V2.
 
 ---
 
-## 10. Final V2 Release Hardening
+## 10. Stylesheet And UI Structure Cleanup
+
+- **Status:** Planned
+- **Suggested branch:** `<name>/stylesheet-cleanup`
+- **Plan detail:** [Codebase cleanup and maintainability](VERSION_2_PLAN.md#9-codebase-cleanup-and-maintainability)
+
+This package begins after the major V2 feature branches are merged. It splits
+the large `css/styles.css` file into clearly ordered shared, component,
+authentication, coach, and member stylesheets so future contributors can find
+page styles quickly and parallel work creates fewer merge conflicts. The first
+pass is a mechanical reorganization with no intentional visual redesign.
+
+**Complete when:** Every active page loads the correct new stylesheets, the
+original cascade and appearance are preserved, desktop/mobile visual regression
+checks pass, and the old combined stylesheet can be removed safely.
+
+---
+
+## 11. Final V2 Release Hardening
 
 - **Status:** Planned
 - **Suggested branch:** `<name>/v2-release-hardening`

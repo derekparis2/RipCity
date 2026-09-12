@@ -798,6 +798,44 @@ V2 direction:
 - Keep Previous / Save Set / Save & Next stable and easy to reach.
 - Continue making target vs actual clearer on small screens.
 
+### Workout Builder Editing And Version History
+
+Coaches need to correct upcoming workouts without rewriting what members were
+previously assigned or completed.
+
+Decisions:
+
+- An unassigned workout can be edited directly.
+- A workout used only by future assignments can be edited directly, and those
+  future assignments continue using the corrected workout.
+- A past assignment must keep the workout structure and instructions that were
+  originally assigned.
+- Any assignment with member logs is treated as started history and must not be
+  changed by later workout edits.
+- A same-day assignment with no member logs may still be corrected.
+- If a coach edits an upcoming or unstarted assignment whose saved workout also
+  has past/started use, the app creates a new workout version and moves the
+  selected upcoming assignment to it. The coach should experience this as a
+  normal edit rather than having to manually duplicate and reconnect records.
+- If the same workout has multiple upcoming assignments, the edit flow should
+  clearly ask whether the change applies only to the selected assignment or to
+  all unstarted future assignments.
+- Creating a new version must preserve a visible connection to its source so
+  coaches can understand the workout's history without mixing completed logs
+  into the new version.
+- Workout title/details, blocks, exercises, ordering, targets, and coaching
+  instructions follow the same history-preservation rule.
+- Draft/unused workouts may be permanently deleted. Workouts with assignments
+  or logs should normally be archived, with destructive deletion unavailable
+  from the ordinary coach UI.
+
+Done criteria:
+
+- Coaches can correct tomorrow's workout without manually rebuilding it.
+- Editing an upcoming workout never changes a past workout or saved member log.
+- Direct edits and automatic version creation are clear before the coach saves.
+- Assignment dates and "past/today/future" decisions use the facility time zone.
+
 ---
 
 ## 9. Codebase Cleanup And Maintainability
@@ -844,6 +882,12 @@ historical archives remain under `sql/`. Continue this structure for V2.
 
 - Add concise comments to explain complex sections, not obvious one-line code.
 - Split very large JavaScript files into helper modules where it makes future work safer.
+- After the major V2 feature branches are merged, split `css/styles.css` into
+  clearly ordered shared, component, authentication, coach, and member
+  stylesheets. Start as a mechanical move with no intentional visual changes.
+- Preserve the existing cascade order during the stylesheet split, document
+  which files each page loads, and visually regression-test every active page
+  at desktop and mobile widths before removing the original combined file.
 - Look for repeated auth, facility-access, date, assignment, scoring, rendering, and Supabase-query logic that can be shared.
 - Keep shared member platform behavior separate from H2K-only behavior.
 - Keep coach-only features separate from member-facing features.
@@ -857,7 +901,9 @@ historical archives remain under `sql/`. Continue this structure for V2.
 3. Docs audit: consolidate the current roadmap and move old files aside.
 4. Code comments: explain complex Supabase and workflow logic.
 5. Small dead-code removal: remove clearly unused selectors/functions.
-6. File splitting: only split large files after tests confirm behavior.
+6. File splitting: only split large files after tests confirm behavior; perform
+   the final stylesheet split after major V2 feature work to avoid unnecessary
+   cross-branch merge conflicts.
 7. Maintain the Derek/Sam contributor workflow in `CONTRIBUTING.md`.
 
 ### Done Criteria
