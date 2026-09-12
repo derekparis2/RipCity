@@ -115,17 +115,18 @@ features into each other.
 
 ---
 
-## 6. Exercise Library And Workout V2 Finalization
+## 6. Workout Builder, Exercise Library, And History Finalization
 
-- **Status:** Planned
-- **Suggested branch:** `<name>/workouts-v2`
+- **Status:** In progress
+- **Branch:** `derek/workout-builder-refactor`
 - **Plan detail:** [Universal and facility exercise library](VERSION_2_PLAN.md#universal-and-facility-exercise-library) · [Beta workout polish](VERSION_2_PLAN.md#8-beta-feedback-polish-queue)
 
 This package completes the workout foundation that V2 is meant to stabilize. It
-includes one combined exercise library, facility-only exercises, universal
-edit-to-override and delete-to-hide behavior, stable workout history, workout
-editing and assignment cleanup, archive/delete rules, member history, mobile
-session polish, and workout-derived H2K behavior.
+includes a faster and clearer coach workout-builder flow, full workout-structure
+editing, assignment cleanup, one combined exercise library, facility-only
+exercises, universal edit-to-override and delete-to-hide behavior, stable
+workout history, archive/delete rules, member history, mobile session polish,
+and workout-derived H2K behavior.
 
 **Complete when:** The full coach-to-member workout lifecycle is stable on
 desktop and mobile, and exercise changes cannot leak across facilities or alter

@@ -798,6 +798,44 @@ V2 direction:
 - Keep Previous / Save Set / Save & Next stable and easy to reach.
 - Continue making target vs actual clearer on small screens.
 
+### Workout Builder Editing And Version History
+
+Coaches need to correct upcoming workouts without rewriting what members were
+previously assigned or completed.
+
+Decisions:
+
+- An unassigned workout can be edited directly.
+- A workout used only by future assignments can be edited directly, and those
+  future assignments continue using the corrected workout.
+- A past assignment must keep the workout structure and instructions that were
+  originally assigned.
+- Any assignment with member logs is treated as started history and must not be
+  changed by later workout edits.
+- A same-day assignment with no member logs may still be corrected.
+- If a coach edits an upcoming or unstarted assignment whose saved workout also
+  has past/started use, the app creates a new workout version and moves the
+  selected upcoming assignment to it. The coach should experience this as a
+  normal edit rather than having to manually duplicate and reconnect records.
+- If the same workout has multiple upcoming assignments, the edit flow should
+  clearly ask whether the change applies only to the selected assignment or to
+  all unstarted future assignments.
+- Creating a new version must preserve a visible connection to its source so
+  coaches can understand the workout's history without mixing completed logs
+  into the new version.
+- Workout title/details, blocks, exercises, ordering, targets, and coaching
+  instructions follow the same history-preservation rule.
+- Draft/unused workouts may be permanently deleted. Workouts with assignments
+  or logs should normally be archived, with destructive deletion unavailable
+  from the ordinary coach UI.
+
+Done criteria:
+
+- Coaches can correct tomorrow's workout without manually rebuilding it.
+- Editing an upcoming workout never changes a past workout or saved member log.
+- Direct edits and automatic version creation are clear before the coach saves.
+- Assignment dates and "past/today/future" decisions use the facility time zone.
+
 ---
 
 ## 9. Codebase Cleanup And Maintainability
