@@ -3238,9 +3238,186 @@ td {
     }
   }
 
-  /* =====================================================
+/* =====================================================
    WORKOUT BLOCKS
    ===================================================== */
+
+.workout-builder-step {
+  display: grid;
+  gap: 18px;
+  border: 1px solid var(--border);
+  background: rgba(18, 18, 20, 0.48);
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.workout-builder-step + .workout-builder-step {
+  margin-top: 6px;
+}
+
+.workout-builder-step-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.workout-builder-step-title {
+  min-width: 0;
+}
+
+.workout-builder-step-title small {
+  display: block;
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.workout-builder-step-heading > .outline-btn {
+  margin-left: auto;
+}
+
+.workout-builder-step-heading > span {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--text);
+  color: #101011;
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.workout-builder-step-heading h3 {
+  margin: 2px 0 0;
+  font-size: 28px;
+  line-height: 1;
+}
+
+.workout-builder-step-content {
+  display: grid;
+  gap: 18px;
+}
+
+.workout-builder-step.is-collapsed .workout-builder-step-content {
+  display: none;
+}
+
+.workout-builder-step.is-collapsed {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.workout-step-continue-btn {
+  justify-self: end;
+  min-width: 220px;
+}
+
+.workout-builder-review {
+  display: grid;
+  gap: 14px;
+  border: 1px solid rgba(112, 216, 130, 0.38);
+  background: rgba(112, 216, 130, 0.06);
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.workout-builder-review-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.workout-builder-review-heading strong,
+.workout-builder-review-heading small {
+  display: block;
+}
+
+.workout-builder-review-heading strong {
+  margin-top: 3px;
+  color: var(--text);
+  font-size: 20px;
+}
+
+.workout-builder-review-heading small,
+.workout-builder-review p,
+.workout-builder-review-blocks span {
+  color: var(--muted);
+}
+
+.workout-builder-review-heading small {
+  margin-top: 4px;
+}
+
+.workout-builder-review-stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 7px;
+}
+
+.workout-builder-review-stats span {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 999px;
+  padding: 7px 9px;
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.workout-builder-review-blocks {
+  display: grid;
+  gap: 8px;
+}
+
+.workout-builder-review-blocks > div {
+  display: grid;
+  grid-template-columns: minmax(100px, 0.3fr) minmax(0, 1fr);
+  gap: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.09);
+  padding-top: 8px;
+  font-size: 13px;
+}
+
+.workout-builder-review p {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.workout-assignment-fields {
+  display: grid;
+  gap: 14px;
+}
+
+.workout-assignment-fields > .field-help {
+  margin: 0;
+}
+
+.workout-save-actions {
+  display: grid;
+  grid-template-columns: minmax(150px, 0.4fr) minmax(220px, 1fr);
+  gap: 12px;
+}
+
+.workout-save-actions > * {
+  width: 100%;
+}
+
+.workout-save-help {
+  margin: -8px 0 0;
+  text-align: right;
+}
+
+#workout-form [aria-invalid="true"] {
+  border-color: #ff8e8e;
+  box-shadow: 0 0 0 2px rgba(255, 107, 107, 0.14);
+}
 
 .block-list {
   display: grid;
@@ -3342,6 +3519,47 @@ td {
 }
 
 @media (max-width: 700px) {
+  .workout-builder-step {
+    padding: 14px;
+  }
+
+  .workout-builder-step-heading,
+  .workout-builder-review-heading {
+    align-items: flex-start;
+  }
+
+  .workout-builder-step-heading {
+    flex-wrap: wrap;
+  }
+
+  .workout-builder-step-heading > .outline-btn {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .workout-step-continue-btn {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .workout-builder-review-heading {
+    flex-direction: column;
+  }
+
+  .workout-builder-review-stats {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .workout-builder-review-blocks > div,
+  .workout-save-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .workout-save-help {
+    text-align: left;
+  }
+
   .block-card-heading {
     flex-direction: column;
     align-items: stretch;

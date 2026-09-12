@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/styles.css?v=coach-workouts-exercise-flow-4" />
+  <link rel="stylesheet" href="css/styles.css" />
 </head>
 
 <body class="auth-body">
@@ -35,10 +35,10 @@
     <section class="hero-card h2k-hero">
       <div>
         <p class="eyebrow">WORKOUT BUILDER</p>
-        <h3>Create a workout and assign it to a group for a specific day.</h3>
+        <h3>Build it once. Save it or put it on the calendar.</h3>
         <p>
-          This is the start of the coach workout system. Coaches can build workouts,
-          pick a group, choose a date, and members will later see that day’s scheduled lift.
+          Create the workout first, review the full plan, then save it as a draft
+          or assign it to groups, an individual member, or the entire facility.
         </p>
       </div>
     </section>
@@ -67,75 +67,132 @@
         <p id="coach-workouts-message" class="auth-message"></p>
 
         <form id="workout-form" class="profile-form">
-          <label>
-            Workout Title
-            <input type="text" id="workout-title" placeholder="H2K Lower Body Strength" required />
-          </label>
-
-          <div class="form-row">
-            <label>
-              Focus
-              <input type="text" id="workout-focus" placeholder="Strength, speed, mobility..." />
-            </label>
-
-            <label>
-              Estimated Minutes
-              <input type="number" id="workout-minutes" placeholder="60" />
-            </label>
-          </div>
-
-          <label>
-            Description
-            <textarea id="workout-description" rows="3" placeholder="Short overview of the workout..."></textarea>
-          </label>
-
-          <div class="form-row">
-            <label>
-              Assign To
-              <select id="workout-target-type" required>
-                <option value="group">Group</option>
-                <option value="member">Individual Member</option>
-                <option value="facility">Entire Facility</option>
-              </select>
-            </label>
-
-            <label>
-              Assigned Date
-              <input type="date" id="workout-date" required />
-            </label>
-          </div>
-
-          <div class="form-row">
-            <div id="workout-group-field" class="form-field">
-              <span class="field-label">Groups</span>
-              <div id="workout-group" class="assignment-checkbox-list">
-                <div class="muted-small">Loading groups...</div>
+          <section class="workout-builder-step" id="workout-details-step" aria-labelledby="workout-details-heading">
+            <div class="workout-builder-step-heading">
+              <span>1</span>
+              <div class="workout-builder-step-title">
+                <p class="eyebrow">WORKOUT DETAILS</p>
+                <h3 id="workout-details-heading">Name the session</h3>
+                <small id="workout-details-summary">Add a title to begin.</small>
               </div>
-              <small class="field-help">Select one or more groups.</small>
+              <button
+                class="outline-btn small-inline-btn"
+                id="toggle-workout-details-btn"
+                type="button"
+                aria-controls="workout-details-fields"
+                aria-expanded="true"
+              >
+                Collapse
+              </button>
             </div>
 
-            <label id="workout-member-field" class="hidden">
-              Member
-              <select id="workout-member">
-                <option value="">Loading members...</option>
-              </select>
-            </label>
-          </div>
+            <div class="workout-builder-step-content" id="workout-details-fields">
+              <label>
+                Workout Title
+                <input type="text" id="workout-title" placeholder="H2K Lower Body Strength" required />
+              </label>
 
-          <div class="workout-exercise-header">
-            <div>
-              <p class="eyebrow">WORKOUT BLOCKS</p>
-              <h3>Blocks & Exercises</h3>
+              <div class="form-row">
+                <label>
+                  Focus
+                  <input type="text" id="workout-focus" placeholder="Strength, speed, mobility..." />
+                </label>
+
+                <label>
+                  Estimated Minutes
+                  <input type="number" id="workout-minutes" placeholder="60" min="1" />
+                </label>
+              </div>
+
+              <label>
+                Description
+                <textarea id="workout-description" rows="3" placeholder="Short overview of the workout..."></textarea>
+              </label>
+
+              <button class="primary-btn workout-step-continue-btn" id="continue-to-workout-btn" type="button">
+                Continue to Workout
+              </button>
             </div>
-          
-            <button class="outline-btn" type="button" id="add-block-btn">
-              Add Block
-            </button>
-          </div>
-          
-          <div id="block-list" class="block-list"></div>
+          </section>
 
-          <button class="primary-btn" type="submit">Create & Assign Workout</button>
+          <section class="workout-builder-step" id="workout-blocks-step" aria-labelledby="workout-blocks-heading">
+            <div class="workout-exercise-header">
+              <div class="workout-builder-step-heading">
+                <span>2</span>
+                <div>
+                  <p class="eyebrow">WORKOUT BLOCKS</p>
+                  <h3 id="workout-blocks-heading">Build the session</h3>
+                </div>
+              </div>
+
+              <button class="outline-btn" type="button" id="add-block-btn">
+                Add Block
+              </button>
+            </div>
+
+            <div id="block-list" class="block-list"></div>
+          </section>
+
+          <section class="workout-builder-step" aria-labelledby="workout-schedule-heading">
+            <div class="workout-builder-step-heading">
+              <span>3</span>
+              <div>
+                <p class="eyebrow">REVIEW & SCHEDULE</p>
+                <h3 id="workout-schedule-heading">Choose what happens next</h3>
+              </div>
+            </div>
+
+            <div class="workout-builder-review" id="workout-builder-review" aria-live="polite"></div>
+
+            <div class="workout-assignment-fields">
+              <p class="field-help">These fields are only required when you choose Create & Assign.</p>
+
+              <div class="form-row">
+                <label>
+                  Assign To
+                  <select id="workout-target-type">
+                    <option value="group">Groups</option>
+                    <option value="member">Individual Member</option>
+                    <option value="facility">Entire Facility</option>
+                  </select>
+                </label>
+
+                <label>
+                  Assigned Date
+                  <input type="date" id="workout-date" />
+                </label>
+              </div>
+
+              <div class="form-row">
+                <div id="workout-group-field" class="form-field">
+                  <span class="field-label">Groups</span>
+                  <div id="workout-group" class="assignment-checkbox-list">
+                    <div class="muted-small">Loading groups...</div>
+                  </div>
+                  <small class="field-help">Select one or more groups.</small>
+                </div>
+
+                <label id="workout-member-field" class="hidden">
+                  Member
+                  <select id="workout-member">
+                    <option value="">Loading members...</option>
+                  </select>
+                </label>
+              </div>
+            </div>
+
+            <div class="workout-save-actions">
+              <button class="outline-btn" type="submit" name="save-mode" value="draft">
+                Save Draft
+              </button>
+              <button class="primary-btn" type="submit" name="save-mode" value="assign">
+                Create & Assign
+              </button>
+            </div>
+            <p class="field-help workout-save-help">
+              Drafts stay in Created Workouts and can be assigned later.
+            </p>
+          </section>
         </form>
       </article>
 

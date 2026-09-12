@@ -8,14 +8,103 @@
 // Save workout
 // ----------------------------
 
-async function createWorkoutWithAssignment(event) {
+function clearWorkoutValidationErrors() {
+  document.querySelectorAll("#workout-form [aria-invalid='true']").forEach(element => {
+    element.removeAttribute("aria-invalid");
+  });
+}
+
+function showWorkoutValidationError(message, element) {
+  showWorkoutMessage(message, true);
+  element?.setAttribute("aria-invalid", "true");
+  element?.focus();
+}
+
+function getWorkoutValidationError({ shouldAssign, title, minutes, targetType, groupIds, memberProfileId, assignedDate }) {
+  if (!title) {
+    return {
+      message: "Add a workout title before saving.",
+      element: document.getElementById("workout-title")
+    };
+  }
+
+  if (minutes && Number(minutes) <= 0) {
+    return {
+      message: "Estimated minutes must be greater than zero.",
+      element: document.getElementById("workout-minutes")
+    };
+  }
+
+  const blockCards = Array.from(document.querySelectorAll("[data-block-card]"));
+  if (!blockCards.length) {
+    return {
+      message: "Add at least one workout block before saving.",
+      element: document.getElementById("add-block-btn")
+    };
+  }
+
+  for (const blockCard of blockCards) {
+    const blockName = blockCard.querySelector(".block-name");
+    if (!blockName?.value.trim()) {
+      return { message: "Every workout block needs a name.", element: blockName };
+    }
+
+    const exerciseCards = Array.from(blockCard.querySelectorAll("[data-exercise-card]"));
+    const namedExercises = exerciseCards.filter(card => card.querySelector(".exercise-name")?.value.trim());
+    if (!namedExercises.length) {
+      return {
+        message: `Add at least one exercise to ${blockName.value.trim()}.`,
+        element: exerciseCards[0]?.querySelector(".exercise-name") || blockName
+      };
+    }
+
+    const emptyExercise = exerciseCards.find(card => !card.querySelector(".exercise-name")?.value.trim());
+    if (emptyExercise) {
+      return {
+        message: `Name or remove the empty exercise in ${blockName.value.trim()}.`,
+        element: emptyExercise.querySelector(".exercise-name")
+      };
+    }
+  }
+
+  if (!shouldAssign) return null;
+
+  if (!assignedDate) {
+    return {
+      message: "Choose an assigned date before creating the assignment.",
+      element: document.getElementById("workout-date")
+    };
+  }
+
+  if (targetType === "group" && !groupIds.length) {
+    return {
+      message: "Choose at least one group for this assignment.",
+      element: document.querySelector("#workout-group input")
+    };
+  }
+
+  if (targetType === "member" && !memberProfileId) {
+    return {
+      message: "Choose a member for this assignment.",
+      element: document.getElementById("workout-member")
+    };
+  }
+
+  return null;
+}
+
+async function saveWorkout(event) {
   event.preventDefault();
   updateAssignmentControls();
 
-  const submitButton = event.submitter || document.querySelector("#workout-form button[type='submit']");
-  const originalSubmitText = submitButton?.textContent;
+  const submitButton = event.submitter;
+  const shouldAssign = submitButton?.value !== "draft";
+  const submitButtons = Array.from(document.querySelectorAll("#workout-form button[type='submit']"));
+  const originalSubmitLabels = new Map(submitButtons.map(button => [button, button.textContent]));
 
   try {
+    clearWorkoutValidationErrors();
+
     const title = getInputValue("workout-title");
     const focus = getInputValue("workout-focus");
     const description = getInputValue("workout-description");
@@ -25,39 +114,47 @@ async function createWorkoutWithAssignment(event) {
     const memberProfileId = getInputValue("workout-member");
     const assignedDate = getInputValue("workout-date");
 
-    if (!title || !assignedDate) {
-      showWorkoutMessage("Workout title and assigned date are required.", true);
+    const validationError = getWorkoutValidationError({
+      shouldAssign,
+      title,
+      minutes,
+      targetType,
+      groupIds,
+      memberProfileId,
+      assignedDate
+    });
+
+    if (validationError) {
+      showWorkoutValidationError(validationError.message, validationError.element);
       return;
     }
 
-    if (targetType === "group" && !groupIds.length) {
-      showWorkoutMessage("Choose at least one group for this assignment.", true);
-      return;
-    }
-
-    if (targetType === "member" && !memberProfileId) {
-      showWorkoutMessage("Choose a member for this assignment.", true);
-      return;
-    }
-
-    const blocks = await ensureWorkoutExercisesAreInLibrary(getBlockFormData());
+    const blocks = getBlockFormData();
 
     if (!blocks.length) {
-        showWorkoutMessage("Add at least one block with at least one exercise.", true);
-        return;
+      showWorkoutMessage("Add at least one block with at least one exercise.", true);
+      return;
     }
 
-    if (!confirmWorkoutCreate({ title, targetType, groupIds, memberProfileId, assignedDate })) {
+    if (shouldAssign && !confirmWorkoutCreate({ title, targetType, groupIds, memberProfileId, assignedDate })) {
       showWorkoutMessage("Workout creation cancelled.");
       return;
     }
 
+    workoutSaveInProgress = true;
+    submitButtons.forEach(button => {
+      button.disabled = true;
+    });
+
     if (submitButton) {
-      submitButton.disabled = true;
-      submitButton.textContent = "Creating...";
+      submitButton.textContent = shouldAssign ? "Creating & Assigning..." : "Saving Draft...";
     }
 
-    showWorkoutMessage("Creating workout...");
+    showWorkoutMessage(shouldAssign ? "Creating and assigning workout..." : "Saving workout draft...");
+
+    // Only sync custom exercises after any assignment confirmation so canceling
+    // the workflow never writes an exercise template by itself.
+    await ensureWorkoutExercisesAreInLibrary(blocks);
 
     const workoutId = createClientId();
 
@@ -129,27 +226,31 @@ async function createWorkoutWithAssignment(event) {
     
     if (exerciseError) throw exerciseError;
 
-    const assignmentRows = buildAssignmentRows({
-      workoutId,
-      targetType,
-      groupIds,
-      memberProfileId,
-      assignedDate
-    });
+    if (shouldAssign) {
+      const assignmentRows = buildAssignmentRows({
+        workoutId,
+        targetType,
+        groupIds,
+        memberProfileId,
+        assignedDate
+      });
 
-    const { error: assignmentError } = await db
-      .from("workout_assignments")
-      .insert(assignmentRows);
+      const { error: assignmentError } = await db
+        .from("workout_assignments")
+        .insert(assignmentRows);
 
-    if (assignmentError) throw assignmentError;
+      if (assignmentError) throw assignmentError;
 
-    showWorkoutMessage(getAssignmentSuccessMessage({
-      title,
-      targetType,
-      groupIds,
-      memberProfileId,
-      assignedDate
-    }));
+      showWorkoutMessage(getAssignmentSuccessMessage({
+        title,
+        targetType,
+        groupIds,
+        memberProfileId,
+        assignedDate
+      }));
+    } else {
+      showWorkoutMessage(`Workout "${title}" saved as a draft.`);
+    }
 
     resetWorkoutForm();
     await loadRecentWorkouts();
@@ -157,21 +258,25 @@ async function createWorkoutWithAssignment(event) {
     console.error(error);
     showWorkoutMessage(error.message || "Could not create workout.", true);
   } finally {
-    if (submitButton) {
-      submitButton.disabled = false;
-      submitButton.textContent = originalSubmitText || "Create & Assign Workout";
-    }
+    workoutSaveInProgress = false;
+    submitButtons.forEach(button => {
+      button.disabled = false;
+      button.textContent = originalSubmitLabels.get(button);
+    });
   }
 }
 
 function resetWorkoutForm() {
-    document.getElementById("workout-form").reset();
-    document.getElementById("block-list").innerHTML = "";
-    setTodayAsDefaultDate();
-    updateAssignmentControls();
-  
-    // Start with common training blocks.
-    addBlockCard();
+  document.getElementById("workout-form").reset();
+  document.getElementById("block-list").innerHTML = "";
+  clearWorkoutValidationErrors();
+  setTodayAsDefaultDate();
+  updateAssignmentControls();
+
+  // Start with a common training block.
+  addBlockCard();
+  setWorkoutDetailsCollapsed(false);
+  markWorkoutFormClean();
 }
 
 // ----------------------------
@@ -179,6 +284,11 @@ function resetWorkoutForm() {
 // ----------------------------
 
 async function logoutCoachWorkouts() {
+  if (workoutFormDirty && !window.confirm("Discard the unsaved workout and log out?")) {
+    return;
+  }
+
+  workoutFormDirty = false;
   await db.auth.signOut();
   window.location.href = "login.html";
 }
@@ -203,6 +313,7 @@ async function initCoachWorkoutsPage() {
     addBlockCard();
     await loadRecentWorkouts();
 
+    markWorkoutFormClean();
     showWorkoutMessage("");
   } catch (error) {
     console.error(error);
@@ -211,6 +322,7 @@ async function initCoachWorkoutsPage() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  initializeWorkoutBuilderTracking();
   initCoachWorkoutsPage();
 
   document.getElementById("add-block-btn").addEventListener("click", addBlockCard);
@@ -222,7 +334,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("recent-workout-date-filter")?.addEventListener("change", renderRecentWorkouts);
   document.getElementById("recent-workout-target-filter")?.addEventListener("change", renderRecentWorkouts);
   document.getElementById("workout-target-type").addEventListener("change", updateAssignmentControls);
-  document.getElementById("workout-form").addEventListener("submit", createWorkoutWithAssignment);
+  document.getElementById("workout-form").addEventListener("submit", saveWorkout);
   document.getElementById("refresh-workouts-btn").addEventListener("click", loadRecentWorkouts);
   document.getElementById("coach-workouts-logout-btn").addEventListener("click", logoutCoachWorkouts);
 });

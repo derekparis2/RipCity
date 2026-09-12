@@ -63,6 +63,7 @@ function addTemplateToBuilder(templateId) {
 
   applyExerciseTemplateToCard(exerciseCard, templateId);
   exerciseCard.scrollIntoView({ behavior: "smooth", block: "center" });
+  markWorkoutFormDirty();
   showExerciseLibraryMessage("Exercise added to the workout builder.");
 }
 
@@ -195,6 +196,8 @@ function updateBlockSummary(blockCard) {
       ? summary.exerciseNames.slice(0, 4).join(", ")
       : "Add exercises to this block";
   }
+
+  updateWorkoutBuilderReview();
 }
 
 function updateExerciseTargetField(card) {
@@ -533,6 +536,7 @@ function loadWorkoutIntoBuilder(workout) {
   });
 
   showWorkoutMessage("Workout loaded into builder. Save it to create a new assigned workout.");
+  markWorkoutFormDirty();
 }
 
 function getBlockFormData() {
@@ -574,4 +578,149 @@ function getBlockFormData() {
   }).filter(block => block.name && block.exercises.length);
 }
 
+let workoutFormDirty = false;
+let workoutSaveInProgress = false;
 
+function getWorkoutBuilderReviewData() {
+  const blocks = getBlockFormData();
+  const exerciseCount = blocks.reduce((total, block) => total + block.exercises.length, 0);
+  const targetType = getInputValue("workout-target-type") || "group";
+  const groupIds = getSelectedValues("workout-group");
+  const memberProfileId = getInputValue("workout-member");
+
+  return {
+    title: getInputValue("workout-title") || "Untitled workout",
+    focus: getInputValue("workout-focus") || "No focus added",
+    minutes: getInputValue("workout-minutes"),
+    assignedDate: getInputValue("workout-date"),
+    targetLabel: getTargetLabelForDraft(targetType, groupIds, memberProfileId),
+    blocks,
+    exerciseCount
+  };
+}
+
+function updateWorkoutBuilderReview() {
+  updateWorkoutDetailsSummary();
+
+  const review = document.getElementById("workout-builder-review");
+  if (!review) return;
+
+  const summary = getWorkoutBuilderReviewData();
+  const scheduleLabel = summary.assignedDate
+    ? `${summary.targetLabel} · ${formatDisplayDate(summary.assignedDate)}`
+    : "No calendar date selected";
+
+  review.innerHTML = `
+    <div class="workout-builder-review-heading">
+      <div>
+        <span class="eyebrow">WORKOUT PREVIEW</span>
+        <strong>${window.RipCityUI.text(summary.title)}</strong>
+        <small>${window.RipCityUI.text(summary.focus)}</small>
+      </div>
+      <div class="workout-builder-review-stats">
+        <span>${summary.blocks.length} block${summary.blocks.length === 1 ? "" : "s"}</span>
+        <span>${summary.exerciseCount} exercise${summary.exerciseCount === 1 ? "" : "s"}</span>
+        ${summary.minutes ? `<span>${window.RipCityUI.text(summary.minutes)} min</span>` : ""}
+      </div>
+    </div>
+    <div class="workout-builder-review-blocks">
+      ${summary.blocks.length ? summary.blocks.map(block => `
+        <div>
+          <strong>${window.RipCityUI.text(block.name)}</strong>
+          <span>${window.RipCityUI.text(block.exercises.map(exercise => exercise.name).join(", "))}</span>
+        </div>
+      `).join("") : `<span class="muted-small">Add a named exercise to see the workout preview.</span>`}
+    </div>
+    <p>${window.RipCityUI.text(scheduleLabel)}</p>
+  `;
+}
+
+function updateWorkoutDetailsSummary() {
+  const summary = document.getElementById("workout-details-summary");
+  if (!summary) return;
+
+  const title = getInputValue("workout-title");
+  const focus = getInputValue("workout-focus");
+  const minutes = getInputValue("workout-minutes");
+
+  if (!title) {
+    summary.textContent = "Add a title to begin.";
+    return;
+  }
+
+  summary.textContent = [title, focus, minutes ? `${minutes} min` : ""]
+    .filter(Boolean)
+    .join(" · ");
+}
+
+function setWorkoutDetailsCollapsed(shouldCollapse) {
+  const step = document.getElementById("workout-details-step");
+  const toggleButton = document.getElementById("toggle-workout-details-btn");
+  if (!step || !toggleButton) return;
+
+  step.classList.toggle("is-collapsed", shouldCollapse);
+  toggleButton.setAttribute("aria-expanded", String(!shouldCollapse));
+  toggleButton.textContent = shouldCollapse ? "Edit Details" : "Collapse";
+}
+
+function continueToWorkoutBuilder() {
+  const titleInput = document.getElementById("workout-title");
+  const title = titleInput?.value.trim() || "";
+
+  if (!title) {
+    showWorkoutValidationError("Add a workout title before continuing.", titleInput);
+    return;
+  }
+
+  titleInput.removeAttribute("aria-invalid");
+  showWorkoutMessage("");
+  setWorkoutDetailsCollapsed(true);
+  document.getElementById("workout-blocks-step")?.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+}
+
+function markWorkoutFormDirty() {
+  workoutFormDirty = true;
+  updateWorkoutBuilderReview();
+}
+
+function markWorkoutFormClean() {
+  workoutFormDirty = false;
+  updateWorkoutBuilderReview();
+}
+
+function initializeWorkoutBuilderTracking() {
+  const form = document.getElementById("workout-form");
+  if (!form) return;
+
+  const handleFormChange = () => markWorkoutFormDirty();
+  form.addEventListener("input", handleFormChange);
+  form.addEventListener("change", handleFormChange);
+  form.addEventListener("click", event => {
+    if (event.target.closest("#add-block-btn, .add-exercise-to-block-btn, .remove-block-btn, .remove-exercise-btn")) {
+      window.setTimeout(markWorkoutFormDirty, 0);
+    }
+  });
+
+  document.getElementById("continue-to-workout-btn")?.addEventListener("click", continueToWorkoutBuilder);
+  document.getElementById("toggle-workout-details-btn")?.addEventListener("click", () => {
+    const step = document.getElementById("workout-details-step");
+    if (step?.classList.contains("is-collapsed")) {
+      setWorkoutDetailsCollapsed(false);
+      document.getElementById("workout-title")?.focus();
+      return;
+    }
+
+    continueToWorkoutBuilder();
+  });
+
+  window.addEventListener("beforeunload", event => {
+    if (!workoutFormDirty || workoutSaveInProgress) return;
+    event.preventDefault();
+    event.returnValue = "";
+  });
+
+  updateWorkoutBuilderReview();
+}
