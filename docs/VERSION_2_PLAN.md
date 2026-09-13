@@ -138,6 +138,11 @@ Decisions:
   record and restore the current universal version.
 - Existing workouts and logged history must remain stable when a catalog entry
   is overridden, hidden, archived, or updated.
+- The Workout Builder remains the primary place to choose exercises through
+  inline search. Full exercise-library management lives on a separate coach
+  page linked only from the builder, not in the main coach navigation.
+- The builder should use its side space for a compact workout outline instead
+  of a second exercise picker.
 
 Recommended data direction:
 
@@ -165,6 +170,15 @@ Current-data transition direction:
 - The six verified coach-created production exercises remain Rip City-specific.
 - Rip City's edited `Push-Up` and `Tempo Push-Up` values become facility
   overrides if those production changes are confirmed as intentional.
+- Audit the starter exercise defaults before promoting them to the universal
+  catalog. Their prescribed workout target and their member-entered result must
+  be treated as separate concepts where needed:
+  - Band exercises may require the member to enter both band color and reps.
+  - Prescribed-distance drills such as A-skips should let the coach set the
+    distance while the member only marks the exercise complete.
+  - Measured-distance exercises such as broad jumps should keep member distance
+    entry. A saved result of `0` means completed but not measured and must count
+    as a valid completed result rather than missing data.
 - Test the transition entirely in staging before preparing a production
   migration.
 
@@ -184,6 +198,9 @@ Done criteria:
 - Keep Rip City visual style as the current design inspiration, but make colors/logo configurable over time.
 - Avoid building future pages that assume every facility is baseball-only or H2K-only.
 - Keep facility branding separate from core layout structure.
+- Coach/admin tools may use one consistent platform color system across
+  facilities. Member-facing branding remains the higher priority for
+  facility-specific colors and identity.
 
 #### Signup/Invites
 

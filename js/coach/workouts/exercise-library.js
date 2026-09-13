@@ -193,14 +193,17 @@ function renderExerciseLibraryList() {
     getInputValue("exercise-library-category-filter") !== "all" ||
     getInputValue("exercise-library-input-filter") !== "all"
   );
-  const visibleTemplates = hasActiveSearch
+  const isFullLibraryPage = document.body.classList.contains("coach-exercises-page");
+  const visibleTemplates = hasActiveSearch || isFullLibraryPage
     ? filteredTemplates
     : filteredTemplates.slice(0, 4);
 
   if (count) {
     count.textContent = hasActiveSearch
       ? `${filteredTemplates.length} of ${exerciseTemplates.length} exercises shown.`
-      : `Showing ${visibleTemplates.length} recent exercises. Search or filter to edit the full library.`;
+      : isFullLibraryPage
+        ? `${visibleTemplates.length} exercise${visibleTemplates.length === 1 ? "" : "s"} available.`
+        : `Showing ${visibleTemplates.length} recent exercises. Search or filter to edit the full library.`;
   }
 
   if (!filteredTemplates.length) {
@@ -220,14 +223,6 @@ function renderExerciseLibraryList() {
         ${template.category ? `<span>${window.RipCityUI.text(template.category)}</span>` : ""}
         ${template.equipment ? `<span>${window.RipCityUI.text(template.equipment)}</span>` : ""}
       </div>
-
-      <button
-        class="outline-btn small-inline-btn"
-        type="button"
-        data-add-template-to-builder="${window.RipCityUI.attr(template.id)}"
-      >
-        Add
-      </button>
 
       <button
         class="outline-btn small-inline-btn"
@@ -289,10 +284,6 @@ function renderExerciseLibraryList() {
       </form>
     </article>
   `).join("");
-
-  list.querySelectorAll("[data-add-template-to-builder]").forEach(button => {
-    button.addEventListener("click", () => addTemplateToBuilder(button.dataset.addTemplateToBuilder));
-  });
 
   list.querySelectorAll("[data-toggle-template-edit]").forEach(button => {
     button.addEventListener("click", () => {

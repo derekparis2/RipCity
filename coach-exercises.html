@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Coach Exercise Library</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body class="auth-body coach-exercises-page">
+  <main class="coach-page coach-workouts-page">
+    <header class="h2k-header">
+      <div class="auth-brand">
+        <img src="assets/rip-city-logo.png" alt="Rip City logo">
+        <div>
+          <h1>RIP CITY</h1>
+          <p>Exercise Library</p>
+        </div>
+      </div>
+
+      <div class="h2k-header-actions">
+        <a class="outline-link" href="coach-workouts.html">Back to Workout Builder</a>
+        <button class="outline-btn" id="coach-exercises-logout-btn">Log Out</button>
+      </div>
+    </header>
+
+    <section class="hero-card h2k-hero">
+      <div>
+        <p class="eyebrow">EXERCISE LIBRARY</p>
+        <h3>Manage the exercises available in your workout builder.</h3>
+        <p>
+          Add facility exercises and update their default details here. Coaches
+          still choose exercises directly inside the workout builder.
+        </p>
+      </div>
+    </section>
+
+    <p id="coach-workouts-message" class="auth-message"></p>
+    <p id="exercise-library-message" class="auth-message"></p>
+
+    <section class="exercise-library-page-grid">
+      <article class="panel exercise-library-create-card">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">ADD EXERCISE</p>
+            <h3>Save a Custom Exercise</h3>
+          </div>
+        </div>
+
+        <form id="exercise-library-form" class="exercise-library-form">
+          <label>
+            Exercise Name
+            <input type="text" id="library-exercise-name" placeholder="Trap Bar Deadlift" />
+          </label>
+
+          <div class="form-row">
+            <label>
+              Category
+              <input type="text" id="library-exercise-category" placeholder="Strength, power, mobility..." />
+            </label>
+
+            <label>
+              Equipment
+              <input type="text" id="library-exercise-equipment" placeholder="Trap bar, DB, bands..." />
+            </label>
+          </div>
+
+          <label>
+            Default Input Type
+            <select id="library-exercise-input-type">
+              <option value="completion">Completion</option>
+              <option value="weight_reps">Weight + Reps</option>
+              <option value="band_color">Band Color</option>
+              <option value="time">Time</option>
+              <option value="distance">Distance</option>
+              <option value="custom">Custom</option>
+            </select>
+          </label>
+
+          <label>
+            Description / Cues
+            <textarea id="library-exercise-description" rows="3" placeholder="Setup, coaching cues, or intent..."></textarea>
+          </label>
+
+          <label>
+            Demo Video URL
+            <input type="text" id="library-exercise-video" placeholder="Optional demo link" />
+          </label>
+
+          <label>
+            Default Coach Note
+            <textarea id="library-exercise-coach-note" rows="2" placeholder="Optional note that can load into workouts..."></textarea>
+          </label>
+
+          <button class="primary-btn full-btn" type="submit">Save Exercise</button>
+        </form>
+      </article>
+
+      <article class="panel exercise-library-browser-card">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">FACILITY LIBRARY</p>
+            <h3>Saved Exercises</h3>
+          </div>
+        </div>
+
+        <div class="exercise-library-search-panel">
+          <label>
+            Search Exercises
+            <input
+              type="search"
+              id="exercise-library-search"
+              placeholder="Exercise name, category, equipment..."
+              autocomplete="off"
+            />
+          </label>
+
+          <div class="form-row">
+            <label>
+              Category
+              <select id="exercise-library-category-filter">
+                <option value="all">All categories</option>
+              </select>
+            </label>
+
+            <label>
+              Input Type
+              <select id="exercise-library-input-filter">
+                <option value="all">All input types</option>
+                <option value="completion">Completion</option>
+                <option value="weight_reps">Weight + Reps</option>
+                <option value="band_color">Band Color</option>
+                <option value="time">Time</option>
+                <option value="distance">Distance</option>
+                <option value="custom">Custom</option>
+              </select>
+            </label>
+          </div>
+
+          <span id="exercise-library-count" class="muted-small">Loading exercise library...</span>
+        </div>
+
+        <div id="exercise-library-list" class="exercise-library-list">
+          <div class="empty-state">Loading exercise library...</div>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/shared/supabaseClient.js"></script>
+  <script src="js/shared/ui-utils.js"></script>
+  <script src="js/shared/access-control.js"></script>
+  <script src="js/coach/workouts/core.js"></script>
+  <script src="js/coach/workouts/data.js"></script>
+  <script src="js/coach/workouts/exercise-library.js"></script>
+  <script src="js/coach/workouts/exercise-library-page.js"></script>
+</body>
+</html>

@@ -62,6 +62,7 @@
             <p class="eyebrow">CREATE WORKOUT</p>
             <h3>Workout Details</h3>
           </div>
+
         </div>
 
         <p id="coach-workouts-message" class="auth-message"></p>
@@ -196,114 +197,26 @@
         </form>
       </article>
 
-      <article class="panel coach-workout-side-panel">
+      <aside class="panel coach-workout-side-panel workout-outline-panel">
         <div class="panel-heading">
           <div>
-            <p class="eyebrow">EXERCISE LIBRARY</p>
-            <h3>Reusable Exercises</h3>
+            <p class="eyebrow">WORKOUT OUTLINE</p>
+            <h3>Your Session</h3>
           </div>
         </div>
 
-        <p id="exercise-library-message" class="auth-message"></p>
+        <p class="workout-outline-help">
+          Drag blocks and exercises to reorder them. Select any item below to edit it.
+        </p>
 
-        <details class="exercise-library-create-panel">
-          <summary>
-            <span>
-              <span class="eyebrow">ADD TO LIBRARY</span>
-              <strong>Save a Custom Exercise</strong>
-            </span>
-            <span>Open</span>
-          </summary>
-
-          <form id="exercise-library-form" class="exercise-library-form">
-            <label>
-              Exercise Name
-              <input type="text" id="library-exercise-name" placeholder="Trap Bar Deadlift" />
-            </label>
-
-            <div class="form-row">
-              <label>
-                Category
-                <input type="text" id="library-exercise-category" placeholder="Strength, power, mobility..." />
-              </label>
-
-              <label>
-                Equipment
-                <input type="text" id="library-exercise-equipment" placeholder="Trap bar, DB, bands..." />
-              </label>
-            </div>
-
-            <label>
-              Default Input Type
-              <select id="library-exercise-input-type">
-                <option value="completion">Completion</option>
-                <option value="weight_reps">Weight + Reps</option>
-                <option value="band_color">Band Color</option>
-                <option value="time">Time</option>
-                <option value="distance">Distance</option>
-                <option value="custom">Custom</option>
-              </select>
-            </label>
-
-            <label>
-              Description / Cues
-              <textarea id="library-exercise-description" rows="3" placeholder="Setup, coaching cues, or intent..."></textarea>
-            </label>
-
-            <label>
-              Demo Video URL
-              <input type="text" id="library-exercise-video" placeholder="Optional demo link" />
-            </label>
-
-            <label>
-              Default Coach Note
-              <textarea id="library-exercise-coach-note" rows="2" placeholder="Optional note that can load into workouts..."></textarea>
-            </label>
-
-            <button class="outline-btn full-btn" type="submit">Save Exercise</button>
-          </form>
-        </details>
-
-        <div class="exercise-library-search-panel">
-          <label>
-            Search Saved Exercises
-            <input
-              type="search"
-              id="exercise-library-search"
-              placeholder="Type exercise name, category, equipment..."
-              autocomplete="off"
-            />
-          </label>
-
-          <div class="form-row">
-            <label>
-              Category
-              <select id="exercise-library-category-filter">
-                <option value="all">All categories</option>
-              </select>
-            </label>
-
-            <label>
-              Input Type
-              <select id="exercise-library-input-filter">
-                <option value="all">All input types</option>
-                <option value="completion">Completion</option>
-                <option value="weight_reps">Weight + Reps</option>
-                <option value="band_color">Band Color</option>
-                <option value="time">Time</option>
-                <option value="distance">Distance</option>
-                <option value="custom">Custom</option>
-              </select>
-            </label>
-          </div>
-
-          <span id="exercise-library-count" class="muted-small">Search to edit saved exercises.</span>
+        <div id="workout-builder-outline" class="workout-builder-outline" aria-live="polite">
+          <div class="empty-state">Add a block to start the workout.</div>
         </div>
 
-        <div id="exercise-library-list" class="exercise-library-list">
-          <div class="empty-state">Loading exercise library...</div>
-        </div>
-      </article>
+        <a class="outline-link full-btn workout-library-link" href="coach-exercises.html">
+          Manage Exercise Library
+        </a>
+      </aside>
 
       <details class="panel recent-workouts-panel" id="recent-workouts-panel">
         <summary>

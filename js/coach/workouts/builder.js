@@ -34,42 +34,11 @@ function applyExerciseTemplateSearch(card) {
   applyExerciseTemplateToCard(card, template.id);
 }
 
-function getLastOrCreateBuilderBlock() {
-  let blockCards = Array.from(document.querySelectorAll("[data-block-card]"));
-  let blockCard = blockCards[blockCards.length - 1];
-
-  if (!blockCard) {
-    addBlockCard();
-    blockCards = Array.from(document.querySelectorAll("[data-block-card]"));
-    blockCard = blockCards[blockCards.length - 1];
-  }
-
-  return blockCard;
-}
-
-function addTemplateToBuilder(templateId) {
-  if (!templateId) return;
-
-  const blockCard = getLastOrCreateBuilderBlock();
-  if (!blockCard) return;
-
-  addExerciseToBlock(blockCard);
-
-  const exerciseCard = blockCard
-    .querySelector("[data-block-exercise-list]")
-    ?.lastElementChild;
-
-  if (!exerciseCard) return;
-
-  applyExerciseTemplateToCard(exerciseCard, templateId);
-  exerciseCard.scrollIntoView({ behavior: "smooth", block: "center" });
-  markWorkoutFormDirty();
-  showExerciseLibraryMessage("Exercise added to the workout builder.");
-}
-
 // ----------------------------
 // Block / Exercise form UI
 // ----------------------------
+
+let draggedBuilderItem = null;
 
 function getBlockDefaultName(index) {
   const names = ["Warmup", "A Block", "B Block", "C Block", "Finisher"];
@@ -216,9 +185,118 @@ function setOpenBlock(activeBlock) {
     const toggleButton = blockCard.querySelector("[data-toggle-block]");
     if (toggleButton) toggleButton.textContent = shouldOpen ? "Collapse" : "Edit Block";
   });
+
+  updateWorkoutBuilderOutline();
+}
+
+function clearBuilderDragState() {
+  document.querySelectorAll(".is-dragging, .drop-before, .drop-after, .drop-at-end").forEach(element => {
+    element.classList.remove("is-dragging", "drop-before", "drop-after", "drop-at-end");
+  });
+  draggedBuilderItem = null;
+}
+
+function finishBuilderDrag(card) {
+  const destinationBlock = card.closest("[data-block-card]");
+  clearBuilderDragState();
+  refreshBlockAndExerciseNumbers();
+  if (destinationBlock) setOpenBlock(destinationBlock);
+  markWorkoutFormDirty();
+}
+
+function showBuilderDropLine(target, placement) {
+  document.querySelectorAll(".drop-before, .drop-after, .drop-at-end").forEach(element => {
+    element.classList.remove("drop-before", "drop-after", "drop-at-end");
+  });
+
+  target.classList.add(placement === "inside" ? "drop-at-end" : `drop-${placement}`);
+}
+
+function setBuilderDropDestination({ targetCard = null, targetList = null, placement = "after" }) {
+  if (!draggedBuilderItem) return;
+  draggedBuilderItem.targetCard = targetCard;
+  draggedBuilderItem.targetList = targetList;
+  draggedBuilderItem.placement = placement;
+}
+
+function applyBuilderDrop() {
+  if (!draggedBuilderItem) return;
+
+  const { card, targetCard, targetList, placement } = draggedBuilderItem;
+  if (targetCard) {
+    targetCard.parentElement.insertBefore(
+      card,
+      placement === "before" ? targetCard : targetCard.nextElementSibling
+    );
+  } else if (targetList) {
+    targetList.append(card);
+  }
+
+  finishBuilderDrag(card);
+}
+
+function attachBuilderDragEvents(card, type) {
+  const handle = card.querySelector(type === "block" ? ".block-drag-handle" : ".exercise-drag-handle");
+  if (!handle) return;
+
+  handle.addEventListener("keydown", event => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    card.querySelector(".builder-more-menu")?.setAttribute("open", "");
+  });
+
+  handle.addEventListener("dragstart", event => {
+    event.stopPropagation();
+    draggedBuilderItem = { card, type };
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", type);
+    event.dataTransfer.setDragImage(card, Math.min(36, card.offsetWidth / 2), 24);
+    card.classList.add("is-dragging");
+  });
+
+  card.addEventListener("dragover", event => {
+    if (!draggedBuilderItem || draggedBuilderItem.type !== type || draggedBuilderItem.card === card) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    const bounds = card.getBoundingClientRect();
+    const insertBefore = event.clientY < bounds.top + bounds.height / 2;
+    const placement = insertBefore ? "before" : "after";
+    showBuilderDropLine(card, placement);
+    setBuilderDropDestination({ targetCard: card, placement });
+  });
+
+  card.addEventListener("drop", event => {
+    if (!draggedBuilderItem || draggedBuilderItem.type !== type) return;
+    event.preventDefault();
+    event.stopPropagation();
+    applyBuilderDrop();
+  });
+  handle.addEventListener("dragend", () => {
+    if (!draggedBuilderItem || draggedBuilderItem.card !== card) return;
+    clearBuilderDragState();
+  });
 }
 
 function attachBlockEvents(blockCard) {
+  attachBuilderDragEvents(blockCard, "block");
+
+  blockCard.addEventListener("dragover", event => {
+    if (draggedBuilderItem?.type !== "exercise" || event.target.closest("[data-exercise-card]")) return;
+    event.preventDefault();
+    showBuilderDropLine(blockCard, "inside");
+    setBuilderDropDestination({
+      targetList: blockCard.querySelector("[data-block-exercise-list]"),
+      placement: "inside"
+    });
+  });
+
+  blockCard.addEventListener("drop", event => {
+    if (draggedBuilderItem?.type !== "exercise" || event.target.closest("[data-exercise-card]")) return;
+    event.preventDefault();
+    applyBuilderDrop();
+  });
+
   blockCard
     .querySelector(".add-exercise-to-block-btn")
     .addEventListener("click", () => {
@@ -227,12 +305,30 @@ function attachBlockEvents(blockCard) {
     });
 
   blockCard
-    .querySelector(".remove-block-btn")
+    .querySelector("[data-remove-block]")
     .addEventListener("click", () => {
+      if (!confirmBlockRemoval(blockCard)) return;
+
       blockCard.remove();
       refreshBlockAndExerciseNumbers();
       const firstBlock = document.querySelector("[data-block-card]");
       if (firstBlock) setOpenBlock(firstBlock);
+      markWorkoutFormDirty();
+    });
+
+  blockCard
+    .querySelector("[data-move-block-up]")
+    .addEventListener("click", () => moveBlockCard(blockCard, -1));
+
+  blockCard
+    .querySelector("[data-move-block-down]")
+    .addEventListener("click", () => moveBlockCard(blockCard, 1));
+
+  blockCard
+    .querySelector("[data-duplicate-block]")
+    .addEventListener("click", () => {
+      duplicateBlockCard(blockCard);
+      closeBuilderMenu(blockCard);
     });
 
   blockCard
@@ -249,43 +345,122 @@ function attachBlockEvents(blockCard) {
 
   blockCard
     .querySelector(".block-name")
-    .addEventListener("input", () => updateBlockSummary(blockCard));
+    .addEventListener("input", () => {
+      updateBlockSummary(blockCard);
+    });
+
+  const exerciseList = blockCard.querySelector("[data-block-exercise-list]");
+  exerciseList.addEventListener("dragover", event => {
+    if (draggedBuilderItem?.type !== "exercise" || event.target !== exerciseList) return;
+    event.preventDefault();
+    showBuilderDropLine(exerciseList, "inside");
+    setBuilderDropDestination({ targetList: exerciseList, placement: "inside" });
+  });
+  exerciseList.addEventListener("drop", event => {
+    if (draggedBuilderItem?.type !== "exercise") return;
+    event.preventDefault();
+    applyBuilderDrop();
+  });
+}
+
+function closeBuilderMenu(card) {
+  card.querySelector(".builder-more-menu")?.removeAttribute("open");
+}
+
+function confirmBlockRemoval(blockCard) {
+  const blockName = blockCard.querySelector(".block-name")?.value.trim() || "this block";
+  const namedExercises = Array.from(blockCard.querySelectorAll(".exercise-name"))
+    .filter(input => input.value.trim());
+
+  if (!namedExercises.length) return true;
+
+  return window.confirm(
+    `Remove ${blockName} and its ${namedExercises.length} exercise${namedExercises.length === 1 ? "" : "s"}?`
+  );
+}
+
+function moveBlockCard(blockCard, direction) {
+  const sibling = direction < 0
+    ? blockCard.previousElementSibling
+    : blockCard.nextElementSibling;
+
+  if (!sibling) return;
+
+  if (direction < 0) {
+    blockCard.parentElement.insertBefore(blockCard, sibling);
+  } else {
+    blockCard.parentElement.insertBefore(sibling, blockCard);
+  }
+
+  refreshBlockAndExerciseNumbers();
+  setOpenBlock(blockCard);
+  markWorkoutFormDirty();
+  closeBuilderMenu(blockCard);
+}
+
+function duplicateBlockCard(blockCard) {
+  const blockCards = Array.from(document.querySelectorAll("[data-block-card]"));
+  const sourceName = blockCard.querySelector(".block-name")?.value.trim() || "Block";
+  const exerciseValues = Array.from(blockCard.querySelectorAll("[data-exercise-card]"))
+    .map(readExerciseCardValues);
+
+  blockCard.insertAdjacentHTML("afterend", createBlockCard(blockCards.length + 1));
+  const duplicate = blockCard.nextElementSibling;
+  duplicate.querySelector(".block-name").value = `${sourceName} Copy`;
+  attachBlockEvents(duplicate);
+
+  exerciseValues.forEach(exercise => addExerciseToBlock(duplicate, exercise));
+  if (!exerciseValues.length) addExerciseToBlock(duplicate);
+
+  refreshBlockAndExerciseNumbers();
+  setOpenBlock(duplicate);
+  markWorkoutFormDirty();
 }
 
 function createBlockCard(index) {
   // A block is a coach-facing group such as Warmup, A Block, or Finisher.
   const defaultName = getBlockDefaultName(index);
+  const blockClientId = createClientId();
 
   return `
-    <article class="workout-block-card" data-block-card>
+    <article class="workout-block-card" data-block-card data-block-client-id="${window.RipCityUI.attr(blockClientId)}">
       <div class="block-card-heading">
-        <div>
-          <p class="eyebrow">BLOCK ${index}</p>
-          <h4 data-block-summary-name>${window.RipCityUI.text(defaultName)}</h4>
-          <input
-            type="text"
-            class="block-name"
-            value="${window.RipCityUI.attr(defaultName)}"
-            placeholder="Warmup, A Block, B Block, Finisher..."
-            required
-          />
-          <div class="block-summary-meta">
-            <span data-block-exercise-count>0 exercises</span>
-            <span data-block-round-count>Rounds not set</span>
+        <div class="block-heading-main">
+          <button class="builder-drag-handle block-drag-handle" type="button" draggable="true" aria-label="Drag to reorder block" title="Drag to reorder block">⋮⋮</button>
+          <div>
+            <p class="eyebrow">BLOCK ${index}</p>
+            <h4 data-block-summary-name>${window.RipCityUI.text(defaultName)}</h4>
+            <input
+              type="text"
+              class="block-name"
+              value="${window.RipCityUI.attr(defaultName)}"
+              placeholder="Warmup, A Block, B Block, Finisher..."
+              required
+            />
+            <div class="block-summary-meta">
+              <span data-block-exercise-count>0 exercises</span>
+              <span data-block-round-count>Rounds not set</span>
+            </div>
+            <p class="block-summary-preview" data-block-preview>Add exercises to this block</p>
           </div>
-          <p class="block-summary-preview" data-block-preview>Add exercises to this block</p>
         </div>
 
         <div class="block-actions">
           <button class="outline-btn" type="button" data-toggle-block>
             Collapse
           </button>
-          <button class="outline-btn add-exercise-to-block-btn" type="button">
+          <button class="primary-btn add-exercise-to-block-btn" type="button">
             Add Exercise
           </button>
-          <button class="outline-btn remove-block-btn" type="button">
-            Remove Block
-          </button>
+          <details class="builder-more-menu">
+            <summary aria-label="More block actions" title="More block actions">•••</summary>
+            <div class="builder-more-menu-popover">
+              <button type="button" data-duplicate-block>Duplicate Block</button>
+              <button type="button" data-move-block-up>Move Block Up</button>
+              <button type="button" data-move-block-down>Move Block Down</button>
+              <button class="destructive-action" type="button" data-remove-block>Remove Block</button>
+            </div>
+          </details>
         </div>
       </div>
 
@@ -302,6 +477,7 @@ function createExerciseCard(index) {
   return `
     <article class="exercise-builder-card" data-exercise-card>
       <div class="exercise-quick-row">
+        <button class="builder-drag-handle exercise-drag-handle" type="button" draggable="true" aria-label="Drag to reorder exercise" title="Drag to reorder exercise">⋮⋮</button>
         <div class="exercise-row-label" data-exercise-row-label>${exerciseLabel}</div>
 
         <label class="exercise-name-label">
@@ -343,9 +519,19 @@ function createExerciseCard(index) {
           <button class="outline-btn small-inline-btn toggle-exercise-details-btn" type="button">
             Details
           </button>
-          <button class="outline-btn small-inline-btn remove-exercise-btn" type="button">
-            Remove
-          </button>
+          <details class="builder-more-menu">
+            <summary aria-label="More exercise actions" title="More exercise actions">•••</summary>
+            <div class="builder-more-menu-popover">
+              <button type="button" data-duplicate-exercise>Duplicate Exercise</button>
+              <button type="button" data-move-exercise-up>Move Exercise Up</button>
+              <button type="button" data-move-exercise-down>Move Exercise Down</button>
+              <label>
+                Move to Block
+                <select data-move-exercise-block aria-label="Move exercise to another block"></select>
+              </label>
+              <button class="destructive-action" type="button" data-remove-exercise>Remove Exercise</button>
+            </div>
+          </details>
         </div>
       </div>
 
@@ -392,65 +578,180 @@ function createExerciseCard(index) {
 }
 
 function refreshBlockAndExerciseNumbers() {
-  // Renumber visible labels after deleting blocks/exercises.
-  document.querySelectorAll("[data-block-card]").forEach((blockCard, blockIndex) => {
+  // Renumber visible labels and disable order buttons at each boundary.
+  const blockCards = Array.from(document.querySelectorAll("[data-block-card]"));
+
+  blockCards.forEach((blockCard, blockIndex) => {
     const eyebrow = blockCard.querySelector(".eyebrow");
     if (eyebrow) eyebrow.textContent = `BLOCK ${blockIndex + 1}`;
 
-    blockCard.querySelectorAll("[data-exercise-card]").forEach((exerciseCard, exerciseIndex) => {
+    const moveBlockUp = blockCard.querySelector("[data-move-block-up]");
+    const moveBlockDown = blockCard.querySelector("[data-move-block-down]");
+    if (moveBlockUp) moveBlockUp.disabled = blockIndex === 0;
+    if (moveBlockDown) moveBlockDown.disabled = blockIndex === blockCards.length - 1;
+
+    const exerciseCards = Array.from(blockCard.querySelectorAll("[data-exercise-card]"));
+    exerciseCards.forEach((exerciseCard, exerciseIndex) => {
       exerciseCard.querySelector("[data-exercise-row-label]").textContent = getExerciseRowLabel(exerciseIndex);
+      const moveExerciseUp = exerciseCard.querySelector("[data-move-exercise-up]");
+      const moveExerciseDown = exerciseCard.querySelector("[data-move-exercise-down]");
+      if (moveExerciseUp) moveExerciseUp.disabled = exerciseIndex === 0;
+      if (moveExerciseDown) moveExerciseDown.disabled = exerciseIndex === exerciseCards.length - 1;
+
+      const blockSelect = exerciseCard.querySelector("[data-move-exercise-block]");
+      if (blockSelect) {
+        blockSelect.innerHTML = blockCards.map((targetBlock, targetIndex) => {
+          const targetName = targetBlock.querySelector(".block-name")?.value.trim() || `Block ${targetIndex + 1}`;
+          return `<option value="${window.RipCityUI.attr(targetBlock.dataset.blockClientId)}">${targetIndex + 1}. ${window.RipCityUI.text(targetName)}</option>`;
+        }).join("");
+        blockSelect.value = blockCard.dataset.blockClientId;
+        blockSelect.disabled = blockCards.length < 2;
+      }
+
       updateExerciseSummary(exerciseCard);
     });
 
     updateBlockSummary(blockCard);
   });
+
+  updateWorkoutBuilderOutline();
 }
 
-function addExerciseToBlock(blockCard) {
-  const list = blockCard.querySelector("[data-block-exercise-list]");
-  const count = list.querySelectorAll("[data-exercise-card]").length + 1;
+function readExerciseCardValues(card) {
+  return {
+    exercise_template_id: getCardInputValue(card, ".exercise-template-id") || null,
+    name: getCardInputValue(card, ".exercise-name"),
+    description: getCardInputValue(card, ".exercise-description") || null,
+    sets: getCardInputValue(card, ".exercise-sets") || null,
+    reps: getCardInputValue(card, ".exercise-reps") || null,
+    tempo: getCardInputValue(card, ".exercise-tempo") || null,
+    rest_time: getCardInputValue(card, ".exercise-rest") || null,
+    input_type: getCardInputValue(card, ".exercise-input-type") || "weight_reps",
+    video_url: getCardInputValue(card, ".exercise-video") || null,
+    coach_note: getCardInputValue(card, ".exercise-coach-note") || null
+  };
+}
 
-  list.insertAdjacentHTML("beforeend", createExerciseCard(count));
+function confirmExerciseRemoval(card) {
+  const exercise = readExerciseCardValues(card);
+  if (!exercise.name) return true;
+  return window.confirm(`Remove ${exercise.name} from this workout?`);
+}
 
-  const newestCard = list.lastElementChild;
-  const removeButton = newestCard.querySelector(".remove-exercise-btn");
-  const templateSearch = newestCard.querySelector(".exercise-template-search");
-  const detailsButton = newestCard.querySelector(".toggle-exercise-details-btn");
+function moveExerciseCard(card, direction) {
+  const sibling = direction < 0
+    ? card.previousElementSibling
+    : card.nextElementSibling;
+
+  if (!sibling) return;
+
+  if (direction < 0) {
+    card.parentElement.insertBefore(card, sibling);
+  } else {
+    card.parentElement.insertBefore(sibling, card);
+  }
+
+  refreshBlockAndExerciseNumbers();
+  card.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  markWorkoutFormDirty();
+  closeBuilderMenu(card);
+}
+
+function moveExerciseToBlock(card, blockClientId) {
+  const targetBlock = Array.from(document.querySelectorAll("[data-block-card]"))
+    .find(blockCard => blockCard.dataset.blockClientId === blockClientId);
+  if (!targetBlock || targetBlock.contains(card)) return;
+
+  targetBlock.querySelector("[data-block-exercise-list]")?.append(card);
+  refreshBlockAndExerciseNumbers();
+  setOpenBlock(targetBlock);
+  card.scrollIntoView({ behavior: "smooth", block: "center" });
+  markWorkoutFormDirty();
+  closeBuilderMenu(card);
+}
+
+function duplicateExerciseCard(card) {
+  const blockCard = card.closest("[data-block-card]");
+  if (!blockCard) return;
+
+  const duplicate = addExerciseToBlock(blockCard, readExerciseCardValues(card), card);
+  duplicate?.scrollIntoView({ behavior: "smooth", block: "center" });
+  markWorkoutFormDirty();
+}
+
+function attachExerciseEvents(card) {
+  attachBuilderDragEvents(card, "exercise");
+
+  const templateSearch = card.querySelector(".exercise-template-search");
+  const detailsButton = card.querySelector(".toggle-exercise-details-btn");
 
   renderExerciseTemplatePicker(templateSearch);
 
   templateSearch.addEventListener("input", () => {
-    applyExerciseTemplateSearch(newestCard);
+    applyExerciseTemplateSearch(card);
   });
 
   templateSearch.addEventListener("change", () => {
-    applyExerciseTemplateSearch(newestCard);
-    updateExerciseSummary(newestCard);
+    applyExerciseTemplateSearch(card);
+    updateExerciseSummary(card);
   });
 
-  newestCard.querySelectorAll("input, select, textarea").forEach(input => {
-    input.addEventListener("input", () => updateExerciseSummary(newestCard));
-    input.addEventListener("change", () => updateExerciseSummary(newestCard));
+  card.querySelectorAll("input, select, textarea").forEach(input => {
+    input.addEventListener("input", () => updateExerciseSummary(card));
+    input.addEventListener("change", () => updateExerciseSummary(card));
   });
 
-  newestCard.querySelector(".exercise-input-type")?.addEventListener("change", () => {
-    updateExerciseTargetField(newestCard);
-    updateExerciseSummary(newestCard);
+  card.querySelector(".exercise-input-type")?.addEventListener("change", () => {
+    updateExerciseTargetField(card);
+    updateExerciseSummary(card);
   });
 
   detailsButton.addEventListener("click", () => {
-    const panel = newestCard.querySelector("[data-exercise-details]");
+    const panel = card.querySelector("[data-exercise-details]");
     const hidden = panel.classList.toggle("hidden");
     detailsButton.textContent = hidden ? "Details" : "Hide Details";
   });
 
-  removeButton.addEventListener("click", () => {
-    newestCard.remove();
+  card.querySelector("[data-remove-exercise]").addEventListener("click", () => {
+    if (!confirmExerciseRemoval(card)) return;
+    card.remove();
     refreshBlockAndExerciseNumbers();
+    markWorkoutFormDirty();
   });
+
+  card.querySelector("[data-move-exercise-up]").addEventListener("click", () => moveExerciseCard(card, -1));
+  card.querySelector("[data-move-exercise-down]").addEventListener("click", () => moveExerciseCard(card, 1));
+  card.querySelector("[data-duplicate-exercise]").addEventListener("click", () => {
+    duplicateExerciseCard(card);
+    closeBuilderMenu(card);
+  });
+  card.querySelector("[data-move-exercise-block]").addEventListener("change", event => {
+    moveExerciseToBlock(card, event.currentTarget.value);
+  });
+}
+
+function addExerciseToBlock(blockCard, exercise = null, insertAfter = null) {
+  const list = blockCard.querySelector("[data-block-exercise-list]");
+  const count = list.querySelectorAll("[data-exercise-card]").length + 1;
+
+  if (insertAfter) {
+    insertAfter.insertAdjacentHTML("afterend", createExerciseCard(count));
+  } else {
+    list.insertAdjacentHTML("beforeend", createExerciseCard(count));
+  }
+
+  const newestCard = insertAfter ? insertAfter.nextElementSibling : list.lastElementChild;
+  attachExerciseEvents(newestCard);
+
+  if (exercise) {
+    setExerciseCardValues(newestCard, exercise);
+  }
 
   updateExerciseSummary(newestCard);
   updateExerciseTargetField(newestCard);
+  refreshBlockAndExerciseNumbers();
+
+  return newestCard;
 }
 
 function setExerciseCardValues(card, exercise = {}) {
@@ -599,8 +900,48 @@ function getWorkoutBuilderReviewData() {
   };
 }
 
+function updateWorkoutBuilderOutline() {
+  const outline = document.getElementById("workout-builder-outline");
+  if (!outline) return;
+
+  const blockCards = Array.from(document.querySelectorAll("[data-block-card]"));
+  if (!blockCards.length) {
+    outline.innerHTML = `<div class="empty-state">Add a block to start the workout.</div>`;
+    return;
+  }
+
+  outline.innerHTML = blockCards.map((blockCard, blockIndex) => {
+    const blockName = blockCard.querySelector(".block-name")?.value.trim() || `Block ${blockIndex + 1}`;
+    const exercises = Array.from(blockCard.querySelectorAll(".exercise-name"))
+      .map((input, exerciseIndex) => input.value.trim() || `Exercise ${exerciseIndex + 1}`);
+
+    return `
+      <button class="workout-outline-block" type="button" data-outline-block="${window.RipCityUI.attr(blockCard.dataset.blockClientId)}">
+        <span>${blockIndex + 1}</span>
+        <span>
+          <strong>${window.RipCityUI.text(blockName)}</strong>
+          <small>${exercises.length} exercise${exercises.length === 1 ? "" : "s"}</small>
+        </span>
+      </button>
+      <ol class="workout-outline-exercises">
+        ${exercises.map(exercise => `<li>${window.RipCityUI.text(exercise)}</li>`).join("")}
+      </ol>
+    `;
+  }).join("");
+
+  outline.querySelectorAll("[data-outline-block]").forEach(button => {
+    button.addEventListener("click", () => {
+      const blockCard = blockCards.find(card => card.dataset.blockClientId === button.dataset.outlineBlock);
+      if (!blockCard) return;
+      setOpenBlock(blockCard);
+      blockCard.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  });
+}
+
 function updateWorkoutBuilderReview() {
   updateWorkoutDetailsSummary();
+  updateWorkoutBuilderOutline();
 
   const review = document.getElementById("workout-builder-review");
   if (!review) return;
@@ -699,7 +1040,7 @@ function initializeWorkoutBuilderTracking() {
   form.addEventListener("input", handleFormChange);
   form.addEventListener("change", handleFormChange);
   form.addEventListener("click", event => {
-    if (event.target.closest("#add-block-btn, .add-exercise-to-block-btn, .remove-block-btn, .remove-exercise-btn")) {
+    if (event.target.closest("#add-block-btn, .add-exercise-to-block-btn")) {
       window.setTimeout(markWorkoutFormDirty, 0);
     }
   });

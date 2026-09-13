@@ -8,7 +8,9 @@ Use this as the quick orientation guide before editing.
 - `login.html`, `signup.html`, and `pending.html` handle account entry.
 - `member-dashboard.html` is the shared member home for athletes and H2K members.
 - `workout-session.html` is the member workout logging screen.
-- `coach-dashboard.html`, `coach-roster.html`, `coach-workouts.html`, and `coach-approvals.html` are the coach/admin surfaces.
+- `coach-dashboard.html`, `coach-roster.html`, `coach-workouts.html`,
+  `coach-exercises.html`, and `coach-approvals.html` are the coach/admin surfaces.
+  The Exercise Library is intentionally linked only from the Workout Builder.
 
 ## Shared JavaScript
 
@@ -27,7 +29,8 @@ Use this as the quick orientation guide before editing.
   and the exercise library. `page.js` is the page controller, with the form UI
   in `builder.js`, assignment behavior in `assignments.js`, saved-workout
   behavior in `history.js`, exercise-library behavior in `exercise-library.js`,
-  and common state/helpers in `core.js` and `data.js`.
+  the standalone library controller in `exercise-library-page.js`, and common
+  state/helpers in `core.js` and `data.js`.
 - `js/member/member-dashboard.js` powers member stats, H2K habits, today’s workout, workout history, and feedback link display.
 - `js/member/profile.js` powers member profile editing and the read-only H2K band display.
 - `js/member/workout-session-core.js`, `js/member/workout-session-render.js`, and

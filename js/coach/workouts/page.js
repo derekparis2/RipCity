@@ -326,10 +326,6 @@ document.addEventListener("DOMContentLoaded", () => {
   initCoachWorkoutsPage();
 
   document.getElementById("add-block-btn").addEventListener("click", addBlockCard);
-  document.getElementById("exercise-library-form").addEventListener("submit", saveExerciseTemplate);
-  document.getElementById("exercise-library-search")?.addEventListener("input", renderExerciseLibraryList);
-  document.getElementById("exercise-library-category-filter")?.addEventListener("change", renderExerciseLibraryList);
-  document.getElementById("exercise-library-input-filter")?.addEventListener("change", renderExerciseLibraryList);
   document.getElementById("recent-workout-search")?.addEventListener("input", renderRecentWorkouts);
   document.getElementById("recent-workout-date-filter")?.addEventListener("change", renderRecentWorkouts);
   document.getElementById("recent-workout-target-filter")?.addEventListener("change", renderRecentWorkouts);
