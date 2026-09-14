@@ -144,6 +144,9 @@ Current status:
 - Manual role smoke tests passed, followed by all 45 automated read-only RLS
   checks. Confirmed UI gaps are hardcoded Rip City branding, a shared
   pending/inactive message, and no multi-facility selector.
+- The unilateral-exercise migration was applied to staging on 2026-09-14. It
+  adds non-null `is_unilateral` flags to exercise templates and workout
+  exercise snapshots; production remains unchanged.
 
 Goal:
 

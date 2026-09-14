@@ -207,6 +207,7 @@ async function saveWorkout(event) {
             tempo: exercise.tempo,
             rest_time: exercise.rest_time,
             input_type: exercise.input_type,
+            is_unilateral: exercise.is_unilateral,
             video_url: exercise.video_url,
             coach_note: exercise.coach_note,
             exercise_order: exercise.exercise_order

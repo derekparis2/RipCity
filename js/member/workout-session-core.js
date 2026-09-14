@@ -55,8 +55,9 @@ function formatInputType(inputType) {
 function getExerciseTargetText(exercise) {
   const sets = exercise.sets || 1;
   const reps = exercise.reps || "complete";
+  const target = exercise.is_unilateral ? `${reps} each side` : reps;
 
-  return `${sets} x ${reps}`;
+  return `${sets} x ${target}`;
 }
 
 function getSetTargetText(exercise, setNumber) {
@@ -64,7 +65,7 @@ function getSetTargetText(exercise, setNumber) {
 
   if (targetValue) {
     return targetValue.isPerSet
-      ? `Set ${setNumber}: ${targetValue.value}`
+      ? `Set ${setNumber}: ${targetValue.value}${exercise.is_unilateral ? " each side" : ""}`
       : getExerciseTargetText(exercise);
   }
 
@@ -187,6 +188,7 @@ async function loadWorkoutAssignment(assignmentId) {
             video_url,
             coach_note,
             input_type,
+            is_unilateral,
             exercise_order
           )
         )

@@ -45,6 +45,7 @@ const COACH_WORKOUT_ASSIGNMENT_SELECT = `
         sets,
         reps,
         input_type,
+        is_unilateral,
         exercise_order
       )
     )
@@ -1200,7 +1201,7 @@ function renderCoachExerciseResult(exercise, logs) {
     <article class="coach-exercise-result-card">
       <div>
         <h5>${window.RipCityUI.text(exercise.name)}</h5>
-        <p>${window.RipCityUI.text(exercise.sets || 1)} x ${window.RipCityUI.text(exercise.reps || "complete")} · ${window.RipCityUI.text(exercise.input_type)}</p>
+        <p>${window.RipCityUI.text(exercise.sets || 1)} x ${window.RipCityUI.text(exercise.reps || "complete")}${exercise.is_unilateral ? " each side" : ""} · ${window.RipCityUI.text(exercise.input_type)}</p>
       </div>
       <div class="coach-set-result-list">${rows.join("")}</div>
     </article>

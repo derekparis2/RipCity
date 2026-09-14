@@ -220,6 +220,7 @@ function renderExerciseLibraryList() {
 
       <div class="workout-meta-row">
         <span>${window.RipCityUI.text(formatInputTypeLabel(template.input_type))}</span>
+        ${template.is_unilateral ? `<span>Each Side</span>` : ""}
         ${template.category ? `<span>${window.RipCityUI.text(template.category)}</span>` : ""}
         ${template.equipment ? `<span>${window.RipCityUI.text(template.equipment)}</span>` : ""}
       </div>
@@ -260,6 +261,11 @@ function renderExerciseLibraryList() {
             <option value="distance" ${template.input_type === "distance" ? "selected" : ""}>Distance</option>
             <option value="custom" ${template.input_type === "custom" ? "selected" : ""}>Custom</option>
           </select>
+        </label>
+
+        <label class="exercise-unilateral-toggle library-unilateral-toggle">
+          <input type="checkbox" data-template-edit-unilateral ${template.is_unilateral ? "checked" : ""} />
+          Each Side by Default
         </label>
 
         <label>
@@ -356,6 +362,7 @@ async function saveExerciseTemplate(event) {
         category: getInputValue("library-exercise-category") || null,
         equipment: getInputValue("library-exercise-equipment") || null,
         input_type: getInputValue("library-exercise-input-type") || "completion",
+        is_unilateral: Boolean(document.getElementById("library-exercise-unilateral")?.checked),
         description: getInputValue("library-exercise-description") || null,
         video_url: getInputValue("library-exercise-video") || null,
         coach_note: getInputValue("library-exercise-coach-note") || null
@@ -393,6 +400,7 @@ async function saveExerciseTemplateEdit(event, templateId) {
         category: form.querySelector("[data-template-edit-category]").value.trim() || null,
         equipment: form.querySelector("[data-template-edit-equipment]").value.trim() || null,
         input_type: form.querySelector("[data-template-edit-input-type]").value || "completion",
+        is_unilateral: Boolean(form.querySelector("[data-template-edit-unilateral]")?.checked),
         description: form.querySelector("[data-template-edit-description]").value.trim() || null,
         video_url: form.querySelector("[data-template-edit-video]").value.trim() || null,
         coach_note: form.querySelector("[data-template-edit-coach-note]").value.trim() || null,
@@ -421,6 +429,7 @@ async function createTemplateFromWorkoutExercise(exercise) {
       created_by: workoutCoachAccess.profile.id,
       name: exercise.name,
       input_type: exercise.input_type || "completion",
+      is_unilateral: Boolean(exercise.is_unilateral),
       description: exercise.description,
       video_url: exercise.video_url,
       coach_note: exercise.coach_note
@@ -433,6 +442,7 @@ async function createTemplateFromWorkoutExercise(exercise) {
     facility_id: workoutCoachAccess.membership.facility_id,
     name: exercise.name,
     input_type: exercise.input_type || "completion",
+    is_unilateral: Boolean(exercise.is_unilateral),
     description: exercise.description,
     video_url: exercise.video_url,
     coach_note: exercise.coach_note

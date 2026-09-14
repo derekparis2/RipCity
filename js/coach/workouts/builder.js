@@ -13,6 +13,7 @@ function applyExerciseTemplateToCard(card, templateId) {
   card.querySelector(".exercise-name").value = template.name || "";
   card.querySelector(".exercise-description").value = template.description || "";
   card.querySelector(".exercise-input-type").value = template.input_type || "completion";
+  card.querySelector(".exercise-unilateral").checked = Boolean(template.is_unilateral);
   card.querySelector(".exercise-video").value = template.video_url || "";
   card.querySelector(".exercise-coach-note").value = template.coach_note || "";
   updateExerciseTargetField(card);
@@ -101,11 +102,15 @@ function getExerciseSummary(card, index) {
   const sets = card.querySelector(".exercise-sets")?.value || "";
   const reps = card.querySelector(".exercise-reps")?.value || "";
   const inputType = card.querySelector(".exercise-input-type")?.value || "weight_reps";
+  const isUnilateral = card.querySelector(".exercise-unilateral")?.checked || false;
+  const target = getSetTargetHint(reps, sets);
 
   return {
     label: getExerciseRowLabel(index),
     name,
-    target: getSetTargetHint(reps, sets),
+    target: isUnilateral
+      ? `${target === "Add target" ? "Target" : target} each side`
+      : target,
     inputType: formatInputTypeLabel(inputType)
   };
 }
@@ -516,6 +521,10 @@ function createExerciseCard(index) {
         </label>
 
         <div class="exercise-row-actions">
+          <label class="exercise-unilateral-toggle">
+            <input type="checkbox" class="exercise-unilateral" />
+            Each Side
+          </label>
           <button class="outline-btn small-inline-btn toggle-exercise-details-btn" type="button">
             Details
           </button>
@@ -627,6 +636,7 @@ function readExerciseCardValues(card) {
     tempo: getCardInputValue(card, ".exercise-tempo") || null,
     rest_time: getCardInputValue(card, ".exercise-rest") || null,
     input_type: getCardInputValue(card, ".exercise-input-type") || "weight_reps",
+    is_unilateral: Boolean(card.querySelector(".exercise-unilateral")?.checked),
     video_url: getCardInputValue(card, ".exercise-video") || null,
     coach_note: getCardInputValue(card, ".exercise-coach-note") || null
   };
@@ -765,6 +775,7 @@ function setExerciseCardValues(card, exercise = {}) {
   card.querySelector(".exercise-tempo").value = exercise.tempo || "";
   card.querySelector(".exercise-rest").value = exercise.rest_time || "";
   card.querySelector(".exercise-input-type").value = exercise.input_type || "weight_reps";
+  card.querySelector(".exercise-unilateral").checked = Boolean(exercise.is_unilateral);
   card.querySelector(".exercise-video").value = exercise.video_url || "";
   card.querySelector(".exercise-coach-note").value = exercise.coach_note || "";
   updateExerciseTargetField(card);
@@ -864,6 +875,7 @@ function getBlockFormData() {
         tempo: card.querySelector(".exercise-tempo").value.trim() || null,
         rest_time: card.querySelector(".exercise-rest").value.trim() || null,
         input_type: card.querySelector(".exercise-input-type").value,
+        is_unilateral: Boolean(card.querySelector(".exercise-unilateral")?.checked),
         exercise_template_id: templateStillMatchesName ? templateId : null,
         video_url: card.querySelector(".exercise-video").value.trim() || null,
         coach_note: card.querySelector(".exercise-coach-note").value.trim() || null,

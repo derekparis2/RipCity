@@ -32,6 +32,14 @@ both passed on 2026-08-16. Staging contains required Rip City configuration but
 no production users or activity data. Nine entirely fake Auth identities and
 their two-facility role fixtures were added and verified on 2026-08-28.
 
+Staging migration status:
+
+- `20260914140000_add_unilateral_exercise_flags.sql` was applied and verified
+  on 2026-09-14. Both `exercise_templates.is_unilateral` and
+  `workout_exercises.is_unilateral` are non-null booleans defaulting to `false`.
+- Production has not received this migration. Preserve it in the eventual V2
+  production migration sequence rather than manually recreating the columns.
+
 Staging Auth was configured on 2026-08-28:
 
 - Site URL: `http://localhost:3000`

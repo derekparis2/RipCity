@@ -179,6 +179,10 @@ Current-data transition direction:
   - Measured-distance exercises such as broad jumps should keep member distance
     entry. A saved result of `0` means completed but not measured and must count
     as a valid completed result rather than missing data.
+- Exercises may be marked `Each Side` in the library and overridden within an
+  individual workout. For example, `8 reps each side` means eight right and
+  eight left. Members record one weight and one rep result per set in V2; the
+  app does not create separate right-side and left-side log fields.
 - Test the transition entirely in staging before preparing a production
   migration.
 

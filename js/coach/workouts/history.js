@@ -3,9 +3,9 @@
 // =====================================================
 // Owns loading, filtering, rendering, editing, and deleting saved workouts.
 
-function buildRecentWorkoutSelect(includeExerciseTemplateColumn = true) {
-  const exerciseTemplateColumn = includeExerciseTemplateColumn
-    ? "exercise_template_id,"
+function buildRecentWorkoutSelect(includeOptionalExerciseColumns = true) {
+  const optionalExerciseColumns = includeOptionalExerciseColumns
+    ? "exercise_template_id, is_unilateral,"
     : "";
 
   return `
@@ -30,7 +30,7 @@ function buildRecentWorkoutSelect(includeExerciseTemplateColumn = true) {
           input_type,
           video_url,
           coach_note,
-          ${exerciseTemplateColumn}
+          ${optionalExerciseColumns}
           exercise_order
       )
     ),
@@ -47,13 +47,15 @@ function buildRecentWorkoutSelect(includeExerciseTemplateColumn = true) {
 
 function isMissingExerciseTemplateColumnError(error) {
   return /exercise_template_id/i.test(error?.message || "") ||
-    /exercise_template_id/i.test(error?.details || "");
+    /exercise_template_id/i.test(error?.details || "") ||
+    /is_unilateral/i.test(error?.message || "") ||
+    /is_unilateral/i.test(error?.details || "");
 }
 
-async function fetchRecentWorkoutRows(includeExerciseTemplateColumn = true) {
+async function fetchRecentWorkoutRows(includeOptionalExerciseColumns = true) {
   return db
     .from("workouts")
-    .select(buildRecentWorkoutSelect(includeExerciseTemplateColumn))
+    .select(buildRecentWorkoutSelect(includeOptionalExerciseColumns))
     .eq("facility_id", workoutCoachAccess.membership.facility_id)
     .order("created_at", { ascending: false })
     .limit(8);
@@ -289,7 +291,7 @@ function renderRecentWorkouts() {
                     ${exercises.map(exercise => `
                         <li>
                         ${window.RipCityUI.text(exercise.name)}
-                        ${exercise.sets || exercise.reps ? `<span>${window.RipCityUI.text(exercise.sets || "")} x ${window.RipCityUI.text(exercise.reps || "")}</span>` : ""}
+                        ${exercise.sets || exercise.reps ? `<span>${window.RipCityUI.text(exercise.sets || "")} x ${window.RipCityUI.text(exercise.reps || "")}${exercise.is_unilateral ? " each side" : ""}</span>` : ""}
                         </li>
                     `).join("")}
                     </ul>
@@ -431,4 +433,3 @@ async function saveWorkoutDetails(event, workoutId) {
     showWorkoutMessage(error.message || "Could not save workout details.", true);
   }
 }
-

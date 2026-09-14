@@ -2660,8 +2660,47 @@ td {
   .exercise-row-actions {
     grid-column: 3 / -1;
     display: flex;
+    align-items: center;
     justify-content: flex-end;
     gap: 8px;
+  }
+
+  .exercise-unilateral-toggle {
+    min-height: 40px;
+    display: inline-flex !important;
+    grid-template-columns: none !important;
+    align-items: center;
+    gap: 8px !important;
+    border: 1px solid #454a54;
+    background: #181a1e;
+    border-radius: 10px;
+    color: var(--text) !important;
+    padding: 8px 11px;
+    font-size: 12px !important;
+    font-weight: 800 !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+    cursor: pointer;
+  }
+
+  .exercise-unilateral-toggle:has(input:checked) {
+    border-color: #6fb8ff;
+    background: rgba(111, 184, 255, 0.12);
+    color: #c7e4ff !important;
+  }
+
+  .exercise-unilateral-toggle input {
+    width: 18px !important;
+    height: 18px;
+    min-height: 0 !important;
+    flex: 0 0 18px;
+    margin: 0;
+    accent-color: #6fb8ff;
+  }
+
+  .library-unilateral-toggle {
+    width: 100%;
+    justify-content: flex-start;
   }
 
   .coach-workouts-builder-grid {

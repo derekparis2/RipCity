@@ -402,7 +402,7 @@ function renderInputsForExerciseType(exercise, existing, setNumber) {
         </label>
 
         <label>
-          Actual Reps
+          Actual Reps${exercise.is_unilateral ? " (Each Side)" : ""}
           <input
             type="number"
             class="set-reps-input"

@@ -127,7 +127,9 @@ editing, assignment cleanup, one combined exercise library, facility-only
 exercises, universal edit-to-override and delete-to-hide behavior, stable
 workout history, archive/delete rules, member history, mobile session polish,
 workout-derived H2K behavior, and a reviewed starter-exercise input/default
-audit before the catalog becomes universal.
+audit before the catalog becomes universal. Unilateral exercises support an
+`Each Side` prescription while members continue entering one weight/reps result
+per set.
 
 **Complete when:** The full coach-to-member workout lifecycle is stable on
 desktop and mobile, and exercise changes cannot leak across facilities or alter
