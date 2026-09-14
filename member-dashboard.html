@@ -65,6 +65,10 @@
         <span class="desktop-nav-text">Member History</span>
         <span class="mobile-nav-text">History</span>
       </a>
+      <a class="nav-link nav-link-anchor" href="#member-goals-section">
+        <span class="desktop-nav-text">Goals</span>
+        <span class="mobile-nav-text">Goals</span>
+      </a>
       <a class="nav-link nav-link-anchor" href="profile.html">
         <span class="mobile-nav-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" focusable="false">
@@ -206,6 +210,67 @@
         <div id="h2k-habit-list" class="h2k-habit-list"></div>
       </article>
 
+    </section>
+
+    <section class="panel member-goals-panel" id="member-goals-section">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">DEVELOPMENT</p>
+          <h3>Your Goals</h3>
+          <p class="muted-small">Keep the next thing you are working toward in view.</p>
+        </div>
+      </div>
+
+      <form class="member-goal-form" id="member-goal-form">
+        <input id="member-goal-id" type="hidden" />
+        <label class="member-goal-name-field">
+          Goal name
+          <input id="member-goal-name" type="text" maxlength="160" required />
+        </label>
+        <label>
+          Timeline
+          <select id="member-goal-timeline">
+            <option value="short_term">Short term</option>
+            <option value="medium_term">Medium term</option>
+            <option value="long_term">Long term</option>
+            <option value="ongoing">Ongoing</option>
+          </select>
+        </label>
+        <label>
+          Current value
+          <input id="member-goal-current-value" type="number" step="any" />
+        </label>
+        <label>
+          Target value
+          <input id="member-goal-target-value" type="number" step="any" />
+        </label>
+        <label>
+          Unit
+          <input id="member-goal-unit" type="text" maxlength="40" placeholder="lbs, days, reps" />
+        </label>
+        <label>
+          Due date
+          <input id="member-goal-due-date" type="date" />
+        </label>
+        <label class="member-goal-description-field">
+          Description
+          <textarea id="member-goal-description" rows="3" maxlength="1000"></textarea>
+        </label>
+        <div class="member-goal-form-actions">
+          <button class="primary-btn" id="member-goal-submit" type="submit">Add Goal</button>
+          <button class="outline-btn hidden" id="member-goal-cancel" type="button">Cancel</button>
+        </div>
+      </form>
+
+      <p class="auth-message" id="member-goals-message" aria-live="polite"></p>
+      <div class="member-goal-list" id="member-active-goal-list">
+        <div class="empty-state">Loading goals...</div>
+      </div>
+
+      <details class="member-goal-achievements" id="member-completed-goals">
+        <summary>Completed achievements <span id="member-completed-goal-count">0</span></summary>
+        <div class="member-goal-list" id="member-completed-goal-list"></div>
+      </details>
     </section>
 
     <details class="panel compact-history-panel weekly-history-panel" id="member-history-section">

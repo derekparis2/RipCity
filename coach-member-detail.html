@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Member Detail</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="auth-body">
+  <main class="coach-page">
+    <header class="h2k-header">
+      <div class="auth-brand">
+        <img src="assets/rip-city-logo.png" alt="Rip City logo">
+        <div><h1>RIP CITY</h1><p>Member Detail</p></div>
+      </div>
+      <div class="h2k-header-actions">
+        <a class="outline-link" href="coach-roster.html">Back to Roster</a>
+        <a class="outline-link" href="coach-dashboard.html">Coach Dashboard</a>
+        <button class="outline-btn" id="coach-member-detail-logout" type="button">Log Out</button>
+      </div>
+    </header>
+
+    <p class="auth-message" id="coach-member-detail-message" aria-live="polite"></p>
+    <section class="panel coach-member-detail-summary" id="coach-member-detail-summary">
+      <div class="empty-state">Loading member...</div>
+    </section>
+    <section class="panel member-goals-panel" id="coach-member-goals-panel">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Development</p>
+          <h2>Goals</h2>
+          <p>Assign and manage goals for this member.</p>
+        </div>
+      </div>
+      <form class="member-goal-form" id="coach-goal-form">
+        <input id="coach-goal-id" type="hidden" />
+        <label class="member-goal-name-field">Name
+          <input id="coach-goal-name" type="text" maxlength="160" required />
+        </label>
+        <label>Timeline
+          <select id="coach-goal-timeline">
+            <option value="short_term">Short term</option>
+            <option value="medium_term">Medium term</option>
+            <option value="long_term">Long term</option>
+            <option value="ongoing">Ongoing</option>
+          </select>
+        </label>
+        <label>Current value
+          <input id="coach-goal-current-value" type="number" step="any" />
+        </label>
+        <label>Target value
+          <input id="coach-goal-target-value" type="number" step="any" />
+        </label>
+        <label>Unit
+          <input id="coach-goal-unit" type="text" maxlength="40" placeholder="lbs, days, reps" />
+        </label>
+        <label>Due date
+          <input id="coach-goal-due-date" type="date" />
+        </label>
+        <label class="member-goal-description-field">Description
+          <textarea id="coach-goal-description" rows="3" maxlength="1000"></textarea>
+        </label>
+        <div class="member-goal-form-actions">
+          <button class="primary-btn" id="coach-goal-submit" type="submit">Assign Goal</button>
+          <button class="outline-btn hidden" id="coach-goal-cancel" type="button">Cancel</button>
+        </div>
+      </form>
+      <div class="member-goal-list" id="coach-goal-list">
+        <div class="empty-state">Loading goals...</div>
+      </div>
+    </section>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/shared/supabaseClient.js"></script>
+  <script src="js/shared/ui-utils.js"></script>
+  <script src="js/shared/access-control.js"></script>
+  <script src="js/coach/coach-member-detail.js"></script>
+</body>
+</html>

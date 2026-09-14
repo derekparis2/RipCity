@@ -76,16 +76,28 @@ function getInitials(name) {
     .join("") || "M";
 }
 
+function getSafeImageUrl(url) {
+  if (!url) return "";
+
+  try {
+    const parsed = new URL(url, window.location.href);
+    return ["http:", "https:", "blob:"].includes(parsed.protocol) ? parsed.href : "";
+  } catch {
+    return "";
+  }
+}
+
 function setProfilePicturePreview(url, fallbackName) {
   const avatar = document.getElementById("profile-avatar");
   if (!avatar) return;
 
+  const safeUrl = getSafeImageUrl(url);
   avatar.textContent = "";
-  avatar.classList.toggle("has-image", Boolean(url));
+  avatar.classList.toggle("has-image", Boolean(safeUrl));
 
-  if (url) {
+  if (safeUrl) {
     const image = document.createElement("img");
-    image.src = url;
+    image.src = safeUrl;
     image.alt = `${fallbackName || "Member"} profile picture`;
     image.addEventListener("error", () => {
       avatar.classList.remove("has-image");
@@ -156,7 +168,7 @@ function updateProfileShellNav() {
   const sidebarAvatar = document.getElementById("profile-sidebar-avatar");
   const memberTypeLabel = getProfileMemberTypeLabel();
   const fullName = profileAccess?.profile?.full_name || "Member";
-  const pictureUrl = profileAccess?.profile?.profile_picture_url;
+  const pictureUrl = getSafeImageUrl(profileAccess?.profile?.profile_picture_url);
 
   if (subtitle) {
     subtitle.textContent = memberTypeLabel;
