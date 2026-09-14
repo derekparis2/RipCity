@@ -144,6 +144,17 @@ Current status:
 - Manual role smoke tests passed, followed by all 45 automated read-only RLS
   checks. Confirmed UI gaps are hardcoded Rip City branding, a shared
   pending/inactive message, and no multi-facility selector.
+- The unilateral-exercise migration was applied to staging on 2026-09-14. It
+  adds non-null `is_unilateral` flags to exercise templates and workout
+  exercise snapshots; production remains unchanged.
+- The approved Vertical Jump and medicine-ball catalog migration
+  (`20260914220000_correct_jump_and_med_ball_exercise_defaults.sql`) was applied
+  successfully to staging on 2026-09-14. Staging now has 88 Rip City starter
+  exercises; production remains unchanged.
+- The follow-up approved exercise-input audit migration
+  (`20260914223000_apply_approved_exercise_input_audit.sql`) was applied and
+  verified successfully in staging on 2026-09-14. It does not rewrite existing
+  workout snapshots, and production remains unchanged.
 
 Goal:
 

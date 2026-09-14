@@ -243,8 +243,7 @@ function renderBlockRounds(exercises) {
 }
 
 function renderExerciseSetLogger(exercise, setNumber, stepIndex = null) {
-  const targetDetails = [
-    `<span><strong>Target</strong>${getSetTargetText(exercise, setNumber)}</span>`,
+  const supportingDetails = [
     exercise.tempo ? `<span><strong>Tempo</strong>${exercise.tempo}</span>` : "",
     exercise.rest_time ? `<span><strong>Rest</strong>${exercise.rest_time}</span>` : "",
     exercise.percentage ? `<span><strong>Load</strong>${exercise.percentage}</span>` : "",
@@ -255,12 +254,20 @@ function renderExerciseSetLogger(exercise, setNumber, stepIndex = null) {
     <article class="session-exercise-card">
       <div class="session-exercise-header">
         <div>
+          <p class="session-exercise-kicker">Current Exercise</p>
           <h4>${window.RipCityUI.text(exercise.name)}</h4>
           <p>${window.RipCityUI.text(exercise.description, "No description added.")}</p>
         </div>
+      </div>
+
+      <div class="session-prescription">
+        <div class="session-primary-target">
+          <span>Coach Target</span>
+          <strong>${getSetTargetText(exercise, setNumber)}</strong>
+        </div>
 
         <div class="session-exercise-tags">
-          ${targetDetails}
+          ${supportingDetails}
         </div>
       </div>
 
@@ -289,6 +296,9 @@ function renderSetLogger(exercise, setNumber, stepIndex = null) {
     : 0;
   const isFirstStep = hasStepperActions && stepIndex === 0;
   const isLastStep = hasStepperActions && stepIndex === totalSteps - 1;
+  const hasOptionalFeedback = Boolean(
+    existing?.difficulty_rating || (showNoteInput && existing?.athlete_note)
+  );
 
   return `
     <div
@@ -298,13 +308,13 @@ function renderSetLogger(exercise, setNumber, stepIndex = null) {
     >
       <div class="set-log-title">
         <div>
-          <strong>Set ${setNumber}</strong>
-          <span>Enter actual result</span>
+          <span>Set ${setNumber}</span>
+          <strong>Your Result</strong>
         </div>
         <em>${completed ? "Saved" : "Not saved"}</em>
       </div>
 
-      <div class="set-log-fields">
+      <div class="set-log-required-fields">
         ${renderInputsForExerciseType(exercise, existing, setNumber)}
 
         ${showCompletedInput ? `
@@ -317,63 +327,66 @@ function renderSetLogger(exercise, setNumber, stepIndex = null) {
             Completed
           </label>
         ` : ""}
-
-        <label>
-          Difficulty
-          <select class="set-difficulty-input">
-            <option value="">Optional</option>
-            ${[1,2,3,4,5,6,7,8,9,10].map(num => `
-              <option value="${num}" ${Number(existing?.difficulty_rating) === num ? "selected" : ""}>
-                ${num}/10
-              </option>
-            `).join("")}
-          </select>
-        </label>
-
-        ${showNoteInput ? `
-          <label class="set-note-label">
-            Note
-            <input
-              type="text"
-              class="set-note-input"
-              value="${window.RipCityUI.attr(existing?.athlete_note || "")}"
-              placeholder="Optional note"
-            />
-          </label>
-        ` : ""}
       </div>
 
+      <details class="set-log-optional" ${hasOptionalFeedback ? "open" : ""}>
+        <summary>Add difficulty or a note <span>Optional</span></summary>
+        <div class="set-log-fields">
+          <label>
+            Difficulty
+            <select class="set-difficulty-input">
+              <option value="">Not selected</option>
+              ${[1,2,3,4,5,6,7,8,9,10].map(num => `
+                <option value="${num}" ${Number(existing?.difficulty_rating) === num ? "selected" : ""}>
+                  ${num}/10
+                </option>
+              `).join("")}
+            </select>
+          </label>
+
+          ${showNoteInput ? `
+            <label class="set-note-label">
+              Note
+              <input
+                type="text"
+                class="set-note-input"
+                value="${window.RipCityUI.attr(existing?.athlete_note || "")}"
+                placeholder="Optional note"
+              />
+            </label>
+          ` : ""}
+        </div>
+      </details>
+
       <div class="set-log-actions">
-        ${hasStepperActions ? `
+        ${hasStepperActions && !isFirstStep ? `
           <button
             class="outline-btn session-previous-step-btn"
             type="button"
             data-previous-step-index="${stepIndex - 1}"
-            ${isFirstStep ? "disabled" : ""}
           >
             Previous
           </button>
         ` : ""}
 
-        <button
-          class="outline-btn save-set-btn"
-          type="button"
-          data-exercise-id="${window.RipCityUI.attr(exercise.id)}"
-          data-set-number="${window.RipCityUI.attr(setNumber)}"
-        >
-          Save Set
-        </button>
-
-        ${hasStepperActions ? `
+        ${hasStepperActions && !isLastStep ? `
           <button
             class="primary-btn session-next-step-btn"
             type="button"
             data-next-step-index="${stepIndex + 1}"
-            ${isLastStep ? "disabled" : ""}
           >
             Save & Next
           </button>
-        ` : ""}
+        ` : `
+          <button
+            class="primary-btn save-set-btn"
+            type="button"
+            data-exercise-id="${window.RipCityUI.attr(exercise.id)}"
+            data-set-number="${window.RipCityUI.attr(setNumber)}"
+          >
+            ${hasStepperActions ? "Save Final Set" : "Save Set"}
+          </button>
+        `}
       </div>
     </div>
   `;
@@ -402,7 +415,7 @@ function renderInputsForExerciseType(exercise, existing, setNumber) {
         </label>
 
         <label>
-          Actual Reps
+          Actual Reps${exercise.is_unilateral ? " (Each Side)" : ""}
           <input
             type="number"
             class="set-reps-input"
@@ -415,16 +428,31 @@ function renderInputsForExerciseType(exercise, existing, setNumber) {
   }
 
   if (exercise.input_type === "band_color") {
+    const previousReps = findPreviousRepsForExercise(exercise.id, setNumber);
+    const repsValue = existing?.reps_completed ?? previousReps;
+
     return `
-      <label>
-        Band Color
-        <input
-          type="text"
-          class="set-band-input"
-          value="${window.RipCityUI.attr(existing?.band_color || "")}"
-          placeholder="${window.RipCityUI.attr(setTarget || "Red, black, green...")}"
-        />
-      </label>
+      <div class="set-input-grid">
+        <label>
+          Band Color (Optional)
+          <input
+            type="text"
+            class="set-band-input"
+            value="${window.RipCityUI.attr(existing?.band_color || "")}"
+            placeholder="Only if useful"
+          />
+        </label>
+
+        <label>
+          Actual Reps${exercise.is_unilateral ? " (Each Side)" : ""}
+          <input
+            type="number"
+            class="set-reps-input"
+            value="${window.RipCityUI.attr(repsValue || "")}"
+            placeholder="${window.RipCityUI.attr(setTarget || "reps")}"
+          />
+        </label>
+      </div>
     `;
   }
 
@@ -452,6 +480,7 @@ function renderInputsForExerciseType(exercise, existing, setNumber) {
           value="${window.RipCityUI.attr(existing?.distance_value || "")}"
           placeholder="${window.RipCityUI.attr(setTarget || "ex: 20 yards")}"
         />
+        <small class="set-input-help">Enter 0 if you completed it but did not measure the distance.</small>
       </label>
     `;
   }
