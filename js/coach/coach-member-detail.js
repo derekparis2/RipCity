@@ -32,12 +32,16 @@ function getGoalProgress(goal) {
   const checkins = detailCheckinsByGoalId[goal.id] || [];
   const latestCheckin = checkins[checkins.length - 1];
   const currentValue = Number(latestCheckin?.value ?? goal.current_value);
-  const targetValue = Number(goal.target_value);
-  if (!Number.isFinite(currentValue) || !Number.isFinite(targetValue) || targetValue <= 0) {
+  const startValue = Number(goal.current_value);
+  const targetValue = goal.target_value === null ? NaN : Number(goal.target_value);
+
+  // Progress is measured from the starting value to the target, not from zero.
+  if (!Number.isFinite(currentValue) || !Number.isFinite(startValue) || !Number.isFinite(targetValue) || targetValue === startValue) {
     return { percent: null, tone: "warning", label: "Not set", currentValue: null };
   }
 
-  const percent = Math.max(0, Math.min(100, Math.round((currentValue / targetValue) * 100)));
+  const rawPercent = ((currentValue - startValue) / (targetValue - startValue)) * 100;
+  const percent = Math.max(0, Math.min(100, Math.round(rawPercent)));
   const tone = percent >= 80 ? "good" : percent >= 40 ? "warning" : "danger";
   return { percent, tone, label: `${percent}%`, currentValue };
 }
@@ -98,6 +102,11 @@ function renderDetailGoals() {
         <div class="coach-goal-progress" aria-label="Goal progress: ${progress.label}">
             <div class="coach-goal-progress-heading"><span>Progress</span><strong class="status-${progress.tone}">${progress.label}</strong></div>
             <div class="progress-bar"><div class="status-${progress.tone}" style="width: ${progress.percent ?? 0}%"></div></div>
+            ${goal.target_value === null ? "" : `<div class="coach-goal-progress-scale">
+              <span>Start ${goal.current_value ?? 0}${goal.unit ? ` ${goal.unit}` : ""}</span>
+              <span>Current ${displayedCurrentValue ?? 0}${goal.unit ? ` ${goal.unit}` : ""}</span>
+              <span>Goal ${goal.target_value}${goal.unit ? ` ${goal.unit}` : ""}</span>
+            </div>`}
         </div>
       </div>
       <div class="member-goal-actions">

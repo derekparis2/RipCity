@@ -252,44 +252,63 @@ async function loadMemberGoals() {
 }
 
 function renderGoalChart(goal) {
-  const points = (goalCheckinsByGoalId[goal.id] || []).slice().sort((a, b) => a.recorded_date.localeCompare(b.recorded_date));
-  const values = points.map(point => Number(point.value));
+  const checkins = (goalCheckinsByGoalId[goal.id] || []).slice().sort((a, b) => a.recorded_date.localeCompare(b.recorded_date));
   const targetValue = goal.target_value === null ? null : Number(goal.target_value);
+  const startValue = goal.current_value === null || goal.current_value === undefined ? null : Number(goal.current_value);
+  const startDate = (goal.created_at || checkins[0]?.recorded_date || getTodayString()).slice(0, 10);
+
+  // The chart should begin at the goal's starting value, then track each check-in after it.
+  const points = [];
+  if (startValue !== null && (!checkins.length || checkins[0].recorded_date > startDate)) {
+    points.push({ recorded_date: startDate, value: startValue });
+  }
+  points.push(...checkins);
 
   if (!points.length) {
     return `<div class="empty-state compact">No check-ins yet.</div>`;
   }
 
-  const minValue = Math.min(...values, targetValue ?? 0, 0);
-  const maxValue = Math.max(...values, targetValue ?? 0, 1);
-  const padding = 18;
+  const values = points.map(point => Number(point.value));
+  const allValues = targetValue === null ? values : [...values, targetValue];
+  const rawMin = Math.min(...allValues);
+  const rawMax = Math.max(...allValues);
+  const range = Math.max(rawMax - rawMin, 1);
+  const axisPadding = range * 0.15;
+  const minValue = rawMin - axisPadding;
+  const maxValue = rawMax + axisPadding;
+  const valueRange = Math.max(maxValue - minValue, 1);
+
+  const leftPadding = 46;
+  const rightPadding = 16;
+  const topPadding = 20;
   const bottomPadding = 34;
   const width = 760;
-  const height = 150;
-  const chartHeight = height - padding - bottomPadding;
-  const valueRange = Math.max(maxValue - minValue, 1);
+  const height = 190;
+  const chartWidth = width - leftPadding - rightPadding;
+  const chartHeight = height - topPadding - bottomPadding;
   const latestValue = values[values.length - 1];
-  const targetY = targetValue === null
-    ? null
-    : height - padding - ((targetValue - minValue) / valueRange) * chartHeight;
 
-  const linePath = points.map((point, index) => {
-    const x = padding + ((index * (width - padding * 2)) / Math.max(points.length - 1, 1));
-    const y = height - padding - ((Number(point.value) - minValue) / valueRange) * chartHeight;
-    return `${index === 0 ? "M" : "L"}${x},${y}`;
-  }).join(" ");
+  const xFor = index => leftPadding + (points.length === 1 ? chartWidth / 2 : (index * chartWidth) / (points.length - 1));
+  const yFor = value => topPadding + chartHeight - ((value - minValue) / valueRange) * chartHeight;
+
+  const targetY = targetValue === null ? null : yFor(targetValue);
+
+  const linePath = points.map((point, index) => `${index === 0 ? "M" : "L"}${xFor(index)},${yFor(Number(point.value))}`).join(" ");
 
   const dots = points.map((point, index) => {
-    const x = padding + ((index * (width - padding * 2)) / Math.max(points.length - 1, 1));
-    const y = height - padding - ((Number(point.value) - minValue) / valueRange) * chartHeight;
-    return `<circle cx="${x}" cy="${y}" r="4" fill="#2d6cdf"><title>${formatGoalDate(point.recorded_date)}: ${point.value}</title></circle>`;
+    const x = xFor(index);
+    const y = yFor(Number(point.value));
+    return `
+      <circle cx="${x}" cy="${y}" r="4" fill="#2d6cdf"><title>${formatGoalDate(point.recorded_date)}: ${point.value}</title></circle>
+      <text x="${x}" y="${Math.max(y - 10, 12)}" text-anchor="middle" class="goal-chart-value-label">${point.value}</text>
+    `;
   }).join("");
 
   const dateLabels = points.map((point, index) => {
     const labelStep = Math.max(1, Math.ceil(points.length / 6));
     if (index % labelStep !== 0 && index !== points.length - 1) return "";
 
-    const x = padding + ((index * (width - padding * 2)) / Math.max(points.length - 1, 1));
+    const x = xFor(index);
     const label = new Date(`${point.recorded_date}T12:00:00`).toLocaleDateString(undefined, {
       month: "short",
       day: "numeric"
@@ -297,11 +316,21 @@ function renderGoalChart(goal) {
     return `<text x="${x}" y="${height - 8}" text-anchor="middle" class="goal-chart-date-label">${label}</text>`;
   }).join("");
 
+  const yTickCount = 4;
+  const yAxis = Array.from({ length: yTickCount + 1 }, (_, i) => minValue + (valueRange * i) / yTickCount).map(tick => {
+    const y = yFor(tick);
+    return `
+      <line x1="${leftPadding}" y1="${y}" x2="${width - rightPadding}" y2="${y}" class="goal-chart-grid-line"></line>
+      <text x="${leftPadding - 8}" y="${y + 3}" text-anchor="end" class="goal-chart-axis-label">${Math.round(tick * 10) / 10}</text>
+    `;
+  }).join("");
+
   return `
     <div class="goal-chart-wrap">
       ${targetValue === null ? "" : `<div class="goal-chart-summary"><span>Latest ${latestValue}${goal.unit ? ` ${window.RipCityUI.text(goal.unit)}` : ""}</span><span>Target ${targetValue}${goal.unit ? ` ${window.RipCityUI.text(goal.unit)}` : ""}</span></div>`}
       <svg viewBox="0 0 ${width} ${height}" class="goal-chart" role="img" aria-label="Goal progress chart">
-        ${targetY === null ? "" : `<line x1="${padding}" y1="${targetY}" x2="${width - padding}" y2="${targetY}" class="goal-chart-target-line"></line><text x="${width - padding}" y="${Math.max(targetY - 4, 10)}" text-anchor="end" class="goal-chart-target-label">Target</text>`}
+        ${yAxis}
+        ${targetY === null ? "" : `<line x1="${leftPadding}" y1="${targetY}" x2="${width - rightPadding}" y2="${targetY}" class="goal-chart-target-line"></line><text x="${width - rightPadding}" y="${Math.max(targetY - 4, 10)}" text-anchor="end" class="goal-chart-target-label">Target</text>`}
         <path d="${linePath}" fill="none" stroke="#2d6cdf" stroke-width="2"></path>
         ${dots}
         ${dateLabels}

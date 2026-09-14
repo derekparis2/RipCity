@@ -1774,6 +1774,16 @@ td {
     background: var(--danger);
   }
 
+  .coach-goal-progress-scale {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 6px;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
+  }
+
   .member-goal-meta span:not(:last-child)::after {
     content: "•";
     margin-left: 8px;
@@ -1897,6 +1907,24 @@ td {
     font-weight: 700;
   }
 
+  .goal-chart-axis-label {
+    fill: var(--muted);
+    font-size: 9px;
+    font-weight: 700;
+  }
+
+  .goal-chart-grid-line {
+    stroke: var(--border);
+    stroke-width: 1;
+    opacity: 0.5;
+  }
+
+  .goal-chart-value-label {
+    fill: var(--text);
+    font-size: 10px;
+    font-weight: 800;
+  }
+
   .goal-checkin-chart {
     margin-top: 12px;
   }
@@ -1913,7 +1941,7 @@ td {
   .goal-chart {
     display: block;
     width: 100%;
-    height: 150px;
+    height: 190px;
   }
 
   .goal-checkin-history {
