@@ -30,8 +30,9 @@ now requires reps and offers band color as an optional field:
 
 ## Approved Catalog Corrections
 
-These corrections were applied to staging on 2026-09-14. Production remains
-unchanged until the reviewed V2 production migration sequence is released.
+The Vertical Jump and medicine-ball corrections were applied to staging on
+2026-09-14. Production remains unchanged until the reviewed V2 production
+migration sequence is released.
 
 Coach-approved measured-distance exercises:
 
@@ -45,8 +46,8 @@ ball weight and completed reps, not throwing distance:
 - Med Ball Shot Put (`Each Side` by default)
 - Med Ball Slam
 
-Likely prescribed-distance exercises that should change from `distance` to
-`completion` while keeping the coach-entered distance target:
+The following coach-approved prescribed-distance exercises now use
+`completion` in staging while keeping the coach-entered distance target:
 
 - Lateral Shuffle
 - Carioca
@@ -59,13 +60,9 @@ Likely prescribed-distance exercises that should change from `distance` to
 - Sled Push
 - Sled Pull
 
-Coach review should confirm whether Rip City ever wants members to record
-actual carry or sled distance.
+## Approved Each-Side Defaults
 
-## Likely Each-Side Defaults To Review
-
-These are strong candidates for `Each Side by Default`, but should be confirmed
-before changing catalog data:
+The following exercises now default to `Each Side` in staging:
 
 - Single-Leg RDL
 - Split Squat
@@ -88,12 +85,8 @@ before changing catalog data:
 - Wrist Pronation/Supination
 - Wrist Flexion/Extension
 
-## Before Applying Remaining Catalog Changes
-
-1. Review the recommended lists with the Rip City coach.
-2. Confirm ambiguous exercises and add/remove each-side defaults.
-3. Create a new idempotent migration that updates only the approved starter
-   rows in staging.
-4. Test the resulting builder defaults and every member input type.
-5. Preserve the same approved corrections when the starter list is converted
-   into the universal catalog.
+The remaining approved corrections are source-controlled in
+`20260914223000_apply_approved_exercise_input_audit.sql` and were applied to
+staging on 2026-09-14. Continue testing the builder defaults and each member
+input type. Preserve all approved corrections when the starter list becomes
+the universal catalog.

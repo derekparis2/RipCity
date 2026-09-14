@@ -45,6 +45,10 @@ Staging migration status:
   distance exercise and changed the three medicine-ball defaults to weight and
   reps. Med Ball Shot Put defaults to `Each Side`.
 - Production has not received the catalog-correction migration.
+- `20260914223000_apply_approved_exercise_input_audit.sql` was applied and
+  verified successfully in staging on 2026-09-14. It contains the remaining
+  coach-approved prescribed-distance and `Each Side` defaults. Production
+  remains unchanged.
 
 Staging Auth was configured on 2026-08-28:
 
