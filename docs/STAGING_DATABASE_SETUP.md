@@ -64,8 +64,12 @@ not be rerun over an existing application schema.
    individual repair statements until the source migration is corrected.
 
 The baseline creates no Auth users. Its only rows are required Rip City setup
-data: one facility, five groups, six habits, and 87 repository-controlled
+data: one facility, five groups, six habits, and 88 repository-controlled
 starter exercise templates.
+
+The catalog-correction migration applied on 2026-09-14 supplies the 88th
+template, Vertical Jump, and corrects the medicine-ball input defaults. A fresh
+rebuild must run all active migrations in filename order before staging seeds.
 
 Production currently contains 93 exercise templates. Git history confirms the
 starter seed has always contained 87, so six production templates were added

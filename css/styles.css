@@ -4972,15 +4972,12 @@ td {
 }
 
 .session-exercise-header {
-  display: grid;
-  grid-template-columns: minmax(220px, 1fr) minmax(260px, 0.95fr);
-  gap: 18px;
-  align-items: start;
+  display: block;
 }
 
 .session-exercise-header h4 {
-  margin: 0 0 7px;
-  font-size: 20px;
+  margin: 3px 0 7px;
+  font-size: 24px;
 }
 
 .session-exercise-header p {
@@ -4989,9 +4986,52 @@ td {
   line-height: 1.45;
 }
 
+.session-exercise-kicker {
+  color: #6fb8ff !important;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.session-prescription {
+  display: grid;
+  grid-template-columns: minmax(190px, 0.7fr) minmax(280px, 1.3fr);
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.session-primary-target {
+  border: 1px solid rgba(111, 184, 255, 0.48);
+  background: rgba(111, 184, 255, 0.1);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.session-primary-target span,
+.session-primary-target strong {
+  display: block;
+}
+
+.session-primary-target span {
+  color: #9acfff;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.session-primary-target strong {
+  margin-top: 5px;
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 25px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
 .session-exercise-tags {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
 }
 
@@ -5047,9 +5087,8 @@ td {
   border-radius: 14px;
   padding: 14px;
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr;
   gap: 14px;
-  align-items: end;
 }
 
 .set-log-row.set-complete {
@@ -5068,13 +5107,16 @@ td {
 }
 
 .set-log-title strong {
-  font-size: 16px;
+  margin-top: 2px;
+  font-size: 20px;
 }
 
 .set-log-title span {
-  margin-top: 3px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
 }
 
 .set-complete .set-log-title em {
@@ -5084,14 +5126,19 @@ td {
 }
 
 .set-log-fields,
+.set-log-required-fields,
 .set-input-grid {
   display: grid;
   gap: 12px;
 }
 
 .set-log-fields {
-  grid-template-columns: repeat(4, minmax(120px, 1fr));
+  grid-template-columns: minmax(140px, 0.45fr) minmax(220px, 1fr);
   align-items: end;
+}
+
+.set-log-required-fields {
+  grid-template-columns: 1fr;
 }
 
 .set-input-grid {
@@ -5105,6 +5152,13 @@ td {
   color: var(--muted);
   font-size: 12px;
   font-weight: 800;
+}
+
+.set-input-help {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.35;
 }
 
 .set-log-row input,
@@ -5145,7 +5199,33 @@ td {
 }
 
 .set-note-label {
-  grid-column: span 2;
+  grid-column: auto;
+}
+
+.set-log-optional {
+  border-top: 1px solid var(--border);
+  padding-top: 11px;
+}
+
+.set-log-optional summary {
+  width: fit-content;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.set-log-optional summary span {
+  margin-left: 5px;
+  color: #73757b;
+  font-size: 10px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.set-log-optional[open] summary {
+  margin-bottom: 12px;
+  color: var(--text);
 }
 
 .completion-only-text {
@@ -5165,8 +5245,13 @@ td {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
+}
+
+.set-log-actions .primary-btn {
+  min-width: 170px;
+  margin-left: auto;
 }
 
 .set-log-actions .primary-btn,
@@ -5851,11 +5936,11 @@ body {
 }
 
 .session-exercise-header {
-  grid-template-columns: minmax(240px, 1fr) minmax(240px, 0.85fr);
+  display: block;
 }
 
 .set-log-fields {
-  grid-template-columns: repeat(4, minmax(110px, 1fr));
+  grid-template-columns: minmax(140px, 0.45fr) minmax(220px, 1fr);
 }
 
 @media (max-width: 1120px) {
@@ -5919,7 +6004,6 @@ body {
   }
 
   .coach-workouts-builder-grid,
-  .session-exercise-header,
   .coach-workout-member-row,
   .coach-set-result-row,
   .roster-member-card {
@@ -6771,8 +6855,29 @@ body {
     padding: 11px;
   }
 
+  .workout-session-body .session-prescription {
+    grid-template-columns: 1fr;
+    gap: 7px;
+    margin-top: 8px;
+  }
+
+  .workout-session-body .session-primary-target {
+    padding: 10px;
+  }
+
+  .workout-session-body .session-primary-target strong {
+    font-size: 23px;
+  }
+
+  .workout-session-body .session-exercise-tags {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .workout-session-body .session-exercise-tags span {
-    flex: 1 1 100%;
+    min-height: 0;
+    padding: 8px;
+    border-radius: 9px;
   }
 
   .workout-session-body .set-log-list {
@@ -6782,6 +6887,13 @@ body {
   .workout-session-body .set-log-row {
     border-radius: 12px;
     background: rgba(32, 33, 36, 0.72);
+  }
+
+  .workout-session-body .set-log-optional summary {
+    width: 100%;
+    min-height: 38px;
+    display: flex;
+    align-items: center;
   }
 
   .workout-session-body .set-log-actions {
@@ -6800,10 +6912,19 @@ body {
 
   .workout-session-body .set-log-actions {
     display: grid;
-    grid-template-columns: 0.86fr 1fr 1.14fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .workout-session-body .set-log-actions > * {
     width: 100%;
+  }
+
+  .workout-session-body .set-log-actions > :only-child {
+    grid-column: 1 / -1;
+  }
+
+  .workout-session-body .set-log-actions .primary-btn {
+    min-width: 0;
+    margin-left: 0;
   }
 }

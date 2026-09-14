@@ -166,19 +166,27 @@ Recommended data direction:
 
 Current-data transition direction:
 
-- The 87 repository starter exercises are candidates for the universal catalog.
+- The 88 repository starter exercises are candidates for the universal catalog.
+- Maintain the working classification review in
+  [`EXERCISE_INPUT_AUDIT.md`](EXERCISE_INPUT_AUDIT.md); its recommendations do
+  not change staging data until Derek and the Rip City coach approve them.
 - The six verified coach-created production exercises remain Rip City-specific.
 - Rip City's edited `Push-Up` and `Tempo Push-Up` values become facility
   overrides if those production changes are confirmed as intentional.
 - Audit the starter exercise defaults before promoting them to the universal
   catalog. Their prescribed workout target and their member-entered result must
   be treated as separate concepts where needed:
-  - Band exercises may require the member to enter both band color and reps.
+  - Band exercises require actual reps; band color is optional facility context.
   - Prescribed-distance drills such as A-skips should let the coach set the
     distance while the member only marks the exercise complete.
   - Measured-distance exercises such as broad jumps should keep member distance
     entry. A saved result of `0` means completed but not measured and must count
     as a valid completed result rather than missing data.
+  - Vertical Jump should be added to the universal starter catalog as a
+    measured-distance exercise.
+  - Medicine-ball exercises use weight and reps so members record the ball
+    weight rather than throwing distance; unilateral throws such as Med Ball
+    Shot Put default to `Each Side`.
 - Exercises may be marked `Each Side` in the library and overridden within an
   individual workout. For example, `8 reps each side` means eight right and
   eight left. Members record one weight and one rep result per set in V2; the

@@ -120,6 +120,7 @@ features into each other.
 - **Status:** In progress
 - **Branch:** `derek/workout-builder-refactor`
 - **Plan detail:** [Universal and facility exercise library](VERSION_2_PLAN.md#universal-and-facility-exercise-library) · [Beta workout polish](VERSION_2_PLAN.md#8-beta-feedback-polish-queue)
+- **Input audit:** [Starter exercise classifications](EXERCISE_INPUT_AUDIT.md)
 
 This package completes the workout foundation that V2 is meant to stabilize. It
 includes a faster and clearer coach workout-builder flow, full workout-structure

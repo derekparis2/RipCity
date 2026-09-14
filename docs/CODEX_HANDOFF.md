@@ -147,6 +147,10 @@ Current status:
 - The unilateral-exercise migration was applied to staging on 2026-09-14. It
   adds non-null `is_unilateral` flags to exercise templates and workout
   exercise snapshots; production remains unchanged.
+- The approved Vertical Jump and medicine-ball catalog migration
+  (`20260914220000_correct_jump_and_med_ball_exercise_defaults.sql`) was applied
+  successfully to staging on 2026-09-14. Staging now has 88 Rip City starter
+  exercises; production remains unchanged.
 
 Goal:
 

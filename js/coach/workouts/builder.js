@@ -53,10 +53,10 @@ function getExerciseRowLabel(index) {
 function getExerciseTargetLabel(inputType) {
   const labels = {
     weight_reps: "Reps / Set Targets",
-    band_color: "Band / Rep Target",
+    band_color: "Rep Target",
     time: "Time Target",
     distance: "Distance Target",
-    completion: "Task Target",
+    completion: "Target / Prescribed Distance",
     custom: "Target"
   };
 
@@ -66,10 +66,10 @@ function getExerciseTargetLabel(inputType) {
 function getExerciseTargetPlaceholder(inputType) {
   const placeholders = {
     weight_reps: "5 or 5,4,3,4,5",
-    band_color: "ex: light band or 8 reps",
+    band_color: "ex: 12 or 12,12,10",
     time: "ex: 20 sec or 20,25,30",
     distance: "ex: 20 yards",
-    completion: "ex: 3 rounds or complete",
+    completion: "ex: 20 yards, 8 reps, or complete",
     custom: "Enter target"
   };
 
@@ -513,7 +513,7 @@ function createExerciseCard(index) {
           <select class="exercise-input-type">
             <option value="weight_reps">Weight + Reps</option>
             <option value="completion">Completion</option>
-            <option value="band_color">Band Color</option>
+            <option value="band_color">Band + Reps</option>
             <option value="time">Time</option>
             <option value="distance">Distance</option>
             <option value="custom">Custom</option>

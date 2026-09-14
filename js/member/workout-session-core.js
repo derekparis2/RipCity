@@ -43,7 +43,7 @@ function formatInputType(inputType) {
   const labels = {
     completion: "Completion",
     weight_reps: "Weight + Reps",
-    band_color: "Band Color",
+    band_color: "Band + Reps",
     time: "Time",
     distance: "Distance",
     custom: "Custom"

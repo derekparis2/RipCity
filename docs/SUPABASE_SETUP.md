@@ -39,6 +39,12 @@ Staging migration status:
   `workout_exercises.is_unilateral` are non-null booleans defaulting to `false`.
 - Production has not received this migration. Preserve it in the eventual V2
   production migration sequence rather than manually recreating the columns.
+- `20260914220000_correct_jump_and_med_ball_exercise_defaults.sql` was applied
+  successfully to staging on 2026-09-14 after Derek and the Rip City coach
+  approved the catalog corrections. It added Vertical Jump as a measured-
+  distance exercise and changed the three medicine-ball defaults to weight and
+  reps. Med Ball Shot Put defaults to `Each Side`.
+- Production has not received the catalog-correction migration.
 
 Staging Auth was configured on 2026-08-28:
 
