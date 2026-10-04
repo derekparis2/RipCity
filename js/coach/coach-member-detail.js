@@ -105,7 +105,7 @@ function renderDetailGoals() {
             ${goal.target_value === null ? "" : `<div class="coach-goal-progress-scale">
               <span>Start ${goal.current_value ?? 0}${goal.unit ? ` ${window.RipCityUI.text(goal.unit)}` : ""}</span>
               <span>Current ${displayedCurrentValue ?? 0}${goal.unit ? ` ${window.RipCityUI.text(goal.unit)}` : ""}</span>
-              <span>Goal ${goal.target_value}${goal.unit ? ` ${window.RipCityUI.text(goal.unit)}` : ""}</span
+              <span>Goal ${goal.target_value}${goal.unit ? ` ${window.RipCityUI.text(goal.unit)}` : ""}</span>
             </div>`}
         </div>
       </div>

@@ -559,7 +559,7 @@ async function updateGoalCheckin(checkinId) {
 
   const recordedDate = dateInput.value;
   const value = Number(valueInput.value);
-  if (!recordedDate || Number.isNaN(value)) {
+  if (!recordedDate || valueInput.value.trim() === "" || Number.isNaN(value)) {
     showMemberGoalsMessage("Choose a date and enter a numeric goal value.", true);
     return;
   }

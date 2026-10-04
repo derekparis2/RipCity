@@ -107,3 +107,39 @@ on public.goal_checkins
 for delete
 to authenticated
 using (app_private.is_facility_coach(app_private.member_profile_facility_id(member_profile_id)));
+
+create or replace function app_private.prevent_goal_checkin_identity_update()
+returns trigger
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+begin
+  if new.id is distinct from old.id
+    or new.goal_id is distinct from old.goal_id
+    or new.member_profile_id is distinct from old.member_profile_id
+    or new.created_at is distinct from old.created_at
+    or (
+      new.created_by is distinct from old.created_by
+      and not (
+        new.created_by is null
+        and old.created_by is not null
+        and not exists (
+          select 1
+          from public.profiles p
+          where p.id = old.created_by
+        )
+      )
+    )
+  then
+    raise exception 'Goal check-in identity and audit fields cannot be changed';
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists goal_checkins_prevent_identity_update on public.goal_checkins;
+create trigger goal_checkins_prevent_identity_update
+before update on public.goal_checkins
+for each row execute function app_private.prevent_goal_checkin_identity_update();
