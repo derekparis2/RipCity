@@ -95,12 +95,17 @@ function getWorkoutValidationError({ shouldAssign, title, minutes, targetType, g
 
 async function saveWorkout(event) {
   event.preventDefault();
+
+  if (workoutSaveInProgress) return;
+
   updateAssignmentControls();
 
   const submitButton = event.submitter;
   const shouldAssign = submitButton?.value !== "draft";
   const submitButtons = Array.from(document.querySelectorAll("#workout-form button[type='submit']"));
   const originalSubmitLabels = new Map(submitButtons.map(button => [button, button.textContent]));
+  let workoutId = null;
+  let createdTemplateIds = [];
 
   try {
     clearWorkoutValidationErrors();
@@ -154,9 +159,10 @@ async function saveWorkout(event) {
 
     // Only sync custom exercises after any assignment confirmation so canceling
     // the workflow never writes an exercise template by itself.
-    await ensureWorkoutExercisesAreInLibrary(blocks);
+    const librarySync = await ensureWorkoutExercisesAreInLibrary(blocks);
+    createdTemplateIds = librarySync.createdTemplateIds;
 
-    const workoutId = createClientId();
+    workoutId = createClientId();
 
     // Save order matters: workout -> blocks -> exercises -> assignment.
     // This preserves the relationships expected by member-dashboard/workout-session.
@@ -253,11 +259,37 @@ async function saveWorkout(event) {
       showWorkoutMessage(`Workout "${title}" saved as a draft.`);
     }
 
+    // Database writes are complete. A later UI refresh failure must not roll
+    // back a workout that was successfully saved.
+    workoutId = null;
+    createdTemplateIds = [];
     resetWorkoutForm();
     await loadRecentWorkouts();
   } catch (error) {
     console.error(error);
-    showWorkoutMessage(error.message || "Could not create workout.", true);
+
+    const cleanupErrors = [];
+
+    // Removing the parent workout cascades to any blocks, exercises, and
+    // assignments that were inserted before a later step failed.
+    if (workoutId) {
+      const { error: workoutCleanupError } = await db
+        .from("workouts")
+        .delete()
+        .eq("id", workoutId);
+
+      if (workoutCleanupError) cleanupErrors.push(workoutCleanupError);
+    }
+
+    const templateCleanupError = await removeCreatedExerciseTemplates(createdTemplateIds);
+    if (templateCleanupError) cleanupErrors.push(templateCleanupError);
+
+    if (cleanupErrors.length) {
+      console.error("Workout save cleanup failed.", cleanupErrors);
+      showWorkoutMessage("The workout could not be saved, and automatic cleanup was incomplete. Do not retry yet; ask an administrator to review staging.", true);
+    } else {
+      showWorkoutMessage(error.message || "Could not create workout.", true);
+    }
   } finally {
     workoutSaveInProgress = false;
     submitButtons.forEach(button => {

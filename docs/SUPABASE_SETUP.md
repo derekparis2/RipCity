@@ -39,6 +39,10 @@ Staging migration status:
   `workout_exercises.is_unilateral` are non-null booleans defaulting to `false`.
 - Production has not received this migration. Preserve it in the eventual V2
   production migration sequence rather than manually recreating the columns.
+- The `20260914140000_add_unilateral_exercise_flags.sql` migration must be
+  applied and verified in production before deploying any V2 frontend assets.
+  V2 queries and inserts intentionally rely on both columns; never deploy the
+  frontend first or merge `v2-development` directly into the live site.
 - `20260914220000_correct_jump_and_med_ball_exercise_defaults.sql` was applied
   successfully to staging on 2026-09-14 after Derek and the Rip City coach
   approved the catalog corrections. It added Vertical Jump as a measured-

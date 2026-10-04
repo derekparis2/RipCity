@@ -63,15 +63,15 @@ function renderExerciseTemplatePicker(input) {
     input.closest("[data-exercise-card]")?.querySelector("datalist");
 
   if (!exerciseLibraryAvailable) {
-    input.placeholder = "Library migration not run yet";
-    input.disabled = true;
+    input.placeholder = "Type an exercise name...";
+    input.disabled = false;
     if (list) list.innerHTML = "";
     return;
   }
 
   if (!exerciseTemplates.length) {
-    input.placeholder = "No library exercises yet";
-    input.disabled = true;
+    input.placeholder = "Type an exercise name...";
+    input.disabled = false;
     if (list) list.innerHTML = "";
     return;
   }
@@ -450,7 +450,9 @@ async function createTemplateFromWorkoutExercise(exercise) {
 }
 
 async function ensureWorkoutExercisesAreInLibrary(blocks) {
-  if (!exerciseLibraryAvailable) return blocks;
+  if (!exerciseLibraryAvailable) {
+    return { blocks, createdTemplateIds: [] };
+  }
 
   // Before a workout is saved, attach every exercise to an existing template
   // or create a facility-owned template for custom coach entries. That keeps
@@ -460,37 +462,45 @@ async function ensureWorkoutExercisesAreInLibrary(blocks) {
   );
   const createdTemplates = [];
 
-  for (const block of blocks) {
-    for (const exercise of block.exercises) {
-      if (exercise.exercise_template_id) continue;
+  try {
+    for (const block of blocks) {
+      for (const exercise of block.exercises) {
+        if (exercise.exercise_template_id) continue;
 
-      const normalizedName = normalizeExerciseName(exercise.name);
-      if (!normalizedName) continue;
+        const normalizedName = normalizeExerciseName(exercise.name);
+        if (!normalizedName) continue;
 
-      const existingTemplate = templatesByName.get(normalizedName);
-      if (existingTemplate) {
-        exercise.exercise_template_id = existingTemplate.id;
-        continue;
-      }
+        const existingTemplate = templatesByName.get(normalizedName);
+        if (existingTemplate) {
+          exercise.exercise_template_id = existingTemplate.id;
+          continue;
+        }
 
-      try {
-        const createdTemplate = await createTemplateFromWorkoutExercise(exercise);
-        templatesByName.set(normalizedName, createdTemplate);
-        createdTemplates.push(createdTemplate);
-        exercise.exercise_template_id = createdTemplate.id;
-      } catch (error) {
-        // If another coach added the same exercise first, refresh and attach it.
-        // Other errors should still stop the workout save so the coach sees them.
-        if (error?.code !== "23505") throw error;
+        try {
+          const createdTemplate = await createTemplateFromWorkoutExercise(exercise);
+          templatesByName.set(normalizedName, createdTemplate);
+          createdTemplates.push(createdTemplate);
+          exercise.exercise_template_id = createdTemplate.id;
+        } catch (error) {
+          // If another coach added the same exercise first, refresh and attach it.
+          // Other errors should still stop the workout save so the coach sees them.
+          if (error?.code !== "23505") throw error;
 
-        exerciseTemplates = await loadExerciseTemplates(workoutCoachAccess.membership.facility_id);
-        const duplicateTemplate = findExerciseTemplateByName(exercise.name);
-        if (!duplicateTemplate) throw error;
+          exerciseTemplates = await loadExerciseTemplates(workoutCoachAccess.membership.facility_id);
+          const duplicateTemplate = findExerciseTemplateByName(exercise.name);
+          if (!duplicateTemplate) throw error;
 
-        templatesByName.set(normalizedName, duplicateTemplate);
-        exercise.exercise_template_id = duplicateTemplate.id;
+          templatesByName.set(normalizedName, duplicateTemplate);
+          exercise.exercise_template_id = duplicateTemplate.id;
+        }
       }
     }
+  } catch (error) {
+    const cleanupError = await removeCreatedExerciseTemplates(createdTemplates.map(template => template.id));
+    if (cleanupError) {
+      console.error("Could not clean up exercise templates after library sync failed.", cleanupError);
+    }
+    throw error;
   }
 
   if (createdTemplates.length) {
@@ -500,5 +510,26 @@ async function ensureWorkoutExercisesAreInLibrary(blocks) {
     refreshExerciseTemplatePickers();
   }
 
-  return blocks;
+  return {
+    blocks,
+    createdTemplateIds: createdTemplates.map(template => template.id)
+  };
+}
+
+async function removeCreatedExerciseTemplates(templateIds) {
+  if (!templateIds.length || !exerciseLibraryAvailable) return null;
+
+  const { error } = await db
+    .from("exercise_templates")
+    .delete()
+    .eq("facility_id", workoutCoachAccess.membership.facility_id)
+    .in("id", templateIds);
+
+  if (error) return error;
+
+  const removedIds = new Set(templateIds);
+  exerciseTemplates = exerciseTemplates.filter(template => !removedIds.has(template.id));
+  renderExerciseLibraryList();
+  refreshExerciseTemplatePickers();
+  return null;
 }
