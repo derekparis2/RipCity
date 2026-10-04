@@ -504,7 +504,10 @@ async function ensureWorkoutExercisesAreInLibrary(blocks) {
   }
 
   if (createdTemplates.length) {
-    exerciseTemplates = [...exerciseTemplates, ...createdTemplates]
+    exerciseTemplates = Array.from(new Map(
+      [...exerciseTemplates, ...createdTemplates]
+        .map(template => [template.id, template])
+    ).values())
       .sort((a, b) => a.name.localeCompare(b.name));
     renderExerciseLibraryList();
     refreshExerciseTemplatePickers();
