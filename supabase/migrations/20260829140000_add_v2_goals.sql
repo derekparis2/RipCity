@@ -5,12 +5,14 @@ alter table public.goals
   add column if not exists due_date date,
   add column if not exists completed_at timestamptz;
 
+alter table public.goals
+  drop constraint if exists goals_status_check;
+
 update public.goals
 set status = 'completed'
 where status = 'complete';
 
 alter table public.goals
-  drop constraint if exists goals_status_check,
   add constraint goals_status_check
     check (status in ('active', 'completed', 'paused')),
   add constraint goals_timeline_check
