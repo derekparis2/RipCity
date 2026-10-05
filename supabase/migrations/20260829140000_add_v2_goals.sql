@@ -28,6 +28,11 @@ returns trigger
 language plpgsql
 as $$
 begin
+  if new.id is distinct from old.id
+    or new.created_at is distinct from old.created_at then
+    raise exception 'Goal identity and audit fields cannot be changed';
+  end if;
+
   if app_private.is_facility_coach(app_private.member_profile_facility_id(old.member_profile_id)) then
     new.completed_at := case
       when new.status = 'completed' then coalesce(new.completed_at, old.completed_at, now())
