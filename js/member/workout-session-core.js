@@ -10,13 +10,30 @@ let workoutAssignment = null;
 let existingSetLogs = [];
 let currentSessionStepIndex = 0;
 let workoutSessionView = "overview";
+let workoutSessionMessageTimer = null;
 
 function showWorkoutSessionMessage(message, isError = false) {
   const element = document.getElementById("workout-session-message");
   if (!element) return;
 
+  window.clearTimeout(workoutSessionMessageTimer);
+  element.classList.remove("session-message-toast");
   element.textContent = message;
   element.classList.toggle("error-message", isError);
+}
+
+function showWorkoutSessionToast(message) {
+  const element = document.getElementById("workout-session-message");
+  if (!element) return;
+
+  window.clearTimeout(workoutSessionMessageTimer);
+  element.textContent = message;
+  element.classList.remove("error-message");
+  element.classList.add("session-message-toast");
+  workoutSessionMessageTimer = window.setTimeout(() => {
+    element.textContent = "";
+    element.classList.remove("session-message-toast");
+  }, 2200);
 }
 
 function getAssignmentIdFromUrl() {
@@ -63,14 +80,13 @@ function getExerciseTargetText(exercise) {
 
 function getSetTargetText(exercise, setNumber) {
   const targetValue = getSetTargetValue(exercise, setNumber);
+  const totalSets = Number(exercise.sets || 1);
 
   if (targetValue) {
-    return targetValue.isPerSet
-      ? `Set ${setNumber}: ${targetValue.value}${exercise.is_unilateral ? " each side" : ""}`
-      : getExerciseTargetText(exercise);
+    return `Set ${setNumber} of ${totalSets}: ${targetValue.value}${exercise.is_unilateral ? " each side" : ""}`;
   }
 
-  return getExerciseTargetText(exercise);
+  return `Set ${setNumber} of ${totalSets}: complete`;
 }
 
 function getSetTargetValue(exercise, setNumber) {
@@ -134,6 +150,19 @@ function findPreviousRepsForExercise(exerciseId, setNumber) {
 function getExerciseBlockLabel(index) {
   const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   return letters[index] || `${index + 1}`;
+}
+
+function formatWorkoutAssignmentDate(dateKey) {
+  if (!dateKey) return "—";
+
+  const [year, month, day] = String(dateKey).split("-").map(Number);
+  if (!year || !month || !day) return dateKey;
+
+  return new Date(year, month - 1, day).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric"
+  });
 }
 
 async function getWorkoutSessionAuthSession() {

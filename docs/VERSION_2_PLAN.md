@@ -763,6 +763,26 @@ labels, accessible dialogs, adequate touch targets, sufficient contrast, and
 status communication that does not depend on color alone. Facility-configured
 brand colors must be checked for readable contrast.
 
+### Responsive UI Standard
+
+Use the same responsive rules across new and refactored V2 screens:
+
+- Prefer fluid sizing with `clamp()`, flexible grids, and readable maximum
+  content widths instead of maintaining separate fixed phone and desktop
+  designs.
+- Keep normal page gutters proportional to the viewport, but prevent forms and
+  logging interfaces from stretching across very large monitors.
+- Use natural-height cards. Do not force a short card to match an unrelated
+  taller card unless the comparison genuinely benefits from equal heights.
+- Reflow multi-column content at the existing tablet and phone breakpoints;
+  collapse or progressively disclose long content instead of shrinking text.
+- Keep interactive touch targets at least 44 by 44 CSS pixels and preserve
+  safe-area space around fixed mobile navigation and actions.
+- Use color as a secondary orientation cue, never as the only status label.
+  Workout blocks cycle through blue, orange, green, coral, and gold accents.
+- Test important flows around 390px phone, 768px tablet, and 1440px desktop
+  widths, plus keyboard focus and phone input-keyboard behavior.
+
 ### Notification Direction
 
 - V2 starts with in-app notifications only.
@@ -820,11 +840,14 @@ training experience.
 V2 direction:
 
 - Keep the mobile bottom nav consistent with member dashboard/profile.
-- Keep set progress clear through the step circles instead of extra saved-set
-  sections.
+- Open on a block-based workout preview, then use named, color-coded block
+  navigation instead of a long row of numbered global steps.
+- Show exercise position and set position separately so progress labels never
+  describe a set as a different exercise.
 - Auto-mark sets complete when the required actual result is entered, while
   still supporting completion-only exercises.
-- Keep Previous / Save Set / Save & Next stable and easy to reach.
+- Keep Previous / Save Set / Save & Next stable and easy to reach above the
+  mobile navigation without covering focused inputs.
 - Continue making target vs actual clearer on small screens.
 
 ### Workout Builder Editing And Version History

@@ -69,7 +69,7 @@ async function saveSetLog(exerciseId, setNumber) {
     await saveSetRow(row);
     renderWorkoutSession();
 
-    showWorkoutSessionMessage("Set saved.");
+    showWorkoutSessionToast("Set saved");
   } catch (error) {
     console.error(error);
     showWorkoutSessionMessage(error.message || "Could not save set.", true);
@@ -91,7 +91,7 @@ async function saveCurrentSetAndGoToStep(stepIndex) {
     await saveSetRow(row);
     currentSessionStepIndex = stepIndex;
     renderWorkoutSession();
-    showWorkoutSessionMessage("Set saved.");
+    showWorkoutSessionToast("Set saved");
   } catch (error) {
     console.error(error);
     showWorkoutSessionMessage(error.message || "Could not save set.", true);
@@ -122,7 +122,7 @@ async function saveAllSetLogs() {
     existingSetLogs = await loadExistingSetLogs(workoutAssignment.id);
     renderWorkoutSession();
 
-    showWorkoutSessionMessage("All sets saved.");
+    showWorkoutSessionToast("All sets saved");
   } catch (error) {
     console.error(error);
     showWorkoutSessionMessage(error.message || "Could not save all sets.", true);
