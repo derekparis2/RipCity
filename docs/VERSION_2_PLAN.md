@@ -694,6 +694,21 @@ coach, athlete, H2K, pending, inactive, and cross-facility coach scenarios.
 - Keep production keys separate and clearly labeled.
 - Add a simple environment switch plan before V2 code depends on staging.
 
+Current web-preview status (2026-09-11):
+
+- `https://ripcitystaging.netlify.app` deploys `v2-development` and successfully
+  reaches the staging login flow on phone and desktop.
+- Netlify Deploy Previews are enabled for pull requests targeting
+  `v2-development`; each preview continues using the shared fake-data staging
+  Supabase project.
+- Staging Supabase Auth allows the stable staging URL, Netlify preview
+  subdomains, and optional localhost port `3000`.
+- The repeatable contributor workflow, migration checks, recovery guidance,
+  accessibility checks, and post-deploy smoke tests are maintained in
+  `docs/STAGING_RELEASE_CHECKLIST.md`.
+- Environment-driven frontend configuration remains a production-release gate;
+  V2 must not reach `main` while its frontend is hardcoded to staging.
+
 ### Recommended Naming
 
 - Production Supabase: `rip-city-production`

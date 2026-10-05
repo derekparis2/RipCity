@@ -14,7 +14,8 @@ Target project:
 - Data rule: fake data only
 
 Status: the baseline and every verification check passed in Rip City Staging on
-2026-08-16. Staging Auth was configured on 2026-08-28. The project contains
+2026-08-16. Staging Auth was configured locally on 2026-08-28 and connected to
+the shared Netlify staging deployment on 2026-09-11. The project contains
 required configuration, nine fake test identities, and no workout/activity
 data.
 
@@ -98,14 +99,21 @@ copying production secrets or real accounts:
 - Email/password sign-in enabled.
 - Email confirmation disabled for the current signup/approval workflow.
 - Anonymous sign-in disabled.
-- Site URL set to `http://localhost:3000` until a staging site exists, never the
-  production beta URL.
-- Exact local password-reset redirects added:
-  - `http://localhost:3000/set-password.html`
-  - `http://127.0.0.1:3000/set-password.html`
+- Site URL set to `https://ripcitystaging.netlify.app`, never the production
+  beta URL.
+- Redirect URLs added for the stable staging site, Netlify pull-request
+  previews, and optional localhost testing:
+  - `https://ripcitystaging.netlify.app/**`
+  - `https://**--ripcitystaging.netlify.app/**`
+  - `http://localhost:3000/**`
 
-Status: completed 2026-08-28. New-user email signups are enabled; email
-confirmation, anonymous sign-ins, and manual linking are disabled.
+Status: the Auth-provider toggles were completed 2026-08-28 and the deployed
+URL configuration was updated 2026-09-11. New-user email signups are enabled;
+email confirmation, anonymous sign-ins, and manual linking are disabled.
+
+The Netlify and Auth setup, PR-preview workflow, migration checks, recovery
+steps, and post-deploy tests are maintained in
+`docs/STAGING_RELEASE_CHECKLIST.md`.
 
 Storage objects and Auth users must be created separately; SQL schema files do
 not restore them.

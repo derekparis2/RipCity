@@ -48,8 +48,8 @@ squash-merged.
 
 ## 2. Staging Preview And Release Safety
 
-- **Status:** Ready
-- **Suggested branch:** `<name>/staging-release-safety`
+- **Status:** Complete
+- **Branch:** `derek/staging-deployment`
 - **Plan detail:** [Staging and release safety](VERSION_2_PLAN.md#7-staging-and-release-safety) · [Regression and release checklist](VERSION_2_PLAN.md#v2-regression-and-release-checklist) · [Accessibility standard](VERSION_2_PLAN.md#accessibility-standard)
 
 This package makes the staging environment usable and repeatable for both
@@ -58,8 +58,10 @@ Supabase/Auth configuration, the regression and accessibility checklist,
 migration verification, manual backup/recovery instructions, rollback guidance,
 and post-deploy smoke tests.
 
-**Complete when:** Both contributors can open the staging preview, test it with
-fake accounts, and follow one documented checklist without touching production.
+**Completed:** The shared staging site, pull-request preview rules, staging Auth
+configuration, migration/recovery guidance, accessibility checks, and
+post-deploy workflow are documented and ready to enter `v2-development` with
+this pull request.
 
 ---
 
