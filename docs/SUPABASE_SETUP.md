@@ -55,11 +55,14 @@ Staging migration status:
   remains unchanged.
 
 Staging Auth was configured on 2026-08-28:
+Staging Auth was first configured for localhost on 2026-08-28 and updated for
+the shared Netlify staging deployment on 2026-09-11:
 
-- Site URL: `http://localhost:3000`
+- Site URL: `https://ripcitystaging.netlify.app`
 - Redirect URLs:
-  - `http://localhost:3000/set-password.html`
-  - `http://127.0.0.1:3000/set-password.html`
+  - `https://ripcitystaging.netlify.app/**`
+  - `https://**--ripcitystaging.netlify.app/**`
+  - `http://localhost:3000/**`
 - Email provider and new-user signups enabled.
 - Email confirmation disabled for the current signup/approval flow.
 - Anonymous sign-ins and manual linking disabled.
@@ -172,6 +175,9 @@ tested manual backup/recovery procedure. All destructive testing belongs in the
 fake-data staging project.
 
 ## Manual App Smoke Test
+
+The maintained shared-deployment workflow and release-safety checks are in
+`docs/STAGING_RELEASE_CHECKLIST.md`.
 
 From the repo root:
 
