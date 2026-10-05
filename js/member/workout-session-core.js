@@ -9,6 +9,7 @@ let workoutMemberProfile = null;
 let workoutAssignment = null;
 let existingSetLogs = [];
 let currentSessionStepIndex = 0;
+let workoutSessionView = "overview";
 
 function showWorkoutSessionMessage(message, isError = false) {
   const element = document.getElementById("workout-session-message");

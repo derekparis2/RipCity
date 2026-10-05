@@ -53,6 +53,7 @@ function renderWorkoutSession() {
   const container = document.getElementById("workout-session-container");
   const workout = workoutAssignment.workout;
   const steps = getWorkoutSessionSteps(workout);
+  const blocks = getWorkoutSessionBlocks(workout);
 
   if (!steps.length) {
     container.innerHTML = `<div class="empty-state">This workout has no blocks yet.</div>`;
@@ -64,32 +65,71 @@ function renderWorkoutSession() {
     steps.length - 1
   );
 
+  document.body.classList.toggle("session-overview-mode", workoutSessionView === "overview");
+  document.body.classList.toggle("session-logging-mode", workoutSessionView === "logging");
+
+  if (workoutSessionView === "overview") {
+    container.innerHTML = renderWorkoutOverview(workout, blocks, steps);
+
+    document.querySelector("[data-start-session]")?.addEventListener("click", () => {
+      const firstIncompleteStep = steps.findIndex(step => !isStepComplete(step));
+      goToSessionStep(firstIncompleteStep >= 0 ? firstIncompleteStep : 0);
+    });
+
+    document.querySelectorAll("[data-start-block-index]").forEach(button => {
+      button.addEventListener("click", () => {
+        goToSessionStep(Number(button.dataset.startBlockIndex));
+      });
+    });
+
+    updateSetStats();
+    return;
+  }
+
+  const activeStep = steps[currentSessionStepIndex];
+  const activeBlockIndex = blocks.findIndex(block => block.id === activeStep.block.id);
+  const activeBlock = blocks[activeBlockIndex];
+  const blockSteps = steps.filter(step => step.block.id === activeBlock.id);
+  const blockStepIndex = blockSteps.findIndex(step =>
+    step.exercise.id === activeStep.exercise.id && step.setNumber === activeStep.setNumber
+  );
+
   container.innerHTML = `
-    <div class="session-step-shell">
+    <div class="session-step-shell session-block-tone-${activeBlockIndex % 5}">
       <div class="session-step-topbar">
-        <div>
-          <p class="eyebrow">SET BY SET</p>
-          <h3>Step ${currentSessionStepIndex + 1} of ${steps.length}</h3>
-          <small>${window.RipCityUI.text(workout.title)}</small>
+        <button class="session-overview-return" type="button" data-session-overview>
+          <span aria-hidden="true">←</span> Workout Preview
+        </button>
+        <div class="session-active-block-title">
+          <p class="eyebrow">BLOCK ${activeBlockIndex + 1} OF ${blocks.length}</p>
+          <h3>${window.RipCityUI.text(activeBlock.name)}</h3>
+          <small>Exercise ${blockStepIndex + 1} of ${blockSteps.length} in this block</small>
         </div>
-        <span>${getCompletedSetCount()}/${getTotalSetCount()} saved</span>
+        <span class="session-saved-count">${getCompletedSetCount()}/${getTotalSetCount()} saved</span>
       </div>
 
-      <div class="session-step-progress">
-        ${steps.map((step, index) => `
+      <nav class="session-block-navigation" aria-label="Workout blocks">
+        ${blocks.map((block, blockIndex) => {
+          const firstStepIndex = steps.findIndex(step => step.block.id === block.id);
+          const progress = getBlockStepProgress(block, steps);
+
+          return `
           <button
-            class="session-step-dot ${index === currentSessionStepIndex ? "active" : ""} ${isStepComplete(step) ? "complete" : ""}"
+            class="session-block-nav session-block-tone-${blockIndex % 5} ${blockIndex === activeBlockIndex ? "active" : ""} ${progress.complete === progress.total ? "complete" : ""}"
             type="button"
-            data-session-step-index="${index}"
-            aria-label="Go to step ${index + 1}"
+            data-session-step-index="${firstStepIndex}"
+            aria-label="Go to ${window.RipCityUI.attr(block.name)}"
           >
-            ${index + 1}
+            <span>Block ${blockIndex + 1}</span>
+            <strong>${window.RipCityUI.text(block.name)}</strong>
+            <small>${progress.complete}/${progress.total} saved</small>
           </button>
-        `).join("")}
-      </div>
+        `;
+        }).join("")}
+      </nav>
 
       <div class="session-step-list">
-        ${steps.map((step, index) => renderWorkoutStep(step, index)).join("")}
+        ${renderWorkoutStep(activeStep, currentSessionStepIndex, blockStepIndex, blockSteps.length, activeBlockIndex)}
       </div>
     </div>
   `;
@@ -106,6 +146,8 @@ function renderWorkoutSession() {
     });
   });
 
+  document.querySelector("[data-session-overview]")?.addEventListener("click", goToSessionOverview);
+
   document.querySelectorAll(".session-previous-step-btn").forEach(button => {
     button.addEventListener("click", () => {
       goToSessionStep(Number(button.dataset.previousStepIndex));
@@ -119,6 +161,87 @@ function renderWorkoutSession() {
   });
 
   updateSetStats();
+}
+
+function getWorkoutSessionBlocks(workout) {
+  return window.RipCityWorkoutData.getWorkoutBlocks(workout)
+    .filter(block => window.RipCityWorkoutData.getBlockExercises(block).length);
+}
+
+function getBlockStepProgress(block, steps) {
+  const blockSteps = steps.filter(step => step.block.id === block.id);
+
+  return {
+    total: blockSteps.length,
+    complete: blockSteps.filter(isStepComplete).length
+  };
+}
+
+function renderWorkoutOverview(workout, blocks, steps) {
+  const complete = getCompletedSetCount();
+  const total = getTotalSetCount();
+  const percent = total ? Math.round((complete / total) * 100) : 0;
+  const hasProgress = complete > 0;
+
+  return `
+    <section class="session-overview">
+      <div class="session-overview-heading">
+        <div>
+          <p class="eyebrow">WORKOUT PREVIEW</p>
+          <h2>${window.RipCityUI.text(workout.title)}</h2>
+          <p>${window.RipCityUI.text(workout.description, "Review the blocks, then start when you are ready.")}</p>
+        </div>
+        <div class="session-overview-progress">
+          <strong>${percent}%</strong>
+          <span>${complete} of ${total} sets saved</span>
+        </div>
+      </div>
+
+      <div class="session-overview-meta">
+        <span><small>Focus</small><strong>${window.RipCityUI.text(workout.focus, "Workout")}</strong></span>
+        <span><small>Estimated</small><strong>${window.RipCityUI.text(workout.estimated_minutes ? `${workout.estimated_minutes} min` : "—")}</strong></span>
+        <span><small>Assigned</small><strong>${window.RipCityUI.text(workoutAssignment.assigned_date)}</strong></span>
+        <span><small>Blocks</small><strong>${blocks.length}</strong></span>
+      </div>
+
+      <div class="session-overview-blocks">
+        ${blocks.map((block, blockIndex) => {
+          const exercises = window.RipCityWorkoutData.getBlockExercises(block);
+          const firstStepIndex = steps.findIndex(step => step.block.id === block.id);
+          const progress = getBlockStepProgress(block, steps);
+
+          return `
+            <article class="session-overview-block session-block-tone-${blockIndex % 5}">
+              <div class="session-overview-block-heading">
+                <div>
+                  <span>Block ${blockIndex + 1}</span>
+                  <h3>${window.RipCityUI.text(block.name)}</h3>
+                </div>
+                <em>${progress.complete}/${progress.total} saved</em>
+              </div>
+              <ol>
+                ${exercises.map(exercise => `
+                  <li>
+                    <span>${window.RipCityUI.text(exercise.name)}</span>
+                    <strong>${window.RipCityUI.text(getExerciseTargetText(exercise))}</strong>
+                  </li>
+                `).join("")}
+              </ol>
+              <button class="outline-btn" type="button" data-start-block-index="${firstStepIndex}">
+                Open ${window.RipCityUI.text(block.name)}
+              </button>
+            </article>
+          `;
+        }).join("")}
+      </div>
+
+      <div class="session-overview-actions">
+        <button class="primary-btn" type="button" data-start-session>
+          ${hasProgress && complete < total ? "Continue Workout" : complete === total ? "Review Workout" : "Start Workout"}
+        </button>
+      </div>
+    </section>
+  `;
 }
 
 function getWorkoutSessionSteps(workout) {
@@ -165,6 +288,7 @@ function goToSessionStep(stepIndex) {
   if (!workout) return;
 
   const steps = getWorkoutSessionSteps(workout);
+  workoutSessionView = "logging";
   currentSessionStepIndex = Math.min(Math.max(stepIndex, 0), steps.length - 1);
   renderWorkoutSession();
 
@@ -174,22 +298,30 @@ function goToSessionStep(stepIndex) {
   });
 }
 
-function renderWorkoutStep(step, index) {
-  const isActive = index === currentSessionStepIndex;
+function goToSessionOverview() {
+  workoutSessionView = "overview";
+  renderWorkoutSession();
+
+  document.getElementById("workout-session-container")?.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+}
+
+function renderWorkoutStep(step, index, blockStepIndex, blockStepCount, blockIndex) {
   const label = getExerciseBlockLabel(step.exerciseIndex);
 
   return `
-    <article class="session-step-card ${isActive ? "active" : ""}" data-session-step="${index}">
-      <div class="session-block-heading">
+    <article class="session-step-card active session-block-tone-${blockIndex % 5}" data-session-step="${index}">
+      <div class="session-current-context">
+        <span class="round-exercise-label">${label}</span>
         <div>
-          <p class="eyebrow">${window.RipCityUI.text(step.block.name)}</p>
-          <h3>Round ${step.roundNumber}: ${label} Exercise</h3>
+          <p class="eyebrow">ROUND ${step.roundNumber}</p>
+          <strong>Exercise ${blockStepIndex + 1} of ${blockStepCount}</strong>
         </div>
-        <span>${step.roundExerciseCount} exercise${step.roundExerciseCount === 1 ? "" : "s"} this round</span>
       </div>
 
-      <div class="round-exercise-item">
-        <div class="round-exercise-label">${label}</div>
+      <div class="round-exercise-item session-current-exercise">
         ${renderExerciseSetLogger(step.exercise, step.setNumber, index)}
       </div>
     </article>
