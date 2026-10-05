@@ -90,6 +90,8 @@ with check (
   app_private.owns_member_profile(member_profile_id)
   and created_by = auth.uid()
   and source = 'member'
+  and status = 'active'
+  and completed_at is null
 );
 
 create policy "goals coaches can insert facility goals"
@@ -100,6 +102,8 @@ with check (
   app_private.is_facility_coach(app_private.member_profile_facility_id(member_profile_id))
   and created_by = auth.uid()
   and source = 'coach'
+  and status = 'active'
+  and completed_at is null
 );
 
 create policy "goals members can update own goals"
