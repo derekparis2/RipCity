@@ -107,7 +107,9 @@ function renderWorkoutSession() {
     <div class="session-step-shell session-block-tone-${activeBlockIndex % 5}">
       <div class="session-step-topbar">
         <button class="session-overview-return" type="button" data-session-overview>
-          <span aria-hidden="true">←</span> Workout Preview
+          <span aria-hidden="true">←</span>
+          <span class="session-overview-return-desktop">Workout Preview</span>
+          <span class="session-overview-return-mobile">Preview</span>
         </button>
         <div class="session-active-block-title">
           <p class="eyebrow">BLOCK ${activeBlockIndex + 1} OF ${blocks.length}</p>
@@ -328,8 +330,10 @@ function goToSessionStep(stepIndex) {
   if (!workout) return;
 
   const steps = getWorkoutSessionSteps(workout);
+  const isEnteringLogging = workoutSessionView !== "logging";
   workoutSessionView = "logging";
   currentSessionStepIndex = Math.min(Math.max(stepIndex, 0), steps.length - 1);
+  updateWorkoutSessionHistory(isEnteringLogging ? "push" : "replace");
   renderWorkoutSession();
 
   document.getElementById("workout-session-container")?.scrollIntoView({
@@ -339,7 +343,13 @@ function goToSessionStep(stepIndex) {
 }
 
 function goToSessionOverview() {
+  if (window.history.state?.ripCityWorkoutSessionView === "logging") {
+    window.history.back();
+    return;
+  }
+
   workoutSessionView = "overview";
+  updateWorkoutSessionHistory("replace");
   renderWorkoutSession();
 
   document.getElementById("workout-session-container")?.scrollIntoView({
@@ -419,8 +429,7 @@ function renderExerciseSetLogger(exercise, setNumber, stepIndex = null) {
   const supportingDetails = [
     exercise.tempo ? `<span><strong>Tempo</strong>${window.RipCityUI.text(exercise.tempo)}</span>` : "",
     exercise.rest_time ? `<span><strong>Rest</strong>${window.RipCityUI.text(exercise.rest_time)}</span>` : "",
-    exercise.percentage ? `<span><strong>Load</strong>${window.RipCityUI.text(exercise.percentage)}</span>` : "",
-    `<span><strong>Input</strong>${window.RipCityUI.text(formatInputType(exercise.input_type))}</span>`
+    exercise.percentage ? `<span><strong>Load</strong>${window.RipCityUI.text(exercise.percentage)}</span>` : ""
   ].filter(Boolean).join("");
 
   return `
@@ -438,9 +447,7 @@ function renderExerciseSetLogger(exercise, setNumber, stepIndex = null) {
           <strong>${window.RipCityUI.text(getSetTargetText(exercise, setNumber))}</strong>
         </div>
 
-        <div class="session-exercise-tags">
-          ${supportingDetails}
-        </div>
+        ${supportingDetails ? `<div class="session-exercise-tags">${supportingDetails}</div>` : ""}
       </div>
 
       ${exercise.coach_note ? `

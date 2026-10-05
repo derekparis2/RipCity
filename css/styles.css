@@ -6961,8 +6961,8 @@ body {
 .session-block-tone-4 { --session-block-color: #f4cf5d; --session-block-rgb: 244, 207, 93; }
 
 .workout-session-body .workout-session-page {
-  width: min(1320px, calc(100% - clamp(16px, 3vw, 48px)));
-  padding-top: clamp(12px, 2vw, 26px);
+  width: min(1180px, calc(100% - clamp(16px, 3vw, 40px)));
+  padding-top: clamp(8px, 1.4vw, 18px);
 }
 
 .workout-session-body .h2k-header {
@@ -6977,12 +6977,12 @@ body {
   display: grid;
   gap: clamp(12px, 1.5vw, 18px);
   width: 100%;
-  max-width: 1280px;
+  max-width: 1120px;
   margin: 0 auto;
   border: 1px solid var(--border);
   background: linear-gradient(145deg, rgba(26, 27, 30, 0.98), rgba(15, 15, 17, 0.98));
-  border-radius: 20px;
-  padding: clamp(14px, 2vw, 24px);
+  border-radius: 18px;
+  padding: clamp(13px, 1.6vw, 20px);
 }
 
 .session-overview-heading {
@@ -6997,7 +6997,7 @@ body {
 .session-overview-heading h2 {
   margin: 5px 0 8px;
   font-family: "Barlow Condensed", sans-serif;
-  font-size: clamp(34px, 5vw, 58px);
+  font-size: clamp(32px, 4vw, 50px);
   line-height: 0.95;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -7022,7 +7022,7 @@ body {
 
 .session-overview-progress strong {
   font-family: "Barlow Condensed", sans-serif;
-  font-size: 46px;
+  font-size: 40px;
   line-height: 0.9;
 }
 
@@ -7072,9 +7072,9 @@ body {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  border: 1px solid rgba(var(--session-block-rgb), 0.42);
-  border-top: 4px solid var(--session-block-color);
-  background: linear-gradient(155deg, rgba(var(--session-block-rgb), 0.1), rgba(21, 21, 23, 0.96) 52%);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--session-block-color);
+  background: rgba(20, 20, 22, 0.96);
   border-radius: 14px;
   padding: 16px;
 }
@@ -7134,7 +7134,7 @@ body {
   width: 100%;
   min-height: 42px;
   margin-top: 8px;
-  border-color: rgba(var(--session-block-rgb), 0.42);
+  border-color: var(--border);
 }
 
 .session-overview-exercise-toggle {
@@ -7144,7 +7144,7 @@ body {
   min-height: 44px;
   border: 0;
   background: transparent;
-  color: var(--session-block-color);
+  color: var(--muted);
   padding: 7px 0;
   font-size: 12px;
   font-weight: 800;
@@ -7168,27 +7168,32 @@ body {
 
 .workout-session-body .session-step-shell {
   width: 100%;
-  max-width: 1100px;
+  max-width: 940px;
   margin: 0 auto;
 }
 
 .workout-session-body .session-step-topbar {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
-  border-color: rgba(var(--session-block-rgb), 0.38);
-  border-left: 5px solid var(--session-block-color);
-  background: linear-gradient(100deg, rgba(var(--session-block-rgb), 0.12), rgba(31, 32, 35, 0.98) 46%);
+  border-color: var(--border);
+  border-left: 4px solid var(--session-block-color);
+  background: rgba(29, 30, 33, 0.98);
+  padding: 12px 14px;
 }
 
 .session-overview-return {
   min-height: 40px;
-  border: 1px solid rgba(var(--session-block-rgb), 0.4);
-  background: rgba(var(--session-block-rgb), 0.08);
+  border: 1px solid var(--border);
+  background: var(--surface);
   color: var(--text);
   border-radius: 10px;
   padding: 9px 11px;
   font-weight: 800;
   cursor: pointer;
+}
+
+.session-overview-return-mobile {
+  display: none;
 }
 
 .session-active-block-title {
@@ -7220,9 +7225,9 @@ body {
 
 .session-block-nav {
   min-width: 0;
-  border: 1px solid rgba(var(--session-block-rgb), 0.32);
-  border-top: 3px solid var(--session-block-color);
-  background: rgba(var(--session-block-rgb), 0.055);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--session-block-color);
+  background: var(--surface);
   color: var(--text);
   border-radius: 11px;
   padding: 10px;
@@ -7252,9 +7257,9 @@ body {
 }
 
 .session-block-nav.active {
-  border-color: var(--session-block-color);
-  background: rgba(var(--session-block-rgb), 0.18);
-  box-shadow: inset 0 0 0 1px rgba(var(--session-block-rgb), 0.16);
+  border-color: rgba(var(--session-block-rgb), 0.5);
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1px rgba(var(--session-block-rgb), 0.1);
 }
 
 .session-block-nav.complete small {
@@ -7262,8 +7267,10 @@ body {
 }
 
 .workout-session-body .session-step-card {
-  border-color: rgba(var(--session-block-rgb), 0.38);
-  background: linear-gradient(165deg, rgba(var(--session-block-rgb), 0.07), rgba(18, 18, 20, 0.98) 40%);
+  border-color: var(--border);
+  border-top: 3px solid var(--session-block-color);
+  background: rgba(18, 18, 20, 0.98);
+  padding: clamp(14px, 1.7vw, 18px);
 }
 
 .workout-session-body .session-step-card > .session-current-exercise > .session-exercise-card {
@@ -7277,12 +7284,22 @@ body {
   gap: 11px;
   align-items: center;
   padding-bottom: 12px;
-  border-bottom: 1px solid rgba(var(--session-block-rgb), 0.22);
+  border-bottom: 1px solid var(--border);
 }
 
 .session-current-context .round-exercise-label {
   flex: 0 0 auto;
   background: var(--session-block-color);
+}
+
+.workout-session-body .session-primary-target {
+  border-color: var(--border);
+  background: var(--surface-2);
+}
+
+.workout-session-body .set-log-row {
+  padding: 12px;
+  gap: 11px;
 }
 
 .session-current-context .eyebrow {
@@ -7321,8 +7338,8 @@ body {
 
 @media (max-width: 700px) {
   .workout-session-body .workout-session-page {
-    width: min(100% - 12px, 1320px);
-    padding-top: 8px;
+    width: min(100% - 10px, 1180px);
+    padding-top: 5px;
   }
 
   .workout-session-body .h2k-header {
@@ -7330,21 +7347,21 @@ body {
   }
 
   .session-overview {
-    gap: 12px;
+    gap: 10px;
     border-radius: 14px;
-    padding: 12px;
+    padding: 10px;
   }
 
   .session-overview-heading {
     grid-template-columns: 1fr auto;
     gap: 10px;
     align-items: start;
-    padding-bottom: 12px;
+    padding-bottom: 10px;
   }
 
   .session-overview-heading h2 {
     margin-top: 4px;
-    font-size: 31px;
+    font-size: 27px;
   }
 
   .session-overview-heading p:not(.eyebrow) {
@@ -7356,7 +7373,7 @@ body {
   }
 
   .session-overview-progress strong {
-    font-size: 34px;
+    font-size: 31px;
   }
 
   .session-overview-progress span {
@@ -7371,7 +7388,10 @@ body {
   }
 
   .session-overview-meta > span {
-    padding: 9px;
+    border: 0;
+    border-left: 2px solid var(--border);
+    border-radius: 0;
+    padding: 4px 8px;
   }
 
   .session-overview-blocks {
@@ -7380,11 +7400,11 @@ body {
   }
 
   .session-overview-block {
-    padding: 12px;
+    padding: 10px;
   }
 
   .session-overview-block-heading h3 {
-    font-size: 23px;
+    font-size: 21px;
   }
 
   .session-overview-block ol {
@@ -7397,9 +7417,7 @@ body {
   }
 
   .session-overview-actions {
-    position: sticky;
-    bottom: calc(78px + env(safe-area-inset-bottom));
-    z-index: 8;
+    position: static;
   }
 
   .session-overview-actions .primary-btn {
@@ -7410,50 +7428,98 @@ body {
 
   .workout-session-body .session-step-topbar {
     position: static;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: auto minmax(0, 1fr) auto;
     gap: 8px;
-    border-left-width: 4px;
+    border-left-width: 3px;
+    padding: 8px;
   }
 
   .session-overview-return {
     grid-column: 1;
     grid-row: 1;
-    width: fit-content;
-    min-height: 34px;
-    padding: 6px 9px;
+    width: auto;
+    min-height: 40px;
+    padding: 6px 8px;
     font-size: 11px;
   }
 
-  .session-active-block-title {
-    grid-column: 1 / -1;
-    grid-row: 2;
+  .session-overview-return-desktop {
+    display: none;
   }
 
-  .session-saved-count {
+  .session-overview-return-mobile {
+    display: inline;
+  }
+
+  .session-active-block-title {
     grid-column: 2;
     grid-row: 1;
   }
 
+  .session-saved-count {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
   .session-active-block-title h3 {
-    margin-top: 2px;
-    font-size: 24px;
+    margin: 1px 0 0;
+    overflow: hidden;
+    font-size: 19px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .session-active-block-title small {
-    font-size: 10px;
+    display: none;
+  }
+
+  .session-active-block-title .eyebrow {
+    font-size: 8px;
+    letter-spacing: 0.7px;
+    white-space: nowrap;
+  }
+
+  .session-saved-count {
+    padding: 6px 7px !important;
+    font-size: 9px !important;
   }
 
   .session-block-navigation {
-    grid-auto-columns: minmax(124px, 42vw);
+    grid-auto-columns: minmax(112px, 39vw);
     gap: 7px;
   }
 
   .session-block-nav {
-    padding: 8px;
+    padding: 7px 8px;
   }
 
   .session-current-context {
     padding-bottom: 9px;
+  }
+
+  .session-current-context .round-exercise-label {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    font-size: 17px;
+  }
+
+  .session-current-context strong {
+    margin-top: 1px;
+    font-size: 15px;
+  }
+
+  .workout-session-body .session-step-card {
+    padding: 9px;
+  }
+
+  .workout-session-body .session-exercise-header {
+    padding: 9px;
+  }
+
+  .workout-session-body .set-log-row {
+    padding: 10px;
+    gap: 9px;
   }
 
   .workout-session-body.session-logging-mode .workout-session-page {

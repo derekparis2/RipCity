@@ -89,8 +89,7 @@ async function saveCurrentSetAndGoToStep(stepIndex) {
 
   try {
     await saveSetRow(row);
-    currentSessionStepIndex = stepIndex;
-    renderWorkoutSession();
+    goToSessionStep(stepIndex);
     showWorkoutSessionToast("Set saved");
   } catch (error) {
     console.error(error);
@@ -190,6 +189,34 @@ function updateWorkoutSessionShell() {
   }
 }
 
+function updateWorkoutSessionHistory(method = "replace") {
+  const state = {
+    ...(window.history.state || {}),
+    ripCityWorkoutSessionView: workoutSessionView,
+    ripCityWorkoutSessionStep: currentSessionStepIndex
+  };
+
+  if (method === "push") {
+    window.history.pushState(state, "", window.location.href);
+    return;
+  }
+
+  window.history.replaceState(state, "", window.location.href);
+}
+
+function handleWorkoutSessionHistory(event) {
+  if (!workoutAssignment || !event.state?.ripCityWorkoutSessionView) return;
+
+  workoutSessionView = event.state.ripCityWorkoutSessionView;
+  currentSessionStepIndex = Number(event.state.ripCityWorkoutSessionStep || 0);
+  renderWorkoutSession();
+
+  document.getElementById("workout-session-container")?.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+}
+
 async function initWorkoutSessionPage() {
   showWorkoutSessionMessage("Checking access...");
 
@@ -200,6 +227,9 @@ async function initWorkoutSessionPage() {
 
     workoutMemberProfile = await getWorkoutMemberProfile(workoutSessionAccess.membership.id);
     updateWorkoutSessionShell();
+    workoutSessionView = "overview";
+    currentSessionStepIndex = 0;
+    updateWorkoutSessionHistory("replace");
 
     await refreshWorkoutSession();
   } catch (error) {
@@ -214,3 +244,5 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("refresh-session-btn")?.addEventListener("click", refreshWorkoutSession);
   document.getElementById("workout-session-logout-btn")?.addEventListener("click", logoutWorkoutSession);
 });
+
+window.addEventListener("popstate", handleWorkoutSessionHistory);
