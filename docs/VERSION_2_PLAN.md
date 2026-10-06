@@ -791,6 +791,10 @@ Use the same responsive rules across new and refactored V2 screens:
   taller card unless the comparison genuinely benefits from equal heights.
 - Reflow multi-column content at the existing tablet and phone breakpoints;
   collapse or progressively disclose long content instead of shrinking text.
+- Treat focused task flows such as active workout logging as single-viewport
+  workspaces on phone and desktop. Keep the page itself fixed when normal
+  content fits, but retain an internal overflow fallback for short screens,
+  expanded optional content, accessibility zoom, and phone keyboards.
 - Keep interactive touch targets at least 44 by 44 CSS pixels and preserve
   safe-area space around fixed mobile navigation and actions.
 - Use color as a secondary orientation cue, never as the only status label.
@@ -854,7 +858,9 @@ training experience.
 
 V2 direction:
 
-- Keep the mobile bottom nav consistent with member dashboard/profile.
+- Keep the mobile bottom nav consistent across member dashboard, training,
+  goals, profile, and workout-session views; all visible destinations must fit
+  without wrapping or disappearing.
 - Open on a block-based workout preview, then use named, color-coded block
   navigation instead of a long row of numbered global steps.
 - Show exercise position and set position separately so progress labels never
@@ -863,6 +869,8 @@ V2 direction:
   still supporting completion-only exercises.
 - Keep Previous / Save Set / Save & Next stable and easy to reach above the
   mobile navigation without covering focused inputs.
+- Fit a normal single-set logging flow inside one phone or desktop viewport;
+  only the focused workout card should scroll as a safety fallback.
 - Continue making target vs actual clearer on small screens.
 
 ### Workout Builder Editing And Version History

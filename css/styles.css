@@ -7791,3 +7791,270 @@ body {
     }
   }
 }
+
+/* Final viewport overrides stay last so the active logger remains a
+   single-screen workspace after the general member responsive rules. */
+.workout-session-body.session-logging-mode {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.workout-session-body.session-logging-mode .workout-session-page {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 100dvh;
+  min-height: 0;
+  padding-bottom: clamp(8px, 1.4vw, 18px);
+  overflow: hidden;
+}
+
+.workout-session-body.session-logging-mode .dashboard-grid,
+.workout-session-body.session-logging-mode .workout-session-panel,
+.workout-session-body.session-logging-mode .workout-session-container,
+.workout-session-body.session-logging-mode .session-step-shell,
+.workout-session-body.session-logging-mode .session-step-list {
+  min-height: 0;
+}
+
+.workout-session-body.session-logging-mode .dashboard-grid,
+.workout-session-body.session-logging-mode .workout-session-panel,
+.workout-session-body.session-logging-mode .workout-session-container {
+  height: 100%;
+}
+
+.workout-session-body.session-logging-mode .session-step-shell {
+  grid-template-rows: auto auto minmax(0, 1fr);
+  height: 100%;
+  gap: 8px;
+}
+
+.workout-session-body.session-logging-mode .session-block-navigation {
+  padding-bottom: 1px;
+}
+
+.workout-session-body.session-logging-mode .session-block-nav {
+  padding: 6px 9px;
+}
+
+.workout-session-body.session-logging-mode .session-step-list,
+.workout-session-body.session-logging-mode .session-step-card.active {
+  height: 100%;
+}
+
+.workout-session-body.session-logging-mode .session-step-card.active {
+  grid-template-rows: auto minmax(0, 1fr);
+  align-content: stretch;
+  gap: 10px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+.workout-session-body.session-logging-mode .session-current-exercise,
+.workout-session-body.session-logging-mode .session-exercise-card,
+.workout-session-body.session-logging-mode .set-log-list,
+.workout-session-body.session-logging-mode .set-log-row {
+  min-height: 0;
+  height: 100%;
+}
+
+.workout-session-body.session-logging-mode .session-exercise-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.workout-session-body.session-logging-mode .set-log-list {
+  display: flex;
+  flex: 1;
+}
+
+.workout-session-body.session-logging-mode .set-log-row {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.workout-session-body.session-logging-mode .session-exercise-header p {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.workout-session-body.session-logging-mode .session-prescription,
+.workout-session-body.session-logging-mode .set-log-list {
+  margin-top: 10px;
+}
+
+.workout-session-body.session-logging-mode .set-log-actions {
+  position: sticky;
+  right: auto;
+  bottom: -1px;
+  left: auto;
+  z-index: 4;
+  margin: auto -2px -2px;
+  padding: 8px 2px 2px;
+  background: linear-gradient(180deg, rgba(18, 18, 20, 0), rgba(18, 18, 20, 0.98) 24%);
+  box-shadow: none;
+}
+
+@media (max-width: 700px) {
+  .member-shell-nav {
+    grid-template-columns: unset;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    gap: 3px;
+    padding: 6px;
+  }
+
+  .member-shell-nav .nav-link {
+    min-width: 0;
+    min-height: 48px;
+    padding: 4px 1px;
+    overflow: hidden;
+    font-size: 8px;
+  }
+
+  .member-shell-nav .mobile-nav-text {
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .workout-session-body.session-logging-mode .workout-session-page {
+    display: block;
+    height: 100dvh;
+    padding: 5px 0 calc(78px + env(safe-area-inset-bottom));
+  }
+
+  .workout-session-body.session-logging-mode .h2k-header {
+    display: none;
+  }
+
+  .workout-session-body.session-logging-mode .dashboard-grid,
+  .workout-session-body.session-logging-mode .workout-session-panel,
+  .workout-session-body.session-logging-mode .workout-session-container {
+    height: 100%;
+  }
+
+  .workout-session-body.session-logging-mode .session-step-shell {
+    height: 100%;
+    gap: 6px;
+  }
+
+  .workout-session-body.session-logging-mode .session-step-topbar {
+    min-height: 48px;
+    border-radius: 10px;
+    padding: 5px 7px;
+  }
+
+  .workout-session-body.session-logging-mode .session-overview-return {
+    min-height: 38px;
+  }
+
+  .workout-session-body.session-logging-mode .session-block-navigation {
+    grid-auto-columns: minmax(106px, 34vw);
+    gap: 5px;
+  }
+
+  .workout-session-body.session-logging-mode .session-block-nav {
+    min-height: 50px;
+    padding: 5px 7px;
+  }
+
+  .workout-session-body.session-logging-mode .session-block-nav strong {
+    margin: 1px 0;
+    font-size: 13px;
+  }
+
+  .workout-session-body.session-logging-mode .session-step-card.active {
+    gap: 7px;
+    padding: 7px;
+    scrollbar-gutter: auto;
+  }
+
+  .workout-session-body.session-logging-mode .session-current-context {
+    gap: 8px;
+    padding-bottom: 6px;
+  }
+
+  .workout-session-body.session-logging-mode .session-exercise-header {
+    padding: 7px 8px;
+  }
+
+  .workout-session-body.session-logging-mode .session-exercise-header h4 {
+    margin: 0 0 2px;
+    font-size: 18px;
+  }
+
+  .workout-session-body.session-logging-mode .session-exercise-header p {
+    font-size: 11px;
+    line-height: 1.25;
+  }
+
+  .workout-session-body.session-logging-mode .session-prescription,
+  .workout-session-body.session-logging-mode .set-log-list {
+    margin-top: 6px;
+  }
+
+  .workout-session-body.session-logging-mode .session-primary-target {
+    padding: 7px 8px;
+  }
+
+  .workout-session-body.session-logging-mode .session-primary-target strong {
+    margin-top: 3px;
+    font-size: 20px;
+  }
+
+  .workout-session-body.session-logging-mode .set-log-row {
+    gap: 7px;
+    padding: 8px;
+  }
+
+  .workout-session-body.session-logging-mode .set-log-title {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .workout-session-body.session-logging-mode .set-log-title strong {
+    font-size: 17px;
+  }
+
+  .workout-session-body.session-logging-mode .set-log-fields,
+  .workout-session-body.session-logging-mode .set-log-required-fields,
+  .workout-session-body.session-logging-mode .set-input-grid {
+    gap: 7px;
+  }
+
+  .workout-session-body.session-logging-mode .set-input-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .workout-session-body.session-logging-mode .set-log-row label {
+    gap: 4px;
+    font-size: 10px;
+  }
+
+  .workout-session-body.session-logging-mode .set-log-row input,
+  .workout-session-body.session-logging-mode .set-log-row select {
+    min-height: 42px;
+    padding: 8px 10px;
+  }
+
+  .workout-session-body.session-logging-mode .set-log-optional {
+    padding-top: 6px;
+  }
+
+  .workout-session-body.session-logging-mode .set-log-optional summary {
+    min-height: 32px;
+  }
+
+  .workout-session-body.session-logging-mode .set-log-actions {
+    position: sticky;
+    bottom: -1px;
+    margin: auto -2px -2px;
+    padding-top: 7px;
+  }
+}
