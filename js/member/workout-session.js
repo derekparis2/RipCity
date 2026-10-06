@@ -187,6 +187,10 @@ function updateWorkoutSessionShell() {
   if (habitsNavLink) {
     habitsNavLink.classList.toggle("hidden", !isH2K);
   }
+
+  document.querySelectorAll(".member-role-pending").forEach(element => {
+    element.classList.remove("member-role-pending");
+  });
 }
 
 function updateWorkoutSessionHistory(method = "replace") {
@@ -210,11 +214,7 @@ function handleWorkoutSessionHistory(event) {
   workoutSessionView = event.state.ripCityWorkoutSessionView;
   currentSessionStepIndex = Number(event.state.ripCityWorkoutSessionStep || 0);
   renderWorkoutSession();
-
-  document.getElementById("workout-session-container")?.scrollIntoView({
-    behavior: "smooth",
-    block: "start"
-  });
+  scrollWorkoutSessionViewIntoPlace();
 }
 
 async function initWorkoutSessionPage() {
@@ -232,6 +232,7 @@ async function initWorkoutSessionPage() {
     updateWorkoutSessionHistory("replace");
 
     await refreshWorkoutSession();
+    scrollWorkoutSessionViewIntoPlace();
   } catch (error) {
     console.error(error);
     showWorkoutSessionMessage(error.message || "Could not open workout.", true);

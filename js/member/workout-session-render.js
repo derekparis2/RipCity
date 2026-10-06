@@ -335,10 +335,20 @@ function goToSessionStep(stepIndex) {
   currentSessionStepIndex = Math.min(Math.max(stepIndex, 0), steps.length - 1);
   updateWorkoutSessionHistory(isEnteringLogging ? "push" : "replace");
   renderWorkoutSession();
+  scrollWorkoutSessionViewIntoPlace();
+}
 
-  document.getElementById("workout-session-container")?.scrollIntoView({
-    behavior: "smooth",
-    block: "start"
+function scrollWorkoutSessionViewIntoPlace() {
+  window.requestAnimationFrame(() => {
+    if (workoutSessionView === "overview") {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      return;
+    }
+
+    document.getElementById("workout-session-container")?.scrollIntoView({
+      behavior: "auto",
+      block: "start"
+    });
   });
 }
 
@@ -351,11 +361,7 @@ function goToSessionOverview() {
   workoutSessionView = "overview";
   updateWorkoutSessionHistory("replace");
   renderWorkoutSession();
-
-  document.getElementById("workout-session-container")?.scrollIntoView({
-    behavior: "smooth",
-    block: "start"
-  });
+  scrollWorkoutSessionViewIntoPlace();
 }
 
 function renderWorkoutStep(step, index, exerciseIndex, exerciseCount, blockIndex) {

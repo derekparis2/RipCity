@@ -651,6 +651,10 @@ function setMemberTypeText(memberType) {
   if (brandSubtitle) {
     brandSubtitle.textContent = memberType;
   }
+
+  document.querySelectorAll(".member-role-pending").forEach(element => {
+    element.classList.remove("member-role-pending");
+  });
 }
 
 function updateMemberShell() {
