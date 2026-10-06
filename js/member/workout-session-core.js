@@ -9,13 +9,31 @@ let workoutMemberProfile = null;
 let workoutAssignment = null;
 let existingSetLogs = [];
 let currentSessionStepIndex = 0;
+let workoutSessionView = "overview";
+let workoutSessionMessageTimer = null;
 
 function showWorkoutSessionMessage(message, isError = false) {
   const element = document.getElementById("workout-session-message");
   if (!element) return;
 
+  window.clearTimeout(workoutSessionMessageTimer);
+  element.classList.remove("session-message-toast");
   element.textContent = message;
   element.classList.toggle("error-message", isError);
+}
+
+function showWorkoutSessionToast(message) {
+  const element = document.getElementById("workout-session-message");
+  if (!element) return;
+
+  window.clearTimeout(workoutSessionMessageTimer);
+  element.textContent = message;
+  element.classList.remove("error-message");
+  element.classList.add("session-message-toast");
+  workoutSessionMessageTimer = window.setTimeout(() => {
+    element.textContent = "";
+    element.classList.remove("session-message-toast");
+  }, 2200);
 }
 
 function getAssignmentIdFromUrl() {
@@ -43,7 +61,7 @@ function formatInputType(inputType) {
   const labels = {
     completion: "Completion",
     weight_reps: "Weight + Reps",
-    band_color: "Band Color",
+    band_color: "Band + Reps",
     time: "Time",
     distance: "Distance",
     custom: "Custom"
@@ -55,20 +73,20 @@ function formatInputType(inputType) {
 function getExerciseTargetText(exercise) {
   const sets = exercise.sets || 1;
   const reps = exercise.reps || "complete";
+  const target = exercise.is_unilateral ? `${reps} each side` : reps;
 
-  return `${sets} x ${reps}`;
+  return `${sets} x ${target}`;
 }
 
 function getSetTargetText(exercise, setNumber) {
   const targetValue = getSetTargetValue(exercise, setNumber);
+  const totalSets = Number(exercise.sets || 1);
 
   if (targetValue) {
-    return targetValue.isPerSet
-      ? `Set ${setNumber}: ${targetValue.value}`
-      : getExerciseTargetText(exercise);
+    return `Set ${setNumber} of ${totalSets}: ${targetValue.value}${exercise.is_unilateral ? " each side" : ""}`;
   }
 
-  return getExerciseTargetText(exercise);
+  return `Set ${setNumber} of ${totalSets}: complete`;
 }
 
 function getSetTargetValue(exercise, setNumber) {
@@ -134,6 +152,19 @@ function getExerciseBlockLabel(index) {
   return letters[index] || `${index + 1}`;
 }
 
+function formatWorkoutAssignmentDate(dateKey) {
+  if (!dateKey) return "—";
+
+  const [year, month, day] = String(dateKey).split("-").map(Number);
+  if (!year || !month || !day) return dateKey;
+
+  return new Date(year, month - 1, day).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric"
+  });
+}
+
 async function getWorkoutSessionAuthSession() {
   return window.RipCityAccess.getSession();
 }
@@ -187,6 +218,7 @@ async function loadWorkoutAssignment(assignmentId) {
             video_url,
             coach_note,
             input_type,
+            is_unilateral,
             exercise_order
           )
         )

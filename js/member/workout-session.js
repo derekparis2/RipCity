@@ -69,7 +69,7 @@ async function saveSetLog(exerciseId, setNumber) {
     await saveSetRow(row);
     renderWorkoutSession();
 
-    showWorkoutSessionMessage("Set saved.");
+    showWorkoutSessionToast("Set saved");
   } catch (error) {
     console.error(error);
     showWorkoutSessionMessage(error.message || "Could not save set.", true);
@@ -89,9 +89,8 @@ async function saveCurrentSetAndGoToStep(stepIndex) {
 
   try {
     await saveSetRow(row);
-    currentSessionStepIndex = stepIndex;
-    renderWorkoutSession();
-    showWorkoutSessionMessage("Set saved.");
+    goToSessionStep(stepIndex);
+    showWorkoutSessionToast("Set saved");
   } catch (error) {
     console.error(error);
     showWorkoutSessionMessage(error.message || "Could not save set.", true);
@@ -122,7 +121,7 @@ async function saveAllSetLogs() {
     existingSetLogs = await loadExistingSetLogs(workoutAssignment.id);
     renderWorkoutSession();
 
-    showWorkoutSessionMessage("All sets saved.");
+    showWorkoutSessionToast("All sets saved");
   } catch (error) {
     console.error(error);
     showWorkoutSessionMessage(error.message || "Could not save all sets.", true);
@@ -188,6 +187,34 @@ function updateWorkoutSessionShell() {
   if (habitsNavLink) {
     habitsNavLink.classList.toggle("hidden", !isH2K);
   }
+
+  document.querySelectorAll(".member-role-pending").forEach(element => {
+    element.classList.remove("member-role-pending");
+  });
+}
+
+function updateWorkoutSessionHistory(method = "replace") {
+  const state = {
+    ...(window.history.state || {}),
+    ripCityWorkoutSessionView: workoutSessionView,
+    ripCityWorkoutSessionStep: currentSessionStepIndex
+  };
+
+  if (method === "push") {
+    window.history.pushState(state, "", window.location.href);
+    return;
+  }
+
+  window.history.replaceState(state, "", window.location.href);
+}
+
+function handleWorkoutSessionHistory(event) {
+  if (!workoutAssignment || !event.state?.ripCityWorkoutSessionView) return;
+
+  workoutSessionView = event.state.ripCityWorkoutSessionView;
+  currentSessionStepIndex = Number(event.state.ripCityWorkoutSessionStep || 0);
+  renderWorkoutSession();
+  scrollWorkoutSessionViewIntoPlace();
 }
 
 async function initWorkoutSessionPage() {
@@ -200,8 +227,12 @@ async function initWorkoutSessionPage() {
 
     workoutMemberProfile = await getWorkoutMemberProfile(workoutSessionAccess.membership.id);
     updateWorkoutSessionShell();
+    workoutSessionView = "overview";
+    currentSessionStepIndex = 0;
+    updateWorkoutSessionHistory("replace");
 
     await refreshWorkoutSession();
+    scrollWorkoutSessionViewIntoPlace();
   } catch (error) {
     console.error(error);
     showWorkoutSessionMessage(error.message || "Could not open workout.", true);
@@ -214,3 +245,5 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("refresh-session-btn")?.addEventListener("click", refreshWorkoutSession);
   document.getElementById("workout-session-logout-btn")?.addEventListener("click", logoutWorkoutSession);
 });
+
+window.addEventListener("popstate", handleWorkoutSessionHistory);

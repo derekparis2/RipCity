@@ -66,9 +66,9 @@ begin
       'Refusing staging seed: Test Facility Alpha exists with an unexpected ID.';
   end if;
 
-  if exercise_count <> 87 then
+  if exercise_count <> 88 then
     raise exception
-      'Refusing staging seed: expected 87 baseline exercises, found %.',
+      'Refusing staging seed: expected 88 baseline exercises, found %.',
       exercise_count;
   end if;
 end

@@ -50,6 +50,7 @@ const MEMBER_WORKOUT_ASSIGNMENT_SELECT = `
         tempo,
         rest_time,
         input_type,
+        is_unilateral,
         video_url,
         coach_note,
         exercise_order
@@ -650,6 +651,10 @@ function setMemberTypeText(memberType) {
   if (brandSubtitle) {
     brandSubtitle.textContent = memberType;
   }
+
+  document.querySelectorAll(".member-role-pending").forEach(element => {
+    element.classList.remove("member-role-pending");
+  });
 }
 
 function updateMemberShell() {
@@ -1330,7 +1335,7 @@ function renderTodayWorkouts(assignments) {
                       </div>
 
                       <div class="today-exercise-meta">
-                        ${exercise.sets || exercise.reps ? `<span>${window.RipCityUI.text(exercise.sets || "—")} x ${window.RipCityUI.text(exercise.reps || "—")}</span>` : ""}
+                        ${exercise.sets || exercise.reps ? `<span>${window.RipCityUI.text(exercise.sets || "—")} x ${window.RipCityUI.text(exercise.reps || "—")}${exercise.is_unilateral ? " each side" : ""}</span>` : ""}
                         ${exercise.tempo ? `<span>Tempo: ${window.RipCityUI.text(exercise.tempo)}</span>` : ""}
                         ${exercise.rest_time ? `<span>Rest: ${window.RipCityUI.text(exercise.rest_time)}</span>` : ""}
                         ${exercise.input_type ? `<span>${formatInputType(exercise.input_type)}</span>` : ""}
