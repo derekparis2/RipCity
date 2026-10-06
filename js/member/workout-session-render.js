@@ -367,19 +367,28 @@ function goToSessionOverview() {
 function renderWorkoutStep(step, index, exerciseIndex, exerciseCount, blockIndex) {
   const label = getExerciseBlockLabel(step.exerciseIndex);
   const totalExerciseSets = Number(step.exercise.sets || 1);
+  const setTarget = getSetTargetValue(step.exercise, step.setNumber);
+  const compactTarget = setTarget
+    ? `${setTarget.value}${step.exercise.is_unilateral ? " each side" : ""}`
+    : "Complete";
 
   return `
     <article class="session-step-card active session-block-tone-${blockIndex % 5}" data-session-step="${index}">
       <div class="session-current-context">
         <span class="round-exercise-label">${label}</span>
-        <div>
-          <p class="eyebrow">EXERCISE ${exerciseIndex + 1} OF ${exerciseCount}</p>
-          <strong>Set ${step.setNumber} of ${totalExerciseSets}</strong>
+        <div class="session-current-summary">
+          <p class="eyebrow">EXERCISE ${exerciseIndex + 1} OF ${exerciseCount} · SET ${step.setNumber} OF ${totalExerciseSets}</p>
+          <h4>${window.RipCityUI.text(step.exercise.name)}</h4>
+          <p>${window.RipCityUI.text(step.exercise.description, "No description added.")}</p>
+        </div>
+        <div class="session-current-target">
+          <span>Coach Target</span>
+          <strong>${window.RipCityUI.text(compactTarget)}</strong>
         </div>
       </div>
 
       <div class="round-exercise-item session-current-exercise">
-        ${renderExerciseSetLogger(step.exercise, step.setNumber, index)}
+        ${renderExerciseSetLogger(step.exercise, step.setNumber, index, { compactSummary: true })}
       </div>
     </article>
   `;
@@ -431,7 +440,8 @@ function renderBlockRounds(exercises) {
   return roundHtml;
 }
 
-function renderExerciseSetLogger(exercise, setNumber, stepIndex = null) {
+function renderExerciseSetLogger(exercise, setNumber, stepIndex = null, options = {}) {
+  const compactSummary = options.compactSummary === true;
   const supportingDetails = [
     exercise.tempo ? `<span><strong>Tempo</strong>${window.RipCityUI.text(exercise.tempo)}</span>` : "",
     exercise.rest_time ? `<span><strong>Rest</strong>${window.RipCityUI.text(exercise.rest_time)}</span>` : "",
@@ -439,22 +449,24 @@ function renderExerciseSetLogger(exercise, setNumber, stepIndex = null) {
   ].filter(Boolean).join("");
 
   return `
-    <article class="session-exercise-card">
-      <div class="session-exercise-header">
+    <article class="session-exercise-card ${compactSummary ? "session-exercise-card-focused" : ""}">
+      ${compactSummary ? "" : `<div class="session-exercise-header">
         <div>
           <h4>${window.RipCityUI.text(exercise.name)}</h4>
           <p>${window.RipCityUI.text(exercise.description, "No description added.")}</p>
         </div>
-      </div>
+      </div>`}
 
-      <div class="session-prescription">
+      ${compactSummary ? "" : `<div class="session-prescription">
         <div class="session-primary-target">
           <span>Coach Target</span>
           <strong>${window.RipCityUI.text(getSetTargetText(exercise, setNumber))}</strong>
         </div>
 
         ${supportingDetails ? `<div class="session-exercise-tags">${supportingDetails}</div>` : ""}
-      </div>
+      </div>`}
+
+      ${compactSummary && supportingDetails ? `<div class="session-exercise-tags session-focused-details">${supportingDetails}</div>` : ""}
 
       ${exercise.coach_note ? `
         <div class="session-coach-note">
