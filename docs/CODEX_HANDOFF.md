@@ -136,8 +136,9 @@ Current status:
   2026-08-16: 21 public tables, 194 columns, 55 indexes, 93 public-table RLS
   policies, 18 private helpers, required Storage setup, and all expected grants
   and Rip City starter configuration passed.
-- Staging currently has nine documented fake Auth users and no workout/activity
-  data. Continue using only fake people and activity data.
+- Staging currently has nine documented fake Auth users plus fake workout and
+  activity data used for V2 testing. Continue using only fake people and
+  activity data.
 - Staging Auth uses `https://ripcitystaging.netlify.app` as its Site URL and
   allows the stable staging domain, all Netlify Deploy Preview subdomains, and
   optional localhost port `3000`. Email signups are enabled; email confirmation

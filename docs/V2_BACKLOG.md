@@ -40,9 +40,8 @@ foundation, and verifies baseline read access and isolation.
 
 **Completed:** The contributor workflow, repository cleanup, reproducible
 staging baseline, fake two-facility fixtures, manual role smoke tests, and all
-45 automated read-only RLS checks are documented and verified. The completed
-package will enter `v2-development` when this pull request is approved and
-squash-merged.
+45 automated read-only RLS checks are documented, verified, and merged into
+`v2-development`.
 
 ---
 
@@ -60,15 +59,14 @@ and post-deploy smoke tests.
 
 **Completed:** The shared staging site, pull-request preview rules, staging Auth
 configuration, migration/recovery guidance, accessibility checks, and
-post-deploy workflow are documented and ready to enter `v2-development` with
-this pull request.
+post-deploy workflow are documented and merged into `v2-development`.
 
 ---
 
 ## 3. Goals And Coach Member Detail
 
-- **Status:** Ready
-- **Suggested branch:** `<name>/goals-v2`
+- **Status:** Complete
+- **Branch:** `Sbell/Goals`
 - **Plan detail:** [Goals](VERSION_2_PLAN.md#2-goals) · [Coach member-detail requirements](VERSION_2_PLAN.md#first-ui-version)
 
 This is one complete Goals feature rather than separate tiny database and UI
@@ -77,8 +75,10 @@ goals, creator-specific edit/delete rules, status and completion history,
 confirmations, the coach member-detail foundation needed to manage goals, RLS,
 and two-facility create/read/update/delete tests.
 
-**Complete when:** Members and coaches can safely complete every approved Goals
-workflow in staging and direct RLS tests prove cross-facility access is denied.
+**Completed:** Members and coaches have the approved goal creation, progress,
+status, and ownership workflows; coach member detail is available; goal
+check-ins and facility-scoped RLS were added; and the reviewed branch was merged
+into `v2-development`.
 
 ---
 
@@ -117,26 +117,28 @@ features into each other.
 
 ---
 
-## 6. Workout Builder, Exercise Library, And History Finalization
+## 6. Workout Builder, Exercise Library, And Member Logging
 
-- **Status:** In progress
+- **Status:** Complete
 - **Branch:** `derek/workout-builder-refactor`
 - **Plan detail:** [Universal and facility exercise library](VERSION_2_PLAN.md#universal-and-facility-exercise-library) · [Beta workout polish](VERSION_2_PLAN.md#8-beta-feedback-polish-queue)
 - **Input audit:** [Starter exercise classifications](EXERCISE_INPUT_AUDIT.md)
 
-This package completes the workout foundation that V2 is meant to stabilize. It
-includes a faster and clearer coach workout-builder flow, full workout-structure
-editing, assignment cleanup, one combined exercise library, facility-only
-exercises, universal edit-to-override and delete-to-hide behavior, stable
-workout history, archive/delete rules, member history, mobile session polish,
-workout-derived H2K behavior, and a reviewed starter-exercise input/default
-audit before the catalog becomes universal. Unilateral exercises support an
-`Each Side` prescription while members continue entering one weight/reps result
-per set.
+This package stabilizes the daily coach-to-member workout experience. It
+includes a modular and clearer coach builder, draggable block/exercise ordering,
+a compact workout outline, safer save cleanup, assignment improvements, a
+standalone facility-scoped exercise-library page, custom-exercise library sync,
+workout detail/history management, the block-based member preview and logging
+flow, responsive desktop/mobile polish, and the reviewed starter-exercise input
+audit. Unilateral exercises support an `Each Side` prescription while members
+continue entering one weight/reps result per set.
 
-**Complete when:** The full coach-to-member workout lifecycle is stable on
-desktop and mobile, and exercise changes cannot leak across facilities or alter
-historical workouts.
+**Completed:** The refactored builder and exercise library, approved exercise
+defaults, unilateral workflow, workout history controls, and responsive member
+preview/logging experience were tested successfully in the pull-request preview.
+The completed status enters `v2-development` with this branch. The larger
+universal-catalog and historical-versioning data model is intentionally tracked
+as Package 10 rather than being incorrectly counted as implemented here.
 
 ---
 
@@ -190,7 +192,27 @@ features into V2.
 
 ---
 
-## 10. Stylesheet And UI Structure Cleanup
+## 10. Workout Data Safety And Universal Catalog
+
+- **Status:** Planned
+- **Suggested branch:** `<name>/workout-data-safety`
+- **Plan detail:** [Universal and facility exercise library](VERSION_2_PLAN.md#universal-and-facility-exercise-library) · [Workout editing and version history](VERSION_2_PLAN.md#workout-builder-editing-and-version-history)
+
+This follow-up adds the database behavior that was designed but not implemented
+by the builder refactor: a true universal catalog with facility overrides and
+hides, safe editing/versioning for workouts with past or started assignments,
+archive behavior for historical workouts, and the approved workout-completion
+connection to H2K training habits. It must preserve production history and add
+two-facility write/isolation tests.
+
+**Complete when:** Universal exercise changes cannot leak between facilities,
+coaches can correct future workouts without changing past assignments or logs,
+historical workouts are archived instead of destructively deleted, and the
+approved workout-to-habit automation is verified in staging.
+
+---
+
+## 11. Stylesheet And UI Structure Cleanup
 
 - **Status:** Planned
 - **Suggested branch:** `<name>/stylesheet-cleanup`
@@ -208,7 +230,7 @@ checks pass, and the old combined stylesheet can be removed safely.
 
 ---
 
-## 11. Final V2 Release Hardening
+## 12. Final V2 Release Hardening
 
 - **Status:** Planned
 - **Suggested branch:** `<name>/v2-release-hardening`
@@ -233,8 +255,9 @@ rollback steps are documented and rehearsed.
 - `platform_owner` cannot currently be stored → Package 4.
 - Goals RLS does not support member-created goals → Package 3.
 - Facility modules, terminology, and time zones are not data-driven → Package 5.
-- Universal exercise overrides/hides are not implemented → Package 6.
-- Workout and group archive/delete rules remain incomplete → Packages 4 and 6.
+- Universal exercise overrides/hides are not implemented → Package 10.
+- Workout archive/version rules remain incomplete → Package 10.
+- Group archive/delete rules remain incomplete → Package 4.
 - Announcements and per-user notifications have no V2 tables → Package 8.
 - Current automated staging checks are read-only → each schema-changing package
   adds its own allowed and denied create/update/delete tests.
