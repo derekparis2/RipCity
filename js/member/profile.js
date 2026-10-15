@@ -214,6 +214,10 @@ function updateProfileShellNav() {
   if (habitsNavLink) {
     habitsNavLink.classList.toggle("hidden", !isH2K);
   }
+
+  document.querySelectorAll(".member-role-pending").forEach(element => {
+    element.classList.remove("member-role-pending");
+  });
 }
 
 function updateGenderFieldState() {

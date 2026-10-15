@@ -138,6 +138,11 @@ Decisions:
   record and restore the current universal version.
 - Existing workouts and logged history must remain stable when a catalog entry
   is overridden, hidden, archived, or updated.
+- The Workout Builder remains the primary place to choose exercises through
+  inline search. Full exercise-library management lives on a separate coach
+  page linked only from the builder, not in the main coach navigation.
+- The builder should use its side space for a compact workout outline instead
+  of a second exercise picker.
 
 Recommended data direction:
 
@@ -161,10 +166,31 @@ Recommended data direction:
 
 Current-data transition direction:
 
-- The 87 repository starter exercises are candidates for the universal catalog.
+- The 88 repository starter exercises are candidates for the universal catalog.
+- Maintain the working classification review in
+  [`EXERCISE_INPUT_AUDIT.md`](EXERCISE_INPUT_AUDIT.md); its recommendations do
+  not change staging data until Derek and the Rip City coach approve them.
 - The six verified coach-created production exercises remain Rip City-specific.
 - Rip City's edited `Push-Up` and `Tempo Push-Up` values become facility
   overrides if those production changes are confirmed as intentional.
+- Audit the starter exercise defaults before promoting them to the universal
+  catalog. Their prescribed workout target and their member-entered result must
+  be treated as separate concepts where needed:
+  - Band exercises require actual reps; band color is optional facility context.
+  - Prescribed-distance drills such as A-skips should let the coach set the
+    distance while the member only marks the exercise complete.
+  - Measured-distance exercises such as broad jumps should keep member distance
+    entry. A saved result of `0` means completed but not measured and must count
+    as a valid completed result rather than missing data.
+  - Vertical Jump should be added to the universal starter catalog as a
+    measured-distance exercise.
+  - Medicine-ball exercises use weight and reps so members record the ball
+    weight rather than throwing distance; unilateral throws such as Med Ball
+    Shot Put default to `Each Side`.
+- Exercises may be marked `Each Side` in the library and overridden within an
+  individual workout. For example, `8 reps each side` means eight right and
+  eight left. Members record one weight and one rep result per set in V2; the
+  app does not create separate right-side and left-side log fields.
 - Test the transition entirely in staging before preparing a production
   migration.
 
@@ -184,6 +210,9 @@ Done criteria:
 - Keep Rip City visual style as the current design inspiration, but make colors/logo configurable over time.
 - Avoid building future pages that assume every facility is baseball-only or H2K-only.
 - Keep facility branding separate from core layout structure.
+- Coach/admin tools may use one consistent platform color system across
+  facilities. Member-facing branding remains the higher priority for
+  facility-specific colors and identity.
 
 #### Signup/Invites
 
@@ -749,6 +778,30 @@ labels, accessible dialogs, adequate touch targets, sufficient contrast, and
 status communication that does not depend on color alone. Facility-configured
 brand colors must be checked for readable contrast.
 
+### Responsive UI Standard
+
+Use the same responsive rules across new and refactored V2 screens:
+
+- Prefer fluid sizing with `clamp()`, flexible grids, and readable maximum
+  content widths instead of maintaining separate fixed phone and desktop
+  designs.
+- Keep normal page gutters proportional to the viewport, but prevent forms and
+  logging interfaces from stretching across very large monitors.
+- Use natural-height cards. Do not force a short card to match an unrelated
+  taller card unless the comparison genuinely benefits from equal heights.
+- Reflow multi-column content at the existing tablet and phone breakpoints;
+  collapse or progressively disclose long content instead of shrinking text.
+- Treat focused task flows such as active workout logging as single-viewport
+  workspaces on phone and desktop. Keep the page itself fixed when normal
+  content fits, but retain an internal overflow fallback for short screens,
+  expanded optional content, accessibility zoom, and phone keyboards.
+- Keep interactive touch targets at least 44 by 44 CSS pixels and preserve
+  safe-area space around fixed mobile navigation and actions.
+- Use color as a secondary orientation cue, never as the only status label.
+  Workout blocks cycle through blue, orange, green, coral, and gold accents.
+- Test important flows around 390px phone, 768px tablet, and 1440px desktop
+  widths, plus keyboard focus and phone input-keyboard behavior.
+
 ### Notification Direction
 
 - V2 starts with in-app notifications only.
@@ -805,13 +858,58 @@ training experience.
 
 V2 direction:
 
-- Keep the mobile bottom nav consistent with member dashboard/profile.
-- Keep set progress clear through the step circles instead of extra saved-set
-  sections.
+- Keep the mobile bottom nav consistent across member dashboard, training,
+  goals, profile, and workout-session views; all visible destinations must fit
+  without wrapping or disappearing.
+- Open on a block-based workout preview, then use named, color-coded block
+  navigation instead of a long row of numbered global steps.
+- Show exercise position and set position separately so progress labels never
+  describe a set as a different exercise.
 - Auto-mark sets complete when the required actual result is entered, while
   still supporting completion-only exercises.
-- Keep Previous / Save Set / Save & Next stable and easy to reach.
+- Keep Previous / Save Set / Save & Next stable and easy to reach above the
+  mobile navigation without covering focused inputs.
+- Fit a normal single-set logging flow inside one phone or desktop viewport;
+  only the focused workout card should scroll as a safety fallback.
 - Continue making target vs actual clearer on small screens.
+
+### Workout Builder Editing And Version History
+
+Coaches need to correct upcoming workouts without rewriting what members were
+previously assigned or completed.
+
+Decisions:
+
+- An unassigned workout can be edited directly.
+- A workout used only by future assignments can be edited directly, and those
+  future assignments continue using the corrected workout.
+- A past assignment must keep the workout structure and instructions that were
+  originally assigned.
+- Any assignment with member logs is treated as started history and must not be
+  changed by later workout edits.
+- A same-day assignment with no member logs may still be corrected.
+- If a coach edits an upcoming or unstarted assignment whose saved workout also
+  has past/started use, the app creates a new workout version and moves the
+  selected upcoming assignment to it. The coach should experience this as a
+  normal edit rather than having to manually duplicate and reconnect records.
+- If the same workout has multiple upcoming assignments, the edit flow should
+  clearly ask whether the change applies only to the selected assignment or to
+  all unstarted future assignments.
+- Creating a new version must preserve a visible connection to its source so
+  coaches can understand the workout's history without mixing completed logs
+  into the new version.
+- Workout title/details, blocks, exercises, ordering, targets, and coaching
+  instructions follow the same history-preservation rule.
+- Draft/unused workouts may be permanently deleted. Workouts with assignments
+  or logs should normally be archived, with destructive deletion unavailable
+  from the ordinary coach UI.
+
+Done criteria:
+
+- Coaches can correct tomorrow's workout without manually rebuilding it.
+- Editing an upcoming workout never changes a past workout or saved member log.
+- Direct edits and automatic version creation are clear before the coach saves.
+- Assignment dates and "past/today/future" decisions use the facility time zone.
 
 ---
 
@@ -859,6 +957,12 @@ historical archives remain under `sql/`. Continue this structure for V2.
 
 - Add concise comments to explain complex sections, not obvious one-line code.
 - Split very large JavaScript files into helper modules where it makes future work safer.
+- After the major V2 feature branches are merged, split `css/styles.css` into
+  clearly ordered shared, component, authentication, coach, and member
+  stylesheets. Start as a mechanical move with no intentional visual changes.
+- Preserve the existing cascade order during the stylesheet split, document
+  which files each page loads, and visually regression-test every active page
+  at desktop and mobile widths before removing the original combined file.
 - Look for repeated auth, facility-access, date, assignment, scoring, rendering, and Supabase-query logic that can be shared.
 - Keep shared member platform behavior separate from H2K-only behavior.
 - Keep coach-only features separate from member-facing features.
@@ -872,7 +976,9 @@ historical archives remain under `sql/`. Continue this structure for V2.
 3. Docs audit: consolidate the current roadmap and move old files aside.
 4. Code comments: explain complex Supabase and workflow logic.
 5. Small dead-code removal: remove clearly unused selectors/functions.
-6. File splitting: only split large files after tests confirm behavior.
+6. File splitting: only split large files after tests confirm behavior; perform
+   the final stylesheet split after major V2 feature work to avoid unnecessary
+   cross-branch merge conflicts.
 7. Maintain the Derek/Sam contributor workflow in `CONTRIBUTING.md`.
 
 ### Done Criteria

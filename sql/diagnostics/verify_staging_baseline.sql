@@ -74,7 +74,7 @@ with actual_counts as (
 
   union all
 
-  select 'Rip City starter exercise templates', 87, count(*)
+  select 'Rip City starter exercise templates', 88, count(*)
   from public.exercise_templates et
   join public.facilities f on f.id = et.facility_id
   where f.slug = 'rip-city'

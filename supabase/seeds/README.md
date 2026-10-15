@@ -28,7 +28,7 @@ baseline and before creating fake Auth users.
 
 The seed contains a fail-closed guard. It requires the exact empty baseline
 shape, including zero Auth users, zero application profiles, the Rip City
-facility, and 87 starter exercises. It aborts instead of writing if those safety
+facility, and 88 starter exercises. It aborts instead of writing if those safety
 conditions do not match.
 
 The fake second facility intentionally receives no H2K habits. H2K remains a
