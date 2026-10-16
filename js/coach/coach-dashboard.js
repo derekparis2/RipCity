@@ -236,6 +236,7 @@ async function loadApprovedH2KMembers(facilityId) {
     .from("facility_members")
     .select(`
       id,
+      created_at,
       role,
       status,
       profile:profiles!facility_members_profile_id_fkey (
@@ -727,6 +728,7 @@ async function loadApprovedFacilityMembers(facilityId) {
       name: member.profile?.full_name || "Unnamed Member",
       email: member.profile?.email || "",
       profilePictureUrl: member.profile?.profile_picture_url || "",
+      trackingStartDate: member.created_at ? member.created_at.slice(0, 10) : null,
       sport: memberProfile?.sport || "",
       ageGroup: memberProfile?.age_group || ""
     };
@@ -1223,43 +1225,118 @@ function formatSetActuals(log) {
   return window.RipCityUI.text(parts.join(" · ") || "Completed");
 }
 
+async function loadHabitLogsForAttention(memberProfileIds, todayKey) {
+  if (!memberProfileIds.length) return [];
+
+  const startKey = window.RipCityAttentionRules.addDays(todayKey, -3);
+  const { data, error } = await db
+    .from("habit_logs")
+    .select("member_profile_id, log_date, completed")
+    .in("member_profile_id", memberProfileIds)
+    .gte("log_date", startKey)
+    .lte("log_date", todayKey);
+
+  if (error) throw error;
+  return data || [];
+}
+
+function buildCoachAttentionRows(members, habitLogs, todayKey) {
+  return members.map(member => {
+    if (member.memberType === "h2k") {
+      const attention = window.RipCityAttentionRules.calculateHabitAttention({
+        logs: habitLogs.filter(log => log.member_profile_id === member.memberProfileId),
+        todayKey,
+        trackingStartDate: member.trackingStartDate
+      });
+
+      return attention.needsAttention ? {
+        ...member,
+        reason: "No habit tracking for 3 consecutive days",
+        detail: "H2K habit follow-up"
+      } : null;
+    }
+
+    const activity = coachWorkoutReviewRows.flatMap(row => {
+      return row.assignedMembers
+        .filter(assignedMember => assignedMember.memberProfileId === member.memberProfileId)
+        .map(assignedMember => ({
+          assigned_date: row.assignment.assigned_date,
+          hasExerciseData: assignedMember.logs.length > 0
+        }));
+    });
+    const attention = window.RipCityAttentionRules.calculateWorkoutAttention({
+      activity,
+      todayKey
+    });
+
+    return attention.needsAttention ? {
+      ...member,
+      reason: "No exercise data for 2 consecutive assigned-workout days",
+      detail: "Athlete workout follow-up"
+    } : null;
+  }).filter(Boolean).sort((a, b) => {
+    return a.memberType.localeCompare(b.memberType) || a.name.localeCompare(b.name);
+  });
+}
+
+function updateCoachAttentionStats(members, attentionRows) {
+  const h2kCount = members.filter(member => member.memberType === "h2k").length;
+  const athleteCount = members.filter(member => member.memberType === "athlete").length;
+
+  document.getElementById("coach-total-members").textContent = members.length;
+  document.getElementById("coach-total-h2k-members").textContent = h2kCount;
+  document.getElementById("coach-total-athletes").textContent = athleteCount;
+  document.getElementById("coach-needs-attention").textContent = attentionRows.length;
+}
+
+function renderCoachAttentionList(rows) {
+  const list = document.getElementById("coach-attention-list");
+  if (!list) return;
+
+  if (!rows.length) {
+    list.innerHTML = `
+      <div class="empty-state coach-attention-clear">
+        Nobody currently meets the coach-approved follow-up rules.
+      </div>
+    `;
+    return;
+  }
+
+  list.innerHTML = rows.map(row => `
+    <article class="coach-attention-card">
+      <div class="coach-member-card-heading">
+        ${window.RipCityUI.avatarMarkup(row.name, row.profilePictureUrl, "coach-member-avatar")}
+        <div>
+          <p class="eyebrow">${window.RipCityUI.text(row.detail)}</p>
+          <h4>${window.RipCityUI.text(row.name)}</h4>
+          <p>${window.RipCityUI.text(row.reason)}</p>
+        </div>
+      </div>
+      <a class="outline-link small-inline-btn" href="coach-member-detail.html?membership=${window.RipCityUI.attr(row.facilityMemberId)}">
+        View Member
+      </a>
+    </article>
+  `).join("");
+}
+
 // Loads everything for the coach dashboard.
 async function refreshCoachDashboard() {
   showCoachDashboardMessage("Loading coach dashboard...");
 
   try {
-    // Load habits first because their count defines the daily/weekly max score.
-    coachHabits = await loadCoachHabits(coachAccess.membership.facility_id);
+    const facilityId = coachAccess.membership.facility_id;
+    const todayKey = getTodayString();
+    const members = await loadApprovedFacilityMembers(facilityId);
+    const h2kMemberIds = members
+      .filter(member => member.memberType === "h2k")
+      .map(member => member.memberProfileId);
+    const habitLogs = await loadHabitLogsForAttention(h2kMemberIds, todayKey);
 
-    const members = await loadApprovedH2KMembers(coachAccess.membership.facility_id);
-
-    const memberProfileIds = members
-      .map(member => {
-        const memberProfile = Array.isArray(member.member_profile)
-          ? member.member_profile[0]
-          : member.member_profile;
-
-        return memberProfile?.id;
-      })
-      .filter(Boolean);
-
-    const logs = await loadHabitLogsForMembers(memberProfileIds);
-    const rows = buildMemberScoreRows(members, logs);
-
-    const historyMembers = await loadApprovedFacilityMembers(coachAccess.membership.facility_id);
-    coachHistoryMembers = buildCoachWeeklyMemberOptionsFromApproved(historyMembers);
-    if (
-      selectedCoachWeeklyMemberId &&
-      !coachHistoryMembers.some(member => member.memberProfileId === selectedCoachWeeklyMemberId)
-    ) {
-      selectedCoachWeeklyMemberId = null;
-    }
-
-    updateCoachStats(rows);
-    renderCoachMemberList(rows);
-    renderCoachWeeklyMemberResults();
-    await refreshCoachWeeklyHistory();
     await refreshCoachWorkoutReview();
+    const attentionRows = buildCoachAttentionRows(members, habitLogs, todayKey);
+
+    updateCoachAttentionStats(members, attentionRows);
+    renderCoachAttentionList(attentionRows);
 
     showCoachDashboardMessage("");
   } catch (error) {
@@ -1304,38 +1381,6 @@ document.addEventListener("DOMContentLoaded", () => {
   document
     .getElementById("refresh-workout-review-btn")
     ?.addEventListener("click", refreshCoachWorkoutReview);
-
-  document
-    .getElementById("refresh-coach-weekly-history-btn")
-    ?.addEventListener("click", refreshCoachWeeklyHistory);
-
-  document
-    .getElementById("coach-weekly-prev-week")
-    ?.addEventListener("click", () => changeCoachWeeklyHistoryWeek("previous"));
-
-  document
-    .getElementById("coach-weekly-next-week")
-    ?.addEventListener("click", () => changeCoachWeeklyHistoryWeek("next"));
-
-  document
-    .getElementById("coach-weekly-member-search")
-    ?.addEventListener("input", renderCoachWeeklyMemberResults);
-
-  document
-    .getElementById("coach-weekly-member-type-filter")
-    ?.addEventListener("input", async () => {
-      const selectedType = document.getElementById("coach-weekly-member-type-filter")?.value || "all";
-      const selectedMember = coachHistoryMembers.find(member =>
-        member.memberProfileId === selectedCoachWeeklyMemberId
-      );
-
-      if (selectedType !== "all" && selectedMember?.memberType !== selectedType) {
-        selectedCoachWeeklyMemberId = null;
-      }
-
-      renderCoachWeeklyMemberResults();
-      await refreshCoachWeeklyHistory();
-    });
 
   [
     "coach-review-member-type-filter",

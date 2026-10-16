@@ -167,6 +167,20 @@ nine profiles and ten memberships. `rccoach@example.com` has approved coach
 memberships in both facilities; pending and inactive test memberships retain
 their intended statuses.
 
+For leaderboard testing, optionally run the repeatable fixture:
+
+`supabase/seeds/staging/v2/03_leaderboard_demo_data.sql`
+
+It adds ten display-only members without Auth identities and generates
+date-relative habit and workout-completion records. The existing H2K and
+athlete login accounts receive matching activity so the member dashboard and
+coach leaderboard can be compared. Rerun it when the test dates become stale.
+It is staging-only and must never be promoted to production.
+
+Status: applied and verified in Rip City Staging on 2026-10-15. The result was
+10 display-only members, 728 fixture habit logs, 50 fixture assignments, and
+38 completed fixture assignments.
+
 The manual role smoke tests and the repeatable read-only RLS suite were then
 completed. All 45 automated read checks passed, including cross-facility scope,
 member self-only records, and pending/inactive protected-data denial.

@@ -165,6 +165,11 @@ Current status:
 - The staging test-account fixture passed on 2026-08-28: nine fake profiles,
   ten facility memberships, correct pending/inactive cases, and one coach with
   approved memberships in both facilities.
+- The optional leaderboard demo fixture is maintained at
+  `supabase/seeds/staging/v2/03_leaderboard_demo_data.sql`. It was applied and
+  verified in staging on 2026-10-15: 10 display-only members, 728 marked habit
+  logs, 50 workout assignments, and 38 completed assignments. It provides
+  six-person rankings, ties, streaks, attendance, and no-score states.
 - Manual role smoke tests passed, followed by all 45 automated read-only RLS
   checks. The shared pending/inactive message is being replaced by distinct
   lifecycle states on `derek/facility-access`; facility selection is V3 scope.
@@ -227,6 +232,33 @@ Leaderboards:
 - H2K streak = consecutive days with at least 4 checked behaviors.
 - Athlete streak = assigned workout days completed.
 - Rolling 4-week H2K average is important to the coach.
+
+Workout assignments:
+
+- Multiple active coaches/admins in the same facility may assign authorized
+  workouts, including workouts created by another coach.
+- Member and coach views should show the assigning coach using the existing
+  `workout_assignments.assigned_by` relationship.
+- Add database-safe duplicate prevention and same-facility/cross-facility
+  multi-coach staging tests before production release.
+
+Coach onboarding:
+
+- Derek/platform owner creates the facility and establishes its first admin.
+- Facility admins create/invite or approve additional coaches for their own
+  facility.
+- Ordinary coaches may approve ordinary members but cannot approve, create, or
+  promote coach/admin memberships.
+- A shared signup link never grants an elevated role without admin approval.
+
+Testing Days:
+
+- A proposed coach-run Testing Day workflow would support ordered tests,
+  group/member selection, roster-style result entry, progress history, and
+  future leaderboard metrics.
+- The exact tests, attempts/best-result behavior, permissions, visibility, and
+  V2-versus-V3 boundary are pending Derek's Rip City coach discussion on
+  2026-10-18.
 
 Coach notes / announcements:
 

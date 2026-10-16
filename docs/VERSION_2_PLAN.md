@@ -91,6 +91,23 @@ Membership status direction:
 - Reactivation restores the existing membership and history.
 - Rejection does not grant facility access.
 
+Coach onboarding direction:
+
+- The platform owner creates a facility and establishes its first facility
+  owner/admin.
+- A facility admin must be able to create or invite additional coach accounts,
+  or at minimum approve a pending coach signup and assign the coach role.
+- Ordinary coaches may continue approving ordinary member signups, but they
+  cannot promote someone to coach/admin or approve a coach-level membership.
+- Coach signup must remain facility-scoped and pending until a facility admin
+  approves it. A copied or forwarded link must never grant coach access by
+  itself.
+- The approval screen must clearly distinguish prospective coaches from
+  athletes and H2K members so an elevated role is never approved accidentally.
+- Every coach/admin creation, approval, role change, deactivation, and
+  reactivation must be enforced by RLS and covered by two-facility staging
+  tests; hiding elevated controls in the browser is not sufficient.
+
 The permissions matrix must explicitly cover view, create, edit, delete,
 archive, approve, role-management, and facility-settings actions for every
 module before that module is production-ready.
@@ -424,6 +441,9 @@ platform into something negative or overly competitive.
 - If a member has no score and views their own rank, show "No score yet" instead
   of ranking them last.
 - Coaches can filter leaderboards by group.
+- Coaches can choose the metric used to rank a leaderboard. The first coach
+  version supports rolling averages, current-week results, and current/longest
+  streaks; future lift and testing metrics should plug into the same selector.
 - Members can see facility top 5 and their own group top 5 for safe metrics.
 - Weekly leaderboards use Monday through Sunday.
 - Monthly leaderboards use the calendar month.
@@ -439,9 +459,41 @@ platform into something negative or overly competitive.
 
 ### Decisions Still Needed
 
-- Exact leaderboard metrics for V2.
-- Which leaderboards are member-visible vs coach-only.
-- Which leaderboards use weekly, monthly, all-time, or rolling time windows.
+- Which additional metrics should be promoted from coach-only to member-visible
+  top-five boards after the member page split.
+- Whether monthly and all-time views are still required for the V2 deadline or
+  should follow the initial rolling-four-week release.
+
+### Initial V2 Metrics Approved
+
+- The coach experience starts with separate H2K and athlete tabs, facility and
+  group scoping, member search, full lists, and competition ranking for ties.
+- The primary H2K ranking is average weekly habit points across the previous
+  four completed Monday-Sunday weeks. The current partial week is shown
+  separately and does not affect that rolling average.
+- An H2K streak day requires at least four distinct completed habits. The
+  current day does not break a streak while it is still in progress.
+- The primary athlete ranking is workout attendance across the previous four
+  completed weeks. Its denominator contains only workouts actually assigned to
+  that athlete; no assigned workouts displays as no score rather than 0% or
+  100%.
+- An athlete streak counts consecutive assigned workout dates completed. Dates
+  without an assignment are ignored, every assignment on a date must be
+  complete, and an incomplete current-day assignment does not break the streak
+  until that day has ended.
+- Personal versions of these same metrics appear on the member dashboard using
+  one shared calculation module.
+- The coach dashboard is an action queue rather than a second leaderboard.
+  An H2K member needs attention after three consecutive completed calendar
+  days without habit tracking. An athlete needs attention when their last two
+  completed assigned-workout days both contain no exercise data. The current
+  day does not count as missed while it is still in progress.
+- Individual 12-week habit or assigned-workout history belongs on the coach
+  member-detail page, not on the main coach dashboard.
+- Future lift, speed, jump, and sport-testing results should extend the same
+  selectable leaderboard metric registry after the Testing Day data model and
+  member-visibility rules are approved. Do not build a second unrelated
+  leaderboard implementation for testing results.
 
 ### Possible V2 Leaderboards
 
@@ -464,6 +516,12 @@ platform into something negative or overly competitive.
 Start with top-5 member-visible leaderboards for safe metrics and a fuller
 coach leaderboard dashboard with filters.
 
+Implementation is split into two deliverables. The completed coach leaderboard
+branch owns the shared calculation layer, full coach boards, member personal
+metrics, attention rules, and member-detail history. A separate member-facing
+package will reuse that layer for the approved top-five and own-rank views after
+the member page split, preventing coach and member calculations from drifting.
+
 ---
 
 ## 4. Progress Tracking
@@ -482,6 +540,41 @@ Goals define what a member is trying to reach. Progress is the history and
 numbers that show whether the member is moving toward those goals. In V2, use
 existing history views and goal updates first, then decide which progress
 metrics deserve a dedicated module.
+
+### Testing Day Direction
+
+Rip City may need a coach-run Testing Day workflow where coaches define a set
+of tests, select a group or individual participants, and enter results for many
+members from one roster-style screen. This is a candidate for V2 if Rip City
+considers it necessary for winter training; otherwise V2 should preserve the
+foundation and schedule the full workflow for V3.
+
+Testing Day should not be modeled as an ordinary workout. A durable design is
+expected to include:
+
+- A facility-scoped testing session with name, date, status, creator, and
+  selected group/members.
+- Ordered test definitions with a name, unit, input type, and whether a higher
+  or lower result ranks better.
+- Per-member results that record the entering coach, optional notes, and any
+  approved attempt/best-result behavior.
+- A roster-style coach entry screen so an entire testing group can be entered
+  efficiently without opening every member separately.
+- A clear connection to member progress history and the existing selectable
+  leaderboard metric registry once visibility and ranking rules are approved.
+- Facility-scoped RLS and two-facility tests so coaches can never enter or read
+  another facility's testing data.
+
+Questions for the Rip City coach on 2026-10-18:
+
+- Which tests are used regularly?
+- Does each test store one result, multiple attempts, or only the best result?
+- Are results entered only by coaches, or can members submit results for coach
+  verification?
+- Is testing normally run for a full group, selected members, or both?
+- Which results should members see, and which may appear on leaderboards?
+- Do previous testing days need side-by-side comparison or charts in the first
+  release?
 
 ### Decisions To Make
 
@@ -916,6 +1009,25 @@ Done criteria:
 - Editing an upcoming workout never changes a past workout or saved member log.
 - Direct edits and automatic version creation are clear before the coach saves.
 - Assignment dates and "past/today/future" decisions use the facility time zone.
+
+### Multi-Coach Workout Assignment
+
+- Any active coach/admin in a facility can assign an authorized workout in
+  that facility, including a workout originally created by another facility
+  coach.
+- Preserve `workout_assignments.assigned_by` as the historical source of the
+  assignment. Member workout cards, previews, and session details should show
+  the assigning coach's display name, and coach review/history should expose
+  the same attribution.
+- Deactivating a coach must not remove the coach name from historical
+  assignments. If an identity is genuinely unavailable, show a neutral
+  fallback instead of breaking the workout query.
+- Prevent duplicate assignment of the same workout, target, and date even when
+  two coaches act at nearly the same time; browser-only duplicate filtering is
+  not enough for this race.
+- Add staging coverage with two coaches in one facility plus a coach in the
+  second facility. Both same-facility coaches may assign; the other-facility
+  coach must be denied.
 
 ---
 

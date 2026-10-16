@@ -25,6 +25,10 @@ they are intentionally revisited.
   isolation.
 - Facility admins can perform coaching work and broadly manage their facility.
 - New signups remain pending until a facility coach/admin approves them.
+- The platform owner establishes the first facility admin. After that,
+  facility admins control coach onboarding for their own facility, including
+  creating/inviting coaches or approving a pending coach request.
+- Ordinary coaches cannot approve, promote, or create coach/admin memberships.
 - Deactivation preserves history; reactivation restores the existing historical
   relationships.
 
@@ -73,7 +77,24 @@ they are intentionally revisited.
 - Facility-wide and group workout assignments currently apply dynamically.
 - If a member joins the facility/group later, they should receive matching current
   assignments under the existing visibility model.
+- Multiple active coaches/admins in the same facility may assign authorized
+  workouts, including workouts created by another coach in that facility.
+- Members and coach review/history views should show who assigned each workout.
+- Duplicate workout/target/date assignments must be prevented safely even when
+  two coaches assign at nearly the same time.
 - Historical recipient snapshots may be considered later if reporting needs it.
+
+## Testing Days
+
+- A proposed Testing Day workflow would let a coach create a testing session,
+  select a group or members, define ordered tests, and enter the roster's
+  results from one screen.
+- Testing sessions should be separate from ordinary workouts and should connect
+  approved results to progress history and the existing leaderboard metric
+  selector.
+- Test definitions, attempts/best-result rules, member visibility, and
+  leaderboard eligibility remain pending the Rip City coach discussion on
+  2026-10-18.
 
 ## H2K
 

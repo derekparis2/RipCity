@@ -21,6 +21,7 @@ a production release. The current V2 order is:
 2. Create the nine fake Auth identities documented in
    `docs/STAGING_TEST_ACCOUNTS.md`.
 3. `staging/v2/02_test_account_profiles.sql`
+4. `staging/v2/03_leaderboard_demo_data.sql`
 
 `01_two_facility_foundation.sql` adds one unmistakably fake second facility and
 two fake athlete groups. Run it only in **Rip City Staging**, after the verified
@@ -45,3 +46,18 @@ Auth IDs by fake email and stores no password.
 
 Status: successfully applied and verified in Rip City Staging on 2026-08-28.
 The result is nine application profiles and ten facility memberships.
+
+`03_leaderboard_demo_data.sql` is an optional, repeatable staging fixture for
+leaderboard QA. Run it after `02_test_account_profiles.sql`. It adds five fake
+display-only H2K members and five fake display-only athletes without creating
+more Auth accounts, then generates habit scores, streaks, ties, workout
+assignments, completions, and one no-assignment athlete relative to the day the
+fixture is run. The existing `rch2k@example.com` and
+`rcathlete@example.com` accounts remain the login-capable member test paths.
+
+The fixture deletes and rebuilds only its own marked habit rows and fixed-ID
+workout. It must never be run in production.
+
+Status: successfully applied and verified in Rip City Staging on 2026-10-15.
+The verification result was 10 display-only members, 728 fixture habit logs,
+50 fixture assignments, and 38 completed fixture assignments.

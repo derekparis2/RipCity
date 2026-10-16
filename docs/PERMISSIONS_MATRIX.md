@@ -59,6 +59,13 @@ historical relationships. It must not create a disconnected replacement user.
 | Parent links | Manage own-facility links when parent access is implemented | Manage approved links when parent access is implemented | No V2 access |
 | Facility deletion | No access | No access | No access |
 
+Coach onboarding follows the elevated-role row above: the platform owner
+establishes the first facility admin, and an existing facility admin creates,
+invites, or approves later coaches/admins for that facility. Ordinary coaches
+may approve ordinary members but cannot approve a pending coach request or
+change someone into an elevated role. Invite possession alone never grants an
+elevated membership.
+
 ## Lifecycle Rules
 
 - Deactivate people and memberships instead of deleting identity/history.
