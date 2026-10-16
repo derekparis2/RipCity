@@ -92,10 +92,16 @@ This package makes multi-facility access intentional. It includes the storable
 Derek-only platform-owner role, safe facility administration, an active-facility
 selector for legitimate multi-facility accounts, correct pending/rejected/
 inactive experiences, and deactivate/reactivate behavior that restores history.
+It also adds the facility-admin-controlled coach onboarding path: the platform
+owner establishes the first facility admin; facility admins can invite/create
+or approve coaches for their own facility; ordinary coaches cannot approve or
+promote coach/admin memberships.
 
 **Complete when:** Every account operates only inside its selected authorized
 facility, inactive users receive the correct blocked experience, and reactivation
-restores the existing relationships.
+restores the existing relationships. A forwarded member or coach signup link
+cannot grant elevated access, and two-facility RLS tests prove only a facility
+admin can approve or change coach/admin roles in that facility.
 
 ---
 
@@ -185,20 +191,26 @@ only their own dismissal and read state.
 
 ---
 
-## 9. Progress, Profiles, And Controlled Community
+## 9. Testing Days, Progress, Profiles, And Controlled Community
 
-- **Status:** Blocked on product decisions
+- **Status:** Blocked on Rip City product decisions
 - **Suggested branch:** `<name>/progress-community`
 - **Plan detail:** [Progress tracking](VERSION_2_PLAN.md#4-progress-tracking) · [Profile and community](VERSION_2_PLAN.md#6-profile-and-community)
 
 This package begins only after the remaining metric, write-permission, and
 privacy decisions are made. It combines the first useful progress experience
 with the profile surfaces that display approved goals, achievements, streaks,
-and controlled community information.
+and controlled community information. It also contains the proposed Testing
+Day workflow: coaches define a testing session and ordered tests, select a
+group/members, enter the roster's results efficiently, and connect approved
+results to member progress and the existing leaderboard metric selector. The
+Rip City coach discussion scheduled for 2026-10-18 determines whether the full
+Testing Day workflow is required in V2 or becomes a V3 feature built on a V2
+foundation.
 
-**Complete when:** The first approved shared progress metrics and private/public
-profile rules work consistently for both facilities without pulling V3 baseball
-features into V2.
+**Complete when:** The first approved shared progress metrics, testing-result
+rules, and private/public profile rules work consistently for both facilities
+without prematurely pulling unapproved V3 baseball features into V2.
 
 ---
 
@@ -212,13 +224,18 @@ This follow-up adds the database behavior that was designed but not implemented
 by the builder refactor: a true universal catalog with facility overrides and
 hides, safe editing/versioning for workouts with past or started assignments,
 archive behavior for historical workouts, and the approved workout-completion
-connection to H2K training habits. It must preserve production history and add
-two-facility write/isolation tests.
+connection to H2K training habits. It also finalizes multi-coach assignment
+behavior by displaying the assigning coach to members and coaches, preserving
+historical attribution, adding database-safe duplicate prevention, and testing
+two same-facility coaches plus a denied cross-facility coach. It must preserve
+production history and add two-facility write/isolation tests.
 
 **Complete when:** Universal exercise changes cannot leak between facilities,
 coaches can correct future workouts without changing past assignments or logs,
 historical workouts are archived instead of destructively deleted, and the
-approved workout-to-habit automation is verified in staging.
+approved workout-to-habit automation is verified in staging. Multiple facility
+coaches can safely assign workouts, every assignment shows who assigned it, and
+concurrent duplicate assignments are prevented.
 
 ---
 

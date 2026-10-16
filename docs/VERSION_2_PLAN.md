@@ -96,6 +96,23 @@ Membership status direction:
 - Reactivation restores the existing membership and history.
 - Rejection does not grant facility access.
 
+Coach onboarding direction:
+
+- The platform owner creates a facility and establishes its first facility
+  owner/admin.
+- A facility admin must be able to create or invite additional coach accounts,
+  or at minimum approve a pending coach signup and assign the coach role.
+- Ordinary coaches may continue approving ordinary member signups, but they
+  cannot promote someone to coach/admin or approve a coach-level membership.
+- Coach signup must remain facility-scoped and pending until a facility admin
+  approves it. A copied or forwarded link must never grant coach access by
+  itself.
+- The approval screen must clearly distinguish prospective coaches from
+  athletes and H2K members so an elevated role is never approved accidentally.
+- Every coach/admin creation, approval, role change, deactivation, and
+  reactivation must be enforced by RLS and covered by two-facility staging
+  tests; hiding elevated controls in the browser is not sufficient.
+
 The permissions matrix must explicitly cover view, create, edit, delete,
 archive, approve, role-management, and facility-settings actions for every
 module before that module is production-ready.
@@ -227,6 +244,9 @@ Done criteria:
 - The existing `facility_invites` table is not used by the current copied-link
   flow. Its live status and intended future use must be resolved during the SQL
   audit before new invite behavior is built on it.
+- Keep member signup links and coach onboarding as separate permission paths.
+  Member links preserve the current share-and-approve flow; a coach invite or
+  coach-role request always requires facility-admin approval.
 
 #### Facility Time And Date Rules
 
@@ -467,6 +487,10 @@ platform into something negative or overly competitive.
   day does not count as missed while it is still in progress.
 - Individual 12-week habit or assigned-workout history belongs on the coach
   member-detail page, not on the main coach dashboard.
+- Future lift, speed, jump, and sport-testing results should extend the same
+  selectable leaderboard metric registry after the Testing Day data model and
+  member-visibility rules are approved. Do not build a second unrelated
+  leaderboard implementation for testing results.
 
 ### Possible V2 Leaderboards
 
@@ -507,6 +531,41 @@ Goals define what a member is trying to reach. Progress is the history and
 numbers that show whether the member is moving toward those goals. In V2, use
 existing history views and goal updates first, then decide which progress
 metrics deserve a dedicated module.
+
+### Testing Day Direction
+
+Rip City may need a coach-run Testing Day workflow where coaches define a set
+of tests, select a group or individual participants, and enter results for many
+members from one roster-style screen. This is a candidate for V2 if Rip City
+considers it necessary for winter training; otherwise V2 should preserve the
+foundation and schedule the full workflow for V3.
+
+Testing Day should not be modeled as an ordinary workout. A durable design is
+expected to include:
+
+- A facility-scoped testing session with name, date, status, creator, and
+  selected group/members.
+- Ordered test definitions with a name, unit, input type, and whether a higher
+  or lower result ranks better.
+- Per-member results that record the entering coach, optional notes, and any
+  approved attempt/best-result behavior.
+- A roster-style coach entry screen so an entire testing group can be entered
+  efficiently without opening every member separately.
+- A clear connection to member progress history and the existing selectable
+  leaderboard metric registry once visibility and ranking rules are approved.
+- Facility-scoped RLS and two-facility tests so coaches can never enter or read
+  another facility's testing data.
+
+Questions for the Rip City coach on 2026-10-18:
+
+- Which tests are used regularly?
+- Does each test store one result, multiple attempts, or only the best result?
+- Are results entered only by coaches, or can members submit results for coach
+  verification?
+- Is testing normally run for a full group, selected members, or both?
+- Which results should members see, and which may appear on leaderboards?
+- Do previous testing days need side-by-side comparison or charts in the first
+  release?
 
 ### Decisions To Make
 
@@ -941,6 +1000,25 @@ Done criteria:
 - Editing an upcoming workout never changes a past workout or saved member log.
 - Direct edits and automatic version creation are clear before the coach saves.
 - Assignment dates and "past/today/future" decisions use the facility time zone.
+
+### Multi-Coach Workout Assignment
+
+- Any active coach/admin in a facility can assign an authorized workout in
+  that facility, including a workout originally created by another facility
+  coach.
+- Preserve `workout_assignments.assigned_by` as the historical source of the
+  assignment. Member workout cards, previews, and session details should show
+  the assigning coach's display name, and coach review/history should expose
+  the same attribution.
+- Deactivating a coach must not remove the coach name from historical
+  assignments. If an identity is genuinely unavailable, show a neutral
+  fallback instead of breaking the workout query.
+- Prevent duplicate assignment of the same workout, target, and date even when
+  two coaches act at nearly the same time; browser-only duplicate filtering is
+  not enough for this race.
+- Add staging coverage with two coaches in one facility plus a coach in the
+  second facility. Both same-facility coaches may assign; the other-facility
+  coach must be denied.
 
 ---
 

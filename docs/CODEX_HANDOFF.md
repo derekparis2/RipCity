@@ -217,6 +217,33 @@ Leaderboards:
 - Athlete streak = assigned workout days completed.
 - Rolling 4-week H2K average is important to the coach.
 
+Workout assignments:
+
+- Multiple active coaches/admins in the same facility may assign authorized
+  workouts, including workouts created by another coach.
+- Member and coach views should show the assigning coach using the existing
+  `workout_assignments.assigned_by` relationship.
+- Add database-safe duplicate prevention and same-facility/cross-facility
+  multi-coach staging tests before production release.
+
+Coach onboarding:
+
+- Derek/platform owner creates the facility and establishes its first admin.
+- Facility admins create/invite or approve additional coaches for their own
+  facility.
+- Ordinary coaches may approve ordinary members but cannot approve, create, or
+  promote coach/admin memberships.
+- A shared signup link never grants an elevated role without admin approval.
+
+Testing Days:
+
+- A proposed coach-run Testing Day workflow would support ordered tests,
+  group/member selection, roster-style result entry, progress history, and
+  future leaderboard metrics.
+- The exact tests, attempts/best-result behavior, permissions, visibility, and
+  V2-versus-V3 boundary are pending Derek's Rip City coach discussion on
+  2026-10-18.
+
 Coach notes / announcements:
 
 - Coach notes are private/internal.
