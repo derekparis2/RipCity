@@ -1551,6 +1551,10 @@ td {
   .member-dashboard-grid {
     margin-top: 22px;
   }
+
+  .coach-attention-section {
+    margin-top: 22px;
+  }
   
   .h2k-habit-list {
     display: grid;
