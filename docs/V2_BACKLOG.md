@@ -111,10 +111,9 @@ pending/rejected/inactive blocking, admin-only coach lifecycle management, and
 same-row restoration of member profiles, group relationships, and facility
 access. Every temporarily changed fake-account status was restored afterward.
 
-**Explicit V3 deferral:** Platform-owner storage/RLS, cross-facility support
-mode, multiple active facility memberships, and an active-facility selector are
-not part of V2. The second staging facility and cross-facility coach remain test
-fixtures for tenant-isolation checks, not supported V2 UI workflows.
+Future platform operations are tracked in
+[`VERSION_3_PLAN.md`](VERSION_3_PLAN.md). The second staging facility and
+cross-facility coach remain tenant-isolation fixtures, not supported V2 UI.
 
 **Complete when:** Pending, rejected, and inactive accounts receive the correct
 blocked experience; only facility admins can deactivate/reactivate coaches;
@@ -137,8 +136,7 @@ per account. It
 includes facility display name, branding, terminology, enabled modules, member
 types, authoritative time zone, facility-local date helpers, and removal of
 hardcoded Rip City/H2K assumptions. It also includes the cleaner H2K date-picker
-behavior because that depends on facility-local dates. Multi-facility account
-selection and global platform-owner UI are deferred to V3.
+behavior because that depends on facility-local dates.
 
 **Complete when:** Rip City and Test Facility Alpha show their own correct
 configuration, modules, and dates without leaking branding or facility-specific
@@ -216,8 +214,7 @@ with the profile surfaces that display approved goals, achievements, streaks,
 and controlled community information.
 
 **Complete when:** The first approved shared progress metrics and private/public
-profile rules work consistently for both facilities without pulling V3 baseball
-features into V2.
+profile rules work consistently for both facilities within the V2 scope.
 
 ---
 
@@ -280,7 +277,8 @@ rollback steps are documented and rehearsed.
 
 - Hardcoded Rip City branding → Package 5.
 - Pending message shown to inactive accounts → Package 4.
-- Multi-facility selector and storable `platform_owner` role → V3.
+- Future multi-facility and baseball-development work →
+  [`VERSION_3_PLAN.md`](VERSION_3_PLAN.md).
 - Goals RLS does not support member-created goals → Package 3.
 - Facility modules, terminology, and time zones are not data-driven → Package 5.
 - Universal exercise overrides/hides are not implemented → Package 10.

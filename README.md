@@ -32,6 +32,10 @@ For the product roadmap, start with `docs/BUILD_PLAN.md`.
 
 - `CONTRIBUTING.md` - shared Derek/Sam branch, review, testing, and database workflow
 - `docs/BUILD_PLAN.md` - product direction and phases
+- `docs/VERSION_2_PLAN.md` - detailed active V2 requirements
+- `docs/V2_BACKLOG.md` - ordered V2 work packages and status
+- `docs/VERSION_3_PLAN.md` - multi-facility operations and baseball-development
+  work intentionally deferred beyond V2
 - `docs/BETA_TEST_CHECKLIST.md` - walkthrough checklist for early testers
 - `docs/archive/v1/BETA_LAUNCH_PLAN.md` - historical V1 beta launch checklist
 - `docs/DEPLOYMENT_PREP.md` - live URL, Supabase Auth, storage, and final deploy checks

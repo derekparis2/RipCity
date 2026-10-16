@@ -43,6 +43,9 @@ Before making product/code changes, read:
 - `docs/VERSION_2_PLAN.md`
 - this file
 
+Read `docs/VERSION_3_PLAN.md` only when planning work beyond the active V2
+scope or deciding where a newly proposed feature belongs.
+
 For database/RLS work, also inspect:
 
 - `docs/SUPABASE_SETUP.md`
@@ -67,12 +70,10 @@ Core direction:
 - Rip City configuration second.
 - H2K habits are an optional/member-type-specific module, not the whole app.
 - Facility data must stay isolated.
-- Derek/global admin can see/manage all facilities unless a future support mode is intentionally added.
 - Facility coaches/admins should only manage their own facility.
 - Members should only see their own facility experience.
-- V2 uses one active facility membership per account. Platform-owner storage,
-  supported multi-facility accounts, facility switching, and cross-facility
-  support mode are V3 scope.
+- V2 uses one active facility membership per account. Future platform and
+  baseball-development work is defined in `docs/VERSION_3_PLAN.md`.
 
 ## Current V2 Priorities
 

@@ -23,7 +23,7 @@ Shared modules:
 
 Program-specific modules:
 - H2K: habit tracking / 42-point weekly score
-- Athlete: baseball-specific data later, arm care later, throwing program later, player card later
+- Athlete-specific expansion is tracked in `VERSION_3_PLAN.md`.
 
 Core rule:
 If a feature can be used by other facilities, build it into the shared platform.
@@ -117,12 +117,7 @@ H2K-specific:
 - Rolling 4-week average
 - Training habit should eventually auto-complete when workout is completed
 
-Athlete-specific later:
-- Baseball metrics
-- Arm care
-- Throwing program
-- Player card
-- Recruiting/showcase data
+Athlete-specific expansion is tracked in `VERSION_3_PLAN.md`.
 
 ---
 

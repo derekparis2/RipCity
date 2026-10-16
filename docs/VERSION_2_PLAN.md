@@ -10,7 +10,7 @@ and one active facility per account.
 
 Core V2 direction:
 
-- Platform / multi-facility configuration
+- Facility isolation and configuration
 - Goals
 - Leaderboards
 - Progress tracking
@@ -24,19 +24,15 @@ the core workout creation, editing, assignment, logging, and history experience.
 "Finalize" means the workflow and data model are stable enough to build on;
 normal fixes and intentional improvements may still follow.
 
-Version 3 will focus on the deeper baseball-development side of the product,
-including baseball-specific metrics, throwing and arm-care programs, player
-cards, evaluations, recruiting/showcase data, and related workflows. V2 should
-avoid reopening its platform and workout foundations solely to pull forward
-unplanned baseball scope. V3 will also add supported multi-facility accounts,
-facility switching, the storable platform-owner role, and intentional
-cross-facility support/admin workflows.
+Work intentionally deferred beyond this boundary belongs in
+[`VERSION_3_PLAN.md`](VERSION_3_PLAN.md). V2 should avoid reopening its platform
+and workout foundations solely to pull forward V3 scope.
 
 Do not start coding these sections until the product rules below are filled in.
 
 ---
 
-## 1. Platform / Multi-Facility Direction
+## 1. Platform Foundation And Facility Isolation
 
 ### Product Purpose
 
@@ -50,18 +46,13 @@ The long-term goal is for a facility to choose its modules, colors, logo, groups
 - New shared features should be built for any facility first, then configured for Rip City.
 - Facility-specific features should be optional modules, not hardcoded platform behavior.
 - H2K habits should remain a Rip City/member-type module unless another facility enables a similar habit module.
-- Derek/global admin should be the only role that can see or manage all facilities unless a future support/admin mode is intentionally added.
 - Facility coaches/admins should only manage their own facility.
 - Members should only see their own facility experience.
 - Facility branding should move toward data/config-driven behavior instead of one-off CSS edits.
 - Manual setup is acceptable early, but V2 should avoid choices that block future self-serve setup.
-- Any manual V2 facility creation is performed only by Derek; the product-level
-  platform-owner facility creation workflow is deferred to V3.
 - V2 product flows use one active facility membership per account. The existing
   second-facility and cross-facility staging rows remain isolation fixtures,
-  not supported multi-facility UI.
-- Multiple memberships, facility switching, and different roles across
-  facilities are V3 workflows.
+  not supported product UI.
 - Reactivating a membership should restore its historical facility, group,
   workout, goal, and other authorized relationships rather than create a new
   disconnected identity.
@@ -81,7 +72,7 @@ V2 role direction:
   broadly manage that facility, including coaches, members, groups, settings,
   and facility content.
 - `coach`: facility-scoped role. Can manage approved coaching workflows in the
-  facilities where the coach has an active membership, but does not receive
+  facility where the coach has an active membership, but does not receive
   platform-wide access.
 - `athlete` / `h2k_member`: current member-facing facility roles. V2 may later
   separate access role from configurable member type if the schema audit shows
@@ -89,9 +80,8 @@ V2 role direction:
 - `parent`: future role with no V2 access until parent visibility rules and RLS
   are intentionally implemented.
 
-The Derek-only `platform_owner` role, facility creation workflow, facility
-selector, and cross-facility support mode are V3 scope. V2 must not simulate
-this access through a broad RLS bypass.
+V2 must not create broad cross-facility RLS bypasses. See the V3 plan for future
+platform operations.
 
 Membership status direction:
 
@@ -128,7 +118,7 @@ lists.
 Decisions:
 
 - Derek manages the universal exercise catalog through the approved manual V2
-  process; a platform-owner product workflow is V3 scope.
+  process.
 - Every facility can view and use universal exercises.
 - Coaches can add exercises that belong only to their facility; other
   facilities must never see them.
@@ -155,7 +145,7 @@ Recommended data direction:
 - Continue using one `exercise_templates` system so workouts can reference
   universal and facility exercises consistently.
 - Universal templates have no facility owner and can be changed only through
-  Derek's trusted manual V2 process until the V3 platform-owner workflow exists.
+  Derek's trusted manual V2 process.
 - Facility-created templates have a facility owner and no universal source.
 - Facility overrides reference their universal source. An active override
   supplies the facility version; an inactive override acts as a facility-only
@@ -1015,8 +1005,7 @@ historical archives remain under `sql/`. Continue this structure for V2.
 3. Create the staging Supabase project and reproducible release-safety workflow.
 4. Rebuild staging from repository-controlled migrations and fake seed data;
    verify two-facility isolation and all important roles.
-5. Complete the V2 single-facility configuration and module-visibility audit;
-   record multi-facility account workflows as V3 scope.
+5. Complete the V2 single-facility configuration and module-visibility audit.
 6. Complete the codebase cleanup and maintainability pass.
 7. Create the repeatable regression, accessibility, migration, and release checklist.
 8. Finish the beta feedback polish queue that affects daily use.
