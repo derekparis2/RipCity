@@ -22,13 +22,18 @@ Use this as the quick orientation guide before editing.
 - `js/shared/leaderboard-metrics.js` contains the shared H2K score, workout
   attendance, rolling-average, streak, and competition-ranking rules used by
   coach and member views.
+- `js/shared/attention-rules.js` contains the coach-approved consecutive missed
+  habit and assigned-workout follow-up rules.
 
 ## Feature JavaScript
 
 - `js/auth/auth.js` controls signup, username/email login, pending logout, and post-login routing.
 - `js/coach/coach-approvals.js` lets coaches/admins approve or reject pending members.
 - `js/coach/coach-roster.js` manages facility members, group membership, member status, and H2K band color.
-- `js/coach/coach-dashboard.js` powers H2K score review and coach workout completion review.
+- `js/coach/coach-dashboard.js` powers the coach needs-attention queue and
+  workout completion review.
+- `js/coach/member-history.js` powers the 12-week H2K or assigned-workout
+  history shown on an individual coach member-detail page.
 - `js/coach/coach-leaderboards.js` powers the facility-scoped H2K and athlete
   leaderboard page, including group filters, member search, and the selectable
   metric registry used to rank by rolling results or streaks. Future lift and

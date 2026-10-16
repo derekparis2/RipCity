@@ -278,7 +278,13 @@ async function loadMember() {
     group_members: groupRows || []
   };
   renderDetailMember();
-  await loadDetailGoals();
+  await Promise.all([
+    loadDetailGoals(),
+    window.RipCityCoachMemberHistory.init({
+      access: detailAccess,
+      member: detailMember
+    })
+  ]);
 }
 
 async function init() {

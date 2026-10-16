@@ -46,7 +46,7 @@ on conflict (id) do update set
   global_role = excluded.global_role;
 
 insert into public.facility_members (
-  id, facility_id, profile_id, role, status, approved_by, approved_at
+  id, facility_id, profile_id, role, status, approved_by, approved_at, created_at
 )
 select
   fixture.membership_id::uuid,
@@ -55,7 +55,8 @@ select
   fixture.role,
   'approved',
   admin_profile.id,
-  now()
+  now(),
+  now() - interval '90 days'
 from (values
   ('41000000-0000-4000-8000-000000000001', '40000000-0000-4000-8000-000000000001', 'h2k_member'),
   ('41000000-0000-4000-8000-000000000002', '40000000-0000-4000-8000-000000000002', 'h2k_member'),
@@ -80,7 +81,8 @@ on conflict (id) do update set
   role = excluded.role,
   status = excluded.status,
   approved_by = excluded.approved_by,
-  approved_at = excluded.approved_at;
+  approved_at = excluded.approved_at,
+  created_at = excluded.created_at;
 
 insert into public.member_profiles (
   id, facility_member_id, member_type, sport, age_group, position
@@ -266,13 +268,15 @@ from athlete_members member
 cross join assignment_dates date_row
 cross join lateral (select id from public.profiles where email = 'rccoach@example.com') coach;
 
-with completion_targets (member_profile_id, completed_previous, completed_current) as (
+with completion_targets (member_profile_id, completed_previous, completed_current, complete_recent) as (
   values
-    ('20000000-0000-4000-8000-000000000003'::uuid, 6, 2),
-    ('42000000-0000-4000-8000-000000000011'::uuid, 8, 2),
-    ('42000000-0000-4000-8000-000000000012'::uuid, 7, 1),
-    ('42000000-0000-4000-8000-000000000013'::uuid, 6, 2),
-    ('42000000-0000-4000-8000-000000000014'::uuid, 4, 0)
+    ('20000000-0000-4000-8000-000000000003'::uuid, 6, 2, true),
+    ('42000000-0000-4000-8000-000000000011'::uuid, 8, 2, true),
+    ('42000000-0000-4000-8000-000000000012'::uuid, 7, 1, true),
+    ('42000000-0000-4000-8000-000000000013'::uuid, 6, 2, true),
+    -- Building deliberately misses the two most recent completed workout days
+    -- so the coach attention queue has a stable athlete test case.
+    ('42000000-0000-4000-8000-000000000014'::uuid, 4, 0, false)
 ),
 ranked_assignments as (
   select
@@ -290,6 +294,10 @@ ranked_assignments as (
         order by assignment.assigned_date asc
       )
     end as period_rank,
+    count(*) over (
+      partition by assignment.target_member_profile_id,
+        (assignment.assigned_date < date_trunc('week', (now() at time zone 'America/New_York')::date)::date)
+    ) as period_count,
     assignment.assigned_date < date_trunc('week', (now() at time zone 'America/New_York')::date)::date as is_previous
   from public.workout_assignments assignment
   where assignment.workout_id = '44000000-0000-4000-8000-000000000001'
@@ -300,7 +308,11 @@ completed_assignments as (
   join completion_targets target
     on target.member_profile_id = ranked.target_member_profile_id
   where
-    (ranked.is_previous and ranked.period_rank <= target.completed_previous)
+    (ranked.is_previous and (
+      (target.complete_recent and ranked.period_rank <= target.completed_previous)
+      or
+      (not target.complete_recent and ranked.period_rank > ranked.period_count - target.completed_previous)
+    ))
     or
     (not ranked.is_previous and ranked.period_rank <= target.completed_current)
 )

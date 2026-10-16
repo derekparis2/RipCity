@@ -460,6 +460,13 @@ platform into something negative or overly competitive.
   until that day has ended.
 - Personal versions of these same metrics appear on the member dashboard using
   one shared calculation module.
+- The coach dashboard is an action queue rather than a second leaderboard.
+  An H2K member needs attention after three consecutive completed calendar
+  days without habit tracking. An athlete needs attention when their last two
+  completed assigned-workout days both contain no exercise data. The current
+  day does not count as missed while it is still in progress.
+- Individual 12-week habit or assigned-workout history belongs on the coach
+  member-detail page, not on the main coach dashboard.
 
 ### Possible V2 Leaderboards
 

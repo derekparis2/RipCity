@@ -154,7 +154,9 @@ athlete boards, group filtering, search, tied competition ranks, rolling
 four-week metrics, selectable ranking metrics, and shared personal
 member-dashboard metrics. H2K streaks
 require at least four habits per day; athlete attendance counts only workouts
-actually assigned to that athlete.
+actually assigned to that athlete. The package also simplifies the coach
+dashboard into a coach-approved needs-attention queue and moves 12-week history
+onto each member's detail page.
 
 Member-facing top-five leaderboard pages remain a follow-up after Sam's member
 page split is merged. The shared calculation layer created here must be reused
