@@ -433,9 +433,30 @@ platform into something negative or overly competitive.
 
 ### Decisions Still Needed
 
-- Exact leaderboard metrics for V2.
-- Which leaderboards are member-visible vs coach-only.
-- Which leaderboards use weekly, monthly, all-time, or rolling time windows.
+- Which additional metrics should be promoted from coach-only to member-visible
+  top-five boards after the member page split.
+- Whether monthly and all-time views are still required for the V2 deadline or
+  should follow the initial rolling-four-week release.
+
+### Initial V2 Metrics Approved
+
+- The coach experience starts with separate H2K and athlete tabs, facility and
+  group scoping, member search, full lists, and competition ranking for ties.
+- The primary H2K ranking is average weekly habit points across the previous
+  four completed Monday-Sunday weeks. The current partial week is shown
+  separately and does not affect that rolling average.
+- An H2K streak day requires at least four distinct completed habits. The
+  current day does not break a streak while it is still in progress.
+- The primary athlete ranking is workout attendance across the previous four
+  completed weeks. Its denominator contains only workouts actually assigned to
+  that athlete; no assigned workouts displays as no score rather than 0% or
+  100%.
+- An athlete streak counts consecutive assigned workout dates completed. Dates
+  without an assignment are ignored, every assignment on a date must be
+  complete, and an incomplete current-day assignment does not break the streak
+  until that day has ended.
+- Personal versions of these same metrics appear on the member dashboard using
+  one shared calculation module.
 
 ### Possible V2 Leaderboards
 

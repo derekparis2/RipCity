@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Coach Leaderboards</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css?v=coach-leaderboards-1" />
+  <link rel="stylesheet" href="css/coach-leaderboards.css?v=coach-leaderboards-1" />
+</head>
+
+<body class="auth-body coach-leaderboards-page">
+  <main class="coach-page">
+    <header class="h2k-header leaderboard-header">
+      <a class="auth-brand leaderboard-brand-link" href="coach-dashboard.html" aria-label="Coach dashboard">
+        <img src="assets/rip-city-logo.png" alt="Rip City logo">
+        <div>
+          <h1>RIP CITY</h1>
+          <p>Coach Leaderboards</p>
+        </div>
+      </a>
+
+      <div class="h2k-header-actions">
+        <a class="outline-link" href="coach-dashboard.html">Dashboard</a>
+        <a class="outline-link" href="coach-roster.html">Roster</a>
+        <a class="outline-link" href="coach-workouts.html">Workout Builder</a>
+        <button class="outline-btn" id="leaderboard-logout-btn">Log Out</button>
+      </div>
+    </header>
+
+    <section class="leaderboard-hero">
+      <div>
+        <p class="eyebrow">FACILITY PROGRESS</p>
+        <h2>Consistency Leaderboards</h2>
+        <p>Celebrate members who are consistently completing their habits and assigned training.</p>
+      </div>
+      <button class="outline-btn" id="refresh-leaderboards-btn" type="button">Refresh</button>
+    </section>
+
+    <section class="leaderboard-shell">
+      <div class="leaderboard-tabs" role="tablist" aria-label="Leaderboard type">
+        <button class="leaderboard-tab active" type="button" role="tab" aria-selected="true" data-leaderboard-tab="h2k">
+          H2K Habits
+        </button>
+        <button class="leaderboard-tab" type="button" role="tab" aria-selected="false" data-leaderboard-tab="athlete">
+          Athlete Training
+        </button>
+      </div>
+
+      <div class="leaderboard-toolbar">
+        <label>
+          Group
+          <select id="leaderboard-group-filter">
+            <option value="all">All groups</option>
+          </select>
+        </label>
+        <label class="leaderboard-search-field">
+          Search
+          <input id="leaderboard-member-search" type="search" placeholder="Search members..." autocomplete="off" />
+        </label>
+      </div>
+
+      <div class="leaderboard-context" id="leaderboard-context"></div>
+      <p class="auth-message" id="leaderboard-message" aria-live="polite"></p>
+      <div class="leaderboard-list" id="leaderboard-list">
+        <div class="empty-state">Loading leaderboards...</div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/shared/supabaseClient.js"></script>
+  <script src="js/shared/ui-utils.js"></script>
+  <script src="js/shared/access-control.js"></script>
+  <script src="js/shared/workout-data.js"></script>
+  <script src="js/shared/leaderboard-metrics.js?v=coach-leaderboards-1"></script>
+  <script src="js/coach/coach-leaderboards.js?v=coach-leaderboards-1"></script>
+</body>
+</html>

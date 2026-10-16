@@ -144,17 +144,24 @@ as Package 10 rather than being incorrectly counted as implemented here.
 
 ## 7. Leaderboards
 
-- **Status:** Planned
-- **Suggested branch:** `<name>/leaderboards-v2`
+- **Status:** In progress
+- **Branch:** `derek/coach-leaderboards`
 - **Plan detail:** [Leaderboards](VERSION_2_PLAN.md#3-leaderboards)
 
-This package finalizes the first V2 metrics and builds the complete initial
-leaderboard experience: coach facility/group filters, separated H2K and athlete
-boards, member top five plus own rank, tied ranks, profile identity, approved
-time ranges, and facility-time-zone calculations.
+This package finalizes the first V2 metrics and builds the initial leaderboard
+experience. The current branch adds separate facility-scoped coach H2K and
+athlete boards, group filtering, search, tied competition ranks, rolling
+four-week metrics, and shared personal member-dashboard metrics. H2K streaks
+require at least four habits per day; athlete attendance counts only workouts
+actually assigned to that athlete.
 
-**Complete when:** Coaches and members see only the approved metrics, people,
-member types, and time periods for their own facility.
+Member-facing top-five leaderboard pages remain a follow-up after Sam's member
+page split is merged. The shared calculation layer created here must be reused
+there so member and coach numbers cannot drift.
+
+**Complete when:** The coach boards and personal member metrics pass staging
+tests for both facilities, including ties, zero assignments, current-day streak
+behavior, group filters, and workout-completion calculations.
 
 ---
 

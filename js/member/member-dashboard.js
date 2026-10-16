@@ -906,32 +906,36 @@ async function toggleHabit(habitId) {
 
 // Updates H2K habit status values used for daily feedback.
 async function updateScores() {
-  const currentDayLogs = await loadHabitLogsForDate(currentMemberProfile.id, getTodayString());
-  const weeklyLogs = await loadWeeklyLogs(currentMemberProfile.id);
-  const todayScore = currentDayLogs.filter(log => log.completed).length;
-  const weeklyScore = weeklyLogs.reduce((total, log) => total + Number(log.points_earned || 0), 0);
-  const weeklyMax = h2kHabits.length * 7;
+  const todayKey = getTodayString();
+  const { data: allLogs, error } = await db
+    .from("habit_logs")
+    .select("habit_id, log_date, completed, points_earned")
+    .eq("member_profile_id", currentMemberProfile.id)
+    .lte("log_date", todayKey);
 
-  document.getElementById("today-score").textContent = todayScore;
-  document.getElementById("weekly-score-h2k").textContent = weeklyScore;
+  if (error) throw error;
+
+  const metrics = window.RipCityMetrics.calculateH2KMetrics({
+    logs: allLogs || [],
+    habitCount: h2kHabits.length || 6,
+    todayKey
+  });
+
+  document.getElementById("today-score").textContent = metrics.todayScore;
+  document.getElementById("weekly-score-h2k").textContent = metrics.fourWeekAverage ?? "—";
+  document.getElementById("weekly-percent-h2k").textContent = metrics.currentStreak;
+  document.getElementById("h2k-status").textContent = `${metrics.currentWeekScore}/${metrics.currentWeekMax}`;
   document.getElementById("member-stat-one-suffix").textContent = `/${h2kHabits.length}`;
-  document.getElementById("member-stat-two-suffix").textContent = `/${weeklyMax}`;
+  document.getElementById("member-stat-two-suffix").textContent = `/${metrics.fourWeekMax}`;
+  document.getElementById("member-stat-three-suffix").textContent = " days";
   document.getElementById("member-stat-one-label").textContent = "Today’s Score";
   document.getElementById("member-stat-one-detail").textContent = "Habits completed today";
-  document.getElementById("member-stat-two-detail").textContent = "Possible weekly points";
-
-  const status = document.getElementById("h2k-status");
-  const detail = document.getElementById("h2k-status-detail");
-
-  if (!status || !detail) return;
-
-  if (todayScore === h2kHabits.length) {
-    status.textContent = "Complete";
-    detail.textContent = "All habits completed today";
-  } else {
-    status.textContent = "Open";
-    detail.textContent = `${h2kHabits.length - todayScore} habits left today`;
-  }
+  document.getElementById("member-stat-two-label").textContent = "4-Week Average";
+  document.getElementById("member-stat-two-detail").textContent = "Previous four completed weeks";
+  document.getElementById("member-stat-three-label").textContent = "Current Streak";
+  document.getElementById("member-stat-three-detail").textContent = "4+ habits completed per day";
+  document.getElementById("member-stat-four-label").textContent = "Current Week";
+  document.getElementById("h2k-status-detail").textContent = `${metrics.currentWeekQualifiedDays} qualified day${metrics.currentWeekQualifiedDays === 1 ? "" : "s"} · ${metrics.currentWeekMax} possible points`;
 }
 
 // Reloads selected-date logs, re-renders cards, and updates scores.
@@ -1124,9 +1128,7 @@ function toggleH2KModuleVisibility() {
     statsSection.classList.remove("hidden");
   }
 
-  if (trainingProgressCard) {
-    trainingProgressCard.classList.toggle("hidden", isH2K);
-  }
+  if (trainingProgressCard) trainingProgressCard.classList.remove("hidden");
 
   if (habitsSection) {
     habitsSection.classList.toggle("hidden", !isH2K);
@@ -1143,16 +1145,18 @@ function toggleH2KModuleVisibility() {
     document.getElementById("member-stat-two-detail").textContent = "Possible weekly points";
     document.getElementById("member-stat-one-suffix").textContent = `/${h2kHabits.length || 6}`;
     document.getElementById("member-stat-two-suffix").textContent = `/${(h2kHabits.length || 6) * 7}`;
+    document.getElementById("member-stat-three-suffix").textContent = " days";
     return;
   }
 
   if (!isH2K) {
-    document.getElementById("member-stat-one-label").textContent = "Today’s Workouts";
-    document.getElementById("member-stat-one-detail").textContent = "Assigned for today";
-    document.getElementById("member-stat-two-label").textContent = "Completed";
-    document.getElementById("member-stat-two-detail").textContent = "Finished assigned workouts";
-    document.getElementById("member-stat-three-label").textContent = "Training Progress";
-    document.getElementById("member-stat-three-detail").textContent = "Logged sets across assigned workouts";
+    document.getElementById("member-stat-one-label").textContent = "This Week";
+    document.getElementById("member-stat-one-detail").textContent = "Assigned workout attendance";
+    document.getElementById("member-stat-two-label").textContent = "Completed This Week";
+    document.getElementById("member-stat-two-detail").textContent = "Completed / assigned workouts";
+    document.getElementById("member-stat-three-label").textContent = "4-Week Attendance";
+    document.getElementById("member-stat-three-detail").textContent = "Previous four completed weeks";
+    document.getElementById("member-stat-four-label").textContent = "Current Streak";
     document.getElementById("member-stat-one-suffix").textContent = "";
     document.getElementById("member-stat-two-suffix").textContent = "";
     document.getElementById("member-stat-three-suffix").textContent = "";
@@ -1170,33 +1174,29 @@ function updateSharedWorkoutStats() {
   if (currentMemberProfile?.member_type === "h2k") return;
 
   const today = getTodayString();
-  const trackableAssignments = workoutCalendarAssignments.filter(assignment => assignment.assigned_date <= today);
-  const summaries = trackableAssignments.map(assignment => {
+  const metricAssignments = workoutCalendarAssignments
+    .filter(assignment => assignment.assigned_date <= today)
+    .map(assignment => {
     const logs = workoutCalendarLogs.filter(log => log.workout_assignment_id === assignment.id);
-    return window.RipCityWorkoutData.summarizeSetLogs(logs, assignment.workout);
+    const summary = window.RipCityWorkoutData.summarizeSetLogs(logs, assignment.workout);
+    return {
+      id: assignment.id,
+      assigned_date: assignment.assigned_date,
+      isComplete: summary.isComplete
+    };
   });
-  const completedCount = summaries.filter(summary => summary.isComplete).length;
-  const completedSets = summaries.reduce((total, summary) => total + summary.completedSets, 0);
-  const totalSets = summaries.reduce((total, summary) => total + summary.totalSets, 0);
-  const activeCount = summaries.filter(summary => summary.completedSets > 0 && !summary.isComplete).length;
+  const metrics = window.RipCityMetrics.calculateAthleteMetrics({
+    assignments: metricAssignments,
+    todayKey: today
+  });
 
-  document.getElementById("today-score").textContent = todayWorkoutAssignments.length;
-  document.getElementById("weekly-score-h2k").textContent = completedCount;
-  document.getElementById("weekly-percent-h2k").textContent = `${completedSets}/${totalSets}`;
-
-  const status = document.getElementById("h2k-status");
-  const detail = document.getElementById("h2k-status-detail");
-
-  if (activeCount > 0) {
-    status.textContent = "In Progress";
-    detail.textContent = `${activeCount} workout${activeCount === 1 ? "" : "s"} partially logged`;
-  } else if (todayWorkoutAssignments.length) {
-    status.textContent = "Ready";
-    detail.textContent = "Open today's assigned workout";
-  } else {
-    status.textContent = "Clear";
-    detail.textContent = "No workout assigned for today";
-  }
+  document.getElementById("today-score").textContent = metrics.currentWeek.percent ?? "—";
+  document.getElementById("member-stat-one-suffix").textContent = metrics.currentWeek.percent === null ? "" : "%";
+  document.getElementById("weekly-score-h2k").textContent = `${metrics.currentWeek.completed}/${metrics.currentWeek.assigned}`;
+  document.getElementById("weekly-percent-h2k").textContent = metrics.fourWeek.percent ?? "—";
+  document.getElementById("member-stat-three-suffix").textContent = metrics.fourWeek.percent === null ? "" : "%";
+  document.getElementById("h2k-status").textContent = `${metrics.currentStreak} day${metrics.currentStreak === 1 ? "" : "s"}`;
+  document.getElementById("h2k-status-detail").textContent = `Longest streak: ${metrics.longestStreak} assigned workout day${metrics.longestStreak === 1 ? "" : "s"}`;
 }
 
 // =====================================================
@@ -1393,8 +1393,7 @@ async function loadWorkoutHistory() {
       .from("workout_assignments")
       .select(MEMBER_WORKOUT_ASSIGNMENT_SELECT)
       .or(targetFilters)
-      .order("assigned_date", { ascending: false })
-      .limit(60);
+      .order("assigned_date", { ascending: false });
 
     if (error) throw error;
 

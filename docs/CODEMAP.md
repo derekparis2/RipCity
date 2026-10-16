@@ -9,7 +9,8 @@ Use this as the quick orientation guide before editing.
 - `member-dashboard.html` is the shared member home for athletes and H2K members.
 - `workout-session.html` is the member workout logging screen.
 - `coach-dashboard.html`, `coach-roster.html`, `coach-workouts.html`,
-  `coach-exercises.html`, and `coach-approvals.html` are the coach/admin surfaces.
+  `coach-exercises.html`, `coach-leaderboards.html`, and `coach-approvals.html`
+  are the coach/admin surfaces.
   The Exercise Library is intentionally linked only from the Workout Builder.
 
 ## Shared JavaScript
@@ -18,6 +19,9 @@ Use this as the quick orientation guide before editing.
 - `js/shared/access-control.js` centralizes auth, approval, role, and facility membership checks.
 - `js/shared/ui-utils.js` contains display safety helpers, shared formatting helpers, and the beta feedback link config.
 - `js/shared/workout-data.js` contains shared workout assignment visibility, date handling, block sorting, and set-log summary helpers.
+- `js/shared/leaderboard-metrics.js` contains the shared H2K score, workout
+  attendance, rolling-average, streak, and competition-ranking rules used by
+  coach and member views.
 
 ## Feature JavaScript
 
@@ -25,6 +29,8 @@ Use this as the quick orientation guide before editing.
 - `js/coach/coach-approvals.js` lets coaches/admins approve or reject pending members.
 - `js/coach/coach-roster.js` manages facility members, group membership, member status, and H2K band color.
 - `js/coach/coach-dashboard.js` powers H2K score review and coach workout completion review.
+- `js/coach/coach-leaderboards.js` powers the facility-scoped H2K and athlete
+  leaderboard page, including group filters and member search.
 - `js/coach/workouts/` powers workout creation, assignment, recent workout reuse,
   and the exercise library. `page.js` is the page controller, with the form UI
   in `builder.js`, assignment behavior in `assignments.js`, saved-workout
