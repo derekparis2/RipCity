@@ -29,6 +29,18 @@ Status: all nine Auth identities were created, auto-confirmed, and connected to
 their application profiles/memberships in Rip City Staging on 2026-08-28. The
 fixture returned the expected ten membership rows.
 
+## Display-Only Leaderboard Members
+
+`supabase/seeds/staging/v2/03_leaderboard_demo_data.sql` adds ten additional
+fake display-only members: five H2K members and five athletes. These rows do not
+have Supabase Auth identities and cannot log in. They exist to test six-person
+leaderboards, tied ranks, different streaks, different attendance percentages,
+and no-score/no-assignment behavior without maintaining ten more passwords.
+
+Use `rch2k@example.com` and `rcathlete@example.com` to test the member-facing
+version of the same seeded metrics. Rerun the fixture when the relative dates
+need to be refreshed for a new testing week.
+
 ## Manual Smoke Test Status
 
 Verified on 2026-08-28:

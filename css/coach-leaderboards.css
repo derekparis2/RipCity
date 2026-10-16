@@ -68,7 +68,7 @@
 
 .leaderboard-toolbar {
   display: grid;
-  grid-template-columns: minmax(190px, 0.35fr) minmax(240px, 1fr);
+  grid-template-columns: minmax(180px, 0.35fr) minmax(210px, 0.45fr) minmax(240px, 1fr);
   gap: 16px;
   padding: 22px clamp(18px, 3vw, 32px) 12px;
 }
@@ -125,6 +125,23 @@
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+.leaderboard-sort-button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-align: left;
+  text-transform: inherit;
+  cursor: pointer;
+}
+
+.leaderboard-sort-button:hover,
+.leaderboard-sort-button.active {
+  color: #7dbdff;
 }
 
 .leaderboard-row {
@@ -244,11 +261,13 @@
   }
 
   .leaderboard-row {
-    grid-template-columns: 48px minmax(0, 1fr) repeat(2, minmax(78px, auto));
+    grid-template-columns: 42px minmax(0, 1fr) minmax(92px, auto);
     gap: 10px;
   }
 
-  .leaderboard-metric:nth-last-child(-n + 2) {
+  /* The dropdown controls the ranking on small screens, so show the selected
+     metric first and preserve enough room for the member's full name. */
+  .leaderboard-metric ~ .leaderboard-metric {
     display: none;
   }
 

@@ -66,4 +66,16 @@ const ranked = metrics.assignCompetitionRanks(
 );
 assert.deepEqual(Array.from(ranked, row => row.rank), [1, 1, 3, null]);
 
+const selectableRows = [
+  { name: "Average Leader", average: 40, streak: 2 },
+  { name: "Streak Leader", average: 30, streak: 8 },
+  { name: "Unranked", average: null, streak: null }
+];
+const rankedByAverage = metrics.assignCompetitionRanks(selectableRows, row => row.average);
+const rankedByStreak = metrics.assignCompetitionRanks(selectableRows, row => row.streak);
+assert.equal(rankedByAverage[0].name, "Average Leader");
+assert.equal(rankedByStreak[0].name, "Streak Leader");
+assert.equal(rankedByAverage.at(-1).rank, null);
+assert.equal(rankedByStreak.at(-1).rank, null);
+
 console.log("leaderboard metrics tests passed");

@@ -149,6 +149,11 @@ Current status:
 - The staging test-account fixture passed on 2026-08-28: nine fake profiles,
   ten facility memberships, correct pending/inactive cases, and one coach with
   approved memberships in both facilities.
+- The optional leaderboard demo fixture is maintained at
+  `supabase/seeds/staging/v2/03_leaderboard_demo_data.sql`. It was applied and
+  verified in staging on 2026-10-15: 10 display-only members, 728 marked habit
+  logs, 50 workout assignments, and 38 completed assignments. It provides
+  six-person rankings, ties, streaks, attendance, and no-score states.
 - Manual role smoke tests passed, followed by all 45 automated read-only RLS
   checks. Confirmed UI gaps are hardcoded Rip City branding, a shared
   pending/inactive message, and no multi-facility selector.

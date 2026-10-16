@@ -418,6 +418,9 @@ platform into something negative or overly competitive.
 - If a member has no score and views their own rank, show "No score yet" instead
   of ranking them last.
 - Coaches can filter leaderboards by group.
+- Coaches can choose the metric used to rank a leaderboard. The first coach
+  version supports rolling averages, current-week results, and current/longest
+  streaks; future lift and testing metrics should plug into the same selector.
 - Members can see facility top 5 and their own group top 5 for safe metrics.
 - Weekly leaderboards use Monday through Sunday.
 - Monthly leaderboards use the calendar month.

@@ -10,6 +10,10 @@ let leaderboardGroupMemberships = [];
 let h2kLeaderboardRows = [];
 let athleteLeaderboardRows = [];
 let activeLeaderboardType = "h2k";
+const selectedLeaderboardMetric = {
+  h2k: "fourWeekAverage",
+  athlete: "fourWeekAttendance"
+};
 
 const LEADERBOARD_ASSIGNMENT_SELECT = `
   id,
@@ -139,6 +143,119 @@ function getMemberGroupNames(memberProfileId) {
   return names.length ? names.join(", ") : "No group";
 }
 
+function formatDayCount(value, label = "day") {
+  return `${value} ${label}${value === 1 ? "" : "s"}`;
+}
+
+// This registry is the extension point for future lift, testing, and sport
+// leaderboards. A future metric supplies one score function and one display
+// function without changing the ranking or filtering system.
+function getLeaderboardMetricDefinitions(type = activeLeaderboardType) {
+  if (type === "h2k") {
+    return [
+      {
+        key: "fourWeekAverage",
+        label: "4-Week Average",
+        score: row => row.metrics.hasScore ? row.metrics.fourWeekAverage : null,
+        display: row => ({
+          primary: row.metrics.fourWeekAverage === null
+            ? "No score"
+            : `${row.metrics.fourWeekAverage} / ${row.metrics.fourWeekMax}`,
+          secondary: "Previous 4 weeks"
+        })
+      },
+      {
+        key: "currentWeekScore",
+        label: "Current Week",
+        score: row => row.metrics.currentWeekScore,
+        display: row => ({
+          primary: `${row.metrics.currentWeekScore} / ${row.metrics.currentWeekMax}`,
+          secondary: `${row.metrics.currentWeekQualifiedDays} qualified days`
+        })
+      },
+      {
+        key: "currentStreak",
+        label: "Current Streak",
+        score: row => row.metrics.currentStreak,
+        display: row => ({
+          primary: formatDayCount(row.metrics.currentStreak),
+          secondary: "Current streak"
+        })
+      },
+      {
+        key: "longestStreak",
+        label: "Longest Streak",
+        score: row => row.metrics.longestStreak,
+        display: row => ({
+          primary: formatDayCount(row.metrics.longestStreak),
+          secondary: "Longest streak"
+        })
+      }
+    ];
+  }
+
+  return [
+    {
+      key: "fourWeekAttendance",
+      label: "4-Week Attendance",
+      score: row => row.metrics.fourWeek.percent,
+      display: row => ({
+        primary: row.metrics.fourWeek.percent === null ? "No workouts" : `${row.metrics.fourWeek.percent}%`,
+        secondary: row.metrics.fourWeek.assigned
+          ? `${row.metrics.fourWeek.completed}/${row.metrics.fourWeek.assigned} completed`
+          : "Previous 4 weeks"
+      })
+    },
+    {
+      key: "currentWeekAttendance",
+      label: "Current Week",
+      score: row => row.metrics.currentWeek.percent,
+      display: row => ({
+        primary: row.metrics.currentWeek.percent === null ? "No workouts" : `${row.metrics.currentWeek.percent}%`,
+        secondary: row.metrics.currentWeek.assigned
+          ? `${row.metrics.currentWeek.completed}/${row.metrics.currentWeek.assigned} completed`
+          : "This week"
+      })
+    },
+    {
+      key: "currentStreak",
+      label: "Current Streak",
+      score: row => row.metrics.hasAssignments ? row.metrics.currentStreak : null,
+      display: row => ({
+        primary: row.metrics.hasAssignments
+          ? formatDayCount(row.metrics.currentStreak, "workout day")
+          : "No workouts",
+        secondary: "Current streak"
+      })
+    },
+    {
+      key: "longestStreak",
+      label: "Longest Streak",
+      score: row => row.metrics.hasAssignments ? row.metrics.longestStreak : null,
+      display: row => ({
+        primary: row.metrics.hasAssignments
+          ? formatDayCount(row.metrics.longestStreak, "workout day")
+          : "No workouts",
+        secondary: "Longest streak"
+      })
+    }
+  ];
+}
+
+function getSelectedMetricDefinition() {
+  const selectedKey = selectedLeaderboardMetric[activeLeaderboardType];
+  return getLeaderboardMetricDefinitions().find(metric => metric.key === selectedKey) ||
+    getLeaderboardMetricDefinitions()[0];
+}
+
+function getOrderedMetricDefinitions() {
+  const selected = getSelectedMetricDefinition();
+  return [
+    selected,
+    ...getLeaderboardMetricDefinitions().filter(metric => metric.key !== selected.key)
+  ];
+}
+
 function isAssignmentForMember(assignment, member, facilityId) {
   if (assignment.target_type === "facility") {
     return assignment.target_facility_id === facilityId;
@@ -219,6 +336,16 @@ function populateGroupFilter() {
   select.value = relevantGroups.some(group => group.id === currentValue) ? currentValue : "all";
 }
 
+function populateMetricFilter() {
+  const select = document.getElementById("leaderboard-metric-filter");
+  if (!select) return;
+
+  select.innerHTML = getLeaderboardMetricDefinitions().map(metric => {
+    return `<option value="${window.RipCityUI.attr(metric.key)}">${window.RipCityUI.text(metric.label)}</option>`;
+  }).join("");
+  select.value = selectedLeaderboardMetric[activeLeaderboardType];
+}
+
 function getRankedFilteredRows() {
   const groupId = document.getElementById("leaderboard-group-filter")?.value || "all";
   const search = document.getElementById("leaderboard-member-search")?.value.trim().toLowerCase() || "";
@@ -228,12 +355,8 @@ function getRankedFilteredRows() {
     rows = rows.filter(row => row.groupIds.includes(groupId));
   }
 
-  const ranked = window.RipCityMetrics.assignCompetitionRanks(rows, row => {
-    if (activeLeaderboardType === "h2k") {
-      return row.metrics.hasScore ? row.metrics.fourWeekAverage : null;
-    }
-    return row.metrics.fourWeek.percent;
-  });
+  const selectedMetric = getSelectedMetricDefinition();
+  const ranked = window.RipCityMetrics.assignCompetitionRanks(rows, selectedMetric.score);
 
   return ranked.filter(row => {
     return !search || `${row.name} ${row.email}`.toLowerCase().includes(search);
@@ -256,8 +379,8 @@ function renderMetric(primary, secondary = "") {
   `;
 }
 
-function renderH2KRow(row) {
-  const average = row.metrics.fourWeekAverage === null ? "No score" : `${row.metrics.fourWeekAverage} / ${row.metrics.fourWeekMax}`;
+function renderLeaderboardRow(row) {
+  const metrics = getOrderedMetricDefinitions();
   return `
     <article class="leaderboard-row ${row.rank && row.rank <= 3 ? "is-top-three" : ""}">
       <div class="leaderboard-rank">${row.rank ? `#${row.rank}` : "—"}</div>
@@ -268,35 +391,10 @@ function renderH2KRow(row) {
           <span>${window.RipCityUI.text(row.groupNames)}</span>
         </div>
       </div>
-      ${renderMetric(average, "Previous 4 weeks")}
-      ${renderMetric(`${row.metrics.currentWeekScore} / ${row.metrics.currentWeekMax}`, `${row.metrics.currentWeekQualifiedDays} qualified days`)}
-      ${renderMetric(`${row.metrics.currentStreak} days`, "Current streak")}
-      ${renderMetric(`${row.metrics.longestStreak} days`, "Longest streak")}
-    </article>
-  `;
-}
-
-function renderAthleteRow(row) {
-  const fourWeek = row.metrics.fourWeek.percent === null
-    ? "No workouts"
-    : `${row.metrics.fourWeek.percent}%`;
-  const currentWeek = row.metrics.currentWeek.percent === null
-    ? "No workouts"
-    : `${row.metrics.currentWeek.percent}%`;
-  return `
-    <article class="leaderboard-row ${row.rank && row.rank <= 3 ? "is-top-three" : ""}">
-      <div class="leaderboard-rank">${row.rank ? `#${row.rank}` : "—"}</div>
-      <div class="leaderboard-member">
-        ${renderAvatar(row)}
-        <div class="leaderboard-member-copy">
-          <strong>${window.RipCityUI.text(row.name)}</strong>
-          <span>${window.RipCityUI.text(row.groupNames)}</span>
-        </div>
-      </div>
-      ${renderMetric(fourWeek, row.metrics.fourWeek.assigned ? `${row.metrics.fourWeek.completed}/${row.metrics.fourWeek.assigned} completed` : "Previous 4 weeks")}
-      ${renderMetric(currentWeek, row.metrics.currentWeek.assigned ? `${row.metrics.currentWeek.completed}/${row.metrics.currentWeek.assigned} completed` : "This week")}
-      ${renderMetric(`${row.metrics.currentStreak} workout days`, "Current streak")}
-      ${renderMetric(`${row.metrics.longestStreak} workout days`, "Longest streak")}
+      ${metrics.map(metric => {
+        const display = metric.display(row);
+        return renderMetric(display.primary, display.secondary);
+      }).join("")}
     </article>
   `;
 }
@@ -307,11 +405,13 @@ function renderLeaderboards() {
   if (!list) return;
   const rows = getRankedFilteredRows();
   const isH2K = activeLeaderboardType === "h2k";
+  const orderedMetrics = getOrderedMetricDefinitions();
+  const selectedMetric = orderedMetrics[0];
 
   if (context) {
     context.textContent = isH2K
-      ? "Ranked by average weekly habit points across the previous four completed weeks. A streak day requires at least four completed habits."
-      : "Ranked by completed assigned workouts across the previous four completed weeks. Only workouts assigned to each athlete count.";
+      ? `Ranked by ${selectedMetric.label}. A streak day requires at least four completed habits.`
+      : `Ranked by ${selectedMetric.label}. Only workouts assigned to each athlete count.`;
   }
 
   if (!rows.length) {
@@ -324,12 +424,16 @@ function renderLeaderboards() {
       <div class="leaderboard-column-labels">
         <span>Rank</span>
         <span>Member</span>
-        <span>4-week result</span>
-        <span>Current week</span>
-        <span>Current streak</span>
-        <span>Best streak</span>
+        ${orderedMetrics.map((metric, index) => `
+          <button
+            class="leaderboard-sort-button ${index === 0 ? "active" : ""}"
+            type="button"
+            data-leaderboard-metric="${window.RipCityUI.attr(metric.key)}"
+            aria-pressed="${index === 0 ? "true" : "false"}"
+          >${window.RipCityUI.text(index === 0 ? `Rank: ${metric.label}` : metric.label)}</button>
+        `).join("")}
       </div>
-      ${rows.map(row => isH2K ? renderH2KRow(row) : renderAthleteRow(row)).join("")}
+      ${rows.map(renderLeaderboardRow).join("")}
     </div>
   `;
 }
@@ -342,6 +446,7 @@ function selectLeaderboardTab(type) {
     button.setAttribute("aria-selected", String(active));
   });
   populateGroupFilter();
+  populateMetricFilter();
   renderLeaderboards();
 }
 
@@ -366,6 +471,7 @@ async function refreshLeaderboards() {
     h2kLeaderboardRows = buildH2KRows(habitData, todayKey);
     athleteLeaderboardRows = buildAthleteRows(athleteData, facilityId, todayKey);
     populateGroupFilter();
+    populateMetricFilter();
     renderLeaderboards();
     showLeaderboardMessage("");
   } catch (error) {
@@ -393,7 +499,18 @@ document.addEventListener("DOMContentLoaded", () => {
     button.addEventListener("click", () => selectLeaderboardTab(button.dataset.leaderboardTab));
   });
   document.getElementById("leaderboard-group-filter")?.addEventListener("change", renderLeaderboards);
+  document.getElementById("leaderboard-metric-filter")?.addEventListener("change", event => {
+    selectedLeaderboardMetric[activeLeaderboardType] = event.target.value;
+    renderLeaderboards();
+  });
   document.getElementById("leaderboard-member-search")?.addEventListener("input", renderLeaderboards);
+  document.getElementById("leaderboard-list")?.addEventListener("click", event => {
+    const button = event.target.closest("[data-leaderboard-metric]");
+    if (!button) return;
+    selectedLeaderboardMetric[activeLeaderboardType] = button.dataset.leaderboardMetric;
+    populateMetricFilter();
+    renderLeaderboards();
+  });
   document.getElementById("refresh-leaderboards-btn")?.addEventListener("click", refreshLeaderboards);
   document.getElementById("leaderboard-logout-btn")?.addEventListener("click", async () => {
     await db.auth.signOut();

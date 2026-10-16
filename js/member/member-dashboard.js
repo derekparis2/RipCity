@@ -922,16 +922,20 @@ async function updateScores() {
   });
 
   document.getElementById("today-score").textContent = metrics.todayScore;
-  document.getElementById("weekly-score-h2k").textContent = metrics.fourWeekAverage ?? "—";
+  document.getElementById("weekly-score-h2k").textContent = metrics.fourWeekAverage ?? "No history";
   document.getElementById("weekly-percent-h2k").textContent = metrics.currentStreak;
   document.getElementById("h2k-status").textContent = `${metrics.currentWeekScore}/${metrics.currentWeekMax}`;
   document.getElementById("member-stat-one-suffix").textContent = `/${h2kHabits.length}`;
-  document.getElementById("member-stat-two-suffix").textContent = `/${metrics.fourWeekMax}`;
+  document.getElementById("member-stat-two-suffix").textContent = metrics.fourWeekAverage === null
+    ? ""
+    : `/${metrics.fourWeekMax}`;
   document.getElementById("member-stat-three-suffix").textContent = " days";
   document.getElementById("member-stat-one-label").textContent = "Today’s Score";
   document.getElementById("member-stat-one-detail").textContent = "Habits completed today";
   document.getElementById("member-stat-two-label").textContent = "4-Week Average";
-  document.getElementById("member-stat-two-detail").textContent = "Previous four completed weeks";
+  document.getElementById("member-stat-two-detail").textContent = metrics.fourWeekAverage === null
+    ? "Complete a full week to start your average"
+    : "Previous four completed weeks";
   document.getElementById("member-stat-three-label").textContent = "Current Streak";
   document.getElementById("member-stat-three-detail").textContent = "4+ habits completed per day";
   document.getElementById("member-stat-four-label").textContent = "Current Week";

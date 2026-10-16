@@ -30,7 +30,10 @@ Use this as the quick orientation guide before editing.
 - `js/coach/coach-roster.js` manages facility members, group membership, member status, and H2K band color.
 - `js/coach/coach-dashboard.js` powers H2K score review and coach workout completion review.
 - `js/coach/coach-leaderboards.js` powers the facility-scoped H2K and athlete
-  leaderboard page, including group filters and member search.
+  leaderboard page, including group filters, member search, and the selectable
+  metric registry used to rank by rolling results or streaks. Future lift and
+  testing leaderboards should extend that registry rather than add a separate
+  ranking implementation.
 - `js/coach/workouts/` powers workout creation, assignment, recent workout reuse,
   and the exercise library. `page.js` is the page controller, with the form UI
   in `builder.js`, assignment behavior in `assignments.js`, saved-workout

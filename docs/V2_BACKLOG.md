@@ -151,7 +151,8 @@ as Package 10 rather than being incorrectly counted as implemented here.
 This package finalizes the first V2 metrics and builds the initial leaderboard
 experience. The current branch adds separate facility-scoped coach H2K and
 athlete boards, group filtering, search, tied competition ranks, rolling
-four-week metrics, and shared personal member-dashboard metrics. H2K streaks
+four-week metrics, selectable ranking metrics, and shared personal
+member-dashboard metrics. H2K streaks
 require at least four habits per day; athlete attendance counts only workouts
 actually assigned to that athlete.
 
