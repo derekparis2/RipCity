@@ -84,7 +84,7 @@ into `v2-development`.
 
 ## 4. Facility Access And Account Lifecycle
 
-- **Status:** Complete on branch; pending review and merge
+- **Status:** Complete
 - **Branch:** `derek/facility-access`
 - **Plan detail:** [Roles and permissions](VERSION_2_PLAN.md#v2-roles-and-permissions-foundation) · [Lifecycle rules](VERSION_2_PLAN.md#lifecycle-rules) · [Platform done criteria](VERSION_2_PLAN.md#done-criteria)
 
