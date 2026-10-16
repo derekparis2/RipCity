@@ -4,6 +4,9 @@ Files run in timestamp order and are treated as immutable after successful
 staging application.
 
 - `20260816221135_initial_verified_baseline.sql` is for a fresh empty project.
+- `20261016120000_add_secure_coach_invites.sql` adds seven-day, single-use
+  coach invitations, atomic pending-membership claims, and admin-only invite
+  management. It does not change reusable member signup links.
 - Future changes must use a later UTC timestamp and a descriptive name, such as
   `20260817090000_add_facility_timezone.sql`.
 

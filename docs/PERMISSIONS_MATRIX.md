@@ -44,6 +44,7 @@ historical relationships. It must not create a disconnected replacement user.
 | Branding, modules, and time zone | Manage every facility | Manage own facility | View effective configuration | Consume effective configuration only |
 | Memberships | Manage through an intentional facility/admin workflow | View and manage all own-facility memberships and roles | View members; approve, reject, deactivate, and reactivate ordinary members only | View own membership only |
 | Coach/admin roles | Assign or remove intentionally | Create, update, or deactivate own-facility coach/admin memberships | Cannot create or promote coach/admin memberships | No access |
+| Coach invitations | Manage through selected facility context | Create seven-day, single-use coach links for own facility | Cannot create coach links | May claim a valid link, which creates pending access only |
 | Member profiles | Access only through intentional facility/support context | View and manage profiles in own facility | View and coach-manage profiles in own facility | View/edit allowed fields on own profile only |
 | Groups | Manage in selected facility | Create, view, edit, archive, and manage membership | Create, view, edit, archive, and manage membership | View own groups only |
 | Workouts | Manage in selected facility | Full own-facility coaching access | Create, assign, edit, archive, and delete allowed drafts | View assigned workouts and log own results |
@@ -103,6 +104,9 @@ These are implementation gaps, not undecided product rules:
 5. Several archive lifecycle fields and workflows do not exist yet.
 6. Announcements and per-user notifications do not have their V2 tables yet.
 7. Progress write permissions remain intentionally undecided.
+
+The secure coach-invite migration was applied to staging and passed all 12
+coach-invite/RLS checks on 2026-10-16. Production remains unchanged.
 
 Do not edit the verified initial baseline to close these gaps. Add reviewed,
 timestamped migrations and test them on staging.

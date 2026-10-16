@@ -72,6 +72,13 @@ The catalog-correction migration applied on 2026-09-14 supplies the 88th
 template, Vertical Jump, and corrects the medicine-ball input defaults. A fresh
 rebuild must run all active migrations in filename order before staging seeds.
 
+The secure coach-onboarding migration
+`20261016120000_add_secure_coach_invites.sql` is not part of the initial
+baseline. Run it in filename order for a fresh rebuild and verify it with
+`supabase/tests/staging_coach_invite_rls_checks.mjs` after the fake Auth
+accounts have been installed. It was applied to Rip City Staging and all 12
+checks passed on 2026-10-16.
+
 Production currently contains 93 exercise templates. Git history confirms the
 starter seed has always contained 87, so six production templates were added
 outside the repository seed. They are production data, not silently invented

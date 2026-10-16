@@ -1406,6 +1406,20 @@ td {
   font-size: 18px;
 }
 
+.pending-user-card.elevated-request {
+  border-color: rgba(91, 177, 255, 0.58);
+  background: linear-gradient(135deg, rgba(91, 177, 255, 0.11), var(--surface-2) 58%);
+}
+
+#coach-invite-panel .panel-heading {
+  align-items: center;
+}
+
+#coach-invite-panel .panel-heading p:not(.eyebrow) {
+  margin: 8px 0 0;
+  color: var(--muted);
+}
+
 .pending-user-meta {
   display: flex;
   flex-wrap: wrap;

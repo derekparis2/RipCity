@@ -39,3 +39,20 @@ node supabase/tests/staging_goals_rls_checks.mjs
 This staging-only test creates and cleans up fake goals while verifying member
 ownership, status-only updates to coach-created goals, and cross-facility write
 denial.
+
+## Coach Invite And Approval Checks
+
+After applying `20261016120000_add_secure_coach_invites.sql`, run:
+
+```bash
+node supabase/tests/staging_coach_invite_rls_checks.mjs
+```
+
+The staging-only test creates and cleans up one coach invite and coach
+membership. It verifies that coach links are single-use, create only pending
+coach access, and require approval from an administrator in the invited
+facility. It also verifies that ordinary coaches and other-facility admins
+cannot approve the request.
+
+Status: all 12 coach-invite and approval checks passed against Rip City Staging
+on 2026-10-16.

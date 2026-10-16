@@ -2,6 +2,8 @@ const RIP_CITY_SLUG = "rip-city";
 let signupFacility = null;
 let signupGroups = [];
 let signupGroupsLoaded = false;
+let signupCoachInviteCode = "";
+let signupCoachInvite = null;
 
 // This file is only for public auth pages:
 // signup.html, login.html, and pending.html.
@@ -180,12 +182,15 @@ async function handleSignup(event) {
 
   showMessage("signup-message", "Creating your account...");
 
+  const isCoachSignup = Boolean(signupCoachInviteCode);
   const fullName = document.getElementById("signup-full-name").value.trim();
   const email = document.getElementById("signup-email").value.trim();
   const username = normalizeUsername(document.getElementById("signup-username").value);
   const password = document.getElementById("signup-password").value;
   const confirmPassword = document.getElementById("signup-confirm-password").value;
-  const memberType = document.querySelector("input[name='member-type']:checked").value;
+  const memberType = isCoachSignup
+    ? null
+    : document.querySelector("input[name='member-type']:checked").value;
 
   const trainingGroupId = document.getElementById("signup-training-group")?.value || "";
   const sport = document.getElementById("signup-sport").value.trim();
@@ -195,8 +200,6 @@ async function handleSignup(event) {
   const bodyWeight = document.getElementById("signup-body-weight").value;
 
   try {
-    const facility = signupFacility || await getRipCityFacility();
-
     if (password !== confirmPassword) {
       showMessage("signup-message", "Passwords must match.", true);
       return;
@@ -214,6 +217,11 @@ async function handleSignup(event) {
 
     if (existingUsernameEmail) {
       showMessage("signup-message", "That username is already taken.", true);
+      return;
+    }
+
+    if (isCoachSignup && !signupCoachInvite) {
+      showMessage("signup-message", "This coach invite is invalid, expired, or has already been used.", true);
       return;
     }
 
@@ -256,6 +264,20 @@ async function handleSignup(event) {
       });
 
     if (profileError) throw profileError;
+
+    if (isCoachSignup) {
+      const { data: claimedInvite, error: claimError } = await db.rpc("claim_coach_invite", {
+        claim_invite_code: signupCoachInviteCode
+      });
+
+      if (claimError) throw claimError;
+      if (!claimedInvite?.length) throw new Error("The coach invite could not be claimed.");
+
+      window.location.href = "pending.html";
+      return;
+    }
+
+    const facility = signupFacility || await getRipCityFacility();
 
     const role = memberType === "athlete" ? "athlete" : "h2k_member";
 
@@ -481,7 +503,67 @@ function applySignupTypeFromUrl() {
   updateSignupMemberTypeFields();
 }
 
+function getCoachInviteCodeFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  return String(params.get("coach_invite") || "").trim();
+}
+
+function setSignupSubmitDisabled(disabled) {
+  const button = document.querySelector("#signup-form button[type='submit']");
+  if (button) button.disabled = disabled;
+}
+
+function applyCoachSignupLayout() {
+  document.getElementById("signup-eyebrow").textContent = "JOIN COACHING STAFF";
+  document.getElementById("signup-title").textContent = "Create Coach Account";
+  document.getElementById("signup-member-type-grid").classList.add("hidden");
+
+  document.querySelectorAll(".athlete-only, .member-only").forEach(section => {
+    section.classList.add("hidden");
+    section.querySelectorAll("input, select, textarea").forEach(input => {
+      input.disabled = true;
+      input.required = false;
+    });
+  });
+}
+
+async function setupCoachSignupPage() {
+  applyCoachSignupLayout();
+  setSignupSubmitDisabled(true);
+  showMessage("signup-message", "Checking coach invite...");
+
+  try {
+    const { data, error } = await db.rpc("lookup_coach_invite", {
+      lookup_invite_code: signupCoachInviteCode
+    });
+
+    if (error) throw error;
+    if (!data?.length) throw new Error("This coach invite is invalid, expired, or has already been used.");
+
+    signupCoachInvite = data[0];
+    document.getElementById("signup-description").textContent =
+      `Create your coach account for ${signupCoachInvite.facility_name}. A facility administrator must approve it before you receive access.`;
+    showMessage("signup-message", "");
+    setSignupSubmitDisabled(false);
+  } catch (error) {
+    console.error(error);
+    signupCoachInvite = null;
+    document.getElementById("signup-description").textContent =
+      "Ask a facility administrator to create a new coach signup link.";
+    showMessage("signup-message", error.message || "Could not verify this coach invite.", true);
+  }
+
+  document.getElementById("signup-form").addEventListener("submit", handleSignup);
+}
+
 async function setupSignupPage() {
+  signupCoachInviteCode = getCoachInviteCodeFromUrl();
+
+  if (signupCoachInviteCode) {
+    await setupCoachSignupPage();
+    return;
+  }
+
   setupMemberTypeToggle();
   applySignupTypeFromUrl();
 
@@ -500,6 +582,27 @@ async function setupSignupPage() {
   }
 
   document.getElementById("signup-form").addEventListener("submit", handleSignup);
+}
+
+async function setupPendingPage() {
+  document.getElementById("pending-logout-btn").addEventListener("click", handlePendingLogout);
+
+  try {
+    const { data } = await db.auth.getSession();
+    if (!data.session?.user) return;
+
+    const profile = await getCurrentUserProfile(data.session.user.id);
+    const memberships = profile.facility_members ||
+      profile["facility_members!facility_members_profile_id_fkey"] || [];
+    const pendingCoach = memberships.find(row => row.role === "coach" && row.status === "pending");
+
+    if (pendingCoach) {
+      document.getElementById("pending-description").textContent =
+        "Your coach account was created successfully. A facility administrator must approve it before you can access coaching tools.";
+    }
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -524,6 +627,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   if (currentPage === "pending") {
-    document.getElementById("pending-logout-btn").addEventListener("click", handlePendingLogout);
+    setupPendingPage();
   }
 });

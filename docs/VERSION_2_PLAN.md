@@ -218,15 +218,21 @@ Done criteria:
 
 - Preserve the current V1 experience where a coach copies an Athlete, H2K, or
   general signup link and sends it to prospective members.
-- Copied signup links may be shared; accepting or using one must never bypass
-  the existing pending approval step.
+- Athlete, H2K, and general member signup links remain reusable so a facility
+  can send one link in a group email. Accepting one must never bypass the
+  existing pending approval step.
+- Coach signup uses a separate facility-admin-only invitation. Each coach link
+  expires after seven days, can be claimed once, and creates only a pending
+  coach membership. An admin in that same facility must approve the request
+  before coaching access is granted.
+- Ordinary coaches cannot create coach invitations or approve coach/admin
+  memberships.
 - Ensure signup can route users into the correct facility, member type, and default groups.
 - Keep future support for facility-specific signup questions, such as sport, position, age group, or program.
-- Do not require email-bound, single-use invitations in V2 unless this product
-  decision is intentionally revisited.
-- The existing `facility_invites` table is not used by the current copied-link
-  flow. Its live status and intended future use must be resolved during the SQL
-  audit before new invite behavior is built on it.
+- Coach invitations are not email-bound in V2; the single-use code is the
+  credential and should be sent only to the intended coach.
+- The `facility_invites` table powers secure coach onboarding only. Reusable
+  member signup links continue using the existing query-parameter flow.
 
 #### Facility Time And Date Rules
 

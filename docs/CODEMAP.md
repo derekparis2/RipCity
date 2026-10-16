@@ -21,8 +21,11 @@ Use this as the quick orientation guide before editing.
 
 ## Feature JavaScript
 
-- `js/auth/auth.js` controls signup, username/email login, pending logout, and post-login routing.
-- `js/coach/coach-approvals.js` lets coaches/admins approve or reject pending members.
+- `js/auth/auth.js` controls reusable member signup, single-use coach-invite
+  signup, username/email login, pending logout, and post-login routing.
+- `js/coach/coach-approvals.js` lets coaches/admins approve or reject ordinary
+  pending members. Facility admins can also create coach links and decide
+  pending coach requests.
 - `js/coach/coach-roster.js` manages facility members, group membership, member status, and H2K band color.
 - `js/coach/coach-dashboard.js` powers H2K score review and coach workout completion review.
 - `js/coach/workouts/` powers workout creation, assignment, recent workout reuse,

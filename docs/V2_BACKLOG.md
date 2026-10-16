@@ -84,14 +84,20 @@ into `v2-development`.
 
 ## 4. Facility Access And Account Lifecycle
 
-- **Status:** Planned
-- **Suggested branch:** `<name>/facility-access`
+- **Status:** In progress
+- **Branch:** `derek/facility-access`
 - **Plan detail:** [Roles and permissions](VERSION_2_PLAN.md#v2-roles-and-permissions-foundation) · [Lifecycle rules](VERSION_2_PLAN.md#lifecycle-rules) · [Platform done criteria](VERSION_2_PLAN.md#done-criteria)
 
 This package makes multi-facility access intentional. It includes the storable
 Derek-only platform-owner role, safe facility administration, an active-facility
 selector for legitimate multi-facility accounts, correct pending/rejected/
 inactive experiences, and deactivate/reactivate behavior that restores history.
+
+**Current slice:** Secure coach onboarding is implemented and passed all 12
+staging RLS checks on 2026-10-16: facility admins create seven-day, single-use
+coach links; claims create pending coach memberships; and only an admin in the
+invited facility can approve them. Reusable Athlete/H2K/general member links
+remain unchanged for group emails.
 
 **Complete when:** Every account operates only inside its selected authorized
 facility, inactive users receive the correct blocked experience, and reactivation

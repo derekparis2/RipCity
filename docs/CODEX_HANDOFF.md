@@ -90,9 +90,14 @@ build order:
 Current signup-link decision:
 
 - Preserve the V1 coach workflow that copies Athlete, H2K, or general signup links.
-- Links remain shareable, and every resulting signup still requires approval.
-- Do not assume the existing `facility_invites` table powers this UI; it does not
-  currently do so and must be resolved during the schema audit.
+- Those member links remain reusable for group emails, and every resulting
+  signup still requires approval.
+- Coach onboarding is separate: a facility admin creates a seven-day,
+  single-use link; claiming it creates pending coach access; and a facility
+  admin must approve it. `facility_invites` powers only this secure coach flow.
+- The coach-invite implementation is on `derek/facility-access`. Its migration
+  was applied to staging and all 12 coach-invite/RLS checks passed on
+  2026-10-16. Production remains unchanged.
 
 Production Supabase audit status:
 

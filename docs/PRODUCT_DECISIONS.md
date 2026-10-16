@@ -44,7 +44,13 @@ they are intentionally revisited.
 
 - Preserve the current coach workflow: copy an Athlete, H2K, or general signup
   link and send it to prospective members.
-- Links may be shared and do not need to be email-bound or single-use in V2.
+- Athlete, H2K, and general member links remain reusable and may be sent in a
+  group email.
+- Coach links are created only by facility admins, expire after seven days,
+  and are single-use. Claiming one creates a pending coach membership that an
+  admin in the invited facility must approve.
+- Coach links do not need to be email-bound in V2, but should be sent only to
+  the intended coach.
 - A signup link never bypasses pending approval.
 
 ## Facility Time
