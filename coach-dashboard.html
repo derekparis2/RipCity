@@ -9,10 +9,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/styles.css?v=coach-invites-1" />
+  <link rel="stylesheet" href="css/styles.css?v=coach-attention-2" />
 </head>
 
-<body class="auth-body">
+<body class="auth-body coach-dashboard-page">
   <main class="coach-page">
     <header class="h2k-header">
       <div class="auth-brand">
@@ -26,6 +26,7 @@
       <div class="h2k-header-actions">
         <a class="outline-link" href="coach-roster.html">Roster</a>
         <a class="outline-link" href="coach-workouts.html">Workout Builder</a>
+        <a class="outline-link" href="coach-leaderboards.html">Leaderboards</a>
         <a class="outline-link" href="coach-approvals.html">Approvals</a>
         <button class="outline-btn" id="coach-logout-btn">Log Out</button>
       </div>
@@ -73,93 +74,37 @@
 
     <section class="stats-grid">
       <article class="stat-card">
-        <span>H2K Members</span>
+        <span>Approved Members</span>
         <strong id="coach-total-members">0</strong>
+        <small>Athletes and H2K members</small>
+      </article>
+
+      <article class="stat-card">
+        <span>H2K Members</span>
+        <strong id="coach-total-h2k-members">0</strong>
         <small>Approved H2K members</small>
       </article>
 
       <article class="stat-card">
-        <span>Logged Today</span>
-        <strong id="coach-logged-today">0</strong>
-        <small>Members with at least 1 habit</small>
-      </article>
-
-      <article class="stat-card">
-        <span>Perfect Today</span>
-        <strong id="coach-perfect-today">0</strong>
-        <small>Completed all 6 habits</small>
+        <span>Athletes</span>
+        <strong id="coach-total-athletes">0</strong>
+        <small>Approved athletes</small>
       </article>
 
       <article class="stat-card">
         <span>Needs Attention</span>
         <strong id="coach-needs-attention">0</strong>
-        <small>No habits logged today</small>
+        <small>Habit or exercise follow-up</small>
       </article>
     </section>
 
-    <section class="dashboard-grid h2k-dashboard-grid">
-      <article class="panel coach-weekly-history-panel">
+    <section class="coach-attention-section">
+      <article class="panel coach-attention-panel">
         <div class="panel-heading">
           <div>
-            <p class="eyebrow">MEMBER PROGRESS</p>
-            <h3>Weekly Member History</h3>
-          </div>
-
-          <button class="outline-btn" id="refresh-coach-weekly-history-btn" type="button">Refresh</button>
-        </div>
-
-        <p id="coach-weekly-history-message" class="auth-message"></p>
-
-        <div class="coach-weekly-history-layout">
-          <div class="coach-member-search-panel">
-            <label for="coach-weekly-member-type-filter">Member Type</label>
-            <select id="coach-weekly-member-type-filter">
-              <option value="all">All members</option>
-              <option value="athlete">Athletes</option>
-              <option value="h2k">H2K members</option>
-            </select>
-
-            <label for="coach-weekly-member-search">Search Member</label>
-            <input
-              type="search"
-              id="coach-weekly-member-search"
-              placeholder="Type a member name..."
-              autocomplete="off"
-            />
-
-            <div id="coach-weekly-member-results" class="coach-weekly-member-results">
-              <div class="empty-state">Loading members...</div>
-            </div>
-          </div>
-
-          <div class="coach-member-score-history">
-            <div class="coach-weekly-selected-member" id="coach-weekly-selected-member">
-              Select a member to view weekly scores.
-            </div>
-
-            <div class="weekly-history-stepper" id="coach-weekly-history-stepper">
-              <button class="icon-btn" id="coach-weekly-prev-week" type="button" aria-label="Previous week">‹</button>
-              <div>
-                <span class="eyebrow" id="coach-weekly-week-context">CURRENT WEEK</span>
-                <strong id="coach-weekly-week-label">This Week</strong>
-              </div>
-              <button class="icon-btn" id="coach-weekly-next-week" type="button" aria-label="Next week">›</button>
-            </div>
-
-            <div id="coach-weekly-history-list" class="weekly-score-list">
-              <div class="empty-state">Select a member to view weekly scores.</div>
-            </div>
-          </div>
-        </div>
-      </article>
-    </section>
-
-    <section class="dashboard-grid member-dashboard-grid">
-      <article class="panel coach-members-panel">
-        <div class="panel-heading">
-          <div>
-            <p class="eyebrow">H2K ACCOUNTABILITY</p>
-            <h3>Member Habit Scores</h3>
+            <p class="eyebrow">COACH FOLLOW-UP</p>
+            <h3>Needs Attention</h3>
+            <p>Three missed habit days or two missed assigned-workout days.</p>
           </div>
 
           <button class="outline-btn" id="refresh-coach-dashboard-btn">Refresh</button>
@@ -167,33 +112,7 @@
 
         <p id="coach-dashboard-message" class="auth-message"></p>
 
-        <div id="coach-member-list" class="coach-member-list"></div>
-      </article>
-
-      <article class="panel">
-        <p class="eyebrow">BETA RUN LIST</p>
-        <h3>Coach Testing Checklist</h3>
-
-        <p>
-          Use this page during beta to spot who logged habits, review workout
-          completion, and decide who needs a follow-up.
-        </p>
-
-        <div class="note-item">
-          <strong>Before Members Test</strong>
-          <p>
-            Approve new accounts, confirm each member has the right program type,
-            add athletes to groups, and set H2K band colors when needed.
-          </p>
-        </div>
-
-        <div class="note-item">
-          <strong>Daily Coach Review</strong>
-          <p>
-            Check habit scores, open workout completion, and send feedback for
-            anything that feels confusing before more members are added.
-          </p>
-        </div>
+        <div id="coach-attention-list" class="coach-attention-list"></div>
       </article>
     </section>
 
@@ -281,6 +200,7 @@
   <script src="js/shared/ui-utils.js"></script>
   <script src="js/shared/access-control.js"></script>
   <script src="js/shared/workout-data.js"></script>
-  <script src="js/coach/coach-dashboard.js?v=unilateral-exercises-1"></script>
+  <script src="js/shared/attention-rules.js?v=coach-attention-1"></script>
+  <script src="js/coach/coach-dashboard.js?v=coach-attention-1"></script>
 </body>
 </html>

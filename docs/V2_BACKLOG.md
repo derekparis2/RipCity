@@ -92,10 +92,16 @@ This package makes multi-facility access intentional. It includes the storable
 Derek-only platform-owner role, safe facility administration, an active-facility
 selector for legitimate multi-facility accounts, correct pending/rejected/
 inactive experiences, and deactivate/reactivate behavior that restores history.
+It also adds the facility-admin-controlled coach onboarding path: the platform
+owner establishes the first facility admin; facility admins can invite/create
+or approve coaches for their own facility; ordinary coaches cannot approve or
+promote coach/admin memberships.
 
 **Complete when:** Every account operates only inside its selected authorized
 facility, inactive users receive the correct blocked experience, and reactivation
-restores the existing relationships.
+restores the existing relationships. A forwarded member or coach signup link
+cannot grant elevated access, and two-facility RLS tests prove only a facility
+admin can approve or change coach/admin roles in that facility.
 
 ---
 
@@ -142,19 +148,49 @@ as Package 10 rather than being incorrectly counted as implemented here.
 
 ---
 
-## 7. Leaderboards
+## 7. Coach Leaderboards And Personal Metrics
 
-- **Status:** Planned
-- **Suggested branch:** `<name>/leaderboards-v2`
+- **Status:** Complete
+- **Branch:** `derek/coach-leaderboards`
 - **Plan detail:** [Leaderboards](VERSION_2_PLAN.md#3-leaderboards)
 
-This package finalizes the first V2 metrics and builds the complete initial
-leaderboard experience: coach facility/group filters, separated H2K and athlete
-boards, member top five plus own rank, tied ranks, profile identity, approved
-time ranges, and facility-time-zone calculations.
+This package finalizes the first V2 metrics and coach leaderboard experience.
+The branch adds separate facility-scoped coach H2K and
+athlete boards, group filtering, search, tied competition ranks, rolling
+four-week metrics, selectable ranking metrics, and shared personal
+member-dashboard metrics. H2K streaks require at least four habits per day;
+athlete attendance counts only workouts
+actually assigned to that athlete. The package also simplifies the coach
+dashboard into a coach-approved needs-attention queue and moves 12-week history
+onto each member's detail page.
 
-**Complete when:** Coaches and members see only the approved metrics, people,
-member types, and time periods for their own facility.
+**Completed:** The coach boards, personal member metrics, attention queue,
+member-detail history, repeatable ten-member leaderboard fixture, and shared
+metric calculation layer are implemented. The leaderboard and attention-rule
+test suites pass, and the seeded ties, streaks, attendance, zero-score states,
+filters, and responsive preview were reviewed with fake staging data.
+
+Member-facing top-five leaderboard pages are intentionally separated into the
+next package so this completed branch can merge without depending on the member
+page split.
+
+---
+
+## 7B. Member-Facing Leaderboards
+
+- **Status:** Planned after the member page split
+- **Suggested branch:** `<name>/member-leaderboards`
+- **Plan detail:** [Leaderboards](VERSION_2_PLAN.md#3-leaderboards)
+
+This package adds the member leaderboard page using the shared calculations
+from Package 7. It shows only the member's relevant H2K or athlete board, the
+approved facility/group top five, tied competition ranks, profile identity,
+and the member's own rank or "No score yet" state. It must not expose the full
+coach list, the other member type, or unapproved metrics.
+
+**Complete when:** H2K and athlete members see only their approved top-five and
+own-rank views, calculations match the coach boards, both facilities remain
+isolated, and phone/desktop staging checks pass.
 
 ---
 
@@ -175,20 +211,26 @@ only their own dismissal and read state.
 
 ---
 
-## 9. Progress, Profiles, And Controlled Community
+## 9. Testing Days, Progress, Profiles, And Controlled Community
 
-- **Status:** Blocked on product decisions
+- **Status:** Blocked on Rip City product decisions
 - **Suggested branch:** `<name>/progress-community`
 - **Plan detail:** [Progress tracking](VERSION_2_PLAN.md#4-progress-tracking) · [Profile and community](VERSION_2_PLAN.md#6-profile-and-community)
 
 This package begins only after the remaining metric, write-permission, and
 privacy decisions are made. It combines the first useful progress experience
 with the profile surfaces that display approved goals, achievements, streaks,
-and controlled community information.
+and controlled community information. It also contains the proposed Testing
+Day workflow: coaches define a testing session and ordered tests, select a
+group/members, enter the roster's results efficiently, and connect approved
+results to member progress and the existing leaderboard metric selector. The
+Rip City coach discussion scheduled for 2026-10-18 determines whether the full
+Testing Day workflow is required in V2 or becomes a V3 feature built on a V2
+foundation.
 
-**Complete when:** The first approved shared progress metrics and private/public
-profile rules work consistently for both facilities without pulling V3 baseball
-features into V2.
+**Complete when:** The first approved shared progress metrics, testing-result
+rules, and private/public profile rules work consistently for both facilities
+without prematurely pulling unapproved V3 baseball features into V2.
 
 ---
 
@@ -202,13 +244,18 @@ This follow-up adds the database behavior that was designed but not implemented
 by the builder refactor: a true universal catalog with facility overrides and
 hides, safe editing/versioning for workouts with past or started assignments,
 archive behavior for historical workouts, and the approved workout-completion
-connection to H2K training habits. It must preserve production history and add
-two-facility write/isolation tests.
+connection to H2K training habits. It also finalizes multi-coach assignment
+behavior by displaying the assigning coach to members and coaches, preserving
+historical attribution, adding database-safe duplicate prevention, and testing
+two same-facility coaches plus a denied cross-facility coach. It must preserve
+production history and add two-facility write/isolation tests.
 
 **Complete when:** Universal exercise changes cannot leak between facilities,
 coaches can correct future workouts without changing past assignments or logs,
 historical workouts are archived instead of destructively deleted, and the
-approved workout-to-habit automation is verified in staging.
+approved workout-to-habit automation is verified in staging. Multiple facility
+coaches can safely assign workouts, every assignment shows who assigned it, and
+concurrent duplicate assignments are prevented.
 
 ---
 

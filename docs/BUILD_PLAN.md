@@ -141,6 +141,8 @@ Coach side:
   - Custom
 - Coach assigns workout to a date
 - Coach assigns workout to a group, individual member, or facility
+- Multiple coaches in the same facility can assign authorized workouts, and
+  member/coach views show which coach made each assignment
 
 Member side:
 - Member sees today’s scheduled workout
@@ -161,6 +163,19 @@ Future workout features:
 - Volume tracking
 - PR tracking
 - Coach completion dashboard
+
+Testing/progress direction:
+- Coach-created Testing Days with reusable or custom tests
+- Group/member participant selection
+- Roster-style result entry by coaches
+- Testing results connected to progress history and approved leaderboard metrics
+- Exact test, attempt, visibility, and ranking rules pending Rip City feedback
+
+Coach onboarding direction:
+- Platform owner creates the facility and first facility admin
+- Facility admins invite/create or approve additional coaches
+- Ordinary coaches cannot grant coach/admin access
+- Coach links or requests remain pending until facility-admin approval
 
 ---
 

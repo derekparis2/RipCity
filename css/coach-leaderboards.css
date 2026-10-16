@@ -1,0 +1,281 @@
+.coach-leaderboards-page {
+  min-height: 100vh;
+}
+
+.leaderboard-brand-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.leaderboard-hero,
+.leaderboard-shell {
+  border: 1px solid var(--border, #303038);
+  border-radius: 24px;
+  background: #151518;
+}
+
+.leaderboard-hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 22px;
+  padding: clamp(22px, 3vw, 38px);
+}
+
+.leaderboard-hero h2 {
+  margin: 6px 0;
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: clamp(2.2rem, 5vw, 4.4rem);
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+.leaderboard-hero p:last-child {
+  max-width: 720px;
+  margin: 0;
+  color: #aaaab2;
+}
+
+.leaderboard-shell {
+  overflow: hidden;
+}
+
+.leaderboard-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-bottom: 1px solid #303038;
+}
+
+.leaderboard-tab {
+  min-height: 64px;
+  border: 0;
+  background: transparent;
+  color: #9999a2;
+  font: 800 1.15rem "Inter", sans-serif;
+  cursor: pointer;
+}
+
+.leaderboard-tab + .leaderboard-tab {
+  border-left: 1px solid #303038;
+}
+
+.leaderboard-tab.active {
+  background: rgba(74, 164, 255, 0.1);
+  color: #fff;
+  box-shadow: inset 0 -4px #4aa4ff;
+}
+
+.leaderboard-toolbar {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.35fr) minmax(210px, 0.45fr) minmax(240px, 1fr);
+  gap: 16px;
+  padding: 22px clamp(18px, 3vw, 32px) 12px;
+}
+
+.leaderboard-toolbar label {
+  display: grid;
+  gap: 8px;
+  color: #a9a9b0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.leaderboard-toolbar select,
+.leaderboard-toolbar input {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid #383840;
+  border-radius: 12px;
+  background: #202024;
+  color: #fff;
+  padding: 0 14px;
+  font: 600 1rem "Inter", sans-serif;
+}
+
+.leaderboard-context {
+  padding: 0 clamp(18px, 3vw, 32px) 16px;
+  color: #a9a9b0;
+  font-size: 0.9rem;
+}
+
+#leaderboard-message {
+  margin: 0 clamp(18px, 3vw, 32px);
+}
+
+.leaderboard-list {
+  padding: 0 clamp(12px, 2.2vw, 26px) 28px;
+}
+
+.leaderboard-column-labels,
+.leaderboard-row {
+  display: grid;
+  grid-template-columns: 68px minmax(230px, 1.6fr) repeat(4, minmax(115px, 0.7fr));
+  gap: 14px;
+  align-items: center;
+}
+
+.leaderboard-column-labels {
+  min-width: 880px;
+  padding: 12px 16px;
+  color: #85858e;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.leaderboard-sort-button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-align: left;
+  text-transform: inherit;
+  cursor: pointer;
+}
+
+.leaderboard-sort-button:hover,
+.leaderboard-sort-button.active {
+  color: #7dbdff;
+}
+
+.leaderboard-row {
+  min-width: 880px;
+  margin-bottom: 10px;
+  padding: 15px 16px;
+  border: 1px solid #303038;
+  border-radius: 16px;
+  background: #1c1c20;
+}
+
+.leaderboard-row.is-top-three {
+  border-color: rgba(74, 164, 255, 0.55);
+  background: linear-gradient(90deg, rgba(74, 164, 255, 0.1), #1c1c20 40%);
+}
+
+.leaderboard-rank {
+  font: 800 1.8rem "Barlow Condensed", sans-serif;
+  text-align: center;
+}
+
+.leaderboard-member {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 12px;
+}
+
+.leaderboard-avatar {
+  display: grid;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid #404048;
+  border-radius: 50%;
+  background: #28282e;
+  font-weight: 800;
+}
+
+.leaderboard-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.leaderboard-member-copy {
+  min-width: 0;
+}
+
+.leaderboard-member-copy strong,
+.leaderboard-member-copy span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leaderboard-member-copy span {
+  margin-top: 3px;
+  color: #92929a;
+  font-size: 0.8rem;
+}
+
+.leaderboard-metric strong,
+.leaderboard-metric small {
+  display: block;
+}
+
+.leaderboard-metric strong {
+  font-size: 1.05rem;
+}
+
+.leaderboard-metric small {
+  margin-top: 4px;
+  color: #8e8e96;
+}
+
+.leaderboard-scroll {
+  overflow-x: auto;
+}
+
+@media (max-width: 760px) {
+  .leaderboard-header {
+    align-items: center;
+  }
+
+  .leaderboard-header .h2k-header-actions a:not(:first-child) {
+    display: none;
+  }
+
+  .leaderboard-header .auth-brand p {
+    display: none;
+  }
+
+  .leaderboard-hero {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .leaderboard-hero .outline-btn {
+    align-self: flex-start;
+  }
+
+  .leaderboard-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .leaderboard-column-labels,
+  .leaderboard-row {
+    min-width: 0;
+  }
+
+  .leaderboard-column-labels {
+    display: none;
+  }
+
+  .leaderboard-row {
+    grid-template-columns: 42px minmax(0, 1fr) minmax(92px, auto);
+    gap: 10px;
+  }
+
+  /* The dropdown controls the ranking on small screens, so show the selected
+     metric first and preserve enough room for the member's full name. */
+  .leaderboard-metric ~ .leaderboard-metric {
+    display: none;
+  }
+
+  .leaderboard-rank {
+    font-size: 1.45rem;
+  }
+
+  .leaderboard-avatar {
+    display: none;
+  }
+}

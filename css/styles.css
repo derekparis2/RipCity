@@ -1315,10 +1315,10 @@ td {
   }
 }
 
-/* Member dashboard gets its own stat density so H2K does not show three huge,
-   repetitive cards after the duplicate weekly progress card is hidden. */
+/* Member dashboard summaries stay in a balanced 4/2/2 grid across desktop,
+   tablet, and mobile so both member types use the same visual rhythm. */
 .member-stats-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .member-dashboard-body .stat-card {
@@ -1339,7 +1339,7 @@ td {
 
 @media (max-width: 700px) {
   .member-stats-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .member-dashboard-body .stat-card {
@@ -1551,6 +1551,10 @@ td {
   .member-dashboard-grid {
     margin-top: 22px;
   }
+
+  .coach-attention-section {
+    margin-top: 22px;
+  }
   
   .h2k-habit-list {
     display: grid;
@@ -1640,6 +1644,14 @@ td {
   }
 
   .coach-member-detail-summary + .member-goals-panel {
+    margin-bottom: 32px;
+  }
+
+  .coach-member-history-panel {
+    margin-top: 22px;
+  }
+
+  .coach-member-history-panel + .member-goals-panel {
     margin-bottom: 32px;
   }
 
@@ -2148,6 +2160,43 @@ td {
     gap: 14px;
     margin-top: 18px;
   }
+
+  .coach-attention-list {
+    display: grid;
+    gap: 12px;
+    margin-top: 18px;
+  }
+
+  .coach-attention-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    border: 1px solid rgba(255, 173, 74, 0.45);
+    border-radius: 14px;
+    background: rgba(255, 173, 74, 0.055);
+    padding: 16px;
+  }
+
+  .coach-attention-card .eyebrow {
+    color: #ffad4a;
+  }
+
+  .coach-attention-card h4 {
+    margin: 4px 0;
+    font-size: 18px;
+  }
+
+  .coach-attention-card p:not(.eyebrow) {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .coach-attention-clear {
+    border-color: rgba(126, 231, 135, 0.35);
+    background: rgba(126, 231, 135, 0.055);
+  }
   
   .coach-member-card {
     border: 1px solid var(--border);
@@ -2398,12 +2447,36 @@ td {
   }
   
   @media (max-width: 700px) {
+    .coach-dashboard-page .stats-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .coach-dashboard-page .stat-card {
+      min-height: 118px;
+      padding: 14px;
+    }
+
+    .coach-dashboard-page .stat-card strong {
+      margin: 8px 0;
+      font-size: 38px;
+    }
+
     .coach-score-grid {
       grid-template-columns: 1fr;
     }
 
     .coach-weekly-history-layout {
       grid-template-columns: 1fr;
+    }
+
+    .coach-attention-card {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    .coach-attention-card .outline-link {
+      text-align: center;
     }
   }
 
@@ -6677,11 +6750,6 @@ body {
   }
 
   .member-dashboard-body .stat-card:last-child {
-    grid-column: 1 / -1;
-    min-height: 82px;
-  }
-
-  .member-dashboard-body.member-type-athlete .stat-card:last-child {
     grid-column: auto;
     min-height: 96px;
   }
@@ -6693,8 +6761,13 @@ body {
 
   .member-dashboard-body .stat-card strong {
     margin: 6px 0;
-    font-size: 36px;
+    font-size: clamp(26px, 8vw, 36px);
     line-height: 0.95;
+    white-space: normal;
+  }
+
+  .member-dashboard-body #weekly-score-h2k {
+    font-size: 0.82em;
   }
 
   .member-dashboard-body.member-type-athlete #h2k-status {
