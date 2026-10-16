@@ -148,29 +148,49 @@ as Package 10 rather than being incorrectly counted as implemented here.
 
 ---
 
-## 7. Leaderboards
+## 7. Coach Leaderboards And Personal Metrics
 
-- **Status:** In progress
+- **Status:** Complete
 - **Branch:** `derek/coach-leaderboards`
 - **Plan detail:** [Leaderboards](VERSION_2_PLAN.md#3-leaderboards)
 
-This package finalizes the first V2 metrics and builds the initial leaderboard
-experience. The current branch adds separate facility-scoped coach H2K and
+This package finalizes the first V2 metrics and coach leaderboard experience.
+The branch adds separate facility-scoped coach H2K and
 athlete boards, group filtering, search, tied competition ranks, rolling
 four-week metrics, selectable ranking metrics, and shared personal
-member-dashboard metrics. H2K streaks
-require at least four habits per day; athlete attendance counts only workouts
+member-dashboard metrics. H2K streaks require at least four habits per day;
+athlete attendance counts only workouts
 actually assigned to that athlete. The package also simplifies the coach
 dashboard into a coach-approved needs-attention queue and moves 12-week history
 onto each member's detail page.
 
-Member-facing top-five leaderboard pages remain a follow-up after Sam's member
-page split is merged. The shared calculation layer created here must be reused
-there so member and coach numbers cannot drift.
+**Completed:** The coach boards, personal member metrics, attention queue,
+member-detail history, repeatable ten-member leaderboard fixture, and shared
+metric calculation layer are implemented. The leaderboard and attention-rule
+test suites pass, and the seeded ties, streaks, attendance, zero-score states,
+filters, and responsive preview were reviewed with fake staging data.
 
-**Complete when:** The coach boards and personal member metrics pass staging
-tests for both facilities, including ties, zero assignments, current-day streak
-behavior, group filters, and workout-completion calculations.
+Member-facing top-five leaderboard pages are intentionally separated into the
+next package so this completed branch can merge without depending on the member
+page split.
+
+---
+
+## 7B. Member-Facing Leaderboards
+
+- **Status:** Planned after the member page split
+- **Suggested branch:** `<name>/member-leaderboards`
+- **Plan detail:** [Leaderboards](VERSION_2_PLAN.md#3-leaderboards)
+
+This package adds the member leaderboard page using the shared calculations
+from Package 7. It shows only the member's relevant H2K or athlete board, the
+approved facility/group top five, tied competition ranks, profile identity,
+and the member's own rank or "No score yet" state. It must not expose the full
+coach list, the other member type, or unapproved metrics.
+
+**Complete when:** H2K and athlete members see only their approved top-five and
+own-rank views, calculations match the coach boards, both facilities remain
+isolated, and phone/desktop staging checks pass.
 
 ---
 

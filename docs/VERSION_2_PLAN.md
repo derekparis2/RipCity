@@ -513,6 +513,12 @@ platform into something negative or overly competitive.
 Start with top-5 member-visible leaderboards for safe metrics and a fuller
 coach leaderboard dashboard with filters.
 
+Implementation is split into two deliverables. The completed coach leaderboard
+branch owns the shared calculation layer, full coach boards, member personal
+metrics, attention rules, and member-detail history. A separate member-facing
+package will reuse that layer for the approved top-five and own-rank views after
+the member page split, preventing coach and member calculations from drifting.
+
 ---
 
 ## 4. Progress Tracking
