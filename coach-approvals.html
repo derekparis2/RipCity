@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=coach-invites-2" />
+  <link rel="stylesheet" href="css/styles.css?v=account-lifecycle-1" />
 </head>
 
 <body class="auth-body">
@@ -58,6 +58,18 @@
       <p id="coach-invite-message" class="auth-message" role="status" aria-live="polite"></p>
     </section>
 
+    <section class="panel hidden" id="coach-management-panel">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">ADMIN ONLY</p>
+          <h3>Coach Access</h3>
+          <p>Pause or restore a coach's access without deleting their account or history.</p>
+        </div>
+      </div>
+      <p id="coach-management-message" class="auth-message" role="status" aria-live="polite"></p>
+      <div id="coach-management-list" class="coach-management-list"></div>
+    </section>
+
     <section class="panel">
       <div class="panel-heading">
         <div>
@@ -78,6 +90,6 @@
   <script src="js/shared/supabaseClient.js"></script>
   <script src="js/shared/ui-utils.js"></script>
   <script src="js/shared/access-control.js"></script>
-  <script src="js/coach/coach-approvals.js?v=coach-invites-1"></script>
+  <script src="js/coach/coach-approvals.js?v=account-lifecycle-1"></script>
 </body>
 </html>

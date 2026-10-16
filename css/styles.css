@@ -1420,6 +1420,21 @@ td {
   color: var(--muted);
 }
 
+#coach-management-panel .panel-heading p:not(.eyebrow) {
+  margin: 8px 0 0;
+  color: var(--muted);
+}
+
+.coach-management-list {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.coach-management-card.is-inactive {
+  opacity: 0.78;
+}
+
 .pending-user-meta {
   display: flex;
   flex-wrap: wrap;

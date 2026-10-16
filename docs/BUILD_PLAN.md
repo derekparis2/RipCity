@@ -42,6 +42,8 @@ If a feature is only for Rip City baseball, build it as an optional program-spec
 - Login flow
 - Coach approval before access
 - Coach/admin approval page
+- Distinct pending, rejected, inactive, and unconnected account states
+- Facility-admin coach invite, approval, deactivation, and reactivation
 - Coach dashboard
 - Member dashboard
 - Editable profile page

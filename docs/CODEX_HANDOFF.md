@@ -63,13 +63,16 @@ The real product should become a customizable coaching/member platform for many 
 
 Core direction:
 
-- Multi-facility platform first.
+- Facility-isolated platform foundation first.
 - Rip City configuration second.
 - H2K habits are an optional/member-type-specific module, not the whole app.
 - Facility data must stay isolated.
 - Derek/global admin can see/manage all facilities unless a future support mode is intentionally added.
 - Facility coaches/admins should only manage their own facility.
 - Members should only see their own facility experience.
+- V2 uses one active facility membership per account. Platform-owner storage,
+  supported multi-facility accounts, facility switching, and cross-facility
+  support mode are V3 scope.
 
 ## Current V2 Priorities
 
@@ -82,7 +85,8 @@ build order:
 2. Audit the live production schema read-only against every SQL file and app query.
 3. Create staging Supabase and a reproducible rebuild/release-safety workflow.
 4. Verify two-facility isolation using entirely fake staging data.
-5. Complete platform/multi-facility config and codebase cleanup audits.
+5. Complete V2 single-facility config and codebase cleanup audits; preserve the
+   second staging facility for isolation testing.
 6. Finish beta feedback polish that affects daily use.
 7. Continue with goals, coach member detail, leaderboards, progress, notes, and
    profile/community work in the order defined by `docs/VERSION_2_PLAN.md`.
@@ -99,6 +103,11 @@ Current signup-link decision:
   was applied to staging and all 12 coach-invite/RLS checks passed on
   2026-10-16. The staging browser flow also passed that day. Production remains
   unchanged.
+- The same branch adds status-specific blocked-account messaging and admin-only
+  coach deactivation/reactivation. These updates reuse existing membership rows
+  so account, member-profile, group, and historical relationships remain intact.
+  All 20 account-lifecycle staging checks passed on 2026-10-16 and restored the
+  temporarily changed fake-account statuses.
 
 Production Supabase audit status:
 
@@ -156,8 +165,8 @@ Current status:
   ten facility memberships, correct pending/inactive cases, and one coach with
   approved memberships in both facilities.
 - Manual role smoke tests passed, followed by all 45 automated read-only RLS
-  checks. Confirmed UI gaps are hardcoded Rip City branding, a shared
-  pending/inactive message, and no multi-facility selector.
+  checks. The shared pending/inactive message is being replaced by distinct
+  lifecycle states on `derek/facility-access`; facility selection is V3 scope.
 - The unilateral-exercise migration was applied to staging on 2026-09-14. It
   adds non-null `is_unilateral` flags to exercise templates and workout
   exercise snapshots; production remains unchanged.

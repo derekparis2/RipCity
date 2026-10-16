@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pending Approval</title>
+  <title>Account Access</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -21,8 +21,8 @@
       </div>
 
       <div class="auth-heading">
-        <p class="eyebrow">ACCOUNT CREATED</p>
-        <h2>Pending Coach Approval</h2>
+        <p class="eyebrow" id="account-status-eyebrow">CHECKING ACCESS</p>
+        <h2 id="account-status-title">Account Status</h2>
         <p id="pending-description">Your account was created successfully. A facility coach or administrator needs to approve your account before you can access the app.</p>
       </div>
 
@@ -32,6 +32,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/shared/supabaseClient.js"></script>
-  <script src="js/auth/auth.js?v=coach-invites-1"></script>
+  <script src="js/auth/auth.js?v=account-lifecycle-1"></script>
 </body>
 </html>

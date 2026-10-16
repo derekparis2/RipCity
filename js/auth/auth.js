@@ -117,9 +117,9 @@ async function getCurrentUserProfile(userId) {
 
 async function redirectByProfile(userId) {
   const profile = await getCurrentUserProfile(userId);
-  const membership =
-    profile.facility_members?.[0] ||
-    profile["facility_members!facility_members_profile_id_fkey"]?.[0];
+  const memberships = profile.facility_members ||
+    profile["facility_members!facility_members_profile_id_fkey"] || [];
+  const membership = memberships.find(row => row.status === "approved") || memberships[0];
 
   if (!membership || membership.status !== "approved") {
     window.location.href = "pending.html";
@@ -589,19 +589,57 @@ async function setupPendingPage() {
 
   try {
     const { data } = await db.auth.getSession();
-    if (!data.session?.user) return;
+    if (!data.session?.user) {
+      window.location.href = "login.html";
+      return;
+    }
 
     const profile = await getCurrentUserProfile(data.session.user.id);
     const memberships = profile.facility_members ||
       profile["facility_members!facility_members_profile_id_fkey"] || [];
-    const pendingCoach = memberships.find(row => row.role === "coach" && row.status === "pending");
+    const membership = memberships.find(row => row.status === "approved") || memberships[0] || null;
 
-    if (pendingCoach) {
-      document.getElementById("pending-description").textContent =
-        "Your coach account was created successfully. A facility administrator must approve it before you can access coaching tools.";
+    if (membership?.status === "approved") {
+      await redirectByProfile(profile.id);
+      return;
     }
+
+    const statusContent = {
+      pending: {
+        eyebrow: "AWAITING APPROVAL",
+        title: membership?.role === "coach" ? "Coach Approval Pending" : "Account Approval Pending",
+        description: membership?.role === "coach"
+          ? "Your coach account was created successfully. A facility administrator must approve it before you can access coaching tools."
+          : "Your account was created successfully. A facility coach or administrator must approve it before you can access the app."
+      },
+      rejected: {
+        eyebrow: "ACCESS NOT APPROVED",
+        title: "Account Not Approved",
+        description: "This account was not approved for facility access. Contact a facility administrator if you believe this should be reviewed."
+      },
+      inactive: {
+        eyebrow: "ACCESS PAUSED",
+        title: "Account Inactive",
+        description: "Your facility access has been paused. Your account history is still saved. Contact a facility administrator to request reactivation."
+      },
+      none: {
+        eyebrow: "NO FACILITY ACCESS",
+        title: "Account Not Connected",
+        description: "This account is not connected to a facility. Contact a facility administrator for help."
+      }
+    };
+    const content = statusContent[membership?.status] || statusContent.none;
+
+    document.title = content.title;
+    document.getElementById("account-status-eyebrow").textContent = content.eyebrow;
+    document.getElementById("account-status-title").textContent = content.title;
+    document.getElementById("pending-description").textContent = content.description;
   } catch (error) {
     console.error(error);
+    document.getElementById("account-status-eyebrow").textContent = "ACCESS ERROR";
+    document.getElementById("account-status-title").textContent = "Could Not Check Access";
+    document.getElementById("pending-description").textContent =
+      "We could not confirm your account status. Log out and try again, or contact a facility administrator.";
   }
 }
 

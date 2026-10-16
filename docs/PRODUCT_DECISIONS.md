@@ -5,9 +5,11 @@ they are intentionally revisited.
 
 ## Version Scope
 
-- V2 stabilizes the shared multi-facility platform and finalizes the core
-  workout creation, editing, assignment, logging, and history experience.
+- V2 stabilizes the facility-isolated platform foundation and finalizes the
+  core workout creation, editing, assignment, logging, and history experience.
 - V3 is the planned deeper baseball-development expansion.
+- V3 also adds the global platform-owner workflow, multi-facility account
+  selection, and supported cross-facility administration.
 - Baseball metrics, throwing and arm-care programs, player cards, evaluations,
   recruiting, and related sport-specific workflows should wait for V3 unless
   Derek and Sam intentionally change the roadmap.
@@ -20,21 +22,22 @@ they are intentionally revisited.
 - Each facility should feel separate, but the app should remain one shared
   multi-facility platform.
 
-## Platform Owner
+## Platform Owner And Multi-Facility Accounts
 
 - Platform owner access is intended for Derek and future trusted operators only.
 - Platform owner should manage facility/admin/config data by default.
 - Cross-facility member data access should require an explicit support mode later,
   not happen as an accidental universal bypass.
-- Only Derek/platform owner can create facilities in V2.
+- The storable platform-owner role, facility creation UI, support mode, and
+  active-facility selector are deferred to V3.
+- In V2, each account operates through one active facility membership. The
+  second staging facility and cross-facility coach exist only to test isolation.
 
 ## Facility Memberships And Roles
 
-- Ordinary members should belong to one facility.
-- Derek and coaches/admins who legitimately work with multiple facilities may
-  have multiple facility memberships.
-- Roles are facility-specific: a person may be an admin in one facility and a
-  coach in another.
+- V2 supports one active facility membership per account in the product UI.
+- Legitimate multi-facility memberships and facility-specific role switching
+  are V3 workflows.
 - Facility admins can perform coaching work and broadly manage their facility.
 - New signups remain pending until a facility coach/admin approves them.
 - Deactivation preserves history; reactivation restores the existing historical
@@ -98,7 +101,8 @@ they are intentionally revisited.
 
 - Coaches see one combined exercise library, not separate universal and
   facility lists.
-- Derek/platform owner manages universal exercises.
+- Derek manages universal exercises through the approved manual V2 process;
+  platform-owner UI is V3 scope.
 - Coaches may create exercises visible only to their own facility.
 - Editing a universal exercise automatically creates a facility override and
   leaves the universal exercise unchanged for other facilities.

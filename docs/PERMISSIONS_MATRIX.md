@@ -8,6 +8,11 @@ where the verified staging baseline does not enforce that behavior yet.
 
 ## Access Scope
 
+V2 presents one active facility membership per account. Platform-owner access,
+cross-facility support mode, multiple active memberships, and facility switching
+are V3 scope. The platform-owner column below remains the long-term permission
+direction and must not be treated as implemented V2 access.
+
 - **Platform owner:** Derek-only global role. Manages facilities and universal
   configuration. Cross-facility private member-data access is not automatic;
   that requires a future explicit support mode.
@@ -20,9 +25,9 @@ where the verified staging baseline does not enforce that behavior yet.
 - **Parent:** No V2 application access until parent visibility and RLS are
   intentionally implemented.
 
-A person may have different roles in different facilities. Every permission is
-evaluated against the selected facility membership, not a role from another
-facility.
+Within V2, every permission is evaluated against the account's single active
+facility membership. V3 may allow a person to hold different roles in different
+facilities through an explicit facility-selection workflow.
 
 ## Membership Status
 
@@ -80,8 +85,8 @@ Every facility-scoped module must be tested with two facilities and at least:
 - One coach in each facility.
 - One athlete and one H2K member where applicable.
 - One pending and one inactive membership.
-- One coach with approved memberships in both facilities.
-- Derek's future platform-owner account.
+- One cross-facility coach fixture for isolation regression testing, even though
+  the V2 UI does not support switching facilities.
 
 For each create/read/update/delete action, verify both the allowed request and a
 same-role request targeting the other facility. A failed UI control is not
@@ -92,18 +97,12 @@ enough; the direct Supabase request must also be denied by RLS.
 These are implementation gaps, not undecided product rules:
 
 1. `profiles.global_role` currently allows only `member`, `coach`, and `admin`.
-   The planned `platform_owner` value requires a new migration.
-2. The browser access helper checks for `platform_owner`, but that state cannot
-   be stored under the current constraint and has no complete RLS design yet.
-3. The browser currently selects the first approved facility membership. V2
-   needs an explicit facility-selection/session-context flow for legitimate
-   multi-facility accounts.
-4. Current goals RLS allows coaches/admins to write goals, while V2 also allows
-   members to create and manage their own goals. Sam's Goals migration must
-   close this gap and test creator-specific update/delete rules.
-5. Several archive lifecycle fields and workflows do not exist yet.
-6. Announcements and per-user notifications do not have their V2 tables yet.
-7. Progress write permissions remain intentionally undecided.
+   The `platform_owner` value and its complete RLS design are deferred to V3.
+2. The browser selects the first approved facility membership. This is accepted
+   for V2's one-active-facility account model; explicit selection is V3 scope.
+3. Several archive lifecycle fields and workflows do not exist yet.
+4. Announcements and per-user notifications do not have their V2 tables yet.
+5. Progress write permissions remain intentionally undecided.
 
 The secure coach-invite migration was applied to staging and passed all 12
 coach-invite/RLS checks on 2026-10-16. Production remains unchanged.

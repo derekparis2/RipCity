@@ -96,6 +96,11 @@ After a PR merge deploys to the stable staging URL:
   loads without a Netlify access screen.
 - Log in and log out with an approved fake account.
 - Confirm a pending and an inactive fake account remain blocked.
+- Confirm pending, rejected, inactive, and unconnected accounts show the correct
+  status-specific explanation rather than a generic approval message.
+- As a facility admin, deactivate a fake coach and confirm coaching access is
+  blocked; reactivate that coach and confirm the same account regains access.
+- Confirm an ordinary coach cannot see or use the coach-access controls.
 - Confirm Rip City and Test Facility Alpha users cannot see each other's member
   data.
 - Test the feature's primary successful workflow and saved state after refresh.

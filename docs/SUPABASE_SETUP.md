@@ -93,8 +93,9 @@ After the baseline passes verification:
    already-verified baseline without review.
 
 The archived `sql/archive/proposals/platform_owner_role_v1.sql` is not part of
-the current-production baseline. It remains a historical proposal until the
-platform-owner RLS and support-mode design is rebuilt as a new migration.
+the current-production baseline. It remains a historical proposal. The
+platform-owner role, facility switching, and support-mode RLS design are V3
+scope and require a new reviewed migration rather than reuse of that proposal.
 
 ## Existing Live Database Audit
 
@@ -166,8 +167,8 @@ After any RLS or signup change:
    workouts, and logs they are authorized for.
 4. Confirm athletes do not see H2K-only modules.
 5. Confirm coaches/admins can manage only their facility.
-6. Confirm platform-owner access is not acting as an accidental cross-facility
-   data bypass.
+6. Confirm no current role has an accidental cross-facility data bypass. The
+   future platform-owner/support-mode design is V3 scope.
 7. Confirm parents have no app data access unless a secure parent policy is
    intentionally introduced.
 

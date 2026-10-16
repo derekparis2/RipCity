@@ -56,3 +56,20 @@ cannot approve the request.
 
 Status: all 12 coach-invite and approval checks passed against Rip City Staging
 on 2026-10-16.
+
+## Account Lifecycle Checks
+
+Run the staging-only lifecycle test with:
+
+```bash
+node supabase/tests/staging_account_lifecycle_checks.mjs
+```
+
+The test temporarily rejects the pending Rip City fixture, reactivates the
+inactive Rip City member, and deactivates/reactivates the Alpha coach. It
+verifies the correct RLS access at each status and proves that reactivation
+uses the same membership, member profile, and group relationships. A `finally`
+cleanup restores every fixture to its original status even if a check fails.
+
+Status: all 20 account-lifecycle checks passed against Rip City Staging on
+2026-10-16, and all temporary fixture-status changes were restored.

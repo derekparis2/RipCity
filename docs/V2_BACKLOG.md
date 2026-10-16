@@ -84,14 +84,14 @@ into `v2-development`.
 
 ## 4. Facility Access And Account Lifecycle
 
-- **Status:** In progress
+- **Status:** Complete on branch; pending review and merge
 - **Branch:** `derek/facility-access`
 - **Plan detail:** [Roles and permissions](VERSION_2_PLAN.md#v2-roles-and-permissions-foundation) · [Lifecycle rules](VERSION_2_PLAN.md#lifecycle-rules) · [Platform done criteria](VERSION_2_PLAN.md#done-criteria)
 
-This package makes multi-facility access intentional. It includes the storable
-Derek-only platform-owner role, safe facility administration, an active-facility
-selector for legitimate multi-facility accounts, correct pending/rejected/
-inactive experiences, and deactivate/reactivate behavior that restores history.
+This package finishes the V2 single-facility account lifecycle. It includes
+secure coach onboarding, correct pending/rejected/inactive experiences, and
+safe deactivate/reactivate behavior that preserves each account's existing
+membership and historical relationships.
 
 **Current slice:** Secure coach onboarding is implemented and passed all 12
 staging RLS checks on 2026-10-16: facility admins create seven-day, single-use
@@ -100,29 +100,45 @@ invited facility can approve them. Reusable Athlete/H2K/general member links
 remain unchanged for group emails. The complete staging browser flow was also
 verified on 2026-10-16.
 
-**Still required for Package 4:** Add the storable Derek-only platform-owner
-role, let legitimate multi-facility accounts select their active facility, and
-show distinct pending, rejected, and inactive account experiences. The roster
-already deactivates/reactivates the same membership row, which preserves its
-historical relationships.
+**Current lifecycle slice:** The blocked-account page now distinguishes pending,
+rejected, inactive, and unconnected accounts. Facility admins can deactivate or
+reactivate coaches from the approval page; ordinary coaches cannot change coach
+access. Member and coach reactivation update the existing membership row rather
+than creating a replacement.
 
-**Complete when:** Every account operates only inside its selected authorized
-facility, inactive users receive the correct blocked experience, and reactivation
-restores the existing relationships.
+All 20 account-lifecycle staging checks passed on 2026-10-16. They verified
+pending/rejected/inactive blocking, admin-only coach lifecycle management, and
+same-row restoration of member profiles, group relationships, and facility
+access. Every temporarily changed fake-account status was restored afterward.
+
+**Explicit V3 deferral:** Platform-owner storage/RLS, cross-facility support
+mode, multiple active facility memberships, and an active-facility selector are
+not part of V2. The second staging facility and cross-facility coach remain test
+fixtures for tenant-isolation checks, not supported V2 UI workflows.
+
+**Complete when:** Pending, rejected, and inactive accounts receive the correct
+blocked experience; only facility admins can deactivate/reactivate coaches;
+ordinary member lifecycle rules remain enforced; reactivation restores access
+through the same membership and relationships; and the lifecycle staging checks
+pass. These conditions are complete on `derek/facility-access`; merge the
+reviewed branch into `v2-development` to complete the package in the shared V2
+line.
 
 ---
 
-## 5. Facility Configuration And Multi-Facility UI
+## 5. Facility Configuration And Module Visibility
 
 - **Status:** Planned
 - **Suggested branch:** `<name>/facility-configuration`
 - **Plan detail:** [Facility and module configuration](VERSION_2_PLAN.md#v2-modifications-needed) · [Facility time and date rules](VERSION_2_PLAN.md#facility-time-and-date-rules) · [Branding and UI](VERSION_2_PLAN.md#brandingui)
 
-This package turns the visible app into a real configurable platform. It
+This package makes the visible V2 app configurable for its one active facility
+per account. It
 includes facility display name, branding, terminology, enabled modules, member
 types, authoritative time zone, facility-local date helpers, and removal of
 hardcoded Rip City/H2K assumptions. It also includes the cleaner H2K date-picker
-behavior because that depends on facility-local dates.
+behavior because that depends on facility-local dates. Multi-facility account
+selection and global platform-owner UI are deferred to V3.
 
 **Complete when:** Rip City and Test Facility Alpha show their own correct
 configuration, modules, and dates without leaking branding or facility-specific
@@ -264,13 +280,13 @@ rollback steps are documented and rehearsed.
 
 - Hardcoded Rip City branding → Package 5.
 - Pending message shown to inactive accounts → Package 4.
-- No multi-facility selector → Package 4.
-- `platform_owner` cannot currently be stored → Package 4.
+- Multi-facility selector and storable `platform_owner` role → V3.
 - Goals RLS does not support member-created goals → Package 3.
 - Facility modules, terminology, and time zones are not data-driven → Package 5.
 - Universal exercise overrides/hides are not implemented → Package 10.
 - Workout archive/version rules remain incomplete → Package 10.
-- Group archive/delete rules remain incomplete → Package 4.
+- Group archive/delete rules remain incomplete → Package 5 or final release
+  scope review.
 - Announcements and per-user notifications have no V2 tables → Package 8.
 - Current automated staging checks are read-only → each schema-changing package
   adds its own allowed and denied create/update/delete tests.
