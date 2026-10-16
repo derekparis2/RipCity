@@ -97,7 +97,8 @@ Current signup-link decision:
   admin must approve it. `facility_invites` powers only this secure coach flow.
 - The coach-invite implementation is on `derek/facility-access`. Its migration
   was applied to staging and all 12 coach-invite/RLS checks passed on
-  2026-10-16. Production remains unchanged.
+  2026-10-16. The staging browser flow also passed that day. Production remains
+  unchanged.
 
 Production Supabase audit status:
 

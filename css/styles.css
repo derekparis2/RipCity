@@ -1467,13 +1467,6 @@ td {
   text-align: center;
 }
 
-.approval-actions-bottom {
-  margin-top: 18px;
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-}
-
 .outline-link {
   display: inline-flex;
   align-items: center;
@@ -1491,9 +1484,7 @@ td {
 }
 
 .h2k-header-actions .outline-link,
-.h2k-header-actions .outline-btn,
-.approval-actions-bottom .outline-link,
-.approval-actions-bottom .outline-btn {
+.h2k-header-actions .outline-btn {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.035));
   border-color: rgba(255, 255, 255, 0.32);
@@ -1503,9 +1494,7 @@ td {
 }
 
 .h2k-header-actions .outline-link:hover,
-.h2k-header-actions .outline-btn:hover,
-.approval-actions-bottom .outline-link:hover,
-.approval-actions-bottom .outline-btn:hover {
+.h2k-header-actions .outline-btn:hover {
   background: var(--text);
   border-color: var(--text);
   color: var(--bg);
@@ -1525,9 +1514,6 @@ td {
     flex-direction: column;
   }
 
-  .approval-actions-bottom {
-    flex-direction: column;
-  }
 }
 .nav-link-anchor {
   display: block;
@@ -6058,7 +6044,6 @@ body {
 
 .h2k-header-actions,
 .pending-user-actions,
-.approval-actions-bottom,
 .topbar-actions,
 .session-header-actions {
   flex-wrap: wrap;
@@ -6241,7 +6226,6 @@ body {
 
   .h2k-header-actions,
   .pending-user-actions,
-  .approval-actions-bottom,
   .topbar-actions,
   .session-header-actions {
     width: 100%;
@@ -6251,7 +6235,6 @@ body {
 
   .h2k-header-actions > *,
   .pending-user-actions > *,
-  .approval-actions-bottom > *,
   .topbar-actions > *,
   .session-header-actions > * {
     width: 100%;

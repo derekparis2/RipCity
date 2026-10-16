@@ -97,7 +97,14 @@ inactive experiences, and deactivate/reactivate behavior that restores history.
 staging RLS checks on 2026-10-16: facility admins create seven-day, single-use
 coach links; claims create pending coach memberships; and only an admin in the
 invited facility can approve them. Reusable Athlete/H2K/general member links
-remain unchanged for group emails.
+remain unchanged for group emails. The complete staging browser flow was also
+verified on 2026-10-16.
+
+**Still required for Package 4:** Add the storable Derek-only platform-owner
+role, let legitimate multi-facility accounts select their active facility, and
+show distinct pending, rejected, and inactive account experiences. The roster
+already deactivates/reactivates the same membership row, which preserves its
+historical relationships.
 
 **Complete when:** Every account operates only inside its selected authorized
 facility, inactive users receive the correct blocked experience, and reactivation
