@@ -6,7 +6,7 @@
   <title>Member Goals</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=member-page-split-1" />
+  <link rel="stylesheet" href="css/styles.css?v=member-goals-mobile-1" />
 </head>
 <body class="auth-body member-dashboard-body member-feature-page member-goals-page" data-member-page="goals">
   <aside class="sidebar member-sidebar">
@@ -20,18 +20,26 @@
     <section class="hero-card h2k-hero member-feature-hero"><div><p class="eyebrow">YOUR NEXT TARGET</p><h3>Set the goal, then keep proving the progress.</h3><p>You can manage your own goals here. Coach-created goals remain visible but stay coach-owned.</p></div></section>
     <section class="member-goals-layout">
       <aside class="panel member-goal-create-panel">
-        <div class="panel-heading"><div><p class="eyebrow">CREATE OR EDIT</p><h3>Your Goal</h3><p class="muted-small">Use values when a goal has something measurable to track.</p></div></div>
-        <form class="member-goal-form" id="member-goal-form">
-          <input id="member-goal-id" type="hidden" />
-          <label class="member-goal-name-field">Goal name<input id="member-goal-name" type="text" maxlength="160" required /></label>
-          <label>Timeline<select id="member-goal-timeline"><option value="short_term">Short term</option><option value="medium_term">Medium term</option><option value="long_term">Long term</option><option value="ongoing">Ongoing</option></select></label>
-          <label>Current value<input id="member-goal-current-value" type="number" step="any" /></label>
-          <label>Target value<input id="member-goal-target-value" type="number" step="any" /></label>
-          <label>Unit<input id="member-goal-unit" type="text" maxlength="40" placeholder="lbs, days, reps" /></label>
-          <label>Due date<input id="member-goal-due-date" type="date" /></label>
-          <label class="member-goal-description-field">Description<textarea id="member-goal-description" rows="3" maxlength="1000"></textarea></label>
-          <div class="member-goal-form-actions"><button class="primary-btn" id="member-goal-submit" type="submit">Add Goal</button><button class="outline-btn hidden" id="member-goal-cancel" type="button">Cancel</button></div>
-        </form>
+        <details class="member-goal-editor" id="member-goal-editor">
+          <summary class="member-goal-editor-summary">
+            <span><span class="eyebrow">CREATE OR EDIT</span><strong>Add a Goal</strong></span>
+            <span class="member-goal-editor-action" aria-hidden="true"></span>
+          </summary>
+          <div class="member-goal-editor-body">
+            <p class="muted-small">Use values when a goal has something measurable to track.</p>
+            <form class="member-goal-form" id="member-goal-form">
+              <input id="member-goal-id" type="hidden" />
+              <label class="member-goal-name-field">Goal name<input id="member-goal-name" type="text" maxlength="160" required /></label>
+              <label>Timeline<select id="member-goal-timeline"><option value="short_term">Short term</option><option value="medium_term">Medium term</option><option value="long_term">Long term</option><option value="ongoing">Ongoing</option></select></label>
+              <label>Current value<input id="member-goal-current-value" type="number" step="any" /></label>
+              <label>Target value<input id="member-goal-target-value" type="number" step="any" /></label>
+              <label>Unit<input id="member-goal-unit" type="text" maxlength="40" placeholder="lbs, days, reps" /></label>
+              <label>Due date<input id="member-goal-due-date" type="date" /></label>
+              <label class="member-goal-description-field">Description<textarea id="member-goal-description" rows="3" maxlength="1000"></textarea></label>
+              <div class="member-goal-form-actions"><button class="primary-btn" id="member-goal-submit" type="submit">Add Goal</button><button class="outline-btn hidden" id="member-goal-cancel" type="button">Cancel</button></div>
+            </form>
+          </div>
+        </details>
       </aside>
       <section class="panel member-goals-panel" id="member-goals-section">
         <div class="panel-heading"><div><p class="eyebrow">IN PROGRESS</p><h3>Active Goals</h3><p class="muted-small">Add check-ins to turn each goal into a visible progress story.</p></div></div>
@@ -43,6 +51,6 @@
   </main>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/shared/supabaseClient.js"></script><script src="js/shared/ui-utils.js"></script><script src="js/shared/access-control.js"></script><script src="js/shared/workout-data.js"></script><script src="js/shared/leaderboard-metrics.js?v=coach-leaderboards-2"></script>
-  <script src="js/member/member-nav.js?v=member-page-split-1"></script><script src="js/member/member-dashboard.js?v=member-page-split-1"></script>
+  <script src="js/member/member-nav.js?v=member-page-split-1"></script><script src="js/member/member-dashboard.js?v=member-goals-mobile-1"></script>
 </body>
 </html>
