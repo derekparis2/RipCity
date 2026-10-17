@@ -79,6 +79,14 @@ baseline. Run it in filename order for a fresh rebuild and verify it with
 accounts have been installed. It was applied to Rip City Staging and all 12
 checks passed on 2026-10-16.
 
+The follow-up migration
+`20261016200000_harden_secure_coach_invites.sql` must run immediately after it.
+It generates invite secrets and seven-day expiration timestamps on the server,
+prevents consumed invites from being reopened, and supports retrying an
+interrupted account with a fresh link. It was applied to staging on 2026-10-16,
+and the expanded 14-check coach-invite suite passed. Production remains
+unchanged.
+
 Production currently contains 93 exercise templates. Git history confirms the
 starter seed has always contained 87, so six production templates were added
 outside the repository seed. They are production data, not silently invented

@@ -37,11 +37,16 @@ Staging migration status:
 - `20261016120000_add_secure_coach_invites.sql` was applied to staging and all
   12 coach-invite/RLS checks passed on 2026-10-16. The applied migration is now
   immutable; any correction must use a new timestamped migration.
+- `20261016200000_harden_secure_coach_invites.sql` was applied to staging on
+  2026-10-16. It moves invite generation and expiration to database server
+  time, makes a consumed invite irreversible, and keeps interrupted account
+  creation recoverable with a fresh link. The expanded 14-check coach-invite
+  suite passed after it was applied.
 - The staging browser flow was also verified on 2026-10-16: an admin created a
   coach link, the invitee reached pending access, reuse was blocked, and admin
   approval granted the expected coach experience.
-- Production has not received the coach-invite migration. It must receive the
-  reviewed migration before the eventual V2 frontend release.
+- Production has not received either coach-invite migration. Both must be
+  applied in timestamp order before the eventual V2 frontend release.
 
 - `20260914140000_add_unilateral_exercise_flags.sql` was applied and verified
   on 2026-09-14. Both `exercise_templates.is_unilateral` and

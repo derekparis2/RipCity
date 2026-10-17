@@ -66,17 +66,9 @@ const ripCity = facilities.find(facility => facility.slug === "rip-city");
 const alpha = facilities.find(facility => facility.slug === "test-facility-alpha");
 assert(ripCity && alpha, "both staging facilities are available");
 
-const deniedCode = `coach-test-denied-${randomUUID()}`;
-const deniedCreate = await request("facility_invites?select=id", ripCoach.token, {
+const deniedCreate = await request("rpc/create_coach_invite", ripCoach.token, {
   method: "POST",
-  body: JSON.stringify({
-    facility_id: ripCity.id,
-    created_by: ripCoach.userId,
-    invite_code: deniedCode,
-    default_role: "coach",
-    active: true,
-    expires_at: new Date(Date.now() + 60_000).toISOString()
-  })
+  body: JSON.stringify({ invite_facility_id: ripCity.id })
 });
 assert(!deniedCreate.response.ok, "ordinary coach cannot create a coach invite");
 
@@ -93,27 +85,27 @@ const overlongInvite = await request("facility_invites?select=id", alphaAdmin.to
 });
 assert(!overlongInvite.response.ok, "database rejects coach invites lasting longer than seven days");
 
-const inviteCode = `coach-test-${randomUUID()}`;
+let inviteCode;
 let inviteId;
 let membershipId;
 
 try {
-  const createdInvite = await request("facility_invites?select=id,invite_code", alphaAdmin.token, {
+  const createdInvite = await request("rpc/create_coach_invite", alphaAdmin.token, {
     method: "POST",
-    body: JSON.stringify({
-      facility_id: alpha.id,
-      created_by: alphaAdmin.userId,
-      invite_code: inviteCode,
-      default_role: "coach",
-      active: true,
-      expires_at: new Date(Date.now() + (7 * 24 * 60 * 60 * 1000)).toISOString()
-    })
+    body: JSON.stringify({ invite_facility_id: alpha.id })
   });
   if (!createdInvite.response.ok) {
     throw new Error(`admin invite creation failed (${createdInvite.response.status}): ${JSON.stringify(createdInvite.body)}`);
   }
-  inviteId = createdInvite.body[0]?.id;
-  assert(Boolean(inviteId), "facility admin can create a coach invite");
+  inviteId = createdInvite.body[0]?.invite_id;
+  inviteCode = createdInvite.body[0]?.invite_code;
+  const inviteLifetime = new Date(createdInvite.body[0]?.expires_at).getTime()
+    - new Date(createdInvite.body[0]?.created_at).getTime();
+  assert(Boolean(inviteId && inviteCode), "facility admin can create a coach invite");
+  assert(
+    inviteLifetime === 7 * 24 * 60 * 60 * 1000,
+    "database generates the coach invite expiration from server time"
+  );
 
   const lookup = await request("rpc/lookup_coach_invite", undefined, {
     method: "POST",
@@ -156,6 +148,12 @@ try {
     body: JSON.stringify({ claim_invite_code: inviteCode })
   });
   assert(!secondClaim.response.ok, "coach invite cannot be claimed a second time");
+
+  const reopenClaimedInvite = await request(`facility_invites?id=eq.${inviteId}`, alphaAdmin.token, {
+    method: "PATCH",
+    body: JSON.stringify({ active: true, claimed_by: null, claimed_at: null })
+  });
+  assert(!reopenClaimedInvite.response.ok, "claimed coach invite cannot be reopened by an admin");
 
   const coachApproval = await request(`facility_members?id=eq.${membershipId}`, alphaCoach.token, {
     method: "PATCH",

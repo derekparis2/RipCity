@@ -7,6 +7,9 @@ staging application.
 - `20261016120000_add_secure_coach_invites.sql` adds seven-day, single-use
   coach invitations, atomic pending-membership claims, and admin-only invite
   management. It does not change reusable member signup links.
+- `20261016200000_harden_secure_coach_invites.sql` moves coach-invite secret and
+  expiration generation to the database, makes claimed invites irreversible,
+  and permits membership-free interrupted signups to retry with a fresh link.
 - Future changes must use a later UTC timestamp and a descriptive name, such as
   `20260817090000_add_facility_timezone.sql`.
 

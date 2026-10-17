@@ -156,6 +156,10 @@ function normalizeUsername(value) {
   return value.trim().replace(/^@/, "").toLowerCase();
 }
 
+function normalizeEmail(value) {
+  return value.trim().toLowerCase();
+}
+
 function isEmailIdentifier(value) {
   return value.includes("@");
 }
@@ -175,6 +179,80 @@ async function resolveLoginEmail(identifier) {
   if (!data) throw new Error("No account found for that username.");
 
   return data;
+}
+
+async function getSignupUser({ email, password, fullName, allowExistingAccount }) {
+  if (allowExistingAccount) {
+    const { data: sessionData, error: sessionError } = await db.auth.getSession();
+    if (sessionError) throw sessionError;
+
+    const sessionUser = sessionData.session?.user;
+    if (sessionUser) {
+      if (normalizeEmail(sessionUser.email || "") !== normalizeEmail(email)) {
+        throw new Error("Log out of the current account before using this coach invite.");
+      }
+      return sessionUser;
+    }
+  }
+
+  const { data: authData, error: authError } = await db.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        full_name: fullName
+      }
+    }
+  });
+
+  if (authError) throw authError;
+  if (authData.session?.user) return authData.session.user;
+
+  // Supabase intentionally returns no session when signUp is called for an
+  // existing account. A coach whose first invite claim was interrupted can
+  // prove ownership with the same password and resume using a fresh link.
+  if (allowExistingAccount) {
+    const { data: loginData, error: loginError } = await db.auth.signInWithPassword({
+      email,
+      password
+    });
+
+    if (!loginError && loginData.user) return loginData.user;
+  }
+
+  return null;
+}
+
+async function ensureSignupProfile({ user, email, fullName, username }) {
+  const { data: existingProfile, error: existingProfileError } = await db
+    .from("profiles")
+    .select("id, email, username")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (existingProfileError) throw existingProfileError;
+
+  if (existingProfile) {
+    if (
+      normalizeEmail(existingProfile.email || "") !== normalizeEmail(email)
+      || normalizeUsername(existingProfile.username || "") !== username
+    ) {
+      throw new Error("Use the email and username already saved for this account.");
+    }
+    return;
+  }
+
+  const { error: profileError } = await db
+    .from("profiles")
+    .insert({
+      id: user.id,
+      email,
+      full_name: fullName,
+      username,
+      global_role: "member"
+    });
+
+  if (profileError) throw profileError;
 }
 
 async function handleSignup(event) {
@@ -198,6 +276,7 @@ async function handleSignup(event) {
   const school = document.getElementById("signup-school").value.trim();
   const graduationYear = document.getElementById("signup-grad-year").value;
   const bodyWeight = document.getElementById("signup-body-weight").value;
+  let coachProfileReady = false;
 
   try {
     if (password !== confirmPassword) {
@@ -215,7 +294,10 @@ async function handleSignup(event) {
       throw error;
     });
 
-    if (existingUsernameEmail) {
+    if (
+      existingUsernameEmail
+      && (!isCoachSignup || normalizeEmail(existingUsernameEmail) !== normalizeEmail(email))
+    ) {
       showMessage("signup-message", "That username is already taken.", true);
       return;
     }
@@ -230,19 +312,12 @@ async function handleSignup(event) {
       return;
     }
 
-    const { data: authData, error: authError } = await db.auth.signUp({
+    const user = await getSignupUser({
       email,
       password,
-      options: {
-        data: {
-          full_name: fullName
-        }
-      }
+      fullName,
+      allowExistingAccount: isCoachSignup
     });
-
-    if (authError) throw authError;
-
-    const user = authData.user;
 
     if (!user) {
       showMessage(
@@ -253,17 +328,8 @@ async function handleSignup(event) {
       return;
     }
 
-    const { error: profileError } = await db
-      .from("profiles")
-      .insert({
-        id: user.id,
-        email,
-        full_name: fullName,
-        username,
-        global_role: "member"
-      });
-
-    if (profileError) throw profileError;
+    await ensureSignupProfile({ user, email, fullName, username });
+    coachProfileReady = isCoachSignup;
 
     if (isCoachSignup) {
       const { data: claimedInvite, error: claimError } = await db.rpc("claim_coach_invite", {
@@ -328,6 +394,14 @@ async function handleSignup(event) {
     window.location.href = "pending.html";
   } catch (error) {
     console.error(error);
+    if (isCoachSignup && coachProfileReady) {
+      showMessage(
+        "signup-message",
+        "Your account was saved, but this coach link could not be claimed. Ask the facility administrator for a new link, then use this same email, username, and password.",
+        true
+      );
+      return;
+    }
     showMessage("signup-message", error.message || "Something went wrong while creating your account.", true);
   }
 }

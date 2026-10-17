@@ -104,6 +104,10 @@ Current signup-link decision:
   was applied to staging and all 12 coach-invite/RLS checks passed on
   2026-10-16. The staging browser flow also passed that day. Production remains
   unchanged.
+- Copilot review produced a follow-up hardening migration,
+  `20261016200000_harden_secure_coach_invites.sql`. It was applied to staging
+  on 2026-10-16, and the expanded 14-check coach-invite suite passed. The
+  updated UI uses its server-side invite RPC. Production remains unchanged.
 - The same branch adds status-specific blocked-account messaging and admin-only
   coach deactivation/reactivation. These updates reuse existing membership rows
   so account, member-profile, group, and historical relationships remain intact.

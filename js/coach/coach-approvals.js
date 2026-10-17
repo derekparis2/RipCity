@@ -307,14 +307,6 @@ async function updateApprovalStatus(facilityMemberId, status, role) {
   }
 }
 
-function createCoachInviteCode() {
-  if (!window.crypto?.randomUUID) {
-    throw new Error("This browser cannot create a secure coach invite. Try an updated browser.");
-  }
-
-  return `${window.crypto.randomUUID()}${window.crypto.randomUUID()}`.replaceAll("-", "");
-}
-
 function buildCoachInviteUrl(inviteCode) {
   const url = new URL("signup.html", window.location.href);
   url.searchParams.set("coach_invite", inviteCode);
@@ -352,26 +344,14 @@ async function createCoachInvite() {
   showCoachInviteMessage("Creating a secure coach link...");
 
   try {
-    const inviteCode = createCoachInviteCode();
-    const expiresAt = new Date(Date.now() + (7 * 24 * 60 * 60 * 1000)).toISOString();
-    const { data, error } = await db
-      .from("facility_invites")
-      .insert({
-        facility_id: access.membership.facility_id,
-        created_by: access.profile.id,
-        invite_code: inviteCode,
-        default_role: "coach",
-        default_member_type: null,
-        default_group_id: null,
-        active: true,
-        expires_at: expiresAt
-      })
-      .select("invite_code")
-      .single();
+    const { data, error } = await db.rpc("create_coach_invite", {
+      invite_facility_id: access.membership.facility_id
+    });
 
     if (error) throw error;
+    if (!data?.length) throw new Error("The coach invite could not be created.");
 
-    const inviteUrl = buildCoachInviteUrl(data.invite_code);
+    const inviteUrl = buildCoachInviteUrl(data[0].invite_code);
 
     try {
       await copyCoachInviteText(inviteUrl);
