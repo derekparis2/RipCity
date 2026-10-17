@@ -408,6 +408,10 @@ Coach side:
   progress, and notes.
 - Coaches can create, edit, pause, or complete goals for that selected member.
 - Coaches can delete goals after confirming.
+- Keep coach goal cards collapsed by default, with active goals shown first and
+  paused and completed goals grouped into their own collapsed sections.
+- Keep the coach goal-assignment form collapsible so member history and existing
+  goals remain easy to scan.
 
 ### Open Questions
 
@@ -952,6 +956,9 @@ native app.
 V2 direction:
 
 - Keep the bottom mobile nav.
+- Keep Dashboard in the central mobile-nav position and place Training directly
+  to its left. H2K keeps its additional Habits destination without changing
+  this relationship.
 - Use dedicated Dashboard, Training, Habits, History, Goals, and Profile views.
 - Keep the dashboard focused on personal metrics, feedback, and concise links
   into those feature pages instead of rendering every workflow at once.

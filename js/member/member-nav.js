@@ -52,6 +52,7 @@
         <a
           class="nav-link nav-link-anchor ${item.key === activePage ? "active" : ""} ${item.h2kOnly ? "hidden" : ""}"
           href="${item.href}"
+          data-member-nav-key="${item.key}"
           ${item.h2kOnly ? 'data-member-habits-link="true"' : ""}
           ${item.key === activePage ? 'aria-current="page"' : ""}
         >

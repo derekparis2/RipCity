@@ -719,6 +719,12 @@ function updateMemberShell() {
 
   setMemberTypeText(memberType);
   setMemberText("member-sidebar-name", profile?.full_name || "Member");
+  setMemberText(
+    "member-history-link-detail",
+    currentMemberProfile?.member_type === "h2k"
+      ? "Review weekly training and H2K results."
+      : "Review your weekly workout completion."
+  );
 
   const avatar = document.getElementById("member-avatar");
   if (avatar && profile?.profile_picture_url) {

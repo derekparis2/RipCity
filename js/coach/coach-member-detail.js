@@ -79,8 +79,8 @@ function renderDetailGoals() {
   const list = document.getElementById("coach-goal-list");
   if (!list) return;
 
-  const assignedGoals = detailGoals.filter(goal => goal.status !== "completed" && goal.source === "coach");
-  const createdGoals = detailGoals.filter(goal => goal.status !== "completed" && goal.source === "member");
+  const activeGoals = detailGoals.filter(goal => goal.status === "active");
+  const pausedGoals = detailGoals.filter(goal => goal.status === "paused");
   const completedGoals = detailGoals.filter(goal => goal.status === "completed");
   const renderGoal = goal => {
     const progress = getGoalProgress(goal);
@@ -93,18 +93,27 @@ function renderDetailGoals() {
 
     return `
     <article class="member-goal-card ${goal.status === "paused" ? "is-paused" : ""}">
-      <div class="member-goal-card-main">
-        <div class="member-goal-card-heading">
-          <h4>${window.RipCityUI.text(goal.name)}</h4>
-          <span class="status-pill">${window.RipCityUI.text(goal.source === "member" ? "Member goal" : "Coach goal")}</span>
-        </div>
-        ${goal.description ? `<p>${window.RipCityUI.text(goal.description)}</p>` : ""}
-        <div class="member-goal-meta">
-          <span>${window.RipCityUI.text(formatGoalTimeline(goal.timeline))}</span>
-          <span>${window.RipCityUI.text(valueSummary)}</span>
-          <span>${window.RipCityUI.text(goalDateText)}</span>
-        </div>
-        <div class="coach-goal-progress" aria-label="Goal progress: ${progress.label}">
+      <details class="member-goal-disclosure" data-coach-goal-disclosure>
+        <summary class="member-goal-summary">
+          <div class="member-goal-summary-copy">
+            <div class="member-goal-card-heading">
+              <h4>${window.RipCityUI.text(goal.name)}</h4>
+              <div class="member-goal-summary-badges">
+                <span class="status-pill">${window.RipCityUI.text(goal.source === "member" ? "Member goal" : "Coach goal")}</span>
+                <span class="status-pill goal-status-pill is-${window.RipCityUI.attr(goal.status)}">${window.RipCityUI.text(goal.status[0].toUpperCase() + goal.status.slice(1))}</span>
+              </div>
+            </div>
+            <div class="member-goal-meta">
+              <span>${window.RipCityUI.text(valueSummary)}</span>
+              <span>${window.RipCityUI.text(formatGoalTimeline(goal.timeline))}</span>
+              <span>${window.RipCityUI.text(goalDateText)}</span>
+            </div>
+          </div>
+          <span class="member-goal-summary-action" aria-hidden="true"></span>
+        </summary>
+        <div class="member-goal-expanded">
+          ${goal.description ? `<p>${window.RipCityUI.text(goal.description)}</p>` : ""}
+          <div class="coach-goal-progress" aria-label="Goal progress: ${progress.label}">
             <div class="coach-goal-progress-heading"><span>Progress</span><strong class="status-${progress.tone}">${progress.label}</strong></div>
             <div class="progress-bar"><div class="status-${progress.tone}" style="width: ${progress.percent ?? 0}%"></div></div>
             ${progress.targetValue === null ? "" : `<div class="coach-goal-progress-scale">
@@ -112,26 +121,30 @@ function renderDetailGoals() {
               <span>${progress.currentLabel} ${displayValue(progress.currentValue)}${goal.unit ? ` ${window.RipCityUI.text(goal.unit)}` : ""}</span>
               <span>Target ${progress.targetValue}${goal.unit ? ` ${window.RipCityUI.text(goal.unit)}` : ""}</span>
             </div>`}
+          </div>
+          <div class="member-goal-actions">
+            <label>Status
+              <select data-coach-goal-status="${window.RipCityUI.attr(goal.id)}">
+                ${["active", "paused", "completed"].map(status => `<option value="${status}" ${goal.status === status ? "selected" : ""}>${status[0].toUpperCase() + status.slice(1)}</option>`).join("")}
+              </select>
+            </label>
+            <button class="outline-btn" type="button" data-edit-coach-goal="${window.RipCityUI.attr(goal.id)}">Edit</button>
+            <button class="outline-btn danger-outline-btn" type="button" data-delete-coach-goal="${window.RipCityUI.attr(goal.id)}">Delete</button>
+          </div>
         </div>
-      </div>
-      <div class="member-goal-actions">
-        <label>Status
-          <select data-coach-goal-status="${window.RipCityUI.attr(goal.id)}">
-            ${["active", "paused", "completed"].map(status => `<option value="${status}" ${goal.status === status ? "selected" : ""}>${status[0].toUpperCase() + status.slice(1)}</option>`).join("")}
-          </select>
-        </label>
-        <button class="outline-btn" type="button" data-edit-coach-goal="${window.RipCityUI.attr(goal.id)}">Edit</button>
-        <button class="outline-btn danger-outline-btn" type="button" data-delete-coach-goal="${window.RipCityUI.attr(goal.id)}">Delete</button>
-      </div>
+      </details>
     </article>`;
   };
 
-  const renderSection = (title, goals) => goals.length
-    ? `<section class="coach-goal-section"><h3>${title}</h3><div class="member-goal-list">${goals.map(renderGoal).join("")}</div></section>`
+  const renderActiveSection = goals => goals.length
+    ? `<section class="coach-goal-section"><div class="coach-goal-section-heading"><h3>Active goals</h3><span>${goals.length}</span></div><div class="member-goal-list">${goals.map(renderGoal).join("")}</div></section>`
+    : "";
+  const renderCollapsedSection = (title, goals) => goals.length
+    ? `<details class="member-goal-achievements coach-goal-section"><summary>${title}<span>${goals.length}</span></summary><div class="member-goal-list">${goals.map(renderGoal).join("")}</div></details>`
     : "";
 
-  list.innerHTML = assignedGoals.length || createdGoals.length || completedGoals.length
-    ? `${renderSection("Assigned goals", assignedGoals)}${renderSection("Created goals", createdGoals)}${renderSection("Completed goals", completedGoals)}`
+  list.innerHTML = activeGoals.length || pausedGoals.length || completedGoals.length
+    ? `${renderActiveSection(activeGoals)}${renderCollapsedSection("Paused goals", pausedGoals)}${renderCollapsedSection("Completed goals", completedGoals)}`
     : `<div class="empty-state">No goals assigned yet.</div>`;
 
   document.querySelectorAll("[data-coach-goal-status]").forEach(select => {
@@ -160,6 +173,8 @@ function resetCoachGoalForm() {
   document.getElementById("coach-goal-id").value = "";
   document.getElementById("coach-goal-submit").textContent = "Assign Goal";
   document.getElementById("coach-goal-cancel").classList.add("hidden");
+  const editor = document.getElementById("coach-goal-editor");
+  if (editor) editor.open = !window.matchMedia("(max-width: 700px)").matches;
 }
 
 function startCoachGoalEdit(goalId) {
@@ -176,6 +191,7 @@ function startCoachGoalEdit(goalId) {
   document.getElementById("coach-goal-description").value = goal.description || "";
   document.getElementById("coach-goal-submit").textContent = "Save Goal";
   document.getElementById("coach-goal-cancel").classList.remove("hidden");
+  document.getElementById("coach-goal-editor").open = true;
   document.getElementById("coach-goal-name").focus();
 }
 
@@ -318,5 +334,6 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("coach-member-detail-logout").addEventListener("click", async () => { await db.auth.signOut(); window.location.href = "login.html"; });
   document.getElementById("coach-goal-form").addEventListener("submit", saveCoachGoal);
   document.getElementById("coach-goal-cancel").addEventListener("click", resetCoachGoalForm);
+  resetCoachGoalForm();
   init();
 });
