@@ -347,16 +347,23 @@ function renderGoalChart(goal) {
 
 function renderMemberGoals() {
   const activeList = document.getElementById("member-active-goal-list");
+  const pausedList = document.getElementById("member-paused-goal-list");
   const completedList = document.getElementById("member-completed-goal-list");
+  const pausedCount = document.getElementById("member-paused-goal-count");
   const completedCount = document.getElementById("member-completed-goal-count");
-  if (!activeList || !completedList || !completedCount) return;
+  if (!activeList || !pausedList || !completedList || !pausedCount || !completedCount) return;
 
-  const activeGoals = memberGoals.filter(goal => goal.status !== "completed");
+  const activeGoals = memberGoals.filter(goal => goal.status === "active");
+  const pausedGoals = memberGoals.filter(goal => goal.status === "paused");
   const completedGoals = memberGoals.filter(goal => goal.status === "completed");
+  pausedCount.textContent = pausedGoals.length;
   completedCount.textContent = completedGoals.length;
   activeList.innerHTML = activeGoals.length
     ? activeGoals.map(renderMemberGoalCard).join("")
     : `<div class="empty-state">No active goals yet. Add one above to get started.</div>`;
+  pausedList.innerHTML = pausedGoals.length
+    ? pausedGoals.map(renderMemberGoalCard).join("")
+    : `<div class="empty-state">Paused goals will appear here.</div>`;
   completedList.innerHTML = completedGoals.length
     ? completedGoals.map(renderMemberGoalCard).join("")
     : `<div class="empty-state">Completed goals will appear here.</div>`;
@@ -400,6 +407,9 @@ function renderMemberGoalCard(goal) {
   const checkins = goalCheckinsByGoalId[goal.id] || [];
   const valueText = window.RipCityGoalProgress.formatGoalValueSummary(goal, checkins);
   const isCompleted = goal.status === "completed";
+  const goalDateText = isCompleted && goal.completed_at
+    ? `Completed ${formatGoalTimestamp(goal.completed_at)}`
+    : formatGoalDate(goal.due_date);
 
   return `
     <article class="member-goal-card ${goal.status === "paused" ? "is-paused" : ""}">
@@ -408,12 +418,15 @@ function renderMemberGoalCard(goal) {
           <div class="member-goal-summary-copy">
             <div class="member-goal-card-heading">
               <h4>${window.RipCityUI.text(goal.name)}</h4>
-              <span class="status-pill">${window.RipCityUI.text(goal.source === "coach" ? "Coach goal" : "Your goal")}</span>
+              <div class="member-goal-summary-badges">
+                <span class="status-pill">${window.RipCityUI.text(goal.source === "coach" ? "Coach goal" : "Your goal")}</span>
+                <span class="status-pill goal-status-pill is-${window.RipCityUI.attr(goal.status)}">${window.RipCityUI.text(goal.status[0].toUpperCase() + goal.status.slice(1))}</span>
+              </div>
             </div>
             <div class="member-goal-meta">
               <span>${window.RipCityUI.text(valueText)}</span>
               <span>${window.RipCityUI.text(formatGoalTimeline(goal.timeline))}</span>
-              <span>${window.RipCityUI.text(formatGoalDate(goal.due_date))}</span>
+              <span>${window.RipCityUI.text(goalDateText)}</span>
             </div>
           </div>
           <span class="member-goal-summary-action" aria-hidden="true"></span>
@@ -461,6 +474,16 @@ function renderMemberGoalCard(goal) {
       </details>
     </article>
   `;
+}
+
+function formatGoalTimestamp(timestamp) {
+  if (!timestamp) return "Unknown date";
+
+  return new Date(timestamp).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric"
+  });
 }
 
 function resetMemberGoalForm() {
@@ -732,8 +755,8 @@ function setupFeedbackLink() {
   const link = document.getElementById("member-feedback-link");
   if (!link) return;
 
-  // The live Google Form URL is configured in js/shared/ui-utils.js so every member
-  // surface can use the same feedback destination.
+  // The temporary dashboard feedback link shares its Google Form destination
+  // with the coach dashboard through js/shared/ui-utils.js.
   const url = window.RipCityUI.feedbackFormUrl;
 
   if (!url) {

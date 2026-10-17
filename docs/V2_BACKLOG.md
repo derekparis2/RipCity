@@ -199,7 +199,7 @@ page split.
 
 ## 7A. Member Page Split And Goals Polish
 
-- **Status:** In progress
+- **Status:** Complete
 - **Branch:** `derek/member-page-split`
 - **Plan detail:** [Goals](VERSION_2_PLAN.md#2-goals) · [Member mobile dashboard](VERSION_2_PLAN.md#member-mobile-dashboard)
 
@@ -209,16 +209,20 @@ It keeps H2K-only navigation hidden from athletes, uses one consistent member
 navigation map, preserves the existing facility-scoped feature behavior, and
 gives the Goals workflow a clearer create/edit and active-progress layout.
 
-**Complete when:** Every member tab opens its own page, all existing training,
-habit, history, goal, and profile actions still work for the correct member
-type, the member navigation stays complete across dashboard/profile/workout
-views, and phone/desktop pull-request preview checks pass.
+**Completed:** Every member tab now opens its own focused page, H2K-only habits
+remain hidden from athletes, and the shared navigation stays consistent across
+dashboard, profile, and workout views. The Goals page includes collapsed goal
+cards, a separate collapsed paused section, completed-goal history with recorded
+completion dates, clearer start/current/finish values, and a compact create/edit
+flow. The temporary Google feedback form is limited to compact member and coach
+dashboard panels. Existing member actions and responsive phone/desktop behavior
+were verified on the pull-request preview.
 
 ---
 
 ## 7B. Member-Facing Leaderboards
 
-- **Status:** Planned after the member page split
+- **Status:** Planned
 - **Suggested branch:** `<name>/member-leaderboards`
 - **Plan detail:** [Leaderboards](VERSION_2_PLAN.md#3-leaderboards)
 

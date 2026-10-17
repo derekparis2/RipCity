@@ -87,6 +87,9 @@ function renderDetailGoals() {
     const checkins = detailCheckinsByGoalId[goal.id] || [];
     const valueSummary = window.RipCityGoalProgress.formatGoalValueSummary(goal, checkins);
     const displayValue = value => value === null ? "—" : value;
+    const goalDateText = goal.status === "completed" && goal.completed_at
+      ? `Completed ${formatGoalTimestamp(goal.completed_at)}`
+      : formatGoalDate(goal.due_date);
 
     return `
     <article class="member-goal-card ${goal.status === "paused" ? "is-paused" : ""}">
@@ -99,7 +102,7 @@ function renderDetailGoals() {
         <div class="member-goal-meta">
           <span>${window.RipCityUI.text(formatGoalTimeline(goal.timeline))}</span>
           <span>${window.RipCityUI.text(valueSummary)}</span>
-          <span>${window.RipCityUI.text(formatGoalDate(goal.due_date))}</span>
+          <span>${window.RipCityUI.text(goalDateText)}</span>
         </div>
         <div class="coach-goal-progress" aria-label="Goal progress: ${progress.label}">
             <div class="coach-goal-progress-heading"><span>Progress</span><strong class="status-${progress.tone}">${progress.label}</strong></div>
@@ -139,6 +142,16 @@ function renderDetailGoals() {
   });
   document.querySelectorAll("[data-delete-coach-goal]").forEach(button => {
     button.addEventListener("click", () => deleteCoachGoal(button.dataset.deleteCoachGoal));
+  });
+}
+
+function formatGoalTimestamp(timestamp) {
+  if (!timestamp) return "Unknown date";
+
+  return new Date(timestamp).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric"
   });
 }
 

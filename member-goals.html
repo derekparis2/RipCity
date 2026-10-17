@@ -6,7 +6,7 @@
   <title>Member Goals</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=member-goals-mobile-1" />
+  <link rel="stylesheet" href="css/styles.css?v=member-goals-sections-1" />
 </head>
 <body class="auth-body member-dashboard-body member-feature-page member-goals-page" data-member-page="goals">
   <aside class="sidebar member-sidebar">
@@ -45,12 +45,16 @@
         <div class="panel-heading"><div><p class="eyebrow">IN PROGRESS</p><h3>Active Goals</h3><p class="muted-small">Add check-ins to turn each goal into a visible progress story.</p></div></div>
         <p class="auth-message" id="member-goals-message" aria-live="polite"></p>
         <div class="member-goal-list" id="member-active-goal-list"><div class="empty-state">Loading goals...</div></div>
+        <details class="member-goal-achievements member-goal-paused" id="member-paused-goals">
+          <summary>Paused goals <span id="member-paused-goal-count">0</span></summary>
+          <div class="member-goal-list" id="member-paused-goal-list"></div>
+        </details>
         <details class="member-goal-achievements" id="member-completed-goals"><summary>Completed achievements <span id="member-completed-goal-count">0</span></summary><div class="member-goal-list" id="member-completed-goal-list"></div></details>
       </section>
     </section>
   </main>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/shared/supabaseClient.js"></script><script src="js/shared/ui-utils.js"></script><script src="js/shared/access-control.js"></script><script src="js/shared/workout-data.js"></script><script src="js/shared/leaderboard-metrics.js?v=coach-leaderboards-2"></script><script src="js/shared/goal-progress.js?v=goal-values-1"></script>
-  <script src="js/member/member-nav.js?v=member-page-split-1"></script><script src="js/member/member-dashboard.js?v=goal-values-1"></script>
+  <script src="js/member/member-nav.js?v=member-page-split-1"></script><script src="js/member/member-dashboard.js?v=member-goals-sections-1"></script>
 </body>
 </html>

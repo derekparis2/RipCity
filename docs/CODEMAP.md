@@ -22,7 +22,8 @@ Use this as the quick orientation guide before editing.
 
 - `js/shared/supabaseClient.js` creates the Supabase browser client.
 - `js/shared/access-control.js` centralizes auth, approval, role, and facility membership checks.
-- `js/shared/ui-utils.js` contains display safety helpers, shared formatting helpers, and the beta feedback link config.
+- `js/shared/ui-utils.js` contains display safety helpers, shared formatting
+  helpers, and the temporary member/coach dashboard feedback-link config.
 - `js/shared/workout-data.js` contains shared workout assignment visibility, date handling, block sorting, and set-log summary helpers.
 - `js/shared/leaderboard-metrics.js` contains the shared H2K score, workout
   attendance, rolling-average, streak, and competition-ranking rules used by

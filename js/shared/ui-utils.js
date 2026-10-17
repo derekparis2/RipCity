@@ -5,7 +5,7 @@
 // putting them into template strings so stored content cannot become HTML.
 
 (function () {
-  // Shared beta feedback form shown on member and coach surfaces.
+  // Shared beta feedback form shown only on the member and coach dashboards.
   const FEEDBACK_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdNy5HIv7SIW89IPFP_ZGjaWwXQZMUTiGGIikLXXy0PmhGbVQ/viewform?usp=header";
 
   function escapeHtml(value) {

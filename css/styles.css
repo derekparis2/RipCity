@@ -192,6 +192,27 @@
   align-items: flex-start;
 }
 
+.member-goal-summary-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.goal-status-pill.is-active {
+  border-color: rgba(126, 231, 135, 0.5);
+  color: var(--success);
+}
+
+.goal-status-pill.is-paused {
+  border-color: rgba(247, 201, 72, 0.5);
+  color: var(--warning);
+}
+
+.goal-status-pill.is-completed {
+  border-color: rgba(157, 204, 255, 0.5);
+  color: #9dccff;
+}
+
 .member-goal-summary .member-goal-card-heading h4 {
   min-width: 0;
   font-size: 20px;
@@ -1327,6 +1348,15 @@ td {
   cursor: not-allowed;
   opacity: 0.55;
   pointer-events: none;
+}
+
+.dashboard-feedback-panel {
+  min-height: 0;
+  padding: 16px 18px;
+}
+
+.dashboard-feedback-panel p:not(.eyebrow) {
+  display: none;
 }
 
 .coach-signup-link-panel {

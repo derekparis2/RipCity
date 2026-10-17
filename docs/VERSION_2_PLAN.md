@@ -392,8 +392,13 @@ Member side:
 - Members can update status on coach-created goals.
 - Members can mark goals active, completed, or paused.
 - Show active goals first.
+- Show paused goals in their own collapsed section instead of mixing them into
+  the active list.
 - Show completed goals as collapsed achievements/history so the page does not
   become long or bulky.
+- Keep goal status visible on collapsed summaries, and show the recorded
+  completion date for completed goals instead of treating the old due date as
+  upcoming.
 
 Coach side:
 
