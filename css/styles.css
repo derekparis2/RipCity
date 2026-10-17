@@ -2,6 +2,159 @@
   box-sizing: border-box;
 }
 
+/* =====================================================
+   MEMBER FEATURE PAGES
+   Dedicated pages keep the dashboard concise while sharing one responsive
+   member shell and the existing feature behavior.
+   ===================================================== */
+
+.member-page-links {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.member-page-link-card {
+  display: grid;
+  gap: 8px;
+  min-height: 150px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface-1);
+  color: var(--text);
+  padding: 22px;
+  text-decoration: none;
+  transition: border-color 160ms ease, transform 160ms ease, background 160ms ease;
+}
+
+.member-page-link-card:hover,
+.member-page-link-card:focus-visible {
+  border-color: rgba(94, 184, 255, 0.65);
+  background: rgba(94, 184, 255, 0.06);
+  transform: translateY(-2px);
+  outline: none;
+}
+
+.member-page-link-card strong {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: clamp(25px, 2vw, 34px);
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.member-page-link-card > span:last-child {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.member-feature-main {
+  display: grid;
+  align-content: start;
+  gap: 20px;
+}
+
+.member-feature-main > * {
+  margin: 0;
+}
+
+.member-feature-hero {
+  min-height: 150px;
+}
+
+.member-page-panel {
+  display: grid;
+  gap: 20px;
+}
+
+.member-page-panel .panel-heading {
+  align-items: center;
+}
+
+.member-page-panel .training-calendar-layout {
+  margin-top: 0;
+}
+
+.member-goals-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.7fr) minmax(0, 1.5fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.member-goal-create-panel {
+  position: sticky;
+  top: 20px;
+}
+
+.member-goals-page .member-goal-form {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.member-goals-page .member-goal-name-field,
+.member-goals-page .member-goal-description-field,
+.member-goals-page .member-goal-form-actions {
+  grid-column: 1 / -1;
+}
+
+.member-goals-page .member-goals-panel {
+  margin: 0;
+}
+
+.member-goals-page .member-goal-card {
+  grid-template-columns: 1fr;
+  align-items: start;
+}
+
+.member-goals-page .member-goal-actions {
+  justify-content: flex-start;
+}
+
+@media (max-width: 1050px) {
+  .member-goals-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .member-goal-create-panel {
+    position: static;
+  }
+}
+
+@media (max-width: 700px) {
+  .member-page-links {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .member-page-link-card {
+    min-height: 0;
+    padding: 16px;
+  }
+
+  .member-feature-main {
+    gap: 12px;
+  }
+
+  .member-feature-hero {
+    min-height: 0;
+  }
+
+  .member-feature-hero p:not(.eyebrow) {
+    margin-bottom: 0;
+  }
+
+  .member-page-panel {
+    gap: 14px;
+  }
+
+  .member-goals-page .member-goal-form {
+    grid-template-columns: 1fr;
+  }
+
+  .member-goals-page .member-goal-form > * {
+    grid-column: auto;
+  }
+}
+
 
 :root {
   --bg: #0f0f10;

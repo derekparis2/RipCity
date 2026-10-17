@@ -159,7 +159,6 @@ function getProfileMemberTypeLabel() {
 
 function updateProfileShellNav() {
   const isH2K = currentMemberProfile?.member_type === "h2k";
-  const habitsNavLink = document.getElementById("profile-habits-nav-link");
   const subtitle = document.getElementById("profile-brand-subtitle");
   const programLabel = document.getElementById("profile-program-label");
   const sidebarName = document.getElementById("profile-sidebar-name");
@@ -211,9 +210,7 @@ function updateProfileShellNav() {
     }
   }
 
-  if (habitsNavLink) {
-    habitsNavLink.classList.toggle("hidden", !isH2K);
-  }
+  window.RipCityMemberNav?.setH2KVisibility(isH2K);
 
   document.querySelectorAll(".member-role-pending").forEach(element => {
     element.classList.remove("member-role-pending");

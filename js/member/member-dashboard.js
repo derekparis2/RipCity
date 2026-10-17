@@ -23,6 +23,11 @@ let goalCheckinsByGoalId = {};
 
 const MEMBER_WEEKLY_HISTORY_WEEKS = 8;
 
+function setMemberText(id, value) {
+  const element = document.getElementById(id);
+  if (element) element.textContent = value;
+}
+
 const MEMBER_WORKOUT_ASSIGNMENT_SELECT = `
   id,
   assigned_date,
@@ -644,8 +649,8 @@ function getMemberTypeLabel(profileTypeValue = currentMemberProfile?.member_type
 }
 
 function setMemberTypeText(memberType) {
-  document.getElementById("member-program-label").textContent = memberType;
-  document.getElementById("member-sidebar-role").textContent = memberType;
+  setMemberText("member-program-label", memberType);
+  setMemberText("member-sidebar-role", memberType);
 
   const brandSubtitle = document.getElementById("member-brand-subtitle");
   if (brandSubtitle) {
@@ -664,10 +669,10 @@ function updateMemberShell() {
   const bandColor = currentMemberProfile?.h2k_band_color;
 
   setMemberTypeText(memberType);
-  document.getElementById("member-sidebar-name").textContent = profile?.full_name || "Member";
+  setMemberText("member-sidebar-name", profile?.full_name || "Member");
 
   const avatar = document.getElementById("member-avatar");
-  if (profile?.profile_picture_url) {
+  if (avatar && profile?.profile_picture_url) {
     avatar.classList.add("has-image");
     avatar.textContent = "";
 
@@ -679,7 +684,7 @@ function updateMemberShell() {
       avatar.textContent = window.RipCityUI.safeInitials(profile?.full_name);
     });
     avatar.appendChild(image);
-  } else {
+  } else if (avatar) {
     avatar.classList.remove("has-image");
     avatar.textContent = window.RipCityUI.safeInitials(profile?.full_name);
   }
@@ -694,7 +699,7 @@ function updateMemberShell() {
     month: "short",
     day: "numeric"
   });
-  document.getElementById("member-dashboard-date").textContent = dateLabel;
+  setMemberText("member-dashboard-date", dateLabel);
 }
 
 function setupFeedbackLink() {
@@ -717,56 +722,6 @@ function setupFeedbackLink() {
   link.textContent = "Open Feedback Form";
   link.classList.remove("is-disabled");
   link.removeAttribute("aria-disabled");
-}
-
-function setActiveMemberNav(hash) {
-  const normalizedHash = hash || "#member-dashboard-top";
-  const calendarPanel = document.getElementById("training-calendar-panel");
-
-  document.querySelectorAll(".member-shell-nav .nav-link").forEach(link => {
-    link.classList.toggle("active", link.getAttribute("href") === normalizedHash);
-  });
-
-  if (normalizedHash === "#training-calendar-panel" && calendarPanel) {
-    selectedWorkoutDate = getTodayString();
-    workoutCalendarMonth = getMonthStart(parseAssignmentDate(selectedWorkoutDate));
-    calendarPanel.open = true;
-    renderTrainingCalendar();
-  }
-
-  if (normalizedHash === "#member-history-section") {
-    const historyPanel = document.getElementById("member-history-section");
-    if (historyPanel) historyPanel.open = true;
-  }
-}
-
-function scrollMemberHashIntoView() {
-  const hash = window.location.hash;
-  if (!hash) return;
-
-  const target = document.querySelector(hash);
-  if (!target) return;
-
-  requestAnimationFrame(() => {
-    target.scrollIntoView({
-      block: "start",
-      behavior: "smooth"
-    });
-  });
-}
-
-function setupMemberSidebarNav() {
-  document.querySelectorAll(".member-shell-nav .nav-link").forEach(link => {
-    link.addEventListener("click", () => {
-      setActiveMemberNav(link.getAttribute("href"));
-    });
-  });
-
-  window.addEventListener("hashchange", () => {
-    setActiveMemberNav(window.location.hash);
-  });
-
-  setActiveMemberNav(window.location.hash);
 }
 
 function updateHabitDateControls() {
@@ -841,6 +796,7 @@ function setupHabitDateControls() {
 // Renders the list of six habits as checkable cards.
 function renderHabitCards() {
   const list = document.getElementById("h2k-habit-list");
+  if (!list) return;
 
   if (!h2kHabits.length) {
     list.innerHTML = `<div class="empty-state">No habits found.</div>`;
@@ -921,25 +877,25 @@ async function updateScores() {
     todayKey
   });
 
-  document.getElementById("today-score").textContent = metrics.todayScore;
-  document.getElementById("weekly-score-h2k").textContent = metrics.fourWeekAverage ?? "No history";
-  document.getElementById("weekly-percent-h2k").textContent = metrics.currentStreak;
-  document.getElementById("h2k-status").textContent = `${metrics.currentWeekScore}/${metrics.currentWeekMax}`;
-  document.getElementById("member-stat-one-suffix").textContent = `/${h2kHabits.length}`;
-  document.getElementById("member-stat-two-suffix").textContent = metrics.fourWeekAverage === null
+  setMemberText("today-score", metrics.todayScore);
+  setMemberText("weekly-score-h2k", metrics.fourWeekAverage ?? "No history");
+  setMemberText("weekly-percent-h2k", metrics.currentStreak);
+  setMemberText("h2k-status", `${metrics.currentWeekScore}/${metrics.currentWeekMax}`);
+  setMemberText("member-stat-one-suffix", `/${h2kHabits.length}`);
+  setMemberText("member-stat-two-suffix", metrics.fourWeekAverage === null
     ? ""
-    : `/${metrics.fourWeekMax}`;
-  document.getElementById("member-stat-three-suffix").textContent = " days";
-  document.getElementById("member-stat-one-label").textContent = "Today’s Score";
-  document.getElementById("member-stat-one-detail").textContent = "Habits completed today";
-  document.getElementById("member-stat-two-label").textContent = "4-Week Average";
-  document.getElementById("member-stat-two-detail").textContent = metrics.fourWeekAverage === null
+    : `/${metrics.fourWeekMax}`);
+  setMemberText("member-stat-three-suffix", " days");
+  setMemberText("member-stat-one-label", "Today’s Score");
+  setMemberText("member-stat-one-detail", "Habits completed today");
+  setMemberText("member-stat-two-label", "4-Week Average");
+  setMemberText("member-stat-two-detail", metrics.fourWeekAverage === null
     ? "Complete a full week to start your average"
-    : "Previous four completed weeks";
-  document.getElementById("member-stat-three-label").textContent = "Current Streak";
-  document.getElementById("member-stat-three-detail").textContent = "4+ habits completed per day";
-  document.getElementById("member-stat-four-label").textContent = "Current Week";
-  document.getElementById("h2k-status-detail").textContent = `${metrics.currentWeekQualifiedDays} qualified day${metrics.currentWeekQualifiedDays === 1 ? "" : "s"} · ${metrics.currentWeekMax} possible points`;
+    : "Previous four completed weeks");
+  setMemberText("member-stat-three-label", "Current Streak");
+  setMemberText("member-stat-three-detail", "4+ habits completed per day");
+  setMemberText("member-stat-four-label", "Current Week");
+  setMemberText("h2k-status-detail", `${metrics.currentWeekQualifiedDays} qualified day${metrics.currentWeekQualifiedDays === 1 ? "" : "s"} · ${metrics.currentWeekMax} possible points`);
 }
 
 // Reloads selected-date logs, re-renders cards, and updates scores.
@@ -1121,7 +1077,6 @@ function renderWeeklyScoreCard(row) {
 function toggleH2KModuleVisibility() {
   const isH2K = currentMemberProfile?.member_type === "h2k";
   const habitsSection = document.getElementById("h2k-habits-section");
-  const habitsNavLink = document.getElementById("member-habits-nav-link");
   const statsSection = document.getElementById("member-stats-section");
   const trainingProgressCard = document.getElementById("member-training-progress-card");
 
@@ -1138,39 +1093,32 @@ function toggleH2KModuleVisibility() {
     habitsSection.classList.toggle("hidden", !isH2K);
   }
 
-  if (habitsNavLink) {
-    habitsNavLink.classList.toggle("hidden", !isH2K);
-  }
+  window.RipCityMemberNav?.setH2KVisibility(isH2K);
 
   if (isH2K) {
-    document.getElementById("member-stat-one-label").textContent = "Today’s Score";
-    document.getElementById("member-stat-one-detail").textContent = "Habits completed today";
-    document.getElementById("member-stat-two-label").textContent = "Weekly Score";
-    document.getElementById("member-stat-two-detail").textContent = "Possible weekly points";
-    document.getElementById("member-stat-one-suffix").textContent = `/${h2kHabits.length || 6}`;
-    document.getElementById("member-stat-two-suffix").textContent = `/${(h2kHabits.length || 6) * 7}`;
-    document.getElementById("member-stat-three-suffix").textContent = " days";
+    setMemberText("member-stat-one-label", "Today’s Score");
+    setMemberText("member-stat-one-detail", "Habits completed today");
+    setMemberText("member-stat-two-label", "Weekly Score");
+    setMemberText("member-stat-two-detail", "Possible weekly points");
+    setMemberText("member-stat-one-suffix", `/${h2kHabits.length || 6}`);
+    setMemberText("member-stat-two-suffix", `/${(h2kHabits.length || 6) * 7}`);
+    setMemberText("member-stat-three-suffix", " days");
     return;
   }
 
   if (!isH2K) {
-    document.getElementById("member-stat-one-label").textContent = "This Week";
-    document.getElementById("member-stat-one-detail").textContent = "Assigned workout attendance";
-    document.getElementById("member-stat-two-label").textContent = "Completed This Week";
-    document.getElementById("member-stat-two-detail").textContent = "Completed / assigned workouts";
-    document.getElementById("member-stat-three-label").textContent = "4-Week Attendance";
-    document.getElementById("member-stat-three-detail").textContent = "Previous four completed weeks";
-    document.getElementById("member-stat-four-label").textContent = "Current Streak";
-    document.getElementById("member-stat-one-suffix").textContent = "";
-    document.getElementById("member-stat-two-suffix").textContent = "";
-    document.getElementById("member-stat-three-suffix").textContent = "";
-    document.getElementById("h2k-status").textContent = "Training";
-    document.getElementById("h2k-status-detail").textContent = "Open assigned workouts and track progress";
-
-    if (window.location.hash === "#h2k-habits-section") {
-      window.location.hash = "#member-dashboard-top";
-      setActiveMemberNav("#member-dashboard-top");
-    }
+    setMemberText("member-stat-one-label", "This Week");
+    setMemberText("member-stat-one-detail", "Assigned workout attendance");
+    setMemberText("member-stat-two-label", "Completed This Week");
+    setMemberText("member-stat-two-detail", "Completed / assigned workouts");
+    setMemberText("member-stat-three-label", "4-Week Attendance");
+    setMemberText("member-stat-three-detail", "Previous four completed weeks");
+    setMemberText("member-stat-four-label", "Current Streak");
+    setMemberText("member-stat-one-suffix", "");
+    setMemberText("member-stat-two-suffix", "");
+    setMemberText("member-stat-three-suffix", "");
+    setMemberText("h2k-status", "Training");
+    setMemberText("h2k-status-detail", "Open assigned workouts and track progress");
   }
 }
 
@@ -1194,13 +1142,13 @@ function updateSharedWorkoutStats() {
     todayKey: today
   });
 
-  document.getElementById("today-score").textContent = metrics.currentWeek.percent ?? "—";
-  document.getElementById("member-stat-one-suffix").textContent = metrics.currentWeek.percent === null ? "" : "%";
-  document.getElementById("weekly-score-h2k").textContent = `${metrics.currentWeek.completed}/${metrics.currentWeek.assigned}`;
-  document.getElementById("weekly-percent-h2k").textContent = metrics.fourWeek.percent ?? "—";
-  document.getElementById("member-stat-three-suffix").textContent = metrics.fourWeek.percent === null ? "" : "%";
-  document.getElementById("h2k-status").textContent = `${metrics.currentStreak} day${metrics.currentStreak === 1 ? "" : "s"}`;
-  document.getElementById("h2k-status-detail").textContent = `Longest streak: ${metrics.longestStreak} assigned workout day${metrics.longestStreak === 1 ? "" : "s"}`;
+  setMemberText("today-score", metrics.currentWeek.percent ?? "—");
+  setMemberText("member-stat-one-suffix", metrics.currentWeek.percent === null ? "" : "%");
+  setMemberText("weekly-score-h2k", `${metrics.currentWeek.completed}/${metrics.currentWeek.assigned}`);
+  setMemberText("weekly-percent-h2k", metrics.fourWeek.percent ?? "—");
+  setMemberText("member-stat-three-suffix", metrics.fourWeek.percent === null ? "" : "%");
+  setMemberText("h2k-status", `${metrics.currentStreak} day${metrics.currentStreak === 1 ? "" : "s"}`);
+  setMemberText("h2k-status-detail", `Longest streak: ${metrics.longestStreak} assigned workout day${metrics.longestStreak === 1 ? "" : "s"}`);
 }
 
 // =====================================================
@@ -1379,8 +1327,10 @@ function showWorkoutHistoryMessage(message, isError = false) {
 async function loadWorkoutHistory() {
   const list = document.getElementById("workout-history-list");
   const calendar = document.getElementById("future-workout-list");
+  const stats = document.getElementById("member-stats-section");
+  const weeklyHistory = document.getElementById("member-weekly-history-list");
 
-  if ((!list && !calendar) || !currentMemberProfile) return;
+  if ((!list && !calendar && !stats && !weeklyHistory) || !currentMemberProfile) return;
 
   showWorkoutHistoryMessage("Loading assigned workouts...");
 
@@ -1668,9 +1618,10 @@ function formatInputType(inputType) {
   return labels[inputType] || inputType;
 }
 
-// Main startup function for the H2K page.
-async function initH2KDashboard() {
-  showH2KMessage("Loading H2K dashboard...");
+// Shared startup for the member dashboard and its dedicated feature pages.
+async function initMemberPage() {
+  const page = document.body.dataset.memberPage || "dashboard";
+  showH2KMessage("Loading member page...");
 
   try {
     // Startup order matters: access -> member profile -> facility habits/workouts.
@@ -1685,25 +1636,31 @@ async function initH2KDashboard() {
     currentMemberGroupIds = await getCurrentMemberGroupIds(currentMemberProfile.id);
     toggleH2KModuleVisibility();
 
-    if (currentMemberProfile.member_type === "h2k") {
+    const isH2K = currentMemberProfile.member_type === "h2k";
+    const needsHabits = isH2K && ["dashboard", "habits", "history"].includes(page);
+    const needsWorkoutHistory = ["dashboard", "training", "history"].includes(page);
+
+    if (needsHabits) {
       h2kHabits = await loadHabits(currentAccess.membership.facility_id);
     }
 
-    await loadTodayAssignedWorkouts();
-    await loadWorkoutHistory();
-    await loadMemberWeeklyHistory();
-    await loadMemberGoals();
+    if (page === "habits" && !isH2K) {
+      window.location.replace("member-dashboard.html");
+      return;
+    }
 
-    if (currentMemberProfile.member_type === "h2k") {
+    if (needsWorkoutHistory) await loadWorkoutHistory();
+    if (page === "history") await loadMemberWeeklyHistory();
+    if (page === "goals") await loadMemberGoals();
+
+    if (isH2K && ["dashboard", "habits"].includes(page)) {
       await refreshH2KDashboard();
     }
 
-    setActiveMemberNav(window.location.hash);
-    scrollMemberHashIntoView();
     showH2KMessage("");
   } catch (error) {
     console.error(error);
-    showH2KMessage(error.message || "Could not load H2K dashboard.", true);
+    showH2KMessage(error.message || "Could not load this member page.", true);
   }
 }
 
@@ -1714,12 +1671,11 @@ async function logoutH2K() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  setupMemberSidebarNav();
   setupFeedbackLink();
   setupHabitDateControls();
   document.getElementById("member-goal-form")?.addEventListener("submit", saveMemberGoal);
   document.getElementById("member-goal-cancel")?.addEventListener("click", resetMemberGoalForm);
-  initH2KDashboard();
+  initMemberPage();
 
   document
     .getElementById("member-history-prev-week")
