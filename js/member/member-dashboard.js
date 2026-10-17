@@ -217,6 +217,14 @@ function formatGoalTimeline(timeline) {
   }[timeline] || "Short term";
 }
 
+function formatGoalDateRange(goal) {
+  const startDate = formatGoalTimestamp(goal.created_at);
+  const endDate = goal.status === "completed" && goal.completed_at
+    ? formatGoalTimestamp(goal.completed_at)
+    : formatGoalDate(goal.due_date);
+  return `${startDate} – ${endDate}`;
+}
+
 async function loadGoalCheckins() {
   if (!currentMemberProfile) return;
 
@@ -406,10 +414,7 @@ function renderMemberGoalCard(goal) {
   const isOwnGoal = goal.source === "member" && goal.created_by === currentAccess.session.user.id;
   const checkins = goalCheckinsByGoalId[goal.id] || [];
   const valueText = window.RipCityGoalProgress.formatGoalValueSummary(goal, checkins);
-  const isCompleted = goal.status === "completed";
-  const goalDateText = isCompleted && goal.completed_at
-    ? `Completed ${formatGoalTimestamp(goal.completed_at)}`
-    : formatGoalDate(goal.due_date);
+  const goalDateText = formatGoalDateRange(goal);
 
   return `
     <article class="member-goal-card ${goal.status === "paused" ? "is-paused" : ""}">

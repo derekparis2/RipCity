@@ -26,6 +26,14 @@ function formatGoalTimeline(timeline) {
   }[timeline] || "Short term";
 }
 
+function formatGoalDateRange(goal) {
+  const startDate = formatGoalTimestamp(goal.created_at);
+  const endDate = goal.status === "completed" && goal.completed_at
+    ? formatGoalTimestamp(goal.completed_at)
+    : formatGoalDate(goal.due_date);
+  return `${startDate} – ${endDate}`;
+}
+
 function getGoalProgress(goal) {
   const checkins = detailCheckinsByGoalId[goal.id] || [];
   const values = window.RipCityGoalProgress.getGoalValues(goal, checkins);
@@ -87,9 +95,7 @@ function renderDetailGoals() {
     const checkins = detailCheckinsByGoalId[goal.id] || [];
     const valueSummary = window.RipCityGoalProgress.formatGoalValueSummary(goal, checkins);
     const displayValue = value => value === null ? "—" : value;
-    const goalDateText = goal.status === "completed" && goal.completed_at
-      ? `Completed ${formatGoalTimestamp(goal.completed_at)}`
-      : formatGoalDate(goal.due_date);
+    const goalDateText = formatGoalDateRange(goal);
 
     return `
     <article class="member-goal-card ${goal.status === "paused" ? "is-paused" : ""}">
