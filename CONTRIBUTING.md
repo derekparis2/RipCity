@@ -139,12 +139,10 @@ http://127.0.0.1:3000/set-password.html
 
 ## Product Scope
 
-Version 2 finalizes the shared multi-facility platform foundation and the core
-workout creation, editing, assignment, logging, and history experience. It also
-adds shared modules such as goals, leaderboards, notes, notifications, and
-profiles.
+Version 2 finalizes facility isolation, one-active-facility account lifecycle,
+the core workout experience, and shared modules such as goals, leaderboards,
+notes, notifications, and profiles.
 
-Version 3 will be the deeper baseball-development expansion. Baseball-specific
-metrics, throwing and arm-care programs, player cards, evaluations, recruiting,
-and related workflows should not expand V2 unless the roadmap is intentionally
-changed by Derek and Sam.
+Work intentionally deferred beyond V2 is defined in
+`docs/VERSION_3_PLAN.md`. Do not pull it into a V2 branch unless Derek and Sam
+intentionally change the version boundary.

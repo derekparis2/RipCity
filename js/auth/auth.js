@@ -2,6 +2,8 @@ const RIP_CITY_SLUG = "rip-city";
 let signupFacility = null;
 let signupGroups = [];
 let signupGroupsLoaded = false;
+let signupCoachInviteCode = "";
+let signupCoachInvite = null;
 
 // This file is only for public auth pages:
 // signup.html, login.html, and pending.html.
@@ -115,9 +117,9 @@ async function getCurrentUserProfile(userId) {
 
 async function redirectByProfile(userId) {
   const profile = await getCurrentUserProfile(userId);
-  const membership =
-    profile.facility_members?.[0] ||
-    profile["facility_members!facility_members_profile_id_fkey"]?.[0];
+  const memberships = profile.facility_members ||
+    profile["facility_members!facility_members_profile_id_fkey"] || [];
+  const membership = memberships.find(row => row.status === "approved") || memberships[0];
 
   if (!membership || membership.status !== "approved") {
     window.location.href = "pending.html";
@@ -154,6 +156,10 @@ function normalizeUsername(value) {
   return value.trim().replace(/^@/, "").toLowerCase();
 }
 
+function normalizeEmail(value) {
+  return value.trim().toLowerCase();
+}
+
 function isEmailIdentifier(value) {
   return value.includes("@");
 }
@@ -175,17 +181,100 @@ async function resolveLoginEmail(identifier) {
   return data;
 }
 
+async function getSignupUser({ email, password, fullName, allowExistingAccount }) {
+  if (allowExistingAccount) {
+    const { data: sessionData, error: sessionError } = await db.auth.getSession();
+    if (sessionError) throw sessionError;
+
+    const sessionUser = sessionData.session?.user;
+    if (sessionUser) {
+      if (normalizeEmail(sessionUser.email || "") !== normalizeEmail(email)) {
+        throw new Error("Log out of the current account before using this coach invite.");
+      }
+      return sessionUser;
+    }
+  }
+
+  const { data: authData, error: authError } = await db.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        full_name: fullName
+      }
+    }
+  });
+
+  const existingAccountError = allowExistingAccount && (
+    authError?.code === "user_already_exists"
+    || /already (registered|exists)/i.test(authError?.message || "")
+  );
+
+  if (authError && !existingAccountError) throw authError;
+  if (authData?.session?.user) return authData.session.user;
+
+  // Supabase intentionally returns no session when signUp is called for an
+  // existing account. A coach whose first invite claim was interrupted can
+  // prove ownership with the same password and resume using a fresh link.
+  if (allowExistingAccount) {
+    const { data: loginData, error: loginError } = await db.auth.signInWithPassword({
+      email,
+      password
+    });
+
+    if (loginError && existingAccountError) throw loginError;
+    if (!loginError && loginData.user) return loginData.user;
+  }
+
+  return null;
+}
+
+async function ensureSignupProfile({ user, email, fullName, username }) {
+  const { data: existingProfile, error: existingProfileError } = await db
+    .from("profiles")
+    .select("id, email, username")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (existingProfileError) throw existingProfileError;
+
+  if (existingProfile) {
+    if (
+      normalizeEmail(existingProfile.email || "") !== normalizeEmail(email)
+      || normalizeUsername(existingProfile.username || "") !== username
+    ) {
+      throw new Error("Use the email and username already saved for this account.");
+    }
+    return;
+  }
+
+  const { error: profileError } = await db
+    .from("profiles")
+    .insert({
+      id: user.id,
+      email,
+      full_name: fullName,
+      username,
+      global_role: "member"
+    });
+
+  if (profileError) throw profileError;
+}
+
 async function handleSignup(event) {
   event.preventDefault();
 
   showMessage("signup-message", "Creating your account...");
 
+  const isCoachSignup = Boolean(signupCoachInviteCode);
   const fullName = document.getElementById("signup-full-name").value.trim();
   const email = document.getElementById("signup-email").value.trim();
   const username = normalizeUsername(document.getElementById("signup-username").value);
   const password = document.getElementById("signup-password").value;
   const confirmPassword = document.getElementById("signup-confirm-password").value;
-  const memberType = document.querySelector("input[name='member-type']:checked").value;
+  const memberType = isCoachSignup
+    ? null
+    : document.querySelector("input[name='member-type']:checked").value;
 
   const trainingGroupId = document.getElementById("signup-training-group")?.value || "";
   const sport = document.getElementById("signup-sport").value.trim();
@@ -193,10 +282,9 @@ async function handleSignup(event) {
   const school = document.getElementById("signup-school").value.trim();
   const graduationYear = document.getElementById("signup-grad-year").value;
   const bodyWeight = document.getElementById("signup-body-weight").value;
+  let coachProfileReady = false;
 
   try {
-    const facility = signupFacility || await getRipCityFacility();
-
     if (password !== confirmPassword) {
       showMessage("signup-message", "Passwords must match.", true);
       return;
@@ -212,8 +300,16 @@ async function handleSignup(event) {
       throw error;
     });
 
-    if (existingUsernameEmail) {
+    if (
+      existingUsernameEmail
+      && (!isCoachSignup || normalizeEmail(existingUsernameEmail) !== normalizeEmail(email))
+    ) {
       showMessage("signup-message", "That username is already taken.", true);
+      return;
+    }
+
+    if (isCoachSignup && !signupCoachInvite) {
+      showMessage("signup-message", "This coach invite is invalid, expired, or has already been used.", true);
       return;
     }
 
@@ -222,19 +318,12 @@ async function handleSignup(event) {
       return;
     }
 
-    const { data: authData, error: authError } = await db.auth.signUp({
+    const user = await getSignupUser({
       email,
       password,
-      options: {
-        data: {
-          full_name: fullName
-        }
-      }
+      fullName,
+      allowExistingAccount: isCoachSignup
     });
-
-    if (authError) throw authError;
-
-    const user = authData.user;
 
     if (!user) {
       showMessage(
@@ -245,17 +334,22 @@ async function handleSignup(event) {
       return;
     }
 
-    const { error: profileError } = await db
-      .from("profiles")
-      .insert({
-        id: user.id,
-        email,
-        full_name: fullName,
-        username,
-        global_role: "member"
+    await ensureSignupProfile({ user, email, fullName, username });
+    coachProfileReady = isCoachSignup;
+
+    if (isCoachSignup) {
+      const { data: claimedInvite, error: claimError } = await db.rpc("claim_coach_invite", {
+        claim_invite_code: signupCoachInviteCode
       });
 
-    if (profileError) throw profileError;
+      if (claimError) throw claimError;
+      if (!claimedInvite?.length) throw new Error("The coach invite could not be claimed.");
+
+      window.location.href = "pending.html";
+      return;
+    }
+
+    const facility = signupFacility || await getRipCityFacility();
 
     const role = memberType === "athlete" ? "athlete" : "h2k_member";
 
@@ -306,6 +400,14 @@ async function handleSignup(event) {
     window.location.href = "pending.html";
   } catch (error) {
     console.error(error);
+    if (isCoachSignup && coachProfileReady) {
+      showMessage(
+        "signup-message",
+        "Your account was saved, but this coach link could not be claimed. Ask the facility administrator for a new link, then use this same email, username, and password.",
+        true
+      );
+      return;
+    }
     showMessage("signup-message", error.message || "Something went wrong while creating your account.", true);
   }
 }
@@ -481,7 +583,67 @@ function applySignupTypeFromUrl() {
   updateSignupMemberTypeFields();
 }
 
+function getCoachInviteCodeFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  return String(params.get("coach_invite") || "").trim();
+}
+
+function setSignupSubmitDisabled(disabled) {
+  const button = document.querySelector("#signup-form button[type='submit']");
+  if (button) button.disabled = disabled;
+}
+
+function applyCoachSignupLayout() {
+  document.getElementById("signup-eyebrow").textContent = "JOIN COACHING STAFF";
+  document.getElementById("signup-title").textContent = "Create Coach Account";
+  document.getElementById("signup-member-type-grid").classList.add("hidden");
+
+  document.querySelectorAll(".athlete-only, .member-only").forEach(section => {
+    section.classList.add("hidden");
+    section.querySelectorAll("input, select, textarea").forEach(input => {
+      input.disabled = true;
+      input.required = false;
+    });
+  });
+}
+
+async function setupCoachSignupPage() {
+  applyCoachSignupLayout();
+  setSignupSubmitDisabled(true);
+  showMessage("signup-message", "Checking coach invite...");
+
+  try {
+    const { data, error } = await db.rpc("lookup_coach_invite", {
+      lookup_invite_code: signupCoachInviteCode
+    });
+
+    if (error) throw error;
+    if (!data?.length) throw new Error("This coach invite is invalid, expired, or has already been used.");
+
+    signupCoachInvite = data[0];
+    document.getElementById("signup-description").textContent =
+      `Create your coach account for ${signupCoachInvite.facility_name}. A facility administrator must approve it before you receive access.`;
+    showMessage("signup-message", "");
+    setSignupSubmitDisabled(false);
+  } catch (error) {
+    console.error(error);
+    signupCoachInvite = null;
+    document.getElementById("signup-description").textContent =
+      "Ask a facility administrator to create a new coach signup link.";
+    showMessage("signup-message", error.message || "Could not verify this coach invite.", true);
+  }
+
+  document.getElementById("signup-form").addEventListener("submit", handleSignup);
+}
+
 async function setupSignupPage() {
+  signupCoachInviteCode = getCoachInviteCodeFromUrl();
+
+  if (signupCoachInviteCode) {
+    await setupCoachSignupPage();
+    return;
+  }
+
   setupMemberTypeToggle();
   applySignupTypeFromUrl();
 
@@ -500,6 +662,65 @@ async function setupSignupPage() {
   }
 
   document.getElementById("signup-form").addEventListener("submit", handleSignup);
+}
+
+async function setupPendingPage() {
+  document.getElementById("pending-logout-btn").addEventListener("click", handlePendingLogout);
+
+  try {
+    const { data } = await db.auth.getSession();
+    if (!data.session?.user) {
+      window.location.href = "login.html";
+      return;
+    }
+
+    const profile = await getCurrentUserProfile(data.session.user.id);
+    const memberships = profile.facility_members ||
+      profile["facility_members!facility_members_profile_id_fkey"] || [];
+    const membership = memberships.find(row => row.status === "approved") || memberships[0] || null;
+
+    if (membership?.status === "approved") {
+      await redirectByProfile(profile.id);
+      return;
+    }
+
+    const statusContent = {
+      pending: {
+        eyebrow: "AWAITING APPROVAL",
+        title: membership?.role === "coach" ? "Coach Approval Pending" : "Account Approval Pending",
+        description: membership?.role === "coach"
+          ? "Your coach account was created successfully. A facility administrator must approve it before you can access coaching tools."
+          : "Your account was created successfully. A facility coach or administrator must approve it before you can access the app."
+      },
+      rejected: {
+        eyebrow: "ACCESS NOT APPROVED",
+        title: "Account Not Approved",
+        description: "This account was not approved for facility access. Contact a facility administrator if you believe this should be reviewed."
+      },
+      inactive: {
+        eyebrow: "ACCESS PAUSED",
+        title: "Account Inactive",
+        description: "Your facility access has been paused. Your account history is still saved. Contact a facility administrator to request reactivation."
+      },
+      none: {
+        eyebrow: "NO FACILITY ACCESS",
+        title: "Account Not Connected",
+        description: "This account is not connected to a facility. Contact a facility administrator for help."
+      }
+    };
+    const content = statusContent[membership?.status] || statusContent.none;
+
+    document.title = content.title;
+    document.getElementById("account-status-eyebrow").textContent = content.eyebrow;
+    document.getElementById("account-status-title").textContent = content.title;
+    document.getElementById("pending-description").textContent = content.description;
+  } catch (error) {
+    console.error(error);
+    document.getElementById("account-status-eyebrow").textContent = "ACCESS ERROR";
+    document.getElementById("account-status-title").textContent = "Could Not Check Access";
+    document.getElementById("pending-description").textContent =
+      "We could not confirm your account status. Log out and try again, or contact a facility administrator.";
+  }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -524,6 +745,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   if (currentPage === "pending") {
-    document.getElementById("pending-logout-btn").addEventListener("click", handlePendingLogout);
+    setupPendingPage();
   }
 });

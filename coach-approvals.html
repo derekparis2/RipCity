@@ -7,12 +7,12 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/styles.css?v=account-lifecycle-1" />
 </head>
 
 <body class="auth-body">
   <main class="approval-page">
-    <section class="approval-header">
+    <header class="h2k-header">
       <div class="auth-brand">
         <img src="assets/rip-city-logo.png" alt="Rip City logo">
         <div>
@@ -21,6 +21,15 @@
         </div>
       </div>
 
+      <div class="h2k-header-actions">
+        <a class="outline-link" href="coach-dashboard.html">Coach Dashboard</a>
+        <a class="outline-link" href="coach-roster.html">Roster</a>
+        <a class="outline-link" href="coach-leaderboards.html">Leaderboards</a>
+        <button class="outline-btn" id="approval-logout-btn">Log Out</button>
+      </div>
+    </header>
+
+    <section class="approval-header">
       <div>
         <p class="eyebrow">COACH ADMIN</p>
         <h2>Pending Approvals</h2>
@@ -38,6 +47,30 @@
       <a class="primary-link" href="#" target="_blank" rel="noopener" data-feedback-link>Open Feedback Form</a>
     </section>
 
+    <section class="panel hidden" id="coach-invite-panel">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">ADMIN ONLY</p>
+          <h3>Invite A Coach</h3>
+          <p>Create a single-use signup link that expires after seven days. The new coach still requires your approval.</p>
+        </div>
+        <button class="primary-btn" type="button" id="create-coach-invite-btn">Create &amp; Copy Coach Link</button>
+      </div>
+      <p id="coach-invite-message" class="auth-message" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="panel hidden" id="coach-management-panel">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">ADMIN ONLY</p>
+          <h3>Coach Access</h3>
+          <p>Pause or restore a coach's access without deleting their account or history.</p>
+        </div>
+      </div>
+      <p id="coach-management-message" class="auth-message" role="status" aria-live="polite"></p>
+      <div id="coach-management-list" class="coach-management-list"></div>
+    </section>
+
     <section class="panel">
       <div class="panel-heading">
         <div>
@@ -52,18 +85,12 @@
       <div id="pending-users-list" class="pending-users-list"></div>
     </section>
 
-    <div class="approval-actions-bottom">
-      <button class="outline-btn" id="approval-logout-btn">Log Out</button>
-      <a class="outline-link" href="coach-roster.html">Roster</a>
-      <a class="outline-link" href="coach-leaderboards.html">Leaderboards</a>
-      <a class="outline-link" href="coach-dashboard.html">Coach Dashboard</a>
-    </div>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/shared/supabaseClient.js"></script>
   <script src="js/shared/ui-utils.js"></script>
   <script src="js/shared/access-control.js"></script>
-  <script src="js/coach/coach-approvals.js"></script>
+  <script src="js/coach/coach-approvals.js?v=coach-invites-2"></script>
 </body>
 </html>

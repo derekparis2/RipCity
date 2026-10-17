@@ -65,7 +65,7 @@ Run these on the deployed URL, not only localhost:
 2. H2K member login.
 3. Athlete login.
 4. New signup and pending approval.
-5. Coach approval.
+5. Coach approval, rejection, deactivation, and reactivation.
 6. Workout builder create and assign.
 7. Member dashboard workout visibility.
 8. Workout session Save Set and Save All Sets.
@@ -76,6 +76,8 @@ Run these on the deployed URL, not only localhost:
 
 - Any logged-out user can see member data.
 - A pending member can access the dashboard.
+- A rejected or inactive account can access protected facility pages.
+- An ordinary coach can deactivate or reactivate another coach.
 - A member can see another member's private logs/profile data.
 - A coach can see or manage another facility's data.
 - Signup creates an auth user but no app profile/membership rows.

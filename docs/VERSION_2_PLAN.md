@@ -5,11 +5,12 @@ For the ordered implementation queue and current work status, see
 product decisions and feature requirements.
 
 Version 2 should build on the live beta by turning Rip City from a workout/habit
-logger into a fuller athlete development platform.
+logger into a fuller athlete development platform with facility-isolated data
+and one active facility per account.
 
 Core V2 direction:
 
-- Platform / multi-facility configuration
+- Facility isolation and configuration
 - Goals
 - Leaderboards
 - Progress tracking
@@ -23,17 +24,15 @@ the core workout creation, editing, assignment, logging, and history experience.
 "Finalize" means the workflow and data model are stable enough to build on;
 normal fixes and intentional improvements may still follow.
 
-Version 3 will focus on the deeper baseball-development side of the product,
-including baseball-specific metrics, throwing and arm-care programs, player
-cards, evaluations, recruiting/showcase data, and related workflows. V2 should
-avoid reopening its platform and workout foundations solely to pull forward
-unplanned baseball scope.
+Work intentionally deferred beyond this boundary belongs in
+[`VERSION_3_PLAN.md`](VERSION_3_PLAN.md). V2 should avoid reopening its platform
+and workout foundations solely to pull forward V3 scope.
 
 Do not start coding these sections until the product rules below are filled in.
 
 ---
 
-## 1. Platform / Multi-Facility Direction
+## 1. Platform Foundation And Facility Isolation
 
 ### Product Purpose
 
@@ -47,17 +46,13 @@ The long-term goal is for a facility to choose its modules, colors, logo, groups
 - New shared features should be built for any facility first, then configured for Rip City.
 - Facility-specific features should be optional modules, not hardcoded platform behavior.
 - H2K habits should remain a Rip City/member-type module unless another facility enables a similar habit module.
-- Derek/global admin should be the only role that can see or manage all facilities unless a future support/admin mode is intentionally added.
 - Facility coaches/admins should only manage their own facility.
 - Members should only see their own facility experience.
 - Facility branding should move toward data/config-driven behavior instead of one-off CSS edits.
 - Manual setup is acceptable early, but V2 should avoid choices that block future self-serve setup.
-- Only Derek/global admin can create facilities in V2.
-- The data model may support more than one facility membership, but ordinary
-  members should use one facility. Multiple memberships are reserved for Derek
-  and coaches/admins who legitimately work with more than one facility.
-- A person's role belongs to each facility membership. The same person may be a
-  facility admin in one facility and a coach in another.
+- V2 product flows use one active facility membership per account. The existing
+  second-facility and cross-facility staging rows remain isolation fixtures,
+  not supported product UI.
 - Reactivating a membership should restore its historical facility, group,
   workout, goal, and other authorized relationships rather than create a new
   disconnected identity.
@@ -71,22 +66,22 @@ security boundary.
 The maintained matrix is `docs/PERMISSIONS_MATRIX.md`. It records both the V2
 access contract and known gaps in the verified staging baseline.
 
-Initial role direction:
+V2 role direction:
 
-- `platform_owner`: Derek-only global role. Can create and configure facilities.
-  Cross-facility member-data access should remain intentional and should move
-  toward an explicit support mode rather than an accidental universal bypass.
 - `admin`: facility-scoped role. A facility admin can perform coaching work and
   broadly manage that facility, including coaches, members, groups, settings,
   and facility content.
 - `coach`: facility-scoped role. Can manage approved coaching workflows in the
-  facilities where the coach has an active membership, but does not receive
+  facility where the coach has an active membership, but does not receive
   platform-wide access.
 - `athlete` / `h2k_member`: current member-facing facility roles. V2 may later
   separate access role from configurable member type if the schema audit shows
   that is safer and clearer.
 - `parent`: future role with no V2 access until parent visibility rules and RLS
   are intentionally implemented.
+
+V2 must not create broad cross-facility RLS bypasses. See the V3 plan for future
+platform operations.
 
 Membership status direction:
 
@@ -139,7 +134,8 @@ lists.
 
 Decisions:
 
-- Derek/platform owner manages the universal exercise catalog.
+- Derek manages the universal exercise catalog through the approved manual V2
+  process.
 - Every facility can view and use universal exercises.
 - Coaches can add exercises that belong only to their facility; other
   facilities must never see them.
@@ -165,8 +161,8 @@ Recommended data direction:
 
 - Continue using one `exercise_templates` system so workouts can reference
   universal and facility exercises consistently.
-- Universal templates have no facility owner and can be changed only through a
-  trusted platform-owner workflow.
+- Universal templates have no facility owner and can be changed only through
+  Derek's trusted manual V2 process.
 - Facility-created templates have a facility owner and no universal source.
 - Facility overrides reference their universal source. An active override
   supplies the facility version; an inactive override acts as a facility-only
@@ -235,18 +231,21 @@ Done criteria:
 
 - Preserve the current V1 experience where a coach copies an Athlete, H2K, or
   general signup link and sends it to prospective members.
-- Copied signup links may be shared; accepting or using one must never bypass
-  the existing pending approval step.
+- Athlete, H2K, and general member signup links remain reusable so a facility
+  can send one link in a group email. Accepting one must never bypass the
+  existing pending approval step.
+- Coach signup uses a separate facility-admin-only invitation. Each coach link
+  expires after seven days, can be claimed once, and creates only a pending
+  coach membership. An admin in that same facility must approve the request
+  before coaching access is granted.
+- Ordinary coaches cannot create coach invitations or approve coach/admin
+  memberships.
 - Ensure signup can route users into the correct facility, member type, and default groups.
 - Keep future support for facility-specific signup questions, such as sport, position, age group, or program.
-- Do not require email-bound, single-use invitations in V2 unless this product
-  decision is intentionally revisited.
-- The existing `facility_invites` table is not used by the current copied-link
-  flow. Its live status and intended future use must be resolved during the SQL
-  audit before new invite behavior is built on it.
-- Keep member signup links and coach onboarding as separate permission paths.
-  Member links preserve the current share-and-approve flow; a coach invite or
-  coach-role request always requires facility-admin approval.
+- Coach invitations are not email-bound in V2; the single-use code is the
+  credential and should be sent only to the intended coach.
+- The `facility_invites` table powers secure coach onboarding only. Reusable
+  member signup links continue using the existing query-parameter flow.
 
 #### Facility Time And Date Rules
 
@@ -295,6 +294,10 @@ Done criteria:
 - Facility-local dates remain correct for users whose device time zone differs
   from the facility time zone and across daylight-saving changes.
 - Deactivated users can be reactivated without losing their historical relationships.
+- Pending, rejected, inactive, and unconnected accounts receive distinct,
+  accurate blocked-access messages.
+- Facility admins can deactivate/reactivate coaches by updating the existing
+  membership; ordinary coaches cannot manage coach access.
 
 ---
 
@@ -857,7 +860,7 @@ Create a repeatable checklist covering:
 
 - Signup links, signup, login, logout, password reset, pending access, approval,
   rejection, deactivation, and reactivation.
-- Platform-owner, facility-admin, coach, member, and cross-facility isolation.
+- Facility-admin, coach, member, lifecycle-state, and cross-facility isolation.
 - Facility, group, and member workout assignments and logged history.
 - H2K visibility, habit logging, Monday-Sunday scoring, and date backfill.
 - Workout creation, editing, deletion/archive behavior, session logging, and history.
@@ -1114,7 +1117,7 @@ historical archives remain under `sql/`. Continue this structure for V2.
 3. Create the staging Supabase project and reproducible release-safety workflow.
 4. Rebuild staging from repository-controlled migrations and fake seed data;
    verify two-facility isolation and all important roles.
-5. Complete the platform/multi-facility and module-configuration implementation audit.
+5. Complete the V2 single-facility configuration and module-visibility audit.
 6. Complete the codebase cleanup and maintainability pass.
 7. Create the repeatable regression, accessibility, migration, and release checklist.
 8. Finish the beta feedback polish queue that affects daily use.

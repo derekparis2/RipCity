@@ -5,12 +5,10 @@ they are intentionally revisited.
 
 ## Version Scope
 
-- V2 stabilizes the shared multi-facility platform and finalizes the core
-  workout creation, editing, assignment, logging, and history experience.
-- V3 is the planned deeper baseball-development expansion.
-- Baseball metrics, throwing and arm-care programs, player cards, evaluations,
-  recruiting, and related sport-specific workflows should wait for V3 unless
-  Derek and Sam intentionally change the roadmap.
+- V2 stabilizes the facility-isolated platform foundation and finalizes the
+  core workout creation, editing, assignment, logging, and history experience.
+- Work beyond the V2 boundary is maintained in
+  [`VERSION_3_PLAN.md`](VERSION_3_PLAN.md).
 
 ## Facility Isolation
 
@@ -20,21 +18,11 @@ they are intentionally revisited.
 - Each facility should feel separate, but the app should remain one shared
   multi-facility platform.
 
-## Platform Owner
-
-- Platform owner access is intended for Derek and future trusted operators only.
-- Platform owner should manage facility/admin/config data by default.
-- Cross-facility member data access should require an explicit support mode later,
-  not happen as an accidental universal bypass.
-- Only Derek/platform owner can create facilities in V2.
-
 ## Facility Memberships And Roles
 
-- Ordinary members should belong to one facility.
-- Derek and coaches/admins who legitimately work with multiple facilities may
-  have multiple facility memberships.
-- Roles are facility-specific: a person may be an admin in one facility and a
-  coach in another.
+- V2 supports one active facility membership per account in the product UI.
+- The second staging facility and cross-facility coach exist only to test
+  isolation.
 - Facility admins can perform coaching work and broadly manage their facility.
 - New signups remain pending until a facility coach/admin approves them.
 - The platform owner establishes the first facility admin. After that,
@@ -48,7 +36,13 @@ they are intentionally revisited.
 
 - Preserve the current coach workflow: copy an Athlete, H2K, or general signup
   link and send it to prospective members.
-- Links may be shared and do not need to be email-bound or single-use in V2.
+- Athlete, H2K, and general member links remain reusable and may be sent in a
+  group email.
+- Coach links are created only by facility admins, expire after seven days,
+  and are single-use. Claiming one creates a pending coach membership that an
+  admin in the invited facility must approve.
+- Coach links do not need to be email-bound in V2, but should be sent only to
+  the intended coach.
 - A signup link never bypasses pending approval.
 
 ## Facility Time
@@ -113,7 +107,7 @@ they are intentionally revisited.
 
 - Coaches see one combined exercise library, not separate universal and
   facility lists.
-- Derek/platform owner manages universal exercises.
+- Derek manages universal exercises through the approved manual V2 process.
 - Coaches may create exercises visible only to their own facility.
 - Editing a universal exercise automatically creates a facility override and
   leaves the universal exercise unchanged for other facilities.

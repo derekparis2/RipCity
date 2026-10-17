@@ -34,6 +34,24 @@ their two-facility role fixtures were added and verified on 2026-08-28.
 
 Staging migration status:
 
+- `20261016120000_add_secure_coach_invites.sql` was applied to staging and all
+  12 coach-invite/RLS checks passed on 2026-10-16. The applied migration is now
+  immutable; any correction must use a new timestamped migration.
+- `20261016200000_harden_secure_coach_invites.sql` was applied to staging on
+  2026-10-16. It moves invite generation and expiration to database server
+  time, makes a consumed invite irreversible, and keeps interrupted account
+  creation recoverable with a fresh link. The expanded 14-check coach-invite
+  suite passed after it was applied.
+- `20261016201500_lock_down_coach_invite_writes.sql` was applied to staging on
+  2026-10-16. It prevents two-step reopening of a consumed invite and blocks
+  direct client inserts/updates of coach-invite metadata so creation remains
+  server-controlled. The expanded 16-check suite passed afterward.
+- The staging browser flow was also verified on 2026-10-16: an admin created a
+  coach link, the invitee reached pending access, reuse was blocked, and admin
+  approval granted the expected coach experience.
+- Production has not received any coach-invite migration. All three must be
+  applied in timestamp order before the eventual V2 frontend release.
+
 - `20260914140000_add_unilateral_exercise_flags.sql` was applied and verified
   on 2026-09-14. Both `exercise_templates.is_unilateral` and
   `workout_exercises.is_unilateral` are non-null booleans defaulting to `false`.
@@ -84,8 +102,9 @@ After the baseline passes verification:
    already-verified baseline without review.
 
 The archived `sql/archive/proposals/platform_owner_role_v1.sql` is not part of
-the current-production baseline. It remains a historical proposal until the
-platform-owner RLS and support-mode design is rebuilt as a new migration.
+the current-production baseline. It remains a historical proposal. The
+platform-owner role, facility switching, and support-mode RLS design are V3
+scope and require a new reviewed migration rather than reuse of that proposal.
 
 ## Existing Live Database Audit
 
@@ -130,12 +149,17 @@ The later-created exercise-library tables inherited broader default grants than
 this original RLS rollout intended. RLS still blocks anonymous exercise rows,
 but grant cleanup is required in staging; see the dated audit.
 
-Signup currently depends on public Rip City signup:
+Reusable member signup currently depends on public Rip City signup:
 
 1. `anon` reads the `rip-city` facility.
 2. Supabase Auth creates the user.
 3. The authenticated session inserts `profiles`, `facility_members`, and
    `member_profiles`.
+
+The V2 coach flow instead validates a short-lived code through
+`lookup_coach_invite`, creates the Auth/profile identity, then atomically claims
+the code through `claim_coach_invite`. The claim creates a pending coach
+membership only; same-facility admin approval remains required.
 
 If Supabase email confirmation is enabled later and no session is returned from
 `auth.signUp`, move app-row creation into a secure server-side signup handler or
@@ -152,8 +176,8 @@ After any RLS or signup change:
    workouts, and logs they are authorized for.
 4. Confirm athletes do not see H2K-only modules.
 5. Confirm coaches/admins can manage only their facility.
-6. Confirm platform-owner access is not acting as an accidental cross-facility
-   data bypass.
+6. Confirm no current role has an accidental cross-facility data bypass. The
+   future platform-owner/support-mode design is V3 scope.
 7. Confirm parents have no app data access unless a secure parent policy is
    intentionally introduced.
 

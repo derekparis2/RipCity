@@ -19,11 +19,11 @@ it, paste it into documentation, or reuse it for production/personal accounts.
 | `alphaathlete@example.com` | Test Facility Alpha | Athlete | Approved | Second-facility member isolation |
 
 `rccoach@example.com` will also receive an approved coach membership in Test
-Facility Alpha. This is the legitimate multi-facility coach scenario.
+Facility Alpha. This is an isolation regression fixture; V2 does not expose a
+supported facility-switching workflow.
 
-The platform-owner scenario is intentionally deferred. The verified baseline
-does not yet allow `platform_owner` in `profiles.global_role`; add and test that
-role through a reviewed V2 migration before creating its test account.
+Future multi-facility and platform-owner test scenarios belong to
+`VERSION_3_PLAN.md`. Do not add a platform-owner identity to the V2 fixture.
 
 Status: all nine Auth identities were created, auto-confirmed, and connected to
 their application profiles/memberships in Rip City Staging on 2026-08-28. The

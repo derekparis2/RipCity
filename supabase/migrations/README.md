@@ -4,6 +4,15 @@ Files run in timestamp order and are treated as immutable after successful
 staging application.
 
 - `20260816221135_initial_verified_baseline.sql` is for a fresh empty project.
+- `20261016120000_add_secure_coach_invites.sql` adds seven-day, single-use
+  coach invitations, atomic pending-membership claims, and admin-only invite
+  management. It does not change reusable member signup links.
+- `20261016200000_harden_secure_coach_invites.sql` moves coach-invite secret and
+  expiration generation to the database, makes claimed invites irreversible,
+  and permits membership-free interrupted signups to retry with a fresh link.
+- `20261016201500_lock_down_coach_invite_writes.sql` closes two-step invite
+  reopening and reserves direct coach-invite inserts/updates for the trusted
+  server-side RPC while preserving existing member-invite table policies.
 - Future changes must use a later UTC timestamp and a descriptive name, such as
   `20260817090000_add_facility_timezone.sql`.
 
