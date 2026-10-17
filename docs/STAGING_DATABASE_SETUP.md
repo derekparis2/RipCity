@@ -87,6 +87,12 @@ interrupted account with a fresh link. It was applied to staging on 2026-10-16,
 and the expanded 14-check coach-invite suite passed. Production remains
 unchanged.
 
+The second follow-up migration
+`20261016201500_lock_down_coach_invite_writes.sql` prevents role-changing from
+being used to reopen a claimed invite and blocks direct client writes to
+server-owned coach-invite metadata. It was applied to staging on 2026-10-16,
+and the expanded 16-check coach-invite suite passed.
+
 Production currently contains 93 exercise templates. Git history confirms the
 starter seed has always contained 87, so six production templates were added
 outside the repository seed. They are production data, not silently invented

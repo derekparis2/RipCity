@@ -10,6 +10,9 @@ staging application.
 - `20261016200000_harden_secure_coach_invites.sql` moves coach-invite secret and
   expiration generation to the database, makes claimed invites irreversible,
   and permits membership-free interrupted signups to retry with a fresh link.
+- `20261016201500_lock_down_coach_invite_writes.sql` closes two-step invite
+  reopening and reserves direct coach-invite inserts/updates for the trusted
+  server-side RPC while preserving existing member-invite table policies.
 - Future changes must use a later UTC timestamp and a descriptive name, such as
   `20260817090000_add_facility_timezone.sql`.
 

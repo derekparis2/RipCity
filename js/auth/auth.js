@@ -205,8 +205,13 @@ async function getSignupUser({ email, password, fullName, allowExistingAccount }
     }
   });
 
-  if (authError) throw authError;
-  if (authData.session?.user) return authData.session.user;
+  const existingAccountError = allowExistingAccount && (
+    authError?.code === "user_already_exists"
+    || /already (registered|exists)/i.test(authError?.message || "")
+  );
+
+  if (authError && !existingAccountError) throw authError;
+  if (authData?.session?.user) return authData.session.user;
 
   // Supabase intentionally returns no session when signUp is called for an
   // existing account. A coach whose first invite claim was interrupted can
@@ -217,6 +222,7 @@ async function getSignupUser({ email, password, fullName, allowExistingAccount }
       password
     });
 
+    if (loginError && existingAccountError) throw loginError;
     if (!loginError && loginData.user) return loginData.user;
   }
 

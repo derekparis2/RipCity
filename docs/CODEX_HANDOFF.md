@@ -108,6 +108,10 @@ Current signup-link decision:
   `20261016200000_harden_secure_coach_invites.sql`. It was applied to staging
   on 2026-10-16, and the expanded 14-check coach-invite suite passed. The
   updated UI uses its server-side invite RPC. Production remains unchanged.
+- A second Copilot hardening pass produced
+  `20261016201500_lock_down_coach_invite_writes.sql`. It was applied to staging
+  on 2026-10-16, and the expanded 16-check suite passed. Production remains
+  unchanged.
 - The same branch adds status-specific blocked-account messaging and admin-only
   coach deactivation/reactivation. These updates reuse existing membership rows
   so account, member-profile, group, and historical relationships remain intact.

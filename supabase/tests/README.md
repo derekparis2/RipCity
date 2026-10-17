@@ -43,7 +43,8 @@ denial.
 ## Coach Invite And Approval Checks
 
 After applying `20261016120000_add_secure_coach_invites.sql` and
-`20261016200000_harden_secure_coach_invites.sql` in order, run:
+`20261016200000_harden_secure_coach_invites.sql`, then
+`20261016201500_lock_down_coach_invite_writes.sql` in order, run:
 
 ```bash
 node supabase/tests/staging_coach_invite_rls_checks.mjs
@@ -52,12 +53,13 @@ node supabase/tests/staging_coach_invite_rls_checks.mjs
 The staging-only test creates and cleans up one coach invite and coach
 membership. It verifies that coach links are single-use, create only pending
 coach access, and require approval from an administrator in the invited
-facility. It also verifies server-generated expiration, irreversible claims,
-and that ordinary coaches and other-facility admins cannot approve the request.
+facility. It also verifies server-generated expiration, RPC-only protected
+metadata writes, irreversible claims, and that ordinary coaches and
+other-facility admins cannot approve the request.
 
-Status: all 14 coach-invite, server-expiration, irreversible-claim, and approval
-checks passed against Rip City Staging on 2026-10-16 after both migrations were
-applied.
+Status: all 16 coach-invite, server-expiration, protected-write,
+irreversible-claim, and approval checks passed against Rip City Staging on
+2026-10-16 after all three migrations were applied.
 
 ## Account Lifecycle Checks
 

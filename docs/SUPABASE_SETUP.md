@@ -42,10 +42,14 @@ Staging migration status:
   time, makes a consumed invite irreversible, and keeps interrupted account
   creation recoverable with a fresh link. The expanded 14-check coach-invite
   suite passed after it was applied.
+- `20261016201500_lock_down_coach_invite_writes.sql` was applied to staging on
+  2026-10-16. It prevents two-step reopening of a consumed invite and blocks
+  direct client inserts/updates of coach-invite metadata so creation remains
+  server-controlled. The expanded 16-check suite passed afterward.
 - The staging browser flow was also verified on 2026-10-16: an admin created a
   coach link, the invitee reached pending access, reuse was blocked, and admin
   approval granted the expected coach experience.
-- Production has not received either coach-invite migration. Both must be
+- Production has not received any coach-invite migration. All three must be
   applied in timestamp order before the eventual V2 frontend release.
 
 - `20260914140000_add_unilateral_exercise_flags.sql` was applied and verified

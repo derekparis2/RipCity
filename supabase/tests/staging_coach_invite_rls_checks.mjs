@@ -85,6 +85,19 @@ const overlongInvite = await request("facility_invites?select=id", alphaAdmin.to
 });
 assert(!overlongInvite.response.ok, "database rejects coach invites lasting longer than seven days");
 
+const directCoachInvite = await request("facility_invites?select=id", alphaAdmin.token, {
+  method: "POST",
+  body: JSON.stringify({
+    facility_id: alpha.id,
+    created_by: alphaAdmin.userId,
+    invite_code: `coach-test-direct-${randomUUID()}`,
+    default_role: "coach",
+    active: true,
+    expires_at: new Date(Date.now() + 60_000).toISOString()
+  })
+});
+assert(!directCoachInvite.response.ok, "facility admin cannot bypass the coach-invite creation RPC");
+
 let inviteCode;
 let inviteId;
 let membershipId;
@@ -105,6 +118,18 @@ try {
   assert(
     inviteLifetime === 7 * 24 * 60 * 60 * 1000,
     "database generates the coach invite expiration from server time"
+  );
+
+  const directTimestampUpdate = await request(`facility_invites?id=eq.${inviteId}`, alphaAdmin.token, {
+    method: "PATCH",
+    body: JSON.stringify({
+      created_at: new Date(Date.now() + (29 * 24 * 60 * 60 * 1000)).toISOString(),
+      expires_at: new Date(Date.now() + (30 * 24 * 60 * 60 * 1000)).toISOString()
+    })
+  });
+  assert(
+    !directTimestampUpdate.response.ok || directTimestampUpdate.body.length === 0,
+    "facility admin cannot directly change coach-invite timestamps"
   );
 
   const lookup = await request("rpc/lookup_coach_invite", undefined, {
@@ -153,7 +178,10 @@ try {
     method: "PATCH",
     body: JSON.stringify({ active: true, claimed_by: null, claimed_at: null })
   });
-  assert(!reopenClaimedInvite.response.ok, "claimed coach invite cannot be reopened by an admin");
+  assert(
+    !reopenClaimedInvite.response.ok || reopenClaimedInvite.body.length === 0,
+    "claimed coach invite cannot be reopened by an admin"
+  );
 
   const coachApproval = await request(`facility_members?id=eq.${membershipId}`, alphaCoach.token, {
     method: "PATCH",
