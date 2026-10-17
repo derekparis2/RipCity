@@ -2318,6 +2318,19 @@ td {
     width: 78px;
   }
 
+  .goal-checkin-history-item.is-read-only {
+    grid-template-columns: minmax(0, 1fr) auto;
+    min-height: 38px;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface-1);
+  }
+
+  .goal-checkin-history-item.is-read-only strong {
+    color: var(--text);
+  }
+
   .goal-checkin-unit {
     color: var(--text);
     font-weight: 800;

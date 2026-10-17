@@ -397,11 +397,9 @@ function syncMemberGoalDisclosures() {
 
 function renderMemberGoalCard(goal) {
   const isOwnGoal = goal.source === "member" && goal.created_by === currentAccess.session.user.id;
-  const valueText = goal.target_value === null
-    ? "No target value"
-    : `${goal.current_value ?? 0} / ${goal.target_value}${goal.unit ? ` ${goal.unit}` : ""}`;
-
   const checkins = goalCheckinsByGoalId[goal.id] || [];
+  const valueText = window.RipCityGoalProgress.formatGoalValueSummary(goal, checkins);
+  const isCompleted = goal.status === "completed";
 
   return `
     <article class="member-goal-card ${goal.status === "paused" ? "is-paused" : ""}">
@@ -434,27 +432,29 @@ function renderMemberGoalCard(goal) {
                 ${["active", "paused", "completed"].map(status => `<option value="${status}" ${goal.status === status ? "selected" : ""}>${status[0].toUpperCase() + status.slice(1)}</option>`).join("")}
               </select>
             </label>
-            <details class="goal-checkin-form">
+            ${isCompleted ? "" : `<details class="goal-checkin-form">
               <summary>Check in</summary>
               <div class="goal-checkin-inline">
                 <input type="date" data-goal-checkin-date="${window.RipCityUI.attr(goal.id)}" value="${getTodayString()}" />
                 <input type="number" step="any" data-goal-checkin-value="${window.RipCityUI.attr(goal.id)}" placeholder="${window.RipCityUI.attr(goal.unit || "value")}" />
                 <button class="primary-btn small-btn" type="button" data-save-goal-checkin="${window.RipCityUI.attr(goal.id)}">Add</button>
               </div>
-            </details>
+            </details>`}
             ${isOwnGoal ? `<button class="outline-btn" type="button" data-edit-member-goal="${window.RipCityUI.attr(goal.id)}">Edit</button>` : ""}
             ${isOwnGoal ? `<button class="outline-btn danger-outline-btn" type="button" data-delete-member-goal="${window.RipCityUI.attr(goal.id)}">Delete</button>` : ""}
           </div>
           ${checkins.length ? `<details class="goal-checkin-history">
             <summary>Check-in history (${checkins.length})</summary>
             <div class="goal-checkin-history-list">
-            ${checkins.map(checkin => `<div class="goal-checkin-history-item">
-              <input type="date" aria-label="Check-in date" data-edit-goal-checkin-date="${window.RipCityUI.attr(checkin.id)}" value="${window.RipCityUI.attr(checkin.recorded_date)}" />
-              <input type="number" aria-label="Check-in value" step="any" data-edit-goal-checkin-value="${window.RipCityUI.attr(checkin.id)}" value="${Number(checkin.value)}" />
-              ${goal.unit ? `<span class="goal-checkin-unit">${window.RipCityUI.text(goal.unit)}</span>` : ""}
-              <button class="outline-btn small-btn" type="button" data-update-goal-checkin="${window.RipCityUI.attr(checkin.id)}">Save</button>
-              <button class="outline-btn danger-outline-btn small-btn" type="button" data-delete-goal-checkin="${window.RipCityUI.attr(checkin.id)}">Delete</button>
-            </div>`).join("")}
+            ${checkins.map(checkin => isCompleted
+              ? `<div class="goal-checkin-history-item is-read-only"><span>${window.RipCityUI.text(formatGoalDate(checkin.recorded_date))}</span><strong>${Number(checkin.value)}${goal.unit ? ` ${window.RipCityUI.text(goal.unit)}` : ""}</strong></div>`
+              : `<div class="goal-checkin-history-item">
+                <input type="date" aria-label="Check-in date" data-edit-goal-checkin-date="${window.RipCityUI.attr(checkin.id)}" value="${window.RipCityUI.attr(checkin.recorded_date)}" />
+                <input type="number" aria-label="Check-in value" step="any" data-edit-goal-checkin-value="${window.RipCityUI.attr(checkin.id)}" value="${Number(checkin.value)}" />
+                ${goal.unit ? `<span class="goal-checkin-unit">${window.RipCityUI.text(goal.unit)}</span>` : ""}
+                <button class="outline-btn small-btn" type="button" data-update-goal-checkin="${window.RipCityUI.attr(checkin.id)}">Save</button>
+                <button class="outline-btn danger-outline-btn small-btn" type="button" data-delete-goal-checkin="${window.RipCityUI.attr(checkin.id)}">Delete</button>
+              </div>`).join("")}
             </div>
           </details>` : ""}
         </div>

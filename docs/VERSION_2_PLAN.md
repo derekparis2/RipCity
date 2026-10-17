@@ -337,7 +337,7 @@ school, accountability, body weight, or any custom development target.
 - Name
 - Description
 - Timeline
-- Current value
+- Starting value (stored in `current_value`)
 - Target value
 - Unit
 - Due date
@@ -347,6 +347,10 @@ school, accountability, body weight, or any custom development target.
 - Created date
 - Updated date
 - Completed date
+
+V2 display rule: the stored `current_value` is the starting value. The latest
+goal check-in is the active current value, or the finish value after completion.
+Member and coach views should show Start, Current/Finish, and Target together.
 
 ### Recommended Migration
 
