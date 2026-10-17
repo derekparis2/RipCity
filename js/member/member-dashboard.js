@@ -412,6 +412,7 @@ function syncMemberGoalDisclosures() {
 
 function renderMemberGoalCard(goal) {
   const isOwnGoal = goal.source === "member" && goal.created_by === currentAccess.session.user.id;
+  const isCompleted = goal.status === "completed";
   const checkins = goalCheckinsByGoalId[goal.id] || [];
   const valueText = window.RipCityGoalProgress.formatGoalValueSummary(goal, checkins);
   const goalDateText = formatGoalDateRange(goal);
