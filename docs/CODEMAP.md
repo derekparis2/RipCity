@@ -6,7 +6,12 @@ Use this as the quick orientation guide before editing.
 
 - `index.html` redirects to `login.html`.
 - `login.html`, `signup.html`, and `pending.html` handle account entry.
-- `member-dashboard.html` is the shared member home for athletes and H2K members.
+- `member-dashboard.html` is the concise shared member home for athletes and H2K members.
+- `member-training.html`, `member-habits.html`, `member-history.html`, and
+  `member-goals.html` are the dedicated member feature pages. `profile.html`
+  remains the dedicated profile page.
+- `js/member/member-nav.js` owns the shared member destination map so member
+  tabs do not drift or disappear between pages.
 - `workout-session.html` is the member workout logging screen.
 - `coach-dashboard.html`, `coach-roster.html`, `coach-workouts.html`,
   `coach-exercises.html`, `coach-leaderboards.html`, and `coach-approvals.html`

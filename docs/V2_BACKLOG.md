@@ -197,6 +197,25 @@ page split.
 
 ---
 
+## 7A. Member Page Split And Goals Polish
+
+- **Status:** In progress
+- **Branch:** `derek/member-page-split`
+- **Plan detail:** [Goals](VERSION_2_PLAN.md#2-goals) · [Member mobile dashboard](VERSION_2_PLAN.md#member-mobile-dashboard)
+
+This frontend-only package turns the overloaded member dashboard into a focused
+home screen and dedicated Training, Habits, History, Goals, and Profile pages.
+It keeps H2K-only navigation hidden from athletes, uses one consistent member
+navigation map, preserves the existing facility-scoped feature behavior, and
+gives the Goals workflow a clearer create/edit and active-progress layout.
+
+**Complete when:** Every member tab opens its own page, all existing training,
+habit, history, goal, and profile actions still work for the correct member
+type, the member navigation stays complete across dashboard/profile/workout
+views, and phone/desktop pull-request preview checks pass.
+
+---
+
 ## 7B. Member-Facing Leaderboards
 
 - **Status:** Planned after the member page split

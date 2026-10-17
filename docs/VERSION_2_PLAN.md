@@ -337,7 +337,7 @@ school, accountability, body weight, or any custom development target.
 - Name
 - Description
 - Timeline
-- Current value
+- Starting value (stored in `current_value`)
 - Target value
 - Unit
 - Due date
@@ -347,6 +347,10 @@ school, accountability, body weight, or any custom development target.
 - Created date
 - Updated date
 - Completed date
+
+V2 display rule: the stored `current_value` is the starting value. The latest
+goal check-in is the active current value, or the finish value after completion.
+Member and coach views should show Start, Current/Finish, and Target together.
 
 ### Recommended Migration
 
@@ -382,7 +386,7 @@ Recommended timeline values:
 
 Member side:
 
-- Add a Goals section to the member dashboard.
+- Give Goals its own member page linked from the shared member navigation.
 - Members can create a goal.
 - Members can edit their own goals.
 - Members can update status on coach-created goals.
@@ -943,8 +947,11 @@ native app.
 V2 direction:
 
 - Keep the bottom mobile nav.
-- Consider splitting Dashboard, Training, Habits, History, and Profile into
-  clearer page-level views.
+- Use dedicated Dashboard, Training, Habits, History, Goals, and Profile views.
+- Keep the dashboard focused on personal metrics, feedback, and concise links
+  into those feature pages instead of rendering every workflow at once.
+- Keep Habits visible only to H2K members while every other approved member
+  destination remains present across member pages and workout sessions.
 - Reduce tall stacked cards where a compact row or summary will work better.
 - Keep the desktop dashboard layout separate where it already feels good.
 - Make the training calendar the main place to find today, past, and future

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Member History</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css?v=member-page-split-1" />
+</head>
+<body class="auth-body member-dashboard-body member-feature-page" data-member-page="history">
+  <aside class="sidebar member-sidebar">
+    <div class="brand"><div class="brand-mark"><img src="assets/rip-city-logo.png" alt="Rip City logo"></div><div><h1>RIP CITY</h1><p class="member-role-pending" id="member-brand-subtitle">Member</p></div></div>
+    <div class="mode-card"><span>Current View</span><strong class="member-role-pending" id="member-program-label">Member</strong><a class="outline-link small-btn" href="profile.html">View Profile</a></div>
+    <nav class="member-shell-nav" data-member-nav="history" aria-label="Member navigation"></nav>
+    <div class="user-card"><div class="avatar" id="member-avatar">RC</div><div><strong id="member-sidebar-name">Member</strong><span class="h2k-band-badge hidden" id="member-band-color">No Band</span><span class="member-role-pending" id="member-sidebar-role">Approved</span></div></div>
+  </aside>
+  <main class="main-content member-main-content member-feature-main">
+    <header class="topbar"><div><p class="eyebrow" id="member-dashboard-date">PROGRESS</p><h2>Member History</h2></div><div class="topbar-actions"><button class="outline-btn" id="h2k-logout-btn">Log Out</button></div></header>
+    <section class="hero-card h2k-hero member-feature-hero"><div><p class="eyebrow">WEEK BY WEEK</p><h3>See the work you have already put in.</h3><p>Review recent H2K scores or assigned-workout completion.</p></div></section>
+    <section class="panel member-page-panel weekly-history-panel" id="member-history-section">
+      <div class="panel-heading"><div><p class="eyebrow" id="member-history-eyebrow">PROGRESS</p><h3>Weekly History</h3></div><p id="member-weekly-history-message" class="auth-message" aria-live="polite"></p></div>
+      <div class="weekly-history-stepper" id="member-history-stepper"><button class="icon-btn" id="member-history-prev-week" type="button" aria-label="Previous week">‹</button><div><span class="eyebrow" id="member-history-week-context">CURRENT WEEK</span><strong id="member-history-week-label">This Week</strong></div><button class="icon-btn" id="member-history-next-week" type="button" aria-label="Next week">›</button></div>
+      <div id="member-weekly-history-list" class="weekly-score-list"><div class="empty-state">Loading member history...</div></div>
+    </section>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/shared/supabaseClient.js"></script><script src="js/shared/ui-utils.js"></script><script src="js/shared/access-control.js"></script><script src="js/shared/workout-data.js"></script><script src="js/shared/leaderboard-metrics.js?v=coach-leaderboards-2"></script>
+  <script src="js/member/member-nav.js?v=member-page-split-1"></script><script src="js/member/member-dashboard.js?v=member-page-split-1"></script>
+</body>
+</html>

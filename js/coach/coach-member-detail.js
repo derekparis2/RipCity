@@ -27,23 +27,23 @@ function formatGoalTimeline(timeline) {
 }
 
 function getGoalProgress(goal) {
-  if (goal.status === "completed") return { percent: 100, tone: "good", label: "100%" };
-
   const checkins = detailCheckinsByGoalId[goal.id] || [];
-  const latestCheckin = checkins[checkins.length - 1];
-  const currentValue = Number(latestCheckin?.value ?? goal.current_value);
-  const startValue = Number(goal.current_value);
-  const targetValue = goal.target_value === null ? NaN : Number(goal.target_value);
+  const values = window.RipCityGoalProgress.getGoalValues(goal, checkins);
+  const { currentValue, startValue, targetValue } = values;
+
+  if (goal.status === "completed") {
+    return { percent: 100, tone: "good", label: "Completed", ...values };
+  }
 
   // Progress is measured from the starting value to the target, not from zero.
-  if (!Number.isFinite(currentValue) || !Number.isFinite(startValue) || !Number.isFinite(targetValue) || targetValue === startValue) {
-    return { percent: null, tone: "warning", label: "Not set", currentValue: null };
+  if (currentValue === null || startValue === null || targetValue === null || targetValue === startValue) {
+    return { percent: null, tone: "warning", label: "Not set", ...values };
   }
 
   const rawPercent = ((currentValue - startValue) / (targetValue - startValue)) * 100;
   const percent = Math.max(0, Math.min(100, Math.round(rawPercent)));
   const tone = percent >= 80 ? "good" : percent >= 40 ? "warning" : "danger";
-  return { percent, tone, label: `${percent}%`, currentValue };
+  return { percent, tone, label: `${percent}%`, ...values };
 }
 
 function showDetailMessage(message, isError = false) {
@@ -84,7 +84,9 @@ function renderDetailGoals() {
   const completedGoals = detailGoals.filter(goal => goal.status === "completed");
   const renderGoal = goal => {
     const progress = getGoalProgress(goal);
-    const displayedCurrentValue = progress.currentValue ?? goal.current_value;
+    const checkins = detailCheckinsByGoalId[goal.id] || [];
+    const valueSummary = window.RipCityGoalProgress.formatGoalValueSummary(goal, checkins);
+    const displayValue = value => value === null ? "—" : value;
 
     return `
     <article class="member-goal-card ${goal.status === "paused" ? "is-paused" : ""}">
@@ -96,16 +98,16 @@ function renderDetailGoals() {
         ${goal.description ? `<p>${window.RipCityUI.text(goal.description)}</p>` : ""}
         <div class="member-goal-meta">
           <span>${window.RipCityUI.text(formatGoalTimeline(goal.timeline))}</span>
-          <span>${window.RipCityUI.text(goal.target_value === null ? "No target value" : `${displayedCurrentValue ?? 0} / ${goal.target_value}${goal.unit ? ` ${goal.unit}` : ""}`)}</span>
+          <span>${window.RipCityUI.text(valueSummary)}</span>
           <span>${window.RipCityUI.text(formatGoalDate(goal.due_date))}</span>
         </div>
         <div class="coach-goal-progress" aria-label="Goal progress: ${progress.label}">
             <div class="coach-goal-progress-heading"><span>Progress</span><strong class="status-${progress.tone}">${progress.label}</strong></div>
             <div class="progress-bar"><div class="status-${progress.tone}" style="width: ${progress.percent ?? 0}%"></div></div>
-            ${goal.target_value === null ? "" : `<div class="coach-goal-progress-scale">
-              <span>Start ${goal.current_value ?? 0}${goal.unit ? ` ${window.RipCityUI.text(goal.unit)}` : ""}</span>
-              <span>Current ${displayedCurrentValue ?? 0}${goal.unit ? ` ${window.RipCityUI.text(goal.unit)}` : ""}</span>
-              <span>Goal ${goal.target_value}${goal.unit ? ` ${window.RipCityUI.text(goal.unit)}` : ""}</span>
+            ${progress.targetValue === null ? "" : `<div class="coach-goal-progress-scale">
+              <span>Start ${displayValue(progress.startValue)}${goal.unit ? ` ${window.RipCityUI.text(goal.unit)}` : ""}</span>
+              <span>${progress.currentLabel} ${displayValue(progress.currentValue)}${goal.unit ? ` ${window.RipCityUI.text(goal.unit)}` : ""}</span>
+              <span>Target ${progress.targetValue}${goal.unit ? ` ${window.RipCityUI.text(goal.unit)}` : ""}</span>
             </div>`}
         </div>
       </div>
