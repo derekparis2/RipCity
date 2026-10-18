@@ -22,6 +22,8 @@ a production release. The current V2 order is:
    `docs/STAGING_TEST_ACCOUNTS.md`.
 3. `staging/v2/02_test_account_profiles.sql`
 4. `staging/v2/03_leaderboard_demo_data.sql`
+5. `staging/v2/04_remove_cross_facility_coach_fixture.sql` only when upgrading
+   an older staging database that received the obsolete shared-coach fixture
 
 `01_two_facility_foundation.sql` adds one unmistakably fake second facility and
 two fake athlete groups. Run it only in **Rip City Staging**, after the verified
@@ -41,11 +43,17 @@ Status: successfully applied and verified in Rip City Staging on 2026-08-28.
 `02_test_account_profiles.sql` is the next staging-only fixture. After the
 nine fake, auto-confirmed Auth identities in `docs/STAGING_TEST_ACCOUNTS.md`
 exist, it creates their application profiles, facility roles/statuses, member
-profiles, group memberships, and the cross-facility coach scenario. It resolves
-Auth IDs by fake email and stores no password.
+profiles, and group memberships. It resolves Auth IDs by fake email and stores
+no password. Each V2 identity belongs to one facility.
 
 Status: successfully applied and verified in Rip City Staging on 2026-08-28.
-The result is nine application profiles and ten facility memberships.
+The maintained result is nine application profiles and nine facility
+memberships. Older staging databases should run
+`04_remove_cross_facility_coach_fixture.sql` once to reach this shape.
+
+Status: the staging correction was applied on 2026-10-18. The Rip City coach
+now belongs only to Rip City; Test Facility Alpha retains its dedicated admin,
+coach, and athlete accounts.
 
 `03_leaderboard_demo_data.sql` is an optional, repeatable staging fixture for
 leaderboard QA. Run it after `02_test_account_profiles.sql`. It adds five fake

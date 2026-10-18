@@ -160,8 +160,8 @@ Status: completed and verified in Rip City Staging on 2026-08-28. The result is:
 - Total Auth users and application profiles remain zero.
 
 After the seed passes, create entirely fake Auth users and application rows for
-all active roles, pending/inactive statuses, and a coach with memberships in
-both facilities. Then run the cross-facility RLS matrix before starting V2
+all active roles and pending/inactive statuses across both facilities. Then run
+the cross-facility RLS matrix before starting V2
 feature migrations.
 
 Use the maintained fake identities and intended role/status mapping in
@@ -176,10 +176,16 @@ The fixture requires exactly those nine Auth users and an otherwise empty set
 of application profiles/memberships. It looks up Auth UUIDs by fake email and
 stores no password.
 
-Status: completed and verified in Rip City Staging on 2026-08-28. The result is
-nine profiles and ten memberships. `rccoach@example.com` has approved coach
-memberships in both facilities; pending and inactive test memberships retain
-their intended statuses.
+Status: completed and verified in Rip City Staging on 2026-08-28. The original
+result had nine profiles and ten memberships. The obsolete Alpha membership
+for `rccoach@example.com` was removed from the maintained fixture on
+2026-10-18, leaving nine profiles and nine one-facility memberships; pending
+and inactive fixtures retain their intended statuses.
+
+The staging-only cleanup file
+`supabase/seeds/staging/v2/04_remove_cross_facility_coach_fixture.sql` was
+applied successfully on 2026-10-18 to bring the existing project to that
+maintained shape.
 
 For leaderboard testing, optionally run the repeatable fixture:
 
@@ -196,5 +202,6 @@ Status: applied and verified in Rip City Staging on 2026-10-15. The result was
 38 completed fixture assignments.
 
 The manual role smoke tests and the repeatable read-only RLS suite were then
-completed. All 45 automated read checks passed, including cross-facility scope,
-member self-only records, and pending/inactive protected-data denial.
+completed. The maintained suite covers facility isolation, member self-only
+records, and pending/inactive protected-data denial without a V2
+multi-facility identity.

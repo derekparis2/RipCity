@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/styles.css?v=dashboard-feedback-1" />
+  <link rel="stylesheet" href="css/styles.css?v=targeted-announcements-1" />
 </head>
 
 <body class="auth-body coach-dashboard-page">
@@ -70,6 +70,63 @@
           <button class="primary-btn" type="button" data-copy-signup-link="general">Copy General Link</button>
         </div>
       </article>
+    </section>
+
+    <section class="panel coach-announcements-panel">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">COMMUNICATION</p>
+          <h3>Announcements</h3>
+          <p>Send an update to the facility, selected groups, or selected members.</p>
+        </div>
+      </div>
+
+      <div class="coach-announcements-layout">
+        <form class="coach-announcement-form" id="coach-announcement-form">
+          <label>Title
+            <input id="coach-announcement-title" type="text" maxlength="120" required />
+          </label>
+          <label>Message
+            <textarea id="coach-announcement-body" rows="4" maxlength="2000" required></textarea>
+          </label>
+          <label>Audience
+            <select id="coach-announcement-audience">
+              <option value="facility">Entire facility</option>
+              <option value="targeted">Selected groups or members</option>
+            </select>
+          </label>
+          <label>Importance
+            <select id="coach-announcement-importance">
+              <option value="standard">Standard</option>
+              <option value="important">Important</option>
+            </select>
+          </label>
+          <label>Expires <span class="optional-label">Optional</span>
+            <input id="coach-announcement-expires" type="datetime-local" />
+          </label>
+          <div class="announcement-targets hidden" id="coach-announcement-targets">
+            <fieldset>
+              <legend>Groups</legend>
+              <div class="announcement-checkbox-list" id="coach-announcement-groups"></div>
+            </fieldset>
+            <fieldset>
+              <legend>Members</legend>
+              <div class="announcement-checkbox-list" id="coach-announcement-members"></div>
+            </fieldset>
+          </div>
+          <button class="primary-btn" id="coach-announcement-submit" type="submit">Publish Announcement</button>
+          <p class="auth-message" id="coach-announcement-message" aria-live="polite"></p>
+        </form>
+
+        <div class="coach-announcement-history">
+          <div class="coach-announcement-history-heading">
+            <h4>Published Announcements</h4>
+          </div>
+          <div class="coach-announcement-list" id="coach-announcement-list">
+            <div class="empty-state">Loading announcements...</div>
+          </div>
+        </div>
+      </div>
     </section>
 
     <section class="stats-grid">
@@ -202,5 +259,6 @@
   <script src="js/shared/workout-data.js"></script>
   <script src="js/shared/attention-rules.js?v=coach-attention-1"></script>
   <script src="js/coach/coach-dashboard.js?v=coach-attention-1"></script>
+  <script src="js/coach/coach-announcements.js?v=targeted-announcements-1"></script>
 </body>
 </html>

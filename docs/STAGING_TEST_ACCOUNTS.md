@@ -18,16 +18,14 @@ it, paste it into documentation, or reuse it for production/personal accounts.
 | `alphacoach@example.com` | Test Facility Alpha | Coach | Approved | Second-facility coaching workflows |
 | `alphaathlete@example.com` | Test Facility Alpha | Athlete | Approved | Second-facility member isolation |
 
-`rccoach@example.com` will also receive an approved coach membership in Test
-Facility Alpha. This is an isolation regression fixture; V2 does not expose a
-supported facility-switching workflow.
-
 Future multi-facility and platform-owner test scenarios belong to
 `VERSION_3_PLAN.md`. Do not add a platform-owner identity to the V2 fixture.
 
 Status: all nine Auth identities were created, auto-confirmed, and connected to
 their application profiles/memberships in Rip City Staging on 2026-08-28. The
-fixture returned the expected ten membership rows.
+fixture originally returned ten membership rows. The obsolete Alpha membership
+for `rccoach@example.com` was removed on 2026-10-18; the maintained fixture now
+contains nine one-facility memberships.
 
 ## Display-Only Leaderboard Members
 
@@ -52,17 +50,14 @@ Verified on 2026-08-28:
 - Rip City H2K member saw the six Rip City habits.
 - Rip City athlete did not see H2K member UI.
 - Pending and inactive members were blocked from normal application access.
-- The cross-facility coach currently defaults to Rip City.
 
 Known UI gaps confirmed by this test:
 
 - Test Facility Alpha still displays hardcoded Rip City branding.
 - Inactive members receive the generic pending-account message.
-- Multi-facility accounts do not yet have a facility selector.
-
 The repeatable read-only suite in
-`supabase/tests/staging_rls_read_checks.mjs` passed all 45 checks on 2026-08-28,
-including one-facility and two-facility scope counts.
+`supabase/tests/staging_rls_read_checks.mjs` covers both one-facility datasets
+without requiring a multi-facility V2 account.
 
 ## Safety Rules
 

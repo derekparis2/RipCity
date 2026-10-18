@@ -170,9 +170,10 @@ Current status:
 - The staging-only two-facility seed passed on 2026-08-28. Rip City has its five
   groups and six H2K habits; Test Facility Alpha has two athlete groups and no
   H2K habits.
-- The staging test-account fixture passed on 2026-08-28: nine fake profiles,
-  ten facility memberships, correct pending/inactive cases, and one coach with
-  approved memberships in both facilities.
+- The staging test-account fixture started with nine fake profiles and ten
+  memberships. The obsolete Alpha membership for `rccoach@example.com` was
+  removed from the maintained fixture on 2026-10-18; each of the nine V2 test
+  identities now belongs to one facility.
 - The optional leaderboard demo fixture is maintained at
   `supabase/seeds/staging/v2/03_leaderboard_demo_data.sql`. It was applied and
   verified in staging on 2026-10-15: 10 display-only members, 728 marked habit

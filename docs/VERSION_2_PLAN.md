@@ -671,13 +671,19 @@ The announcement record includes:
 - `created_by`
 - `title`
 - `body`
-- `publish_date`
+- `importance` (`standard` or `important`)
+- `audience_type`
+- `publish_at`
 - `expires_at`
 - `created_at`
-- `updated_at`
 
 Add dismissal/read state later if it remains required after the first targeted
 announcement workflow is reviewed.
+
+The coach form defaults expiration to 24 hours, while allowing another future
+time or no expiration. Important announcements sort above standard messages.
+Expired messages disappear from member access, remain in a collapsed coach
+history, and can be permanently cleared by their creator or a facility admin.
 
 Possible future `coach_announcement_dismissals` fields:
 
@@ -823,8 +829,9 @@ Maintain two distinct safety plans:
 2. Recover production data, Auth identities, and stored files from backups.
 
 The first staging milestone is a clean project created from the repository,
-seeded with at least two fake facilities and fake global admin, facility admin,
-coach, athlete, H2K, pending, inactive, and cross-facility coach scenarios.
+seeded with at least two fake facilities and fake facility-admin, coach,
+athlete, H2K, pending, and inactive scenarios. Cross-facility denial is tested
+between the dedicated accounts for each facility.
 
 ### Setup Direction
 

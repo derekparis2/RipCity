@@ -43,6 +43,8 @@ Use this as the quick orientation guide before editing.
 - `js/coach/coach-roster.js` manages facility members, group membership, member status, and H2K band color.
 - `js/coach/coach-dashboard.js` powers the coach needs-attention queue and
   workout completion review.
+- `js/coach/coach-announcements.js` powers the dashboard announcement composer,
+  audience selection, published list, and authorized deletion.
 - `js/coach/member-history.js` powers the 12-week H2K or assigned-workout
   history shown on an individual coach member-detail page.
 - `js/coach/coach-leaderboards.js` powers the facility-scoped H2K and athlete
@@ -57,6 +59,8 @@ Use this as the quick orientation guide before editing.
   the standalone library controller in `exercise-library-page.js`, and common
   state/helpers in `core.js` and `data.js`.
 - `js/member/member-dashboard.js` powers member stats, H2K habits, today’s workout, workout history, and feedback link display.
+- `js/member/member-announcements.js` renders the active facility, group, and
+  individual announcements permitted to the signed-in member by RLS.
 - `js/member/profile.js` powers member profile editing and the read-only H2K band display.
 - `js/member/workout-session-core.js`, `js/member/workout-session-render.js`, and
   `js/member/workout-session.js` split workout logging into state/loaders,

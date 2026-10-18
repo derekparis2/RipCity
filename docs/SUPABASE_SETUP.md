@@ -34,6 +34,19 @@ their two-facility role fixtures were added and verified on 2026-08-28.
 
 Staging migration status:
 
+- `20261018100000_add_targeted_coach_announcements.sql` was applied to staging
+  on 2026-10-18. The first RLS test exposed that its invoker creation RPC could
+  not pass the table insert policy; no test announcements were left behind.
+- `20261018103000_fix_targeted_announcement_creation.sql` was applied to
+  staging on 2026-10-18. It makes the RPC explicitly facility-scoped and keeps
+  creation in a validated server-side transaction. All 16 facility, group,
+  individual-recipient, importance, write-denial, isolation, and admin-delete
+  checks then passed, and the test announcements were cleaned up.
+- The obsolete Test Facility Alpha membership for `rccoach@example.com` was
+  removed with the staging-only `04_remove_cross_facility_coach_fixture.sql`.
+  Each V2 login fixture now belongs to one facility. Production has not
+  received either announcement migration.
+
 - `20261016120000_add_secure_coach_invites.sql` was applied to staging and all
   12 coach-invite/RLS checks passed on 2026-10-16. The applied migration is now
   immutable; any correction must use a new timestamped migration.

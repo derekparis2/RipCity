@@ -86,8 +86,8 @@ Every facility-scoped module must be tested with two facilities and at least:
 - One coach in each facility.
 - One athlete and one H2K member where applicable.
 - One pending and one inactive membership.
-- One cross-facility coach fixture for isolation regression testing, even though
-  the V2 UI does not support switching facilities.
+- Dedicated coaches in both facilities for cross-facility denial testing. V2
+  fixtures should not give one identity memberships in both facilities.
 
 For each create/read/update/delete action, verify both the allowed request and a
 same-role request targeting the other facility. A failed UI control is not

@@ -112,8 +112,9 @@ same-row restoration of member profiles, group relationships, and facility
 access. Every temporarily changed fake-account status was restored afterward.
 
 Future platform operations are tracked in
-[`VERSION_3_PLAN.md`](VERSION_3_PLAN.md). The second staging facility and
-cross-facility coach remain tenant-isolation fixtures, not supported V2 UI.
+[`VERSION_3_PLAN.md`](VERSION_3_PLAN.md). The second staging facility and its
+dedicated accounts remain tenant-isolation fixtures; multi-facility identities
+are not part of the V2 test shape or UI.
 
 **Completed:** Pending, rejected, and inactive accounts receive the correct
 blocked experience; only facility admins can deactivate/reactivate coaches;
@@ -235,16 +236,18 @@ isolated, and phone/desktop staging checks pass.
 
 ## 8. Targeted Coach Announcements
 
-- **Status:** Ready
-- **Suggested branch:** `<name>/coach-communication`
+- **Status:** In progress
+- **Branch:** `derek/targeted-announcements`
 - **Plan detail:** [Coach announcements and notes](VERSION_2_PLAN.md#5-coach-announcements-and-notes) · [Notification direction](VERSION_2_PLAN.md#notification-direction)
 
 The V2 communication slice lets coaches/admins publish announcements to their
 full facility, one or more groups, or one or more individual members. Members
 see only announcements that target them, with the real sender and publish date
 shown on the member dashboard. Facility-scoped RLS and two-facility tests are
-required. Expiration is included if it can be completed safely without delaying
-the core targeting flow.
+required. Announcements default to a one-day expiration that coaches can change
+or remove, support Standard and Important ordering, and keep expired messages
+out of member access. Creators can clear their own expired messages and facility
+admins can clear all expired facility announcements.
 
 Private coach-note UI, a generalized notification center, delivery channels,
 and richer read/dismissal behavior are deferred to V3. The existing private
@@ -291,7 +294,7 @@ archive behavior for historical workouts, and the approved workout-completion
 connection to H2K training habits. It also finalizes multi-coach assignment
 behavior by displaying the assigning coach to members and coaches, preserving
 historical attribution, adding database-safe duplicate prevention, and testing
-two same-facility coaches plus a denied cross-facility coach. It must preserve
+two same-facility coaches plus a denied other-facility coach. It must preserve
 production history and add two-facility write/isolation tests.
 
 The true multi-facility universal catalog with facility overrides/hides is V3

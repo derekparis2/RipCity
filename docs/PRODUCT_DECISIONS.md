@@ -21,8 +21,8 @@ they are intentionally revisited.
 ## Facility Memberships And Roles
 
 - V2 supports one active facility membership per account in the product UI.
-- The second staging facility and cross-facility coach exist only to test
-  isolation.
+- The second staging facility and its dedicated Alpha accounts exist only to
+  test isolation. V2 test identities each belong to one facility.
 - Facility admins can perform coaching work and broadly manage their facility.
 - New signups remain pending until a facility coach/admin approves them.
 - The platform owner establishes the first facility admin. After that,

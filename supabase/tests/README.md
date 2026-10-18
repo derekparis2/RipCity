@@ -19,7 +19,7 @@ or print it. It signs into all nine fake accounts and runs read-only checks for:
 - Member self-only profile/member-profile visibility.
 - Pending and inactive protected habit denial.
 - Rip City versus Test Facility Alpha isolation.
-- The approved cross-facility coach scenario.
+- Cross-facility denial between the dedicated Rip City and Alpha accounts.
 
 The test targets only the hardcoded Rip City Staging reference and publishable
 key. It performs no insert, update, or delete operations.
@@ -77,3 +77,20 @@ cleanup restores every fixture to its original status even if a check fails.
 
 Status: all 20 account-lifecycle checks passed against Rip City Staging on
 2026-10-16, and all temporary fixture-status changes were restored.
+
+## Targeted Announcement Checks
+
+After applying `20261018100000_add_targeted_coach_announcements.sql` and
+`20261018103000_fix_targeted_announcement_creation.sql` in order, run:
+
+```bash
+node supabase/tests/staging_announcements_rls_checks.mjs
+```
+
+The staging-only test creates and cleans up facility, group, and individual
+announcements. It verifies member/coach write permissions, Rip City versus
+Alpha isolation, recipient-only visibility, and facility-admin deletion.
+
+Status: all 16 targeted-announcement checks passed against Rip City Staging on
+2026-10-18 after both announcement migrations were applied. All temporary
+announcements were cleaned up.
