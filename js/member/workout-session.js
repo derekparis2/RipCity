@@ -177,16 +177,13 @@ function getWorkoutSessionMemberTypeLabel() {
 
 function updateWorkoutSessionShell() {
   const subtitle = document.getElementById("workout-session-brand-subtitle");
-  const habitsNavLink = document.getElementById("workout-session-habits-nav-link");
   const isH2K = workoutMemberProfile?.member_type === "h2k";
 
   if (subtitle) {
     subtitle.textContent = getWorkoutSessionMemberTypeLabel();
   }
 
-  if (habitsNavLink) {
-    habitsNavLink.classList.toggle("hidden", !isH2K);
-  }
+  window.RipCityMemberNav?.setH2KVisibility(isH2K);
 
   document.querySelectorAll(".member-role-pending").forEach(element => {
     element.classList.remove("member-role-pending");

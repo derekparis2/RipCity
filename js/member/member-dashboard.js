@@ -23,6 +23,11 @@ let goalCheckinsByGoalId = {};
 
 const MEMBER_WEEKLY_HISTORY_WEEKS = 8;
 
+function setMemberText(id, value) {
+  const element = document.getElementById(id);
+  if (element) element.textContent = value;
+}
+
 const MEMBER_WORKOUT_ASSIGNMENT_SELECT = `
   id,
   assigned_date,
@@ -212,6 +217,14 @@ function formatGoalTimeline(timeline) {
   }[timeline] || "Short term";
 }
 
+function formatGoalDateRange(goal) {
+  const startDate = formatGoalTimestamp(goal.created_at);
+  const endDate = goal.status === "completed" && goal.completed_at
+    ? formatGoalTimestamp(goal.completed_at)
+    : formatGoalDate(goal.due_date);
+  return `${startDate} – ${endDate}`;
+}
+
 async function loadGoalCheckins() {
   if (!currentMemberProfile) return;
 
@@ -342,19 +355,28 @@ function renderGoalChart(goal) {
 
 function renderMemberGoals() {
   const activeList = document.getElementById("member-active-goal-list");
+  const pausedList = document.getElementById("member-paused-goal-list");
   const completedList = document.getElementById("member-completed-goal-list");
+  const pausedCount = document.getElementById("member-paused-goal-count");
   const completedCount = document.getElementById("member-completed-goal-count");
-  if (!activeList || !completedList || !completedCount) return;
+  if (!activeList || !pausedList || !completedList || !pausedCount || !completedCount) return;
 
-  const activeGoals = memberGoals.filter(goal => goal.status !== "completed");
+  const activeGoals = memberGoals.filter(goal => goal.status === "active");
+  const pausedGoals = memberGoals.filter(goal => goal.status === "paused");
   const completedGoals = memberGoals.filter(goal => goal.status === "completed");
+  pausedCount.textContent = pausedGoals.length;
   completedCount.textContent = completedGoals.length;
   activeList.innerHTML = activeGoals.length
     ? activeGoals.map(renderMemberGoalCard).join("")
     : `<div class="empty-state">No active goals yet. Add one above to get started.</div>`;
+  pausedList.innerHTML = pausedGoals.length
+    ? pausedGoals.map(renderMemberGoalCard).join("")
+    : `<div class="empty-state">Paused goals will appear here.</div>`;
   completedList.innerHTML = completedGoals.length
     ? completedGoals.map(renderMemberGoalCard).join("")
     : `<div class="empty-state">Completed goals will appear here.</div>`;
+
+  syncMemberGoalDisclosures();
 
   document.querySelectorAll("[data-goal-status]").forEach(select => {
     select.addEventListener("change", () => updateMemberGoalStatus(select.dataset.goalStatus, select.value));
@@ -376,63 +398,98 @@ function renderMemberGoals() {
   });
 }
 
+function syncMemberGoalDisclosures() {
+  const isMobile = window.matchMedia("(max-width: 700px)").matches;
+  document.querySelectorAll("[data-member-goal-disclosure]").forEach(disclosure => {
+    disclosure.open = false;
+  });
+
+  const editor = document.getElementById("member-goal-editor");
+  if (editor && !document.getElementById("member-goal-id")?.value) {
+    editor.open = !isMobile;
+  }
+}
+
 function renderMemberGoalCard(goal) {
   const isOwnGoal = goal.source === "member" && goal.created_by === currentAccess.session.user.id;
-  const valueText = goal.target_value === null
-    ? "No target value"
-    : `${goal.current_value ?? 0} / ${goal.target_value}${goal.unit ? ` ${goal.unit}` : ""}`;
-
+  const isCompleted = goal.status === "completed";
   const checkins = goalCheckinsByGoalId[goal.id] || [];
+  const valueText = window.RipCityGoalProgress.formatGoalValueSummary(goal, checkins);
+  const goalDateText = formatGoalDateRange(goal);
 
   return `
     <article class="member-goal-card ${goal.status === "paused" ? "is-paused" : ""}">
-      <div class="member-goal-card-main">
-        <div class="member-goal-card-heading">
-          <h4>${window.RipCityUI.text(goal.name)}</h4>
-          <span class="status-pill">${window.RipCityUI.text(goal.source === "coach" ? "Coach goal" : "Your goal")}</span>
-        </div>
-        ${goal.description ? `<p>${window.RipCityUI.text(goal.description)}</p>` : ""}
-        <div class="member-goal-meta">
-          <span>${window.RipCityUI.text(formatGoalTimeline(goal.timeline))}</span>
-          <span>${window.RipCityUI.text(valueText)}</span>
-          <span>${window.RipCityUI.text(formatGoalDate(goal.due_date))}</span>
-        </div>
-        <div class="goal-checkin-chart">
-          ${renderGoalChart(goal)}
-        </div>
-      </div>
-      <div class="member-goal-actions">
-        <label>
-          Status
-          <select data-goal-status="${window.RipCityUI.attr(goal.id)}">
-            ${["active", "paused", "completed"].map(status => `<option value="${status}" ${goal.status === status ? "selected" : ""}>${status[0].toUpperCase() + status.slice(1)}</option>`).join("")}
-          </select>
-        </label>
-        <details class="goal-checkin-form">
-          <summary>Check in</summary>
-          <div class="goal-checkin-inline">
-            <input type="date" data-goal-checkin-date="${window.RipCityUI.attr(goal.id)}" value="${getTodayString()}" />
-            <input type="number" step="any" data-goal-checkin-value="${window.RipCityUI.attr(goal.id)}" placeholder="${window.RipCityUI.attr(goal.unit || "value")}" />
-            <button class="primary-btn small-btn" type="button" data-save-goal-checkin="${window.RipCityUI.attr(goal.id)}">Add</button>
+      <details class="member-goal-disclosure" data-member-goal-disclosure>
+        <summary class="member-goal-summary">
+          <div class="member-goal-summary-copy">
+            <div class="member-goal-card-heading">
+              <h4>${window.RipCityUI.text(goal.name)}</h4>
+              <div class="member-goal-summary-badges">
+                <span class="status-pill">${window.RipCityUI.text(goal.source === "coach" ? "Coach goal" : "Your goal")}</span>
+                <span class="status-pill goal-status-pill is-${window.RipCityUI.attr(goal.status)}">${window.RipCityUI.text(goal.status[0].toUpperCase() + goal.status.slice(1))}</span>
+              </div>
+            </div>
+            <div class="member-goal-meta">
+              <span>${window.RipCityUI.text(valueText)}</span>
+              <span>${window.RipCityUI.text(formatGoalTimeline(goal.timeline))}</span>
+              <span>${window.RipCityUI.text(goalDateText)}</span>
+            </div>
           </div>
-        </details>
-        ${isOwnGoal ? `<button class="outline-btn" type="button" data-edit-member-goal="${window.RipCityUI.attr(goal.id)}">Edit</button>` : ""}
-        ${isOwnGoal ? `<button class="outline-btn danger-outline-btn" type="button" data-delete-member-goal="${window.RipCityUI.attr(goal.id)}">Delete</button>` : ""}
-      </div>
-      ${checkins.length ? `<details class="goal-checkin-history">
-        <summary>Check-in history (${checkins.length})</summary>
-        <div class="goal-checkin-history-list">
-        ${checkins.map(checkin => `<div class="goal-checkin-history-item">
-          <input type="date" aria-label="Check-in date" data-edit-goal-checkin-date="${window.RipCityUI.attr(checkin.id)}" value="${window.RipCityUI.attr(checkin.recorded_date)}" />
-          <input type="number" aria-label="Check-in value" step="any" data-edit-goal-checkin-value="${window.RipCityUI.attr(checkin.id)}" value="${Number(checkin.value)}" />
-          ${goal.unit ? `<span class="goal-checkin-unit">${window.RipCityUI.text(goal.unit)}</span>` : ""}
-          <button class="outline-btn small-btn" type="button" data-update-goal-checkin="${window.RipCityUI.attr(checkin.id)}">Save</button>
-          <button class="outline-btn danger-outline-btn small-btn" type="button" data-delete-goal-checkin="${window.RipCityUI.attr(checkin.id)}">Delete</button>
-        </div>`).join("")}
+          <span class="member-goal-summary-action" aria-hidden="true"></span>
+        </summary>
+        <div class="member-goal-expanded">
+          <div class="member-goal-card-main">
+            ${goal.description ? `<p>${window.RipCityUI.text(goal.description)}</p>` : ""}
+            <div class="goal-checkin-chart">
+              ${renderGoalChart(goal)}
+            </div>
+          </div>
+          <div class="member-goal-actions">
+            <label>
+              Status
+              <select data-goal-status="${window.RipCityUI.attr(goal.id)}">
+                ${["active", "paused", "completed"].map(status => `<option value="${status}" ${goal.status === status ? "selected" : ""}>${status[0].toUpperCase() + status.slice(1)}</option>`).join("")}
+              </select>
+            </label>
+            ${isCompleted ? "" : `<details class="goal-checkin-form">
+              <summary>Check in</summary>
+              <div class="goal-checkin-inline">
+                <input type="date" data-goal-checkin-date="${window.RipCityUI.attr(goal.id)}" value="${getTodayString()}" />
+                <input type="number" step="any" data-goal-checkin-value="${window.RipCityUI.attr(goal.id)}" placeholder="${window.RipCityUI.attr(goal.unit || "value")}" />
+                <button class="primary-btn small-btn" type="button" data-save-goal-checkin="${window.RipCityUI.attr(goal.id)}">Add</button>
+              </div>
+            </details>`}
+            ${isOwnGoal ? `<button class="outline-btn" type="button" data-edit-member-goal="${window.RipCityUI.attr(goal.id)}">Edit</button>` : ""}
+            ${isOwnGoal ? `<button class="outline-btn danger-outline-btn" type="button" data-delete-member-goal="${window.RipCityUI.attr(goal.id)}">Delete</button>` : ""}
+          </div>
+          ${checkins.length ? `<details class="goal-checkin-history">
+            <summary>Check-in history (${checkins.length})</summary>
+            <div class="goal-checkin-history-list">
+            ${checkins.map(checkin => isCompleted
+              ? `<div class="goal-checkin-history-item is-read-only"><span>${window.RipCityUI.text(formatGoalDate(checkin.recorded_date))}</span><strong>${Number(checkin.value)}${goal.unit ? ` ${window.RipCityUI.text(goal.unit)}` : ""}</strong></div>`
+              : `<div class="goal-checkin-history-item">
+                <input type="date" aria-label="Check-in date" data-edit-goal-checkin-date="${window.RipCityUI.attr(checkin.id)}" value="${window.RipCityUI.attr(checkin.recorded_date)}" />
+                <input type="number" aria-label="Check-in value" step="any" data-edit-goal-checkin-value="${window.RipCityUI.attr(checkin.id)}" value="${Number(checkin.value)}" />
+                ${goal.unit ? `<span class="goal-checkin-unit">${window.RipCityUI.text(goal.unit)}</span>` : ""}
+                <button class="outline-btn small-btn" type="button" data-update-goal-checkin="${window.RipCityUI.attr(checkin.id)}">Save</button>
+                <button class="outline-btn danger-outline-btn small-btn" type="button" data-delete-goal-checkin="${window.RipCityUI.attr(checkin.id)}">Delete</button>
+              </div>`).join("")}
+            </div>
+          </details>` : ""}
         </div>
-      </details>` : ""}
+      </details>
     </article>
   `;
+}
+
+function formatGoalTimestamp(timestamp) {
+  if (!timestamp) return "Unknown date";
+
+  return new Date(timestamp).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric"
+  });
 }
 
 function resetMemberGoalForm() {
@@ -441,6 +498,8 @@ function resetMemberGoalForm() {
   document.getElementById("member-goal-id").value = "";
   document.getElementById("member-goal-submit").textContent = "Add Goal";
   document.getElementById("member-goal-cancel").classList.add("hidden");
+  const editor = document.getElementById("member-goal-editor");
+  if (editor && window.matchMedia("(max-width: 700px)").matches) editor.open = false;
 }
 
 function startMemberGoalEdit(goalId) {
@@ -457,6 +516,7 @@ function startMemberGoalEdit(goalId) {
   document.getElementById("member-goal-description").value = goal.description || "";
   document.getElementById("member-goal-submit").textContent = "Save Goal";
   document.getElementById("member-goal-cancel").classList.remove("hidden");
+  document.getElementById("member-goal-editor").open = true;
   document.getElementById("member-goal-name").focus();
 }
 
@@ -644,8 +704,8 @@ function getMemberTypeLabel(profileTypeValue = currentMemberProfile?.member_type
 }
 
 function setMemberTypeText(memberType) {
-  document.getElementById("member-program-label").textContent = memberType;
-  document.getElementById("member-sidebar-role").textContent = memberType;
+  setMemberText("member-program-label", memberType);
+  setMemberText("member-sidebar-role", memberType);
 
   const brandSubtitle = document.getElementById("member-brand-subtitle");
   if (brandSubtitle) {
@@ -664,10 +724,16 @@ function updateMemberShell() {
   const bandColor = currentMemberProfile?.h2k_band_color;
 
   setMemberTypeText(memberType);
-  document.getElementById("member-sidebar-name").textContent = profile?.full_name || "Member";
+  setMemberText("member-sidebar-name", profile?.full_name || "Member");
+  setMemberText(
+    "member-history-link-detail",
+    currentMemberProfile?.member_type === "h2k"
+      ? "Review weekly training and H2K results."
+      : "Review your weekly workout completion."
+  );
 
   const avatar = document.getElementById("member-avatar");
-  if (profile?.profile_picture_url) {
+  if (avatar && profile?.profile_picture_url) {
     avatar.classList.add("has-image");
     avatar.textContent = "";
 
@@ -679,7 +745,7 @@ function updateMemberShell() {
       avatar.textContent = window.RipCityUI.safeInitials(profile?.full_name);
     });
     avatar.appendChild(image);
-  } else {
+  } else if (avatar) {
     avatar.classList.remove("has-image");
     avatar.textContent = window.RipCityUI.safeInitials(profile?.full_name);
   }
@@ -694,15 +760,15 @@ function updateMemberShell() {
     month: "short",
     day: "numeric"
   });
-  document.getElementById("member-dashboard-date").textContent = dateLabel;
+  setMemberText("member-dashboard-date", dateLabel);
 }
 
 function setupFeedbackLink() {
   const link = document.getElementById("member-feedback-link");
   if (!link) return;
 
-  // The live Google Form URL is configured in js/shared/ui-utils.js so every member
-  // surface can use the same feedback destination.
+  // The temporary dashboard feedback link shares its Google Form destination
+  // with the coach dashboard through js/shared/ui-utils.js.
   const url = window.RipCityUI.feedbackFormUrl;
 
   if (!url) {
@@ -717,56 +783,6 @@ function setupFeedbackLink() {
   link.textContent = "Open Feedback Form";
   link.classList.remove("is-disabled");
   link.removeAttribute("aria-disabled");
-}
-
-function setActiveMemberNav(hash) {
-  const normalizedHash = hash || "#member-dashboard-top";
-  const calendarPanel = document.getElementById("training-calendar-panel");
-
-  document.querySelectorAll(".member-shell-nav .nav-link").forEach(link => {
-    link.classList.toggle("active", link.getAttribute("href") === normalizedHash);
-  });
-
-  if (normalizedHash === "#training-calendar-panel" && calendarPanel) {
-    selectedWorkoutDate = getTodayString();
-    workoutCalendarMonth = getMonthStart(parseAssignmentDate(selectedWorkoutDate));
-    calendarPanel.open = true;
-    renderTrainingCalendar();
-  }
-
-  if (normalizedHash === "#member-history-section") {
-    const historyPanel = document.getElementById("member-history-section");
-    if (historyPanel) historyPanel.open = true;
-  }
-}
-
-function scrollMemberHashIntoView() {
-  const hash = window.location.hash;
-  if (!hash) return;
-
-  const target = document.querySelector(hash);
-  if (!target) return;
-
-  requestAnimationFrame(() => {
-    target.scrollIntoView({
-      block: "start",
-      behavior: "smooth"
-    });
-  });
-}
-
-function setupMemberSidebarNav() {
-  document.querySelectorAll(".member-shell-nav .nav-link").forEach(link => {
-    link.addEventListener("click", () => {
-      setActiveMemberNav(link.getAttribute("href"));
-    });
-  });
-
-  window.addEventListener("hashchange", () => {
-    setActiveMemberNav(window.location.hash);
-  });
-
-  setActiveMemberNav(window.location.hash);
 }
 
 function updateHabitDateControls() {
@@ -841,6 +857,7 @@ function setupHabitDateControls() {
 // Renders the list of six habits as checkable cards.
 function renderHabitCards() {
   const list = document.getElementById("h2k-habit-list");
+  if (!list) return;
 
   if (!h2kHabits.length) {
     list.innerHTML = `<div class="empty-state">No habits found.</div>`;
@@ -921,25 +938,25 @@ async function updateScores() {
     todayKey
   });
 
-  document.getElementById("today-score").textContent = metrics.todayScore;
-  document.getElementById("weekly-score-h2k").textContent = metrics.fourWeekAverage ?? "No history";
-  document.getElementById("weekly-percent-h2k").textContent = metrics.currentStreak;
-  document.getElementById("h2k-status").textContent = `${metrics.currentWeekScore}/${metrics.currentWeekMax}`;
-  document.getElementById("member-stat-one-suffix").textContent = `/${h2kHabits.length}`;
-  document.getElementById("member-stat-two-suffix").textContent = metrics.fourWeekAverage === null
+  setMemberText("today-score", metrics.todayScore);
+  setMemberText("weekly-score-h2k", metrics.fourWeekAverage ?? "No history");
+  setMemberText("weekly-percent-h2k", metrics.currentStreak);
+  setMemberText("h2k-status", `${metrics.currentWeekScore}/${metrics.currentWeekMax}`);
+  setMemberText("member-stat-one-suffix", `/${h2kHabits.length}`);
+  setMemberText("member-stat-two-suffix", metrics.fourWeekAverage === null
     ? ""
-    : `/${metrics.fourWeekMax}`;
-  document.getElementById("member-stat-three-suffix").textContent = " days";
-  document.getElementById("member-stat-one-label").textContent = "Today’s Score";
-  document.getElementById("member-stat-one-detail").textContent = "Habits completed today";
-  document.getElementById("member-stat-two-label").textContent = "4-Week Average";
-  document.getElementById("member-stat-two-detail").textContent = metrics.fourWeekAverage === null
+    : `/${metrics.fourWeekMax}`);
+  setMemberText("member-stat-three-suffix", " days");
+  setMemberText("member-stat-one-label", "Today’s Score");
+  setMemberText("member-stat-one-detail", "Habits completed today");
+  setMemberText("member-stat-two-label", "4-Week Average");
+  setMemberText("member-stat-two-detail", metrics.fourWeekAverage === null
     ? "Complete a full week to start your average"
-    : "Previous four completed weeks";
-  document.getElementById("member-stat-three-label").textContent = "Current Streak";
-  document.getElementById("member-stat-three-detail").textContent = "4+ habits completed per day";
-  document.getElementById("member-stat-four-label").textContent = "Current Week";
-  document.getElementById("h2k-status-detail").textContent = `${metrics.currentWeekQualifiedDays} qualified day${metrics.currentWeekQualifiedDays === 1 ? "" : "s"} · ${metrics.currentWeekMax} possible points`;
+    : "Previous four completed weeks");
+  setMemberText("member-stat-three-label", "Current Streak");
+  setMemberText("member-stat-three-detail", "4+ habits completed per day");
+  setMemberText("member-stat-four-label", "Current Week");
+  setMemberText("h2k-status-detail", `${metrics.currentWeekQualifiedDays} qualified day${metrics.currentWeekQualifiedDays === 1 ? "" : "s"} · ${metrics.currentWeekMax} possible points`);
 }
 
 // Reloads selected-date logs, re-renders cards, and updates scores.
@@ -1121,7 +1138,6 @@ function renderWeeklyScoreCard(row) {
 function toggleH2KModuleVisibility() {
   const isH2K = currentMemberProfile?.member_type === "h2k";
   const habitsSection = document.getElementById("h2k-habits-section");
-  const habitsNavLink = document.getElementById("member-habits-nav-link");
   const statsSection = document.getElementById("member-stats-section");
   const trainingProgressCard = document.getElementById("member-training-progress-card");
 
@@ -1138,39 +1154,32 @@ function toggleH2KModuleVisibility() {
     habitsSection.classList.toggle("hidden", !isH2K);
   }
 
-  if (habitsNavLink) {
-    habitsNavLink.classList.toggle("hidden", !isH2K);
-  }
+  window.RipCityMemberNav?.setH2KVisibility(isH2K);
 
   if (isH2K) {
-    document.getElementById("member-stat-one-label").textContent = "Today’s Score";
-    document.getElementById("member-stat-one-detail").textContent = "Habits completed today";
-    document.getElementById("member-stat-two-label").textContent = "Weekly Score";
-    document.getElementById("member-stat-two-detail").textContent = "Possible weekly points";
-    document.getElementById("member-stat-one-suffix").textContent = `/${h2kHabits.length || 6}`;
-    document.getElementById("member-stat-two-suffix").textContent = `/${(h2kHabits.length || 6) * 7}`;
-    document.getElementById("member-stat-three-suffix").textContent = " days";
+    setMemberText("member-stat-one-label", "Today’s Score");
+    setMemberText("member-stat-one-detail", "Habits completed today");
+    setMemberText("member-stat-two-label", "Weekly Score");
+    setMemberText("member-stat-two-detail", "Possible weekly points");
+    setMemberText("member-stat-one-suffix", `/${h2kHabits.length || 6}`);
+    setMemberText("member-stat-two-suffix", `/${(h2kHabits.length || 6) * 7}`);
+    setMemberText("member-stat-three-suffix", " days");
     return;
   }
 
   if (!isH2K) {
-    document.getElementById("member-stat-one-label").textContent = "This Week";
-    document.getElementById("member-stat-one-detail").textContent = "Assigned workout attendance";
-    document.getElementById("member-stat-two-label").textContent = "Completed This Week";
-    document.getElementById("member-stat-two-detail").textContent = "Completed / assigned workouts";
-    document.getElementById("member-stat-three-label").textContent = "4-Week Attendance";
-    document.getElementById("member-stat-three-detail").textContent = "Previous four completed weeks";
-    document.getElementById("member-stat-four-label").textContent = "Current Streak";
-    document.getElementById("member-stat-one-suffix").textContent = "";
-    document.getElementById("member-stat-two-suffix").textContent = "";
-    document.getElementById("member-stat-three-suffix").textContent = "";
-    document.getElementById("h2k-status").textContent = "Training";
-    document.getElementById("h2k-status-detail").textContent = "Open assigned workouts and track progress";
-
-    if (window.location.hash === "#h2k-habits-section") {
-      window.location.hash = "#member-dashboard-top";
-      setActiveMemberNav("#member-dashboard-top");
-    }
+    setMemberText("member-stat-one-label", "This Week");
+    setMemberText("member-stat-one-detail", "Assigned workout attendance");
+    setMemberText("member-stat-two-label", "Completed This Week");
+    setMemberText("member-stat-two-detail", "Completed / assigned workouts");
+    setMemberText("member-stat-three-label", "4-Week Attendance");
+    setMemberText("member-stat-three-detail", "Previous four completed weeks");
+    setMemberText("member-stat-four-label", "Current Streak");
+    setMemberText("member-stat-one-suffix", "");
+    setMemberText("member-stat-two-suffix", "");
+    setMemberText("member-stat-three-suffix", "");
+    setMemberText("h2k-status", "Training");
+    setMemberText("h2k-status-detail", "Open assigned workouts and track progress");
   }
 }
 
@@ -1194,13 +1203,13 @@ function updateSharedWorkoutStats() {
     todayKey: today
   });
 
-  document.getElementById("today-score").textContent = metrics.currentWeek.percent ?? "—";
-  document.getElementById("member-stat-one-suffix").textContent = metrics.currentWeek.percent === null ? "" : "%";
-  document.getElementById("weekly-score-h2k").textContent = `${metrics.currentWeek.completed}/${metrics.currentWeek.assigned}`;
-  document.getElementById("weekly-percent-h2k").textContent = metrics.fourWeek.percent ?? "—";
-  document.getElementById("member-stat-three-suffix").textContent = metrics.fourWeek.percent === null ? "" : "%";
-  document.getElementById("h2k-status").textContent = `${metrics.currentStreak} day${metrics.currentStreak === 1 ? "" : "s"}`;
-  document.getElementById("h2k-status-detail").textContent = `Longest streak: ${metrics.longestStreak} assigned workout day${metrics.longestStreak === 1 ? "" : "s"}`;
+  setMemberText("today-score", metrics.currentWeek.percent ?? "—");
+  setMemberText("member-stat-one-suffix", metrics.currentWeek.percent === null ? "" : "%");
+  setMemberText("weekly-score-h2k", `${metrics.currentWeek.completed}/${metrics.currentWeek.assigned}`);
+  setMemberText("weekly-percent-h2k", metrics.fourWeek.percent ?? "—");
+  setMemberText("member-stat-three-suffix", metrics.fourWeek.percent === null ? "" : "%");
+  setMemberText("h2k-status", `${metrics.currentStreak} day${metrics.currentStreak === 1 ? "" : "s"}`);
+  setMemberText("h2k-status-detail", `Longest streak: ${metrics.longestStreak} assigned workout day${metrics.longestStreak === 1 ? "" : "s"}`);
 }
 
 // =====================================================
@@ -1379,8 +1388,10 @@ function showWorkoutHistoryMessage(message, isError = false) {
 async function loadWorkoutHistory() {
   const list = document.getElementById("workout-history-list");
   const calendar = document.getElementById("future-workout-list");
+  const stats = document.getElementById("member-stats-section");
+  const weeklyHistory = document.getElementById("member-weekly-history-list");
 
-  if ((!list && !calendar) || !currentMemberProfile) return;
+  if ((!list && !calendar && !stats && !weeklyHistory) || !currentMemberProfile) return;
 
   showWorkoutHistoryMessage("Loading assigned workouts...");
 
@@ -1668,9 +1679,10 @@ function formatInputType(inputType) {
   return labels[inputType] || inputType;
 }
 
-// Main startup function for the H2K page.
-async function initH2KDashboard() {
-  showH2KMessage("Loading H2K dashboard...");
+// Shared startup for the member dashboard and its dedicated feature pages.
+async function initMemberPage() {
+  const page = document.body.dataset.memberPage || "dashboard";
+  showH2KMessage("Loading member page...");
 
   try {
     // Startup order matters: access -> member profile -> facility habits/workouts.
@@ -1685,25 +1697,31 @@ async function initH2KDashboard() {
     currentMemberGroupIds = await getCurrentMemberGroupIds(currentMemberProfile.id);
     toggleH2KModuleVisibility();
 
-    if (currentMemberProfile.member_type === "h2k") {
+    const isH2K = currentMemberProfile.member_type === "h2k";
+    const needsHabits = isH2K && ["dashboard", "habits", "history"].includes(page);
+    const needsWorkoutHistory = ["dashboard", "training", "history"].includes(page);
+
+    if (needsHabits) {
       h2kHabits = await loadHabits(currentAccess.membership.facility_id);
     }
 
-    await loadTodayAssignedWorkouts();
-    await loadWorkoutHistory();
-    await loadMemberWeeklyHistory();
-    await loadMemberGoals();
+    if (page === "habits" && !isH2K) {
+      window.location.replace("member-dashboard.html");
+      return;
+    }
 
-    if (currentMemberProfile.member_type === "h2k") {
+    if (needsWorkoutHistory) await loadWorkoutHistory();
+    if (page === "history") await loadMemberWeeklyHistory();
+    if (page === "goals") await loadMemberGoals();
+
+    if (isH2K && ["dashboard", "habits"].includes(page)) {
       await refreshH2KDashboard();
     }
 
-    setActiveMemberNav(window.location.hash);
-    scrollMemberHashIntoView();
     showH2KMessage("");
   } catch (error) {
     console.error(error);
-    showH2KMessage(error.message || "Could not load H2K dashboard.", true);
+    showH2KMessage(error.message || "Could not load this member page.", true);
   }
 }
 
@@ -1714,12 +1732,12 @@ async function logoutH2K() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  setupMemberSidebarNav();
   setupFeedbackLink();
   setupHabitDateControls();
   document.getElementById("member-goal-form")?.addEventListener("submit", saveMemberGoal);
   document.getElementById("member-goal-cancel")?.addEventListener("click", resetMemberGoalForm);
-  initH2KDashboard();
+  window.matchMedia("(max-width: 700px)").addEventListener("change", syncMemberGoalDisclosures);
+  initMemberPage();
 
   document
     .getElementById("member-history-prev-week")

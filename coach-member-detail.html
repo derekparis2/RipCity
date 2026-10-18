@@ -7,9 +7,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=member-history-1" />
+  <link rel="stylesheet" href="css/styles.css?v=coach-goal-collapse-1" />
 </head>
-<body class="auth-body">
+<body class="auth-body member-goals-page coach-member-detail-page">
   <main class="coach-page">
     <header class="h2k-header">
       <div class="auth-brand">
@@ -57,39 +57,48 @@
           <p>Assign and manage goals for this member.</p>
         </div>
       </div>
-      <form class="member-goal-form" id="coach-goal-form">
-        <input id="coach-goal-id" type="hidden" />
-        <label class="member-goal-name-field">Name
-          <input id="coach-goal-name" type="text" maxlength="160" required />
-        </label>
-        <label>Timeline
-          <select id="coach-goal-timeline">
-            <option value="short_term">Short term</option>
-            <option value="medium_term">Medium term</option>
-            <option value="long_term">Long term</option>
-            <option value="ongoing">Ongoing</option>
-          </select>
-        </label>
-        <label>Current value
-          <input id="coach-goal-current-value" type="number" step="any" />
-        </label>
-        <label>Target value
-          <input id="coach-goal-target-value" type="number" step="any" />
-        </label>
-        <label>Unit
-          <input id="coach-goal-unit" type="text" maxlength="40" placeholder="lbs, days, reps" />
-        </label>
-        <label>Due date
-          <input id="coach-goal-due-date" type="date" />
-        </label>
-        <label class="member-goal-description-field">Description
-          <textarea id="coach-goal-description" rows="3" maxlength="1000"></textarea>
-        </label>
-        <div class="member-goal-form-actions">
-          <button class="primary-btn" id="coach-goal-submit" type="submit">Assign Goal</button>
-          <button class="outline-btn hidden" id="coach-goal-cancel" type="button">Cancel</button>
+      <details class="member-goal-editor coach-goal-editor" id="coach-goal-editor">
+        <summary class="member-goal-editor-summary">
+          <span><span class="eyebrow">Coach Goal</span><strong>Assign a Goal</strong></span>
+          <span class="member-goal-editor-action" aria-hidden="true"></span>
+        </summary>
+        <div class="member-goal-editor-body">
+          <p>Create a goal for this member or open an existing goal below to edit it.</p>
+          <form class="member-goal-form" id="coach-goal-form">
+            <input id="coach-goal-id" type="hidden" />
+            <label class="member-goal-name-field">Name
+              <input id="coach-goal-name" type="text" maxlength="160" required />
+            </label>
+            <label>Timeline
+              <select id="coach-goal-timeline">
+                <option value="short_term">Short term</option>
+                <option value="medium_term">Medium term</option>
+                <option value="long_term">Long term</option>
+                <option value="ongoing">Ongoing</option>
+              </select>
+            </label>
+            <label>Starting value
+              <input id="coach-goal-current-value" type="number" step="any" />
+            </label>
+            <label>Target value
+              <input id="coach-goal-target-value" type="number" step="any" />
+            </label>
+            <label>Unit
+              <input id="coach-goal-unit" type="text" maxlength="40" placeholder="lbs, days, reps" />
+            </label>
+            <label>Due date
+              <input id="coach-goal-due-date" type="date" />
+            </label>
+            <label class="member-goal-description-field">Description
+              <textarea id="coach-goal-description" rows="3" maxlength="1000"></textarea>
+            </label>
+            <div class="member-goal-form-actions">
+              <button class="primary-btn" id="coach-goal-submit" type="submit">Assign Goal</button>
+              <button class="outline-btn hidden" id="coach-goal-cancel" type="button">Cancel</button>
+            </div>
+          </form>
         </div>
-      </form>
+      </details>
       <div class="member-goal-list" id="coach-goal-list">
         <div class="empty-state">Loading goals...</div>
       </div>
@@ -100,7 +109,8 @@
   <script src="js/shared/ui-utils.js"></script>
   <script src="js/shared/access-control.js"></script>
   <script src="js/shared/workout-data.js"></script>
+  <script src="js/shared/goal-progress.js?v=goal-values-1"></script>
   <script src="js/coach/member-history.js?v=member-history-1"></script>
-  <script src="js/coach/coach-member-detail.js?v=member-history-1"></script>
+  <script src="js/coach/coach-member-detail.js?v=coach-goal-collapse-2"></script>
 </body>
 </html>
