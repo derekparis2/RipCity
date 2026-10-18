@@ -39,8 +39,8 @@ historical relationships. It must not create a disconnected replacement user.
 
 | Area | Facility admin | Coach | Athlete / H2K member |
 | --- | --- | --- | --- |
-| Facilities | View and configure own facility; cannot create/archive facilities | View basic own-facility information | View only information required for own experience |
-| Branding, modules, and time zone | Manage own facility | View effective configuration | Consume effective configuration only |
+| Facilities | View own facility; configuration UI is deferred to V3; cannot create/archive facilities | View basic own-facility information | View only information required for own experience |
+| Branding, modules, and time zone | No V2 settings UI; future management is defined in V3 | No V2 management access | Consume the current Rip City experience only |
 | Memberships | View and manage all own-facility memberships and roles | View members; approve, reject, deactivate, and reactivate ordinary members only | View own membership only |
 | Coach/admin roles | Create, update, or deactivate own-facility coach/admin memberships | Cannot create or promote coach/admin memberships | No access |
 | Coach invitations | Create seven-day, single-use coach links for own facility | Cannot create coach links | May claim a valid link, which creates pending access only |

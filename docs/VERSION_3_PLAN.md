@@ -52,14 +52,33 @@ same way V2 uses `V2_BACKLOG.md`.
   code.
 - Keep facility archive and recovery rules separate from hard deletion.
 
-### Facility Configuration
+### Facility Configuration And Module Visibility
 
-- Expand the V2 configuration foundation into self-service facility settings.
-- Let facilities enable only the modules and member programs they use.
+- Build self-service facility settings rather than relying on custom code or
+  manual database edits.
+- Configure facility display name, logo, colors, terminology, supported member
+  types, and default groups.
+- Let each facility enable only the modules and member programs it uses,
+  including workouts, habits, goals, leaderboards, announcements, progress,
+  scheduling, and future payments.
+- Keep H2K and other program-specific experiences optional and prevent disabled
+  modules from appearing in member navigation or dashboards.
 - Keep coach/admin tools visually consistent while allowing member-facing
   branding to reflect each facility.
+- Inventory and replace hardcoded Rip City/H2K assumptions before onboarding a
+  second real facility.
 - Add a trusted workflow for managing universal exercises and facility
   overrides/hides.
+
+### Facility Time And Date Rules
+
+- Give every facility one authoritative IANA time zone.
+- Store timestamps in UTC while calculating facility days, workout dates,
+  habit days, Monday-Sunday weeks, streaks, announcement visibility, and
+  leaderboard periods in the selected facility's time zone.
+- Use shared facility-local date helpers instead of device-local assumptions.
+- Verify behavior for users outside the facility time zone and across
+  daylight-saving transitions.
 
 ---
 
@@ -122,6 +141,8 @@ custom tests. The exact first list requires Rip City coach approval.
 
 ## 3. Shared V3 Extensions
 
+- Add a private coach-note UI and generalized in-app notification/read-state
+  system on top of the focused V2 announcement slice.
 - Extend leaderboards to approved lifts and testing metrics.
 - Connect goals to verified test results where useful.
 - Add richer progress charts using stable V2 workout, habit, goal, and testing

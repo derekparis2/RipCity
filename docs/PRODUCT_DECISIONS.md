@@ -47,9 +47,11 @@ they are intentionally revisited.
 
 ## Facility Time
 
-- Every facility has one authoritative IANA time zone.
 - Rip City uses `America/New_York`.
-- Store timestamps in UTC and calculate facility calendar rules in the facility time zone.
+- Store timestamps in UTC and keep Rip City calendar rules correct for its time
+  zone during V2.
+- Generalized per-facility time-zone configuration and date helpers are V3
+  scope.
 
 ## Lifecycle
 
