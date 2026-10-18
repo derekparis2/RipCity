@@ -7,7 +7,7 @@ const ALPHA_FACILITY_ID = "00000000-0000-4000-8000-000000000002";
 
 const scenarios = [
   { email: "rcadmin@example.com", memberships: 6, profiles: 6, memberProfiles: 4, habits: 6, facilities: "rip" },
-  { email: "rccoach@example.com", memberships: 10, profiles: 9, memberProfiles: 5, habits: 6, facilities: "both" },
+  { email: "rccoach@example.com", memberships: 6, profiles: 6, memberProfiles: 4, habits: 6, facilities: "rip" },
   { email: "rcathlete@example.com", memberships: 1, profiles: 1, memberProfiles: 1, habits: 6, facilities: "rip" },
   { email: "rch2k@example.com", memberships: 1, profiles: 1, memberProfiles: 1, habits: 6, facilities: "rip" },
   { email: "rcpending@example.com", memberships: 1, profiles: 1, memberProfiles: 1, habits: 0, facilities: "rip" },

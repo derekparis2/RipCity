@@ -3,6 +3,578 @@
 }
 
 /* =====================================================
+   TARGETED COACH ANNOUNCEMENTS
+   ===================================================== */
+
+.coach-announcements-panel,
+.member-announcements-panel {
+  display: grid;
+  gap: 20px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface);
+  padding: 22px;
+}
+
+.coach-announcement-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.coach-announcement-summary::-webkit-details-marker {
+  display: none;
+}
+
+.coach-announcement-summary h3,
+.coach-announcement-summary p {
+  margin-top: 0;
+}
+
+.coach-announcement-summary > div > p:last-child {
+  margin-bottom: 0;
+  color: var(--muted);
+}
+
+.coach-announcement-summary-action {
+  flex: 0 0 auto;
+  color: #9dccff;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.coach-announcement-summary-action::before {
+  content: "Create +";
+}
+
+.coach-announcements-panel[open] .coach-announcement-summary-action::before {
+  content: "Close −";
+}
+
+.coach-announcement-content {
+  margin-top: 20px;
+  border-top: 1px solid var(--border);
+  padding-top: 20px;
+}
+
+.coach-announcements-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.8fr) minmax(0, 1.2fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.coach-announcement-form {
+  display: grid;
+  gap: 14px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 18px;
+}
+
+.coach-announcement-form > label {
+  display: grid;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.coach-announcement-form input,
+.coach-announcement-form select,
+.coach-announcement-form textarea {
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--text);
+  padding: 11px 13px;
+}
+
+.coach-announcement-form textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.coach-announcement-form input:focus,
+.coach-announcement-form select:focus,
+.coach-announcement-form textarea:focus {
+  border-color: #5eb8ff;
+  outline: 2px solid rgba(94, 184, 255, 0.15);
+}
+
+.optional-label {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.announcement-targets {
+  display: grid;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.015);
+  overflow: hidden;
+}
+
+.announcement-recipient-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 14px;
+}
+
+.announcement-recipient-heading > div {
+  display: grid;
+  gap: 2px;
+}
+
+.announcement-recipient-heading strong {
+  color: var(--text);
+  font-size: 14px;
+}
+
+.announcement-recipient-heading span {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.announcement-recipient-heading .text-button {
+  border: 0;
+  background: transparent;
+  color: #9dccff;
+  padding: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.announcement-recipient-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+.announcement-recipient-tabs button {
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  padding: 10px 12px 8px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.announcement-recipient-tabs button + button {
+  border-left: 1px solid var(--border);
+}
+
+.announcement-recipient-tabs button.is-active {
+  border-bottom-color: #5eb8ff;
+  color: var(--text);
+}
+
+.announcement-recipient-tabs button span {
+  display: inline-flex;
+  min-width: 20px;
+  justify-content: center;
+  margin-left: 4px;
+  border-radius: 999px;
+  background: rgba(94, 184, 255, 0.12);
+  color: #9dccff;
+  padding: 2px 6px;
+  font-size: 10px;
+}
+
+.announcement-recipient-pane {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+}
+
+.announcement-checkbox-list {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.announcement-member-tools {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.announcement-targets #coach-announcement-member-search {
+  min-height: 40px;
+}
+
+.announcement-member-tools .outline-btn {
+  min-height: 40px;
+  padding: 8px 11px;
+  font-size: 11px;
+}
+
+.announcement-selection-count {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.announcement-checkbox-option {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 8px;
+  cursor: pointer;
+}
+
+.announcement-checkbox-option:hover,
+.announcement-checkbox-option.is-selected {
+  background: var(--accent-soft);
+}
+
+.announcement-checkbox-option.is-selected {
+  border-color: rgba(94, 184, 255, 0.45);
+}
+
+.announcement-checkbox-option input {
+  width: 18px;
+  min-height: 18px;
+  margin: 0;
+}
+
+.announcement-option-copy,
+.announcement-option-copy small {
+  display: block;
+  min-width: 0;
+}
+
+.announcement-option-copy strong,
+.announcement-option-copy small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.announcement-option-copy small,
+.announcement-option-empty {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.announcement-member-initials {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(94, 184, 255, 0.12);
+  color: #9dccff;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.announcement-member-identity {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.announcement-member-type {
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--muted);
+  padding: 4px 7px;
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.coach-announcement-list,
+.member-announcement-list {
+  display: grid;
+  gap: 12px;
+}
+
+.coach-announcement-card,
+.member-announcement-card {
+  display: grid;
+  gap: 11px;
+  border: 1px solid var(--border);
+  border-left: 4px solid #5eb8ff;
+  border-radius: 14px;
+  background: rgba(94, 184, 255, 0.04);
+  padding: 16px;
+}
+
+.coach-announcement-card.is-expired {
+  border-left-color: var(--muted);
+  opacity: 0.68;
+}
+
+.coach-announcement-card.is-important,
+.member-announcement-card.is-important {
+  border-left-color: #ffad4a;
+  background: rgba(255, 173, 74, 0.06);
+}
+
+.announcement-card-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.announcement-card-heading h4,
+.announcement-card-heading h5 {
+  margin: 0;
+  font-size: 21px;
+}
+
+.announcement-card-heading time,
+.announcement-audience-label,
+.announcement-status,
+.announcement-importance-label,
+.member-announcement-sender {
+  color: #9dccff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.announcement-importance-label {
+  display: block;
+  margin-bottom: 4px;
+  color: #ffad4a;
+}
+
+.announcement-message-copy,
+.member-announcement-card > p {
+  margin: 0;
+  color: var(--text);
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+.announcement-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 7px 14px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.announcement-delete-button {
+  justify-self: start;
+  border: 0;
+  background: transparent;
+  color: var(--danger);
+  padding: 0;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.member-announcements-panel {
+  border-left: 4px solid #5eb8ff;
+}
+
+.member-announcements-panel .section-heading h3 {
+  margin: 3px 0 0;
+}
+
+.member-announcement-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.announcement-dismiss-button {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  padding: 3px 0;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.announcement-dismiss-button:hover,
+.announcement-dismiss-button:focus-visible {
+  color: var(--text);
+  outline: none;
+}
+
+.member-announcement-toggle {
+  justify-self: start;
+  min-height: 38px;
+  padding: 8px 13px;
+  font-size: 12px;
+}
+
+.member-dismissed-announcements {
+  margin-top: 28px;
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+}
+
+.member-dismissed-announcements summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.member-dismissed-announcement-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.member-dismissed-announcement-list .member-announcement-card {
+  opacity: 0.78;
+}
+
+.announcement-undo-toast {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-2);
+  box-shadow: var(--shadow);
+  padding: 12px 16px;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.announcement-undo-toast button {
+  border: 0;
+  background: transparent;
+  color: #9dccff;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
+.coach-announcement-history,
+.expired-announcement-list {
+  display: grid;
+  gap: 12px;
+}
+
+.coach-announcement-history-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.coach-announcement-history-heading h4 {
+  margin: 0;
+}
+
+.expired-announcement-section {
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+
+.expired-announcement-section > summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--muted);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.expired-announcement-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin: 12px 0;
+}
+
+@media (max-width: 900px) {
+  .coach-announcements-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .coach-announcements-panel,
+  .member-announcements-panel {
+    gap: 14px;
+    padding: 16px;
+  }
+
+  .announcement-member-tools {
+    grid-template-columns: 1fr;
+  }
+
+  .announcement-member-tools .outline-btn {
+    justify-self: start;
+  }
+
+  .announcement-card-heading {
+    display: grid;
+  }
+
+  .member-announcements-panel {
+    gap: 10px;
+  }
+
+  .member-announcement-card {
+    gap: 8px;
+    padding: 13px;
+  }
+
+  .member-announcement-card > p {
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  .member-announcement-footer {
+    align-items: flex-start;
+  }
+
+  .announcement-undo-toast {
+    right: 16px;
+    bottom: 104px;
+    left: 16px;
+    justify-content: space-between;
+  }
+}
+
+/* =====================================================
    MEMBER FEATURE PAGES
    Dedicated pages keep the dashboard concise while sharing one responsive
    member shell and the existing feature behavior.
@@ -7172,8 +7744,8 @@ body {
     white-space: normal;
   }
 
-  .member-dashboard-body #weekly-score-h2k {
-    font-size: 0.82em;
+  .member-dashboard-body #weekly-score-h2k.is-text-value {
+    font-size: 0.62em;
   }
 
   .member-dashboard-body.member-type-athlete #h2k-status {

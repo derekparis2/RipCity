@@ -638,10 +638,13 @@ Private note UI and a generalized notification system are deferred to V3.
 
 - Announcements are visible to members.
 - Announcements should show who they are from.
-- Member dismissal/read state may follow after the core V2 targeting workflow.
+- Members can hide an announcement for the current day without changing what
+  other members see.
 - Coaches/admins can create announcements for their own facility.
 - Announcement targets:
   - Full facility
+  - All athletes, regardless of how many groups they belong to
+  - All H2K members, regardless of how many groups they belong to
   - One or more member groups
   - One or more specific members
 - Coaches cannot edit each other's announcements.
@@ -671,17 +674,25 @@ The announcement record includes:
 - `created_by`
 - `title`
 - `body`
-- `publish_date`
+- `importance` (`standard` or `important`)
+- `audience_type`
+- `publish_at`
 - `expires_at`
 - `created_at`
-- `updated_at`
 
-Add dismissal/read state later if it remains required after the first targeted
-announcement workflow is reviewed.
+Member dismissal stores one private dismissal timestamp per announcement and
+member. A dismissal removes the message from the main announcement area for the
+current day, while a collapsed dashboard section and immediate Undo action let
+the member restore it. An otherwise-active message reappears on the next local
+calendar day.
 
-Possible future `coach_announcement_dismissals` fields:
+The coach form defaults expiration to 24 hours, while allowing another future
+time or no expiration. Important announcements sort above standard messages.
+Expired messages disappear from member access, remain in a collapsed coach
+history, and can be permanently cleared by their creator or a facility admin.
 
-- `id`
+The `coach_announcement_dismissals` table includes:
+
 - `announcement_id`
 - `member_profile_id`
 - `dismissed_at`
@@ -823,8 +834,9 @@ Maintain two distinct safety plans:
 2. Recover production data, Auth identities, and stored files from backups.
 
 The first staging milestone is a clean project created from the repository,
-seeded with at least two fake facilities and fake global admin, facility admin,
-coach, athlete, H2K, pending, inactive, and cross-facility coach scenarios.
+seeded with at least two fake facilities and fake facility-admin, coach,
+athlete, H2K, pending, and inactive scenarios. Cross-facility denial is tested
+between the dedicated accounts for each facility.
 
 ### Setup Direction
 
@@ -1047,6 +1059,10 @@ Done criteria:
 - Prevent duplicate assignment of the same workout, target, and date even when
   two coaches act at nearly the same time; browser-only duplicate filtering is
   not enough for this race.
+- Treat overlapping facility, group, and individual targets as one effective
+  assignment per member for the same workout and date. Members in multiple
+  selected groups must see and log one workout, and attendance/leaderboard
+  calculations must count it once.
 - Add staging coverage with two coaches in one facility plus a coach in the
   second facility. Both same-facility coaches may assign; the other-facility
   coach must be denied.

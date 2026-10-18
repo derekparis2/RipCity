@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/styles.css?v=dashboard-feedback-1" />
+  <link rel="stylesheet" href="css/styles.css?v=targeted-announcements-4" />
 </head>
 
 <body class="auth-body coach-dashboard-page">
@@ -71,6 +71,84 @@
         </div>
       </article>
     </section>
+
+    <details class="panel coach-announcements-panel" id="coach-announcements-panel">
+      <summary class="coach-announcement-summary">
+        <div>
+          <p class="eyebrow">COMMUNICATION</p>
+          <h3>Announcements</h3>
+          <p>Send an update to the facility, athletes, groups, or selected members.</p>
+        </div>
+        <span class="coach-announcement-summary-action" aria-hidden="true"></span>
+      </summary>
+
+      <div class="coach-announcements-layout coach-announcement-content">
+        <form class="coach-announcement-form" id="coach-announcement-form">
+          <label>Title
+            <input id="coach-announcement-title" type="text" maxlength="120" required />
+          </label>
+          <label>Message
+            <textarea id="coach-announcement-body" rows="4" maxlength="2000" required></textarea>
+          </label>
+          <label>Audience
+            <select id="coach-announcement-audience">
+              <option value="facility">Entire facility</option>
+              <option value="athletes">All athletes</option>
+              <option value="h2k">All H2K members</option>
+              <option value="targeted">Custom selection</option>
+            </select>
+          </label>
+          <label>Importance
+            <select id="coach-announcement-importance">
+              <option value="standard">Standard</option>
+              <option value="important">Important</option>
+            </select>
+          </label>
+          <label>Expires <span class="optional-label">Optional</span>
+            <input id="coach-announcement-expires" type="datetime-local" />
+          </label>
+          <div class="announcement-targets hidden" id="coach-announcement-targets">
+            <div class="announcement-recipient-heading">
+              <div>
+                <strong>Recipients</strong>
+                <span id="coach-announcement-recipient-summary">No recipients selected</span>
+              </div>
+              <button class="text-button" id="coach-announcement-clear-recipients" type="button">Clear all</button>
+            </div>
+            <div class="announcement-recipient-tabs" role="tablist" aria-label="Recipient type">
+              <button class="is-active" type="button" role="tab" aria-selected="true" data-recipient-tab="groups">
+                Groups <span id="coach-announcement-group-tab-count">0</span>
+              </button>
+              <button type="button" role="tab" aria-selected="false" data-recipient-tab="members">
+                Members <span id="coach-announcement-member-tab-count">0</span>
+              </button>
+            </div>
+            <div class="announcement-recipient-pane" data-recipient-pane="groups">
+              <div class="announcement-checkbox-list" id="coach-announcement-groups"></div>
+            </div>
+            <div class="announcement-recipient-pane hidden" data-recipient-pane="members">
+              <div class="announcement-member-tools">
+                <input id="coach-announcement-member-search" type="search" aria-label="Find a member" placeholder="Search members..." autocomplete="off" />
+                <button class="outline-btn" id="coach-announcement-select-visible" type="button">Select shown</button>
+              </div>
+              <p class="announcement-selection-count" id="coach-announcement-member-count">0 shown</p>
+              <div class="announcement-checkbox-list" id="coach-announcement-members"></div>
+            </div>
+          </div>
+          <button class="primary-btn" id="coach-announcement-submit" type="submit">Publish Announcement</button>
+          <p class="auth-message" id="coach-announcement-message" aria-live="polite"></p>
+        </form>
+
+        <div class="coach-announcement-history">
+          <div class="coach-announcement-history-heading">
+            <h4>Published Announcements</h4>
+          </div>
+          <div class="coach-announcement-list" id="coach-announcement-list">
+            <div class="empty-state">Loading announcements...</div>
+          </div>
+        </div>
+      </div>
+    </details>
 
     <section class="stats-grid">
       <article class="stat-card">
@@ -202,5 +280,6 @@
   <script src="js/shared/workout-data.js"></script>
   <script src="js/shared/attention-rules.js?v=coach-attention-1"></script>
   <script src="js/coach/coach-dashboard.js?v=coach-attention-1"></script>
+  <script src="js/coach/coach-announcements.js?v=targeted-announcements-4"></script>
 </body>
 </html>

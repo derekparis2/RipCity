@@ -138,8 +138,7 @@ with expected_memberships (
     ('10000000-0000-4000-8000-000000000006', 'rcinactive@example.com', 'rip-city', 'athlete', 'inactive', 'rcadmin@example.com'),
     ('10000000-0000-4000-8000-000000000007', 'alphaadmin@example.com', 'test-facility-alpha', 'admin', 'approved', 'alphaadmin@example.com'),
     ('10000000-0000-4000-8000-000000000008', 'alphacoach@example.com', 'test-facility-alpha', 'coach', 'approved', 'alphaadmin@example.com'),
-    ('10000000-0000-4000-8000-000000000009', 'alphaathlete@example.com', 'test-facility-alpha', 'athlete', 'approved', 'alphaadmin@example.com'),
-    ('10000000-0000-4000-8000-000000000010', 'rccoach@example.com', 'test-facility-alpha', 'coach', 'approved', 'alphaadmin@example.com')
+    ('10000000-0000-4000-8000-000000000009', 'alphaathlete@example.com', 'test-facility-alpha', 'athlete', 'approved', 'alphaadmin@example.com')
 )
 insert into public.facility_members (
   id,
@@ -225,8 +224,8 @@ join public.groups g
 
 commit;
 
--- Expected result: 9 profiles and 10 memberships. The Rip City coach appears
--- once in each facility. Pending/inactive members retain their intended status.
+-- Expected result: 9 profiles and 9 one-facility memberships.
+-- Pending/inactive members retain their intended status.
 select
   p.email,
   p.global_role,

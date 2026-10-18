@@ -13,6 +13,17 @@ staging application.
 - `20261016201500_lock_down_coach_invite_writes.sql` closes two-step invite
   reopening and reserves direct coach-invite inserts/updates for the trusted
   server-side RPC while preserving existing member-invite table policies.
+- `20261018100000_add_targeted_coach_announcements.sql` adds atomic,
+  facility-scoped announcements for full-facility, group, and individual
+  audiences with optional expiration and recipient-enforced RLS.
+- `20261018103000_fix_targeted_announcement_creation.sql` makes the creation
+  RPC explicitly facility-scoped and uses its validated server-side transaction
+  to bypass the direct-insert policy that rejected every staging coach.
+- `20261018110000_add_announcement_audiences_and_dismissals.sql` adds the
+  all-athletes audience and private per-member dismissal state used to hide a
+  message for the current day.
+- `20261018113000_add_h2k_announcement_audience.sql` adds the matching one-click
+  all-H2K audience while preserving custom group and individual targeting.
 - Future changes must use a later UTC timestamp and a descriptive name, such as
   `20260817090000_add_facility_timezone.sql`.
 

@@ -940,6 +940,10 @@ async function updateScores() {
 
   setMemberText("today-score", metrics.todayScore);
   setMemberText("weekly-score-h2k", metrics.fourWeekAverage ?? "No history");
+  document.getElementById("weekly-score-h2k")?.classList.toggle(
+    "is-text-value",
+    metrics.fourWeekAverage === null
+  );
   setMemberText("weekly-percent-h2k", metrics.currentStreak);
   setMemberText("h2k-status", `${metrics.currentWeekScore}/${metrics.currentWeekMax}`);
   setMemberText("member-stat-one-suffix", `/${h2kHabits.length}`);
@@ -1206,6 +1210,7 @@ function updateSharedWorkoutStats() {
   setMemberText("today-score", metrics.currentWeek.percent ?? "—");
   setMemberText("member-stat-one-suffix", metrics.currentWeek.percent === null ? "" : "%");
   setMemberText("weekly-score-h2k", `${metrics.currentWeek.completed}/${metrics.currentWeek.assigned}`);
+  document.getElementById("weekly-score-h2k")?.classList.remove("is-text-value");
   setMemberText("weekly-percent-h2k", metrics.fourWeek.percent ?? "—");
   setMemberText("member-stat-three-suffix", metrics.fourWeek.percent === null ? "" : "%");
   setMemberText("h2k-status", `${metrics.currentStreak} day${metrics.currentStreak === 1 ? "" : "s"}`);

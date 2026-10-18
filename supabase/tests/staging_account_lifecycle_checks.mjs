@@ -158,19 +158,19 @@ try {
     "Alpha coach starts with approved coach access"
   );
 
-  const { body: otherCoachRows } = await request(
-    `facility_members?select=id&facility_id=eq.${alpha.id}&role=eq.coach&id=neq.${alphaCoachMembershipId}`,
+  const { body: alphaAdminRows } = await request(
+    `facility_members?select=id&profile_id=eq.${alphaAdmin.userId}&facility_id=eq.${alpha.id}`,
     alphaAdmin.token
   );
-  assert(Boolean(otherCoachRows[0]?.id), "Alpha facility has a second coach fixture for denied-update testing");
+  assert(Boolean(alphaAdminRows[0]?.id), "Alpha facility admin fixture is available for denied-update testing");
   const ordinaryCoachUpdate = await updateMembership(
     alphaCoach.token,
-    otherCoachRows[0]?.id,
+    alphaAdminRows[0]?.id,
     "inactive"
   );
   assert(
     ordinaryCoachUpdate.response.ok && ordinaryCoachUpdate.body.length === 0,
-    "ordinary coach cannot deactivate another coach"
+    "ordinary coach cannot deactivate the facility admin"
   );
 
   const coachRowsBefore = await request(

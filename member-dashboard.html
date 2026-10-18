@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=member-mobile-nav-1" />
+  <link rel="stylesheet" href="css/styles.css?v=targeted-announcements-4" />
 </head>
 
 <body class="auth-body member-dashboard-body" data-member-page="dashboard">
@@ -57,6 +57,16 @@
         <p class="eyebrow">MEMBER DASHBOARD</p>
         <h3>Your training, habits, goals, and progress in one place.</h3>
       </div>
+    </section>
+
+    <section class="member-announcements-panel hidden" id="member-announcements-panel" aria-labelledby="member-announcements-heading">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">FROM YOUR COACHES</p>
+          <h3 id="member-announcements-heading">Announcements</h3>
+        </div>
+      </div>
+      <div class="member-announcement-list" id="member-announcement-list"></div>
     </section>
 
     <section class="dashboard-grid h2k-dashboard-grid">
@@ -124,6 +134,21 @@
         <span>Add check-ins and keep the next target in view.</span>
       </a>
     </section>
+
+    <section class="member-dismissed-announcements hidden" id="member-dismissed-announcements-panel">
+      <details>
+        <summary>
+          <span>Dismissed announcements</span>
+          <span id="member-dismissed-announcement-count">0</span>
+        </summary>
+        <div class="member-dismissed-announcement-list" id="member-dismissed-announcement-list"></div>
+      </details>
+    </section>
+
+    <div class="announcement-undo-toast hidden" id="announcement-undo-toast" role="status" aria-live="polite">
+      <span>Announcement dismissed.</span>
+      <button type="button" id="announcement-undo-button">Undo</button>
+    </div>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -133,6 +158,7 @@
   <script src="js/shared/workout-data.js"></script>
   <script src="js/shared/leaderboard-metrics.js?v=coach-leaderboards-2"></script>
   <script src="js/member/member-nav.js?v=member-mobile-nav-1"></script>
-  <script src="js/member/member-dashboard.js?v=member-dashboard-copy-1"></script>
+  <script src="js/member/member-dashboard.js?v=member-dashboard-copy-2"></script>
+  <script src="js/member/member-announcements.js?v=targeted-announcements-3"></script>
 </body>
 </html>

@@ -29,10 +29,32 @@ password, secret key, or `service_role` key in this repository.
 
 The repository-generated staging baseline and its read-only verification suite
 both passed on 2026-08-16. Staging contains required Rip City configuration but
-no production users or activity data. Nine entirely fake Auth identities and
-their two-facility role fixtures were added and verified on 2026-08-28.
+no production users or activity data. Nine entirely fake Auth identities across
+the two staging facilities were added and verified on 2026-08-28.
 
 Staging migration status:
+
+- `20261018100000_add_targeted_coach_announcements.sql` was applied to staging
+  on 2026-10-18. The first RLS test exposed that its invoker creation RPC could
+  not pass the table insert policy; no test announcements were left behind.
+- `20261018103000_fix_targeted_announcement_creation.sql` was applied to
+  staging on 2026-10-18. It makes the RPC explicitly facility-scoped and keeps
+  creation in a validated server-side transaction. All 16 facility, group,
+  individual-recipient, importance, write-denial, isolation, and admin-delete
+  checks then passed, and the test announcements were cleaned up.
+- The obsolete Test Facility Alpha membership for `rccoach@example.com` was
+  removed with the staging-only `04_remove_cross_facility_coach_fixture.sql`.
+  Each V2 login fixture now belongs to one facility. Production has not
+  received any announcement migration.
+- `20261018110000_add_announcement_audiences_and_dismissals.sql` was applied
+  to staging on 2026-10-18. It adds the all-athletes audience and private daily
+  member dismissal records. All 24 expanded targeted-announcement checks,
+  including reversible dismissal restoration, passed afterward, and the
+  temporary test records were cleaned up.
+- `20261018113000_add_h2k_announcement_audience.sql` was applied to staging on
+  2026-10-18. It adds a one-click all-H2K audience. All 26 expanded
+  targeted-announcement checks passed afterward, and the fixtures were cleaned
+  up.
 
 - `20261016120000_add_secure_coach_invites.sql` was applied to staging and all
   12 coach-invite/RLS checks passed on 2026-10-16. The applied migration is now
