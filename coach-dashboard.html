@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/styles.css?v=targeted-announcements-4" />
+  <link rel="stylesheet" href="css/styles.css?v=ui-polish-1" />
 </head>
 
 <body class="auth-body coach-dashboard-page">
@@ -23,11 +23,8 @@
         </div>
       </div>
 
-      <div class="h2k-header-actions">
-        <a class="outline-link" href="coach-roster.html">Roster</a>
-        <a class="outline-link" href="coach-workouts.html">Workout Builder</a>
-        <a class="outline-link" href="coach-leaderboards.html">Leaderboards</a>
-        <a class="outline-link" href="coach-approvals.html">Approvals</a>
+      <div class="h2k-header-actions coach-header-actions">
+        <nav class="coach-nav" data-coach-nav="dashboard" aria-label="Coach navigation"></nav>
         <button class="outline-btn" id="coach-logout-btn">Log Out</button>
       </div>
     </header>
@@ -43,7 +40,7 @@
       </div>
     </section>
 
-    <section class="dashboard-grid h2k-dashboard-grid">
+    <section class="dashboard-grid h2k-dashboard-grid coach-dashboard-intro-grid">
       <article class="panel feedback-panel coach-feedback-panel dashboard-feedback-panel">
         <div>
           <p class="eyebrow">BETA FEEDBACK</p>
@@ -54,22 +51,6 @@
         <a class="primary-link" href="#" target="_blank" rel="noopener" data-feedback-link>Open Feedback Form</a>
       </article>
 
-      <article class="panel coach-signup-link-panel">
-        <div>
-          <p class="eyebrow">MEMBER SIGNUP</p>
-          <h3>Send members the right signup link.</h3>
-          <p>
-            New accounts still require coach approval before members can access the app.
-          </p>
-          <p id="coach-signup-link-message" class="auth-message"></p>
-        </div>
-
-        <div class="coach-signup-link-actions">
-          <button class="outline-btn" type="button" data-copy-signup-link="athlete">Copy Athlete Link</button>
-          <button class="outline-btn" type="button" data-copy-signup-link="h2k">Copy H2K Link</button>
-          <button class="primary-btn" type="button" data-copy-signup-link="general">Copy General Link</button>
-        </div>
-      </article>
     </section>
 
     <details class="panel coach-announcements-panel" id="coach-announcements-panel">
@@ -223,13 +204,6 @@
           </label>
 
           <label>
-            Assignment
-            <select id="coach-review-target-filter">
-              <option value="all">All assignments</option>
-            </select>
-          </label>
-
-          <label>
             Status
             <select id="coach-review-status-filter">
               <option value="all">All statuses</option>
@@ -239,6 +213,16 @@
             </select>
           </label>
         </div>
+
+        <details class="coach-review-more-filters">
+          <summary>Filter by assignment</summary>
+          <label>
+            Assignment
+            <select id="coach-review-target-filter">
+              <option value="all">All assignments</option>
+            </select>
+          </label>
+        </details>
 
         <div class="coach-review-section">
           <div class="coach-review-subheading">
@@ -276,6 +260,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/shared/supabaseClient.js"></script>
   <script src="js/shared/ui-utils.js"></script>
+  <script src="js/coach/coach-nav.js?v=ui-polish-1"></script>
   <script src="js/shared/access-control.js"></script>
   <script src="js/shared/workout-data.js"></script>
   <script src="js/shared/attention-rules.js?v=coach-attention-1"></script>

@@ -26,8 +26,12 @@ document.addEventListener("DOMContentLoaded", () => {
   initCoachExerciseLibraryPage();
 
   document.getElementById("exercise-library-form")?.addEventListener("submit", saveExerciseTemplate);
-  document.getElementById("exercise-library-search")?.addEventListener("input", renderExerciseLibraryList);
-  document.getElementById("exercise-library-category-filter")?.addEventListener("change", renderExerciseLibraryList);
-  document.getElementById("exercise-library-input-filter")?.addEventListener("change", renderExerciseLibraryList);
+  const resetAndRenderLibrary = () => {
+    exerciseLibraryVisibleLimit = 24;
+    renderExerciseLibraryList();
+  };
+  document.getElementById("exercise-library-search")?.addEventListener("input", resetAndRenderLibrary);
+  document.getElementById("exercise-library-category-filter")?.addEventListener("change", resetAndRenderLibrary);
+  document.getElementById("exercise-library-input-filter")?.addEventListener("change", resetAndRenderLibrary);
   document.getElementById("coach-exercises-logout-btn")?.addEventListener("click", logoutCoachExerciseLibrary);
 });

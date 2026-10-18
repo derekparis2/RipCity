@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/styles.css?v=workout-builder-refactor-1" />
+  <link rel="stylesheet" href="css/styles.css?v=ui-polish-1" />
 </head>
 
 <body class="auth-body coach-exercises-page">
@@ -24,12 +24,13 @@
         </div>
       </div>
 
-      <div class="h2k-header-actions">
-        <a class="outline-link" href="coach-workouts.html">Back to Workout Builder</a>
+      <div class="h2k-header-actions coach-header-actions">
+        <nav class="coach-nav" data-coach-nav="workouts" aria-label="Coach navigation"></nav>
         <button class="outline-btn" id="coach-exercises-logout-btn">Log Out</button>
       </div>
     </header>
 
+    <a class="outline-link coach-context-link" href="coach-workouts.html">← Back to Workout Builder</a>
     <section class="hero-card h2k-hero">
       <div>
         <p class="eyebrow">EXERCISE LIBRARY</p>
@@ -45,15 +46,16 @@
     <p id="exercise-library-message" class="auth-message"></p>
 
     <section class="exercise-library-page-grid">
-      <article class="panel exercise-library-create-card">
-        <div class="panel-heading">
-          <div>
+      <details class="panel exercise-library-create-card">
+        <summary class="compact-panel-summary">
+          <span>
             <p class="eyebrow">ADD EXERCISE</p>
-            <h3>Save a Custom Exercise</h3>
-          </div>
-        </div>
+            <strong>Save a Custom Exercise</strong>
+          </span>
+          <span aria-hidden="true">Open +</span>
+        </summary>
 
-        <form id="exercise-library-form" class="exercise-library-form">
+        <form id="exercise-library-form" class="exercise-library-form compact-panel-body">
           <label>
             Exercise Name
             <input type="text" id="library-exercise-name" placeholder="Trap Bar Deadlift" />
@@ -105,7 +107,7 @@
 
           <button class="primary-btn full-btn" type="submit">Save Exercise</button>
         </form>
-      </article>
+      </details>
 
       <article class="panel exercise-library-browser-card">
         <div class="panel-heading">
@@ -161,10 +163,11 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/shared/supabaseClient.js"></script>
   <script src="js/shared/ui-utils.js"></script>
+  <script src="js/coach/coach-nav.js?v=ui-polish-1"></script>
   <script src="js/shared/access-control.js"></script>
   <script src="js/coach/workouts/core.js"></script>
   <script src="js/coach/workouts/data.js"></script>
-  <script src="js/coach/workouts/exercise-library.js"></script>
-  <script src="js/coach/workouts/exercise-library-page.js"></script>
+  <script src="js/coach/workouts/exercise-library.js?v=ui-polish-1"></script>
+  <script src="js/coach/workouts/exercise-library-page.js?v=ui-polish-1"></script>
 </body>
 </html>

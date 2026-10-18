@@ -4,6 +4,8 @@
 // Facility-scoped library loading and search helpers. Rendering and mutation
 // actions will move here in the next behavior-preserving refactor slice.
 
+let exerciseLibraryVisibleLimit = 24;
+
 function showExerciseLibraryMessage(message, isError = false) {
   const element = document.getElementById("exercise-library-message");
   if (!element) return;
@@ -194,15 +196,17 @@ function renderExerciseLibraryList() {
     getInputValue("exercise-library-input-filter") !== "all"
   );
   const isFullLibraryPage = document.body.classList.contains("coach-exercises-page");
-  const visibleTemplates = hasActiveSearch || isFullLibraryPage
-    ? filteredTemplates
-    : filteredTemplates.slice(0, 4);
+  const visibleTemplates = isFullLibraryPage
+    ? filteredTemplates.slice(0, exerciseLibraryVisibleLimit)
+    : hasActiveSearch
+      ? filteredTemplates
+      : filteredTemplates.slice(0, 4);
 
   if (count) {
-    count.textContent = hasActiveSearch
-      ? `${filteredTemplates.length} of ${exerciseTemplates.length} exercises shown.`
-      : isFullLibraryPage
-        ? `${visibleTemplates.length} exercise${visibleTemplates.length === 1 ? "" : "s"} available.`
+    count.textContent = isFullLibraryPage
+      ? `Showing ${visibleTemplates.length} of ${filteredTemplates.length} matching exercises.`
+      : hasActiveSearch
+        ? `${filteredTemplates.length} of ${exerciseTemplates.length} exercises shown.`
         : `Showing ${visibleTemplates.length} recent exercises. Search or filter to edit the full library.`;
   }
 
@@ -289,7 +293,16 @@ function renderExerciseLibraryList() {
         </div>
       </form>
     </article>
-  `).join("");
+  `).join("") + (isFullLibraryPage && visibleTemplates.length < filteredTemplates.length ? `
+    <button class="outline-btn exercise-library-show-more" type="button" data-exercise-library-show-more>
+      Show ${Math.min(24, filteredTemplates.length - visibleTemplates.length)} more exercises
+    </button>
+  ` : "");
+
+  list.querySelector("[data-exercise-library-show-more]")?.addEventListener("click", () => {
+    exerciseLibraryVisibleLimit += 24;
+    renderExerciseLibraryList();
+  });
 
   list.querySelectorAll("[data-toggle-template-edit]").forEach(button => {
     button.addEventListener("click", () => {

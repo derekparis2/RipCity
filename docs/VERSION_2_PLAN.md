@@ -963,6 +963,21 @@ V2 direction:
   day.
 - Keep Monday through Sunday as the H2K training week.
 
+### Coach And Admin Responsive Navigation
+
+- Keep Dashboard, Roster, Workout Builder, Leaderboards, and Approvals reachable
+  from every coach/admin page through one shared navigation map.
+- Use compact Menu and Log Out controls on smaller screens instead of stacking
+  every destination into tall full-width header buttons.
+- Keep contextual actions such as Back to Roster or Back to Workout Builder in
+  page content rather than replacing the shared navigation.
+- Put member signup links on Roster, with only the Athlete and H2K choices used
+  by the current signup flow.
+- Put pending signup decisions first on Approvals and progressively disclose
+  facility-admin-only coach invite/access tools.
+- Paginate or progressively reveal large roster and exercise-library results so
+  ordinary phone tasks do not render the full dataset at once.
+
 ### Member Mobile Dashboard
 
 The member dashboard is usable on mobile, but V2 should make it feel more like a

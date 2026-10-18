@@ -9,6 +9,7 @@ let rosterMembers = [];
 let rosterGroups = [];
 let rosterGroupMemberships = [];
 let rosterSupportsH2KBandColor = true;
+let rosterVisibleLimit = 8;
 
 // H2K bands work like coach-managed training levels. The blank option in the
 // roster UI saves as null and means "No Band" for a member.
@@ -27,6 +28,45 @@ function showRosterMessage(message, isError = false) {
 
   element.textContent = message;
   element.classList.toggle("error-message", isError);
+}
+
+function showRosterSignupLinkMessage(message, isError = false) {
+  const element = document.getElementById("coach-signup-link-message");
+  if (!element) return;
+  element.textContent = message;
+  element.classList.toggle("error-message", isError);
+}
+
+function buildRosterSignupLink(type) {
+  const signupUrl = new URL("signup.html", window.location.href);
+  signupUrl.searchParams.set("type", type);
+  return signupUrl.href;
+}
+
+async function copyRosterSignupLink(type) {
+  const link = buildRosterSignupLink(type);
+
+  try {
+    if (navigator.clipboard?.writeText && window.isSecureContext) {
+      await navigator.clipboard.writeText(link);
+    } else {
+      const input = document.createElement("textarea");
+      input.value = link;
+      input.setAttribute("readonly", "");
+      input.style.position = "fixed";
+      input.style.left = "-9999px";
+      document.body.appendChild(input);
+      input.select();
+      const copied = document.execCommand("copy");
+      input.remove();
+      if (!copied) throw new Error("Copy failed");
+    }
+
+    showRosterSignupLinkMessage(`${type === "h2k" ? "H2K" : "Athlete"} signup link copied.`);
+  } catch (error) {
+    console.error(error);
+    showRosterSignupLinkMessage(`Copy this link: ${link}`, true);
+  }
 }
 
 function normalizeMemberProfile(member) {
@@ -310,7 +350,18 @@ function renderRosterMembers() {
     return;
   }
 
-  list.innerHTML = members.map(member => renderRosterMemberCard(member)).join("");
+  const visibleMembers = members.slice(0, rosterVisibleLimit);
+  list.innerHTML = visibleMembers.map(member => renderRosterMemberCard(member)).join("") +
+    (visibleMembers.length < members.length ? `
+      <button class="outline-btn roster-show-more" type="button" data-roster-show-more>
+        Show ${Math.min(8, members.length - visibleMembers.length)} more members
+      </button>
+    ` : "");
+
+  list.querySelector("[data-roster-show-more]")?.addEventListener("click", () => {
+    rosterVisibleLimit += 8;
+    renderRosterMembers();
+  });
 
   document.querySelectorAll("[data-roster-group-toggle]").forEach(input => {
     input.addEventListener("change", () => markMemberGroupChanges(input.dataset.memberProfileId));
@@ -720,11 +771,18 @@ async function initCoachRosterPage() {
 document.addEventListener("DOMContentLoaded", () => {
   initCoachRosterPage();
 
+  document.querySelectorAll("[data-copy-signup-link]").forEach(button => {
+    button.addEventListener("click", () => copyRosterSignupLink(button.dataset.copySignupLink));
+  });
+
   document.getElementById("refresh-roster-btn").addEventListener("click", refreshRoster);
   document.getElementById("create-group-form").addEventListener("submit", createRosterGroup);
   document.getElementById("coach-roster-logout-btn").addEventListener("click", logoutCoachRoster);
 
   ["roster-type-filter", "roster-status-filter", "roster-group-filter", "roster-search"].forEach(id => {
-    document.getElementById(id).addEventListener("input", renderRosterMembers);
+    document.getElementById(id).addEventListener("input", () => {
+      rosterVisibleLimit = 8;
+      renderRosterMembers();
+    });
   });
 });

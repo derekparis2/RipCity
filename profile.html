@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/styles.css?v=member-mobile-nav-1" />
+  <link rel="stylesheet" href="css/styles.css?v=ui-polish-1" />
 </head>
 
 <body class="auth-body member-dashboard-body profile-body">
@@ -95,14 +95,15 @@
         </div>
       </article>
 
-      <article class="panel">
-        <div>
-          <p class="eyebrow">EDIT PROFILE</p>
-          <h3>Member Info</h3>
-        </div>
+      <p id="profile-message" class="auth-message profile-page-message" role="status" aria-live="polite"></p>
 
-        <p id="profile-message" class="auth-message"></p>
+      <details class="panel profile-edit-panel">
+        <summary class="compact-panel-summary">
+          <span><span class="eyebrow">EDIT PROFILE</span><strong>Member Info</strong></span>
+          <span aria-hidden="true">Open +</span>
+        </summary>
 
+        <div class="compact-panel-body">
         <form id="profile-form" class="profile-form">
           <label>
             Full Name
@@ -206,7 +207,8 @@
 
           <button class="primary-btn" type="submit">Save Profile</button>
         </form>
-      </article>
+        </div>
+      </details>
     </section>
   </main>
 

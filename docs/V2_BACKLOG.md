@@ -234,6 +234,31 @@ isolated, and phone/desktop staging checks pass.
 
 ---
 
+## 7C. Shared UI Polish And Coach Mobile Navigation
+
+- **Status:** In progress
+- **Branch:** `derek/ui-polish`
+- **Plan detail:** [Responsive UI standard](VERSION_2_PLAN.md#responsive-ui-standard) · [Beta feedback polish queue](VERSION_2_PLAN.md#8-beta-feedback-polish-queue)
+
+This frontend-only package makes the current V2 features easier to use without
+changing their permissions or database behavior. It gives every coach/admin
+page one shared destination map and compact mobile menu; moves the Athlete and
+H2K signup actions to Roster; makes pending approvals the primary approvals
+workflow; progressively renders long roster and exercise-library lists; and
+reduces tall forms and secondary controls through purposeful disclosure.
+
+The member side gains an athlete-specific History description, a five-day
+streak flame with stronger heat at longer streaks, a compact profile editor,
+and consistent stylesheet delivery across active pages. Coach profile editing
+and announcement sender-profile behavior remain separate account/profile work.
+
+**Complete when:** Coach destinations remain consistent across every coach and
+admin page, the changed coach/member pages pass phone and desktop checks, the
+signup and access workflows still behave as before, and the branch review is
+approved.
+
+---
+
 ## 8. Targeted Coach Announcements
 
 - **Status:** Complete

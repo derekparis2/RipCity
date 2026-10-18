@@ -8911,6 +8911,460 @@ body {
   overscroll-behavior: contain;
 }
 
+/* =====================================================
+   SHARED RESPONSIVE NAVIGATION + UI POLISH
+   ===================================================== */
+
+.coach-header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.coach-nav,
+.coach-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.coach-nav-toggle {
+  display: none;
+}
+
+.coach-nav-link {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 13px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.1;
+  text-align: center;
+  text-decoration: none;
+  transition: border-color 160ms ease, color 160ms ease, background 160ms ease;
+}
+
+.coach-nav-link:hover,
+.coach-nav-link.active {
+  border-color: rgba(91, 178, 255, 0.58);
+  background: rgba(91, 178, 255, 0.11);
+  color: var(--text);
+}
+
+.coach-nav-link.active {
+  box-shadow: inset 0 -2px 0 #65b8ff;
+}
+
+.coach-context-link {
+  width: fit-content;
+  margin-bottom: 14px;
+}
+
+.compact-panel-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  min-height: 50px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.compact-panel-summary::-webkit-details-marker {
+  display: none;
+}
+
+.compact-panel-summary > span:first-child {
+  display: grid;
+  gap: 5px;
+}
+
+.compact-panel-summary strong {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 27px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.compact-panel-summary > span:last-child {
+  color: #65b8ff;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+details[open] > .compact-panel-summary > span:last-child {
+  font-size: 0;
+}
+
+details[open] > .compact-panel-summary > span:last-child::after {
+  content: "Close −";
+  font-size: 13px;
+}
+
+.compact-panel-body {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+
+.coach-dashboard-intro-grid {
+  grid-template-columns: 1fr;
+}
+
+.dashboard-feedback-panel {
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding-block: 16px;
+}
+
+.dashboard-feedback-panel h3,
+.dashboard-feedback-panel p:not(.eyebrow) {
+  margin-block: 4px;
+}
+
+.roster-signup-panel {
+  margin-bottom: 16px;
+  border-color: rgba(91, 178, 255, 0.28);
+  background: linear-gradient(120deg, rgba(91, 178, 255, 0.08), rgba(20, 20, 22, 0.94) 52%);
+}
+
+.roster-signup-panel .compact-panel-body > p:first-child {
+  margin-top: 0;
+}
+
+.coach-signup-link-actions {
+  justify-content: flex-start;
+}
+
+.roster-group-editor {
+  margin-bottom: 18px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.coach-review-filter-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.coach-review-more-filters {
+  margin: 12px 0 18px;
+  padding: 11px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.coach-review-more-filters summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.coach-review-more-filters label {
+  display: grid;
+  gap: 7px;
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.coach-review-more-filters select {
+  min-height: 44px;
+}
+
+.approval-admin-tools {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.approval-admin-tool {
+  margin: 0;
+  align-self: start;
+}
+
+.approval-admin-tool .primary-btn {
+  width: 100%;
+}
+
+.exercise-library-page-grid {
+  grid-template-columns: 1fr;
+  align-items: start;
+}
+
+.exercise-library-create-card:not([open]) {
+  min-height: 0;
+}
+
+.exercise-library-show-more,
+.roster-show-more {
+  width: 100%;
+  margin-top: 6px;
+  border-color: rgba(91, 178, 255, 0.34);
+  color: #65b8ff;
+}
+
+.profile-edit-panel {
+  align-self: start;
+}
+
+.profile-page-message {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.member-streak-flame {
+  display: inline-block;
+  margin-left: 8px;
+  font-family: system-ui, sans-serif;
+  font-size: 0.7em;
+  filter: saturate(0.85);
+  transform: translateY(-2px);
+}
+
+.member-streak-flame.strong {
+  filter: saturate(1.2) drop-shadow(0 0 7px rgba(255, 139, 46, 0.48));
+  transform: translateY(-2px) scale(1.08);
+}
+
+.member-streak-flame.hot {
+  filter: saturate(1.55) hue-rotate(-12deg) drop-shadow(0 0 9px rgba(255, 75, 48, 0.65));
+  transform: translateY(-2px) scale(1.18);
+}
+
+@media (max-width: 1040px) {
+  .coach-page > .h2k-header,
+  .approval-page > .h2k-header {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .coach-header-actions {
+    position: relative;
+    width: auto;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .coach-nav-toggle {
+    display: inline-flex;
+  }
+
+  .coach-nav-links {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    z-index: 80;
+    width: min(310px, calc(100vw - 32px));
+    display: none;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: rgba(18, 18, 20, 0.98);
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.48);
+  }
+
+  .coach-nav.open .coach-nav-links {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .coach-nav-link {
+    min-height: 48px;
+  }
+
+  .approval-admin-tools {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .coach-page,
+  .approval-page {
+    width: min(100% - 20px, 1180px);
+  }
+
+  .h2k-header {
+    align-items: center;
+    padding-block: 12px;
+  }
+
+  .auth-brand img {
+    width: 48px;
+    height: 48px;
+  }
+
+  .auth-brand h1 {
+    font-size: 24px;
+  }
+
+  .auth-brand p {
+    font-size: 12px;
+  }
+
+  .coach-header-actions {
+    width: auto;
+    flex-wrap: nowrap;
+  }
+
+  .coach-header-actions > .outline-btn,
+  .coach-nav-toggle {
+    min-height: 42px;
+    padding: 9px 11px;
+    font-size: 12px;
+  }
+
+  .coach-nav-links {
+    position: fixed;
+    top: 76px;
+    right: 10px;
+    left: 10px;
+    width: auto;
+  }
+
+  .coach-nav.open .coach-nav-links {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-card {
+    min-height: 0;
+    padding: 20px;
+  }
+
+  .hero-card h3 {
+    font-size: clamp(34px, 10vw, 46px);
+  }
+
+  .dashboard-feedback-panel {
+    display: grid;
+  }
+
+  .dashboard-feedback-panel p:not(.eyebrow) {
+    display: none;
+  }
+
+  .coach-review-filter-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .coach-review-filter-grid label:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .roster-filter-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .roster-filter-grid label:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .coach-roster-list,
+  .pending-users-list,
+  .coach-management-list {
+    gap: 10px;
+  }
+
+  .roster-member-card,
+  .pending-user-card,
+  .coach-management-card {
+    padding: 14px;
+  }
+
+  .compact-panel-summary strong {
+    font-size: 23px;
+  }
+
+  .profile-dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .member-stats-grid .stat-card {
+    padding: 14px;
+  }
+
+  .member-stats-grid .stat-card strong {
+    font-size: clamp(29px, 9vw, 40px);
+  }
+}
+
+@media (max-width: 430px) {
+  .coach-page,
+  .approval-page {
+    width: calc(100% - 14px);
+  }
+
+  .h2k-header {
+    gap: 8px;
+  }
+
+  .auth-brand {
+    gap: 8px;
+  }
+
+  .auth-brand img {
+    width: 42px;
+    height: 42px;
+  }
+
+  .auth-brand h1 {
+    font-size: 21px;
+  }
+
+  .coach-header-actions > .outline-btn,
+  .coach-nav-toggle {
+    min-height: 38px;
+    padding: 7px 9px;
+  }
+
+  .coach-review-filter-grid,
+  .roster-filter-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .coach-review-filter-grid label:first-child,
+  .roster-filter-grid label:last-child {
+    grid-column: auto;
+  }
+
+  .coach-signup-link-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .coach-signup-link-actions button {
+    width: 100%;
+  }
+
+  .member-shell-nav {
+    gap: 3px;
+    padding: 6px;
+  }
+
+  .member-shell-nav .nav-link-anchor {
+    min-width: 0;
+    padding-inline: 3px;
+  }
+
+  .member-shell-nav .mobile-nav-text {
+    font-size: 10px;
+  }
+}
+
 .workout-session-body.session-logging-mode .session-current-context {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
