@@ -80,17 +80,19 @@ Status: all 20 account-lifecycle checks passed against Rip City Staging on
 
 ## Targeted Announcement Checks
 
-After applying `20261018100000_add_targeted_coach_announcements.sql` and
-`20261018103000_fix_targeted_announcement_creation.sql` in order, run:
+After applying `20261018100000_add_targeted_coach_announcements.sql`,
+`20261018103000_fix_targeted_announcement_creation.sql`, and
+`20261018110000_add_announcement_audiences_and_dismissals.sql` in order, run:
 
 ```bash
 node supabase/tests/staging_announcements_rls_checks.mjs
 ```
 
-The staging-only test creates and cleans up facility, group, and individual
-announcements. It verifies member/coach write permissions, Rip City versus
-Alpha isolation, recipient-only visibility, and facility-admin deletion.
+The staging-only test creates and cleans up facility, all-athlete, group, and
+individual announcements. It verifies member/coach write permissions, Rip City
+versus Alpha isolation, recipient-only visibility, daily dismissal privacy,
+and facility-admin deletion.
 
-Status: all 16 targeted-announcement checks passed against Rip City Staging on
-2026-10-18 after both announcement migrations were applied. All temporary
-announcements were cleaned up.
+Status: all 22 targeted-announcement checks passed against Rip City Staging on
+2026-10-18 after all three announcement migrations were applied. All temporary
+announcements and dismissals were cleaned up.

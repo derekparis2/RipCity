@@ -29,8 +29,8 @@ password, secret key, or `service_role` key in this repository.
 
 The repository-generated staging baseline and its read-only verification suite
 both passed on 2026-08-16. Staging contains required Rip City configuration but
-no production users or activity data. Nine entirely fake Auth identities and
-their two-facility role fixtures were added and verified on 2026-08-28.
+no production users or activity data. Nine entirely fake Auth identities across
+the two staging facilities were added and verified on 2026-08-28.
 
 Staging migration status:
 
@@ -45,7 +45,11 @@ Staging migration status:
 - The obsolete Test Facility Alpha membership for `rccoach@example.com` was
   removed with the staging-only `04_remove_cross_facility_coach_fixture.sql`.
   Each V2 login fixture now belongs to one facility. Production has not
-  received either announcement migration.
+  received any announcement migration.
+- `20261018110000_add_announcement_audiences_and_dismissals.sql` was applied
+  to staging on 2026-10-18. It adds the all-athletes audience and private daily
+  member dismissal records. All 22 expanded targeted-announcement checks
+  passed afterward, and the temporary test records were cleaned up.
 
 - `20261016120000_add_secure_coach_invites.sql` was applied to staging and all
   12 coach-invite/RLS checks passed on 2026-10-16. The applied migration is now

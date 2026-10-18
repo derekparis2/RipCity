@@ -19,6 +19,9 @@ staging application.
 - `20261018103000_fix_targeted_announcement_creation.sql` makes the creation
   RPC explicitly facility-scoped and uses its validated server-side transaction
   to bypass the direct-insert policy that rejected every staging coach.
+- `20261018110000_add_announcement_audiences_and_dismissals.sql` adds the
+  all-athletes audience and private per-member dismissal state used to hide a
+  message for the current day.
 - Future changes must use a later UTC timestamp and a descriptive name, such as
   `20260817090000_add_facility_timezone.sql`.
 

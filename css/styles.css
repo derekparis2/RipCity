@@ -16,6 +16,52 @@
   padding: 22px;
 }
 
+.coach-announcement-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.coach-announcement-summary::-webkit-details-marker {
+  display: none;
+}
+
+.coach-announcement-summary h3,
+.coach-announcement-summary p {
+  margin-top: 0;
+}
+
+.coach-announcement-summary > div > p:last-child {
+  margin-bottom: 0;
+  color: var(--muted);
+}
+
+.coach-announcement-summary-action {
+  flex: 0 0 auto;
+  color: #9dccff;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.coach-announcement-summary-action::before {
+  content: "Create +";
+}
+
+.coach-announcements-panel[open] .coach-announcement-summary-action::before {
+  content: "Close −";
+}
+
+.coach-announcement-content {
+  margin-top: 20px;
+  border-top: 1px solid var(--border);
+  padding-top: 20px;
+}
+
 .coach-announcements-layout {
   display: grid;
   grid-template-columns: minmax(280px, 0.8fr) minmax(0, 1.2fr);
@@ -99,6 +145,25 @@
   gap: 6px;
   max-height: 210px;
   overflow-y: auto;
+}
+
+.announcement-member-search-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.announcement-targets #coach-announcement-member-search {
+  min-height: 40px;
+  margin-bottom: 6px;
+}
+
+.announcement-selection-count {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: 10px;
 }
 
 .announcement-checkbox-option {
@@ -222,6 +287,40 @@
   border-left: 4px solid #5eb8ff;
 }
 
+.member-announcements-panel .section-heading h3 {
+  margin: 3px 0 0;
+}
+
+.member-announcement-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.announcement-dismiss-button {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  padding: 3px 0;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.announcement-dismiss-button:hover,
+.announcement-dismiss-button:focus-visible {
+  color: var(--text);
+  outline: none;
+}
+
+.member-announcement-toggle {
+  justify-self: start;
+  min-height: 38px;
+  padding: 8px 13px;
+  font-size: 12px;
+}
+
 .coach-announcement-history,
 .expired-announcement-list {
   display: grid;
@@ -278,6 +377,24 @@
 
   .announcement-card-heading {
     display: grid;
+  }
+
+  .member-announcements-panel {
+    gap: 10px;
+  }
+
+  .member-announcement-card {
+    gap: 8px;
+    padding: 13px;
+  }
+
+  .member-announcement-card > p {
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  .member-announcement-footer {
+    align-items: flex-start;
   }
 }
 

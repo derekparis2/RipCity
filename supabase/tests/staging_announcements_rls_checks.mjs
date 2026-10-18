@@ -93,6 +93,9 @@ const { body: ripMemberships } = await request(
 const ripAthleteMembership = ripMemberships.find(row => normalizeRelation(row.profile)?.email === "rcathlete@example.com");
 const ripAthleteMemberProfileId = normalizeRelation(ripAthleteMembership?.member_profile)?.id;
 assert(Boolean(ripAthleteMemberProfileId), "Rip City athlete fixture has a member profile");
+const ripH2kMembership = ripMemberships.find(row => normalizeRelation(row.profile)?.email === "rch2k@example.com");
+const ripH2kMemberProfileId = normalizeRelation(ripH2kMembership?.member_profile)?.id;
+assert(Boolean(ripH2kMemberProfileId), "Rip City H2K fixture has a member profile");
 
 const { body: alphaMemberships } = await request(
   `facility_members?select=profile_id,profile:profiles!facility_members_profile_id_fkey(email),member_profile:member_profiles(id)&facility_id=eq.${alpha.id}`,
@@ -156,6 +159,48 @@ try {
   assert(facilityForAthlete.body.length === 1, "facility announcement is visible to a Rip City athlete");
   assert(facilityForH2k.body.length === 1, "facility announcement is visible to a Rip City H2K member");
   assert(facilityForAlpha.body.length === 0, "facility announcement is hidden from another facility");
+
+  const athleteAnnouncement = await createAnnouncement(ripCoach.token, {
+    facilityId: ripCity.id,
+    title: "Staging all-athlete announcement",
+    body: "Visible once to every athlete regardless of group count.",
+    audienceType: "athletes"
+  });
+  if (!athleteAnnouncement.response.ok) {
+    throw new Error(`all-athlete announcement failed: ${JSON.stringify(athleteAnnouncement.body)}`);
+  }
+  createdIds.push(athleteAnnouncement.id);
+
+  const allAthletesForAthlete = await request(
+    `coach_announcements?select=id&id=eq.${athleteAnnouncement.id}`,
+    ripAthlete.token
+  );
+  const allAthletesForH2k = await request(
+    `coach_announcements?select=id&id=eq.${athleteAnnouncement.id}`,
+    ripH2k.token
+  );
+  assert(allAthletesForAthlete.body.length === 1, "all-athletes announcement is visible to an athlete");
+  assert(allAthletesForH2k.body.length === 0, "all-athletes announcement is hidden from an H2K member");
+
+  const dismissal = await request("coach_announcement_dismissals", ripAthlete.token, {
+    method: "POST",
+    body: JSON.stringify({
+      announcement_id: athleteAnnouncement.id,
+      member_profile_id: ripAthleteMemberProfileId
+    })
+  });
+  assert(dismissal.response.ok && dismissal.body.length === 1, "member can dismiss a visible announcement for today");
+
+  const ownDismissal = await request(
+    `coach_announcement_dismissals?select=announcement_id&announcement_id=eq.${athleteAnnouncement.id}`,
+    ripAthlete.token
+  );
+  const otherDismissal = await request(
+    `coach_announcement_dismissals?select=announcement_id&announcement_id=eq.${athleteAnnouncement.id}`,
+    ripH2k.token
+  );
+  assert(ownDismissal.body.length === 1, "member can read their own announcement dismissal");
+  assert(otherDismissal.body.length === 0, "another member cannot read the dismissal");
 
   const memberAnnouncement = await createAnnouncement(ripCoach.token, {
     facilityId: ripCity.id,

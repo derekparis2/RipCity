@@ -236,7 +236,7 @@ isolated, and phone/desktop staging checks pass.
 
 ## 8. Targeted Coach Announcements
 
-- **Status:** In progress
+- **Status:** Ready for UI verification
 - **Branch:** `derek/targeted-announcements`
 - **Plan detail:** [Coach announcements and notes](VERSION_2_PLAN.md#5-coach-announcements-and-notes) · [Notification direction](VERSION_2_PLAN.md#notification-direction)
 
@@ -247,7 +247,10 @@ shown on the member dashboard. Facility-scoped RLS and two-facility tests are
 required. Announcements default to a one-day expiration that coaches can change
 or remove, support Standard and Important ordering, and keep expired messages
 out of member access. Creators can clear their own expired messages and facility
-admins can clear all expired facility announcements.
+admins can clear all expired facility announcements. The coach composer is
+collapsed by default, individual members are searchable, and an All Athletes
+audience reaches each athlete once regardless of group overlap. Members see one
+compact message first and can hide a message for the current day.
 
 Private coach-note UI, a generalized notification center, delivery channels,
 and richer read/dismissal behavior are deferred to V3. The existing private
@@ -256,6 +259,11 @@ and richer read/dismissal behavior are deferred to V3. The existing private
 **Complete when:** Coaches can create and manage facility/group/member
 announcements, members see only their targeted announcements, sender identity
 is accurate, and allowed/denied targeting tests pass in both staging facilities.
+
+Database verification is complete: all 22 expanded staging checks passed on
+2026-10-18. The remaining step is phone/desktop verification of the collapsed
+coach composer, searchable recipient list, compact member display, and daily
+dismissal flow.
 
 ---
 

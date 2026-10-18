@@ -638,10 +638,12 @@ Private note UI and a generalized notification system are deferred to V3.
 
 - Announcements are visible to members.
 - Announcements should show who they are from.
-- Member dismissal/read state may follow after the core V2 targeting workflow.
+- Members can hide an announcement for the current day without changing what
+  other members see.
 - Coaches/admins can create announcements for their own facility.
 - Announcement targets:
   - Full facility
+  - All athletes, regardless of how many groups they belong to
   - One or more member groups
   - One or more specific members
 - Coaches cannot edit each other's announcements.
@@ -677,17 +679,17 @@ The announcement record includes:
 - `expires_at`
 - `created_at`
 
-Add dismissal/read state later if it remains required after the first targeted
-announcement workflow is reviewed.
+Member dismissal stores one private dismissal timestamp per announcement and
+member. The member dashboard treats a dismissal as "hide for today," allowing
+an otherwise-active message to reappear on the next local calendar day.
 
 The coach form defaults expiration to 24 hours, while allowing another future
 time or no expiration. Important announcements sort above standard messages.
 Expired messages disappear from member access, remain in a collapsed coach
 history, and can be permanently cleared by their creator or a facility admin.
 
-Possible future `coach_announcement_dismissals` fields:
+The `coach_announcement_dismissals` table includes:
 
-- `id`
 - `announcement_id`
 - `member_profile_id`
 - `dismissed_at`

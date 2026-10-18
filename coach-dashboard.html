@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/styles.css?v=targeted-announcements-1" />
+  <link rel="stylesheet" href="css/styles.css?v=targeted-announcements-2" />
 </head>
 
 <body class="auth-body coach-dashboard-page">
@@ -72,16 +72,17 @@
       </article>
     </section>
 
-    <section class="panel coach-announcements-panel">
-      <div class="panel-heading">
+    <details class="panel coach-announcements-panel" id="coach-announcements-panel">
+      <summary class="coach-announcement-summary">
         <div>
           <p class="eyebrow">COMMUNICATION</p>
           <h3>Announcements</h3>
-          <p>Send an update to the facility, selected groups, or selected members.</p>
+          <p>Send an update to the facility, athletes, groups, or selected members.</p>
         </div>
-      </div>
+        <span class="coach-announcement-summary-action" aria-hidden="true"></span>
+      </summary>
 
-      <div class="coach-announcements-layout">
+      <div class="coach-announcements-layout coach-announcement-content">
         <form class="coach-announcement-form" id="coach-announcement-form">
           <label>Title
             <input id="coach-announcement-title" type="text" maxlength="120" required />
@@ -92,6 +93,7 @@
           <label>Audience
             <select id="coach-announcement-audience">
               <option value="facility">Entire facility</option>
+              <option value="athletes">All athletes</option>
               <option value="targeted">Selected groups or members</option>
             </select>
           </label>
@@ -111,6 +113,9 @@
             </fieldset>
             <fieldset>
               <legend>Members</legend>
+              <label class="announcement-member-search-label" for="coach-announcement-member-search">Find a member</label>
+              <input id="coach-announcement-member-search" type="search" placeholder="Search by name..." autocomplete="off" />
+              <p class="announcement-selection-count" id="coach-announcement-member-count"></p>
               <div class="announcement-checkbox-list" id="coach-announcement-members"></div>
             </fieldset>
           </div>
@@ -127,7 +132,7 @@
           </div>
         </div>
       </div>
-    </section>
+    </details>
 
     <section class="stats-grid">
       <article class="stat-card">
@@ -259,6 +264,6 @@
   <script src="js/shared/workout-data.js"></script>
   <script src="js/shared/attention-rules.js?v=coach-attention-1"></script>
   <script src="js/coach/coach-dashboard.js?v=coach-attention-1"></script>
-  <script src="js/coach/coach-announcements.js?v=targeted-announcements-1"></script>
+  <script src="js/coach/coach-announcements.js?v=targeted-announcements-2"></script>
 </body>
 </html>

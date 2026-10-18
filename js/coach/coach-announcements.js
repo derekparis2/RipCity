@@ -68,7 +68,7 @@
 
     memberList.innerHTML = members.length
       ? members.map(member => `
-          <label class="announcement-checkbox-option">
+          <label class="announcement-checkbox-option" data-announcement-member-option data-member-name="${ui().attr(member.name.toLowerCase())}">
             <input type="checkbox" value="${ui().attr(member.id)}" data-announcement-member />
             <span>
               <strong>${ui().text(member.name)}</strong>
@@ -77,6 +77,24 @@
           </label>
         `).join("")
       : '<p class="announcement-option-empty">No approved members available.</p>';
+
+    updateMemberSelectionState();
+  }
+
+  function updateMemberSelectionState() {
+    const selectedCount = document.querySelectorAll("[data-announcement-member]:checked").length;
+    const visibleCount = Array.from(document.querySelectorAll("[data-announcement-member-option]"))
+      .filter(option => !option.classList.contains("hidden")).length;
+    const count = document.getElementById("coach-announcement-member-count");
+    if (count) count.textContent = `${selectedCount} selected · ${visibleCount} shown`;
+  }
+
+  function filterMemberOptions() {
+    const search = document.getElementById("coach-announcement-member-search")?.value.trim().toLowerCase() || "";
+    document.querySelectorAll("[data-announcement-member-option]").forEach(option => {
+      option.classList.toggle("hidden", search && !option.dataset.memberName.includes(search));
+    });
+    updateMemberSelectionState();
   }
 
   function toggleTargetOptions() {
@@ -90,6 +108,7 @@
 
   function audienceLabel(announcement) {
     if (announcement.audience_type === "facility") return "Entire facility";
+    if (announcement.audience_type === "athletes") return "All athletes";
 
     const groupNames = (announcement.groupIds || [])
       .map(id => groups.find(group => group.id === id)?.name)
@@ -303,6 +322,8 @@
       if (error) throw error;
 
       document.getElementById("coach-announcement-form")?.reset();
+      const memberSearch = document.getElementById("coach-announcement-member-search");
+      if (memberSearch) memberSearch.value = "";
       setDefaultExpiration();
       toggleTargetOptions();
       renderTargetOptions();
@@ -365,6 +386,8 @@
 
     form.addEventListener("submit", publishAnnouncement);
     document.getElementById("coach-announcement-audience")?.addEventListener("change", toggleTargetOptions);
+    document.getElementById("coach-announcement-member-search")?.addEventListener("input", filterMemberOptions);
+    document.getElementById("coach-announcement-members")?.addEventListener("change", updateMemberSelectionState);
     document.getElementById("coach-announcement-list")?.addEventListener("click", event => {
       if (event.target.closest("#clear-expired-announcements")) {
         clearExpiredAnnouncements();
