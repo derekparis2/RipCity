@@ -48,8 +48,9 @@ Staging migration status:
   received any announcement migration.
 - `20261018110000_add_announcement_audiences_and_dismissals.sql` was applied
   to staging on 2026-10-18. It adds the all-athletes audience and private daily
-  member dismissal records. All 22 expanded targeted-announcement checks
-  passed afterward, and the temporary test records were cleaned up.
+  member dismissal records. All 24 expanded targeted-announcement checks,
+  including reversible dismissal restoration, passed afterward, and the
+  temporary test records were cleaned up.
 
 - `20261016120000_add_secure_coach_invites.sql` was applied to staging and all
   12 coach-invite/RLS checks passed on 2026-10-16. The applied migration is now

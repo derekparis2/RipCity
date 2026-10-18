@@ -93,6 +93,7 @@ individual announcements. It verifies member/coach write permissions, Rip City
 versus Alpha isolation, recipient-only visibility, daily dismissal privacy,
 and facility-admin deletion.
 
-Status: all 22 targeted-announcement checks passed against Rip City Staging on
-2026-10-18 after all three announcement migrations were applied. All temporary
-announcements and dismissals were cleaned up.
+Status: all 24 targeted-announcement checks passed against Rip City Staging on
+2026-10-18 after all three announcement migrations were applied. This includes
+the reversible member-dismissal flow. All temporary announcements and
+dismissals were cleaned up.

@@ -680,8 +680,10 @@ The announcement record includes:
 - `created_at`
 
 Member dismissal stores one private dismissal timestamp per announcement and
-member. The member dashboard treats a dismissal as "hide for today," allowing
-an otherwise-active message to reappear on the next local calendar day.
+member. A dismissal removes the message from the main announcement area for the
+current day, while a collapsed dashboard section and immediate Undo action let
+the member restore it. An otherwise-active message reappears on the next local
+calendar day.
 
 The coach form defaults expiration to 24 hours, while allowing another future
 time or no expiration. Important announcements sort above standard messages.

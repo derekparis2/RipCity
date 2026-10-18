@@ -321,6 +321,59 @@
   font-size: 12px;
 }
 
+.member-dismissed-announcements {
+  margin-top: 28px;
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+}
+
+.member-dismissed-announcements summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.member-dismissed-announcement-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.member-dismissed-announcement-list .member-announcement-card {
+  opacity: 0.78;
+}
+
+.announcement-undo-toast {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-2);
+  box-shadow: var(--shadow);
+  padding: 12px 16px;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.announcement-undo-toast button {
+  border: 0;
+  background: transparent;
+  color: #9dccff;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
 .coach-announcement-history,
 .expired-announcement-list {
   display: grid;
@@ -395,6 +448,13 @@
 
   .member-announcement-footer {
     align-items: flex-start;
+  }
+
+  .announcement-undo-toast {
+    right: 16px;
+    bottom: 104px;
+    left: 16px;
+    justify-content: space-between;
   }
 }
 
@@ -7568,8 +7628,8 @@ body {
     white-space: normal;
   }
 
-  .member-dashboard-body #weekly-score-h2k {
-    font-size: 0.82em;
+  .member-dashboard-body #weekly-score-h2k.is-text-value {
+    font-size: 0.62em;
   }
 
   .member-dashboard-body.member-type-athlete #h2k-status {

@@ -10,6 +10,8 @@
   let dismissals = [];
   let showAll = false;
   let dismissalInProgress = false;
+  let undoAnnouncementId = null;
+  let undoTimer = null;
 
   const ui = () => window.RipCityUI;
 
@@ -48,7 +50,19 @@
       });
   }
 
-  function announcementMarkup(announcement) {
+  function dismissedAnnouncementsToday() {
+    const dismissedToday = new Set(
+      dismissals
+        .filter(row => localDayKey(row.dismissed_at) === localDayKey())
+        .map(row => row.announcement_id)
+    );
+
+    return announcements
+      .filter(row => dismissedToday.has(row.id))
+      .sort((a, b) => new Date(b.publish_at).getTime() - new Date(a.publish_at).getTime());
+  }
+
+  function announcementMarkup(announcement, { dismissed = false } = {}) {
     const creator = normalizeRelation(announcement.creator);
     return `
       <article class="member-announcement-card ${announcement.importance === "important" ? "is-important" : ""}">
@@ -62,10 +76,25 @@
         <p>${ui().text(announcement.body)}</p>
         <div class="member-announcement-footer">
           <span class="member-announcement-sender">From ${ui().text(creator?.full_name || "Rip City Coach")}</span>
-          <button class="announcement-dismiss-button" type="button" data-dismiss-announcement="${ui().attr(announcement.id)}">Hide for today</button>
+          <button class="announcement-dismiss-button" type="button" ${dismissed
+            ? `data-restore-announcement="${ui().attr(announcement.id)}">Restore`
+            : `data-dismiss-announcement="${ui().attr(announcement.id)}">Dismiss`}
+          </button>
         </div>
       </article>
     `;
+  }
+
+  function renderDismissedAnnouncements() {
+    const panel = document.getElementById("member-dismissed-announcements-panel");
+    const list = document.getElementById("member-dismissed-announcement-list");
+    const count = document.getElementById("member-dismissed-announcement-count");
+    if (!panel || !list || !count) return;
+
+    const dismissed = dismissedAnnouncementsToday();
+    count.textContent = String(dismissed.length);
+    list.innerHTML = dismissed.map(announcement => announcementMarkup(announcement, { dismissed: true })).join("");
+    panel.classList.toggle("hidden", !dismissed.length);
   }
 
   function renderAnnouncements() {
@@ -77,6 +106,7 @@
     if (!visible.length) {
       panel.classList.add("hidden");
       list.innerHTML = "";
+      renderDismissedAnnouncements();
       return;
     }
 
@@ -91,6 +121,46 @@
       ` : ""}
     `;
     panel.classList.remove("hidden");
+    renderDismissedAnnouncements();
+  }
+
+  function showUndo(announcementId) {
+    const toast = document.getElementById("announcement-undo-toast");
+    if (!toast) return;
+
+    undoAnnouncementId = announcementId;
+    toast.classList.remove("hidden");
+    window.clearTimeout(undoTimer);
+    undoTimer = window.setTimeout(() => {
+      toast.classList.add("hidden");
+      undoAnnouncementId = null;
+    }, 6000);
+  }
+
+  async function restoreAnnouncement(announcementId) {
+    if (dismissalInProgress || !memberProfile) return;
+    dismissalInProgress = true;
+
+    try {
+      const { error } = await db
+        .from("coach_announcement_dismissals")
+        .delete()
+        .eq("announcement_id", announcementId)
+        .eq("member_profile_id", memberProfile.id);
+
+      if (error) throw error;
+      dismissals = dismissals.filter(row => row.announcement_id !== announcementId);
+      if (undoAnnouncementId === announcementId) {
+        window.clearTimeout(undoTimer);
+        document.getElementById("announcement-undo-toast")?.classList.add("hidden");
+        undoAnnouncementId = null;
+      }
+      renderAnnouncements();
+    } catch (error) {
+      console.error("Could not restore announcement:", error);
+    } finally {
+      dismissalInProgress = false;
+    }
   }
 
   async function dismissForToday(announcementId) {
@@ -111,6 +181,7 @@
       dismissals = dismissals.filter(row => row.announcement_id !== announcementId);
       dismissals.push({ announcement_id: announcementId, dismissed_at: dismissedAt });
       renderAnnouncements();
+      showUndo(announcementId);
     } catch (error) {
       console.error("Could not dismiss announcement:", error);
     } finally {
@@ -134,6 +205,15 @@
         showAll = !showAll;
         renderAnnouncements();
       }
+    });
+
+    document.getElementById("member-dismissed-announcement-list")?.addEventListener("click", event => {
+      const restoreButton = event.target.closest("[data-restore-announcement]");
+      if (restoreButton) restoreAnnouncement(restoreButton.dataset.restoreAnnouncement);
+    });
+
+    document.getElementById("announcement-undo-button")?.addEventListener("click", () => {
+      if (undoAnnouncementId) restoreAnnouncement(undoAnnouncementId);
     });
 
     try {

@@ -202,6 +202,21 @@ try {
   assert(ownDismissal.body.length === 1, "member can read their own announcement dismissal");
   assert(otherDismissal.body.length === 0, "another member cannot read the dismissal");
 
+  const restoredDismissal = await request(
+    `coach_announcement_dismissals?announcement_id=eq.${athleteAnnouncement.id}&member_profile_id=eq.${ripAthleteMemberProfileId}`,
+    ripAthlete.token,
+    { method: "DELETE" }
+  );
+  assert(
+    restoredDismissal.response.ok && restoredDismissal.body.length === 1,
+    "member can restore their own dismissed announcement"
+  );
+  const dismissalAfterRestore = await request(
+    `coach_announcement_dismissals?select=announcement_id&announcement_id=eq.${athleteAnnouncement.id}`,
+    ripAthlete.token
+  );
+  assert(dismissalAfterRestore.body.length === 0, "restored announcement no longer has a dismissal");
+
   const memberAnnouncement = await createAnnouncement(ripCoach.token, {
     facilityId: ripCity.id,
     title: "Staging individual announcement",
