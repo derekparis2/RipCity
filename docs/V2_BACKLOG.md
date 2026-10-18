@@ -248,11 +248,12 @@ required. Announcements default to a one-day expiration that coaches can change
 or remove, support Standard and Important ordering, and keep expired messages
 out of member access. Creators can clear their own expired messages and facility
 admins can clear all expired facility announcements. The coach composer is
-collapsed by default, individual members are searchable, and an All Athletes
-audience reaches each athlete once regardless of group overlap. Members see one
-compact message first and can dismiss a message for the current day. Dismissed
-messages remain available in a collapsed section at the bottom of the dashboard
-and can be restored immediately or later that day.
+collapsed by default, and broad All Athletes and All H2K audiences reach each
+matching member once regardless of group overlap. Custom targeting uses a
+compact searchable Groups/Members picker with retained selections and counts.
+Members see one compact message first and can dismiss a message for the current
+day. Dismissed messages remain available in a collapsed section at the bottom
+of the dashboard and can be restored immediately or later that day.
 
 Private coach-note UI, a generalized notification center, delivery channels,
 and richer read/dismissal behavior are deferred to V3. The existing private
@@ -262,9 +263,9 @@ and richer read/dismissal behavior are deferred to V3. The existing private
 announcements, members see only their targeted announcements, sender identity
 is accurate, and allowed/denied targeting tests pass in both staging facilities.
 
-All 24 expanded staging checks passed on 2026-10-18. Phone/desktop verification
-remains for the collapsed coach composer, searchable recipient list, compact
-member display, and reversible daily dismissal flow.
+All 26 expanded staging checks passed on 2026-10-18. Phone/desktop verification
+remains for the collapsed coach composer, recipient picker, compact member
+display, and reversible daily dismissal flow.
 
 ---
 

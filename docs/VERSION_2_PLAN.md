@@ -644,6 +644,7 @@ Private note UI and a generalized notification system are deferred to V3.
 - Announcement targets:
   - Full facility
   - All athletes, regardless of how many groups they belong to
+  - All H2K members, regardless of how many groups they belong to
   - One or more member groups
   - One or more specific members
 - Coaches cannot edit each other's announcements.

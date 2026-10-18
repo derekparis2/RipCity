@@ -51,6 +51,10 @@ Staging migration status:
   member dismissal records. All 24 expanded targeted-announcement checks,
   including reversible dismissal restoration, passed afterward, and the
   temporary test records were cleaned up.
+- `20261018113000_add_h2k_announcement_audience.sql` was applied to staging on
+  2026-10-18. It adds a one-click all-H2K audience. All 26 expanded
+  targeted-announcement checks passed afterward, and the fixtures were cleaned
+  up.
 
 - `20261016120000_add_secure_coach_invites.sql` was applied to staging and all
   12 coach-invite/RLS checks passed on 2026-10-16. The applied migration is now

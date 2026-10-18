@@ -119,45 +119,112 @@
 
 .announcement-targets {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.announcement-targets fieldset {
-  min-width: 0;
-  margin: 0;
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 12px;
+  background: rgba(255, 255, 255, 0.015);
+  overflow: hidden;
 }
 
-.announcement-targets legend {
-  padding: 0 5px;
-  font-family: "Barlow Condensed", sans-serif;
-  font-size: 18px;
+.announcement-recipient-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 14px;
+}
+
+.announcement-recipient-heading > div {
+  display: grid;
+  gap: 2px;
+}
+
+.announcement-recipient-heading strong {
+  color: var(--text);
+  font-size: 14px;
+}
+
+.announcement-recipient-heading span {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.announcement-recipient-heading .text-button {
+  border: 0;
+  background: transparent;
+  color: #9dccff;
+  padding: 4px;
+  font-size: 11px;
   font-weight: 700;
-  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.announcement-recipient-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+.announcement-recipient-tabs button {
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  padding: 10px 12px 8px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.announcement-recipient-tabs button + button {
+  border-left: 1px solid var(--border);
+}
+
+.announcement-recipient-tabs button.is-active {
+  border-bottom-color: #5eb8ff;
+  color: var(--text);
+}
+
+.announcement-recipient-tabs button span {
+  display: inline-flex;
+  min-width: 20px;
+  justify-content: center;
+  margin-left: 4px;
+  border-radius: 999px;
+  background: rgba(94, 184, 255, 0.12);
+  color: #9dccff;
+  padding: 2px 6px;
+  font-size: 10px;
+}
+
+.announcement-recipient-pane {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
 }
 
 .announcement-checkbox-list {
   display: grid;
   align-content: start;
   gap: 6px;
-  max-height: 210px;
+  max-height: 280px;
   overflow-y: auto;
 }
 
-.announcement-member-search-label {
-  display: block;
-  margin-bottom: 6px;
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 700;
+.announcement-member-tools {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
 }
 
 .announcement-targets #coach-announcement-member-search {
   min-height: 40px;
-  margin-bottom: 6px;
+}
+
+.announcement-member-tools .outline-btn {
+  min-height: 40px;
+  padding: 8px 11px;
+  font-size: 11px;
 }
 
 .announcement-selection-count {
@@ -167,16 +234,23 @@
 }
 
 .announcement-checkbox-option {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 9px;
+  border: 1px solid transparent;
   border-radius: 8px;
   padding: 8px;
   cursor: pointer;
 }
 
-.announcement-checkbox-option:hover {
+.announcement-checkbox-option:hover,
+.announcement-checkbox-option.is-selected {
   background: var(--accent-soft);
+}
+
+.announcement-checkbox-option.is-selected {
+  border-color: rgba(94, 184, 255, 0.45);
 }
 
 .announcement-checkbox-option input {
@@ -185,15 +259,53 @@
   margin: 0;
 }
 
-.announcement-checkbox-option span,
-.announcement-checkbox-option small {
+.announcement-option-copy,
+.announcement-option-copy small {
   display: block;
+  min-width: 0;
 }
 
-.announcement-checkbox-option small,
+.announcement-option-copy strong,
+.announcement-option-copy small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.announcement-option-copy small,
 .announcement-option-empty {
   color: var(--muted);
   font-size: 11px;
+}
+
+.announcement-member-initials {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(94, 184, 255, 0.12);
+  color: #9dccff;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.announcement-member-identity {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.announcement-member-type {
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--muted);
+  padding: 4px 7px;
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
 }
 
 .coach-announcement-list,
@@ -424,8 +536,12 @@
     padding: 16px;
   }
 
-  .announcement-targets {
+  .announcement-member-tools {
     grid-template-columns: 1fr;
+  }
+
+  .announcement-member-tools .outline-btn {
+    justify-self: start;
   }
 
   .announcement-card-heading {

@@ -182,6 +182,28 @@ try {
   assert(allAthletesForAthlete.body.length === 1, "all-athletes announcement is visible to an athlete");
   assert(allAthletesForH2k.body.length === 0, "all-athletes announcement is hidden from an H2K member");
 
+  const h2kAnnouncement = await createAnnouncement(ripCoach.token, {
+    facilityId: ripCity.id,
+    title: "Staging all-H2K announcement",
+    body: "Visible once to every H2K member.",
+    audienceType: "h2k"
+  });
+  if (!h2kAnnouncement.response.ok) {
+    throw new Error(`all-H2K announcement failed: ${JSON.stringify(h2kAnnouncement.body)}`);
+  }
+  createdIds.push(h2kAnnouncement.id);
+
+  const allH2kForH2k = await request(
+    `coach_announcements?select=id&id=eq.${h2kAnnouncement.id}`,
+    ripH2k.token
+  );
+  const allH2kForAthlete = await request(
+    `coach_announcements?select=id&id=eq.${h2kAnnouncement.id}`,
+    ripAthlete.token
+  );
+  assert(allH2kForH2k.body.length === 1, "all-H2K announcement is visible to an H2K member");
+  assert(allH2kForAthlete.body.length === 0, "all-H2K announcement is hidden from an athlete");
+
   const dismissal = await request("coach_announcement_dismissals", ripAthlete.token, {
     method: "POST",
     body: JSON.stringify({

@@ -22,6 +22,8 @@ staging application.
 - `20261018110000_add_announcement_audiences_and_dismissals.sql` adds the
   all-athletes audience and private per-member dismissal state used to hide a
   message for the current day.
+- `20261018113000_add_h2k_announcement_audience.sql` adds the matching one-click
+  all-H2K audience while preserving custom group and individual targeting.
 - Future changes must use a later UTC timestamp and a descriptive name, such as
   `20260817090000_add_facility_timezone.sql`.
 

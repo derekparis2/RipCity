@@ -59,34 +59,64 @@
 
     groupList.innerHTML = groups.length
       ? groups.map(group => `
-          <label class="announcement-checkbox-option">
+          <label class="announcement-checkbox-option" data-announcement-group-option>
             <input type="checkbox" value="${ui().attr(group.id)}" data-announcement-group />
-            <span>${ui().text(group.name)}</span>
+            <span class="announcement-option-copy">
+              <strong>${ui().text(group.name)}</strong>
+              <small>${group.memberCount} member${group.memberCount === 1 ? "" : "s"}</small>
+            </span>
           </label>
         `).join("")
       : '<p class="announcement-option-empty">No groups available.</p>';
 
     memberList.innerHTML = members.length
       ? members.map(member => `
-          <label class="announcement-checkbox-option" data-announcement-member-option data-member-name="${ui().attr(member.name.toLowerCase())}">
+          <label class="announcement-checkbox-option" data-announcement-member-option data-member-name="${ui().attr(`${member.name} ${member.email}`.toLowerCase())}">
             <input type="checkbox" value="${ui().attr(member.id)}" data-announcement-member />
-            <span>
-              <strong>${ui().text(member.name)}</strong>
-              <small>${ui().text(member.type === "h2k" ? "H2K" : "Athlete")}</small>
+            <span class="announcement-member-identity">
+              <span class="announcement-member-initials" aria-hidden="true">${ui().text(member.initials)}</span>
+              <span class="announcement-option-copy">
+                <strong>${ui().text(member.name)}</strong>
+                <small>${ui().text(member.email)}</small>
+              </span>
             </span>
+            <span class="announcement-member-type">${ui().text(member.type === "h2k" ? "H2K" : "Athlete")}</span>
           </label>
         `).join("")
       : '<p class="announcement-option-empty">No approved members available.</p>';
 
-    updateMemberSelectionState();
+    updateRecipientSelectionState();
   }
 
-  function updateMemberSelectionState() {
-    const selectedCount = document.querySelectorAll("[data-announcement-member]:checked").length;
-    const visibleCount = Array.from(document.querySelectorAll("[data-announcement-member-option]"))
-      .filter(option => !option.classList.contains("hidden")).length;
+  function updateRecipientSelectionState() {
+    const selectedGroups = document.querySelectorAll("[data-announcement-group]:checked").length;
+    const selectedMembers = document.querySelectorAll("[data-announcement-member]:checked").length;
+    const visibleOptions = Array.from(document.querySelectorAll("[data-announcement-member-option]"))
+      .filter(option => !option.classList.contains("hidden"));
+    const visibleCount = visibleOptions.length;
+    const allVisibleSelected = visibleCount > 0 && visibleOptions.every(option => option.querySelector("input")?.checked);
     const count = document.getElementById("coach-announcement-member-count");
-    if (count) count.textContent = `${selectedCount} selected · ${visibleCount} shown`;
+    if (count) count.textContent = `${visibleCount} shown`;
+
+    document.querySelectorAll(".announcement-checkbox-option").forEach(option => {
+      option.classList.toggle("is-selected", Boolean(option.querySelector("input")?.checked));
+    });
+
+    const groupTabCount = document.getElementById("coach-announcement-group-tab-count");
+    const memberTabCount = document.getElementById("coach-announcement-member-tab-count");
+    if (groupTabCount) groupTabCount.textContent = String(selectedGroups);
+    if (memberTabCount) memberTabCount.textContent = String(selectedMembers);
+
+    const summary = document.getElementById("coach-announcement-recipient-summary");
+    if (summary) {
+      const parts = [];
+      if (selectedGroups) parts.push(`${selectedGroups} group${selectedGroups === 1 ? "" : "s"}`);
+      if (selectedMembers) parts.push(`${selectedMembers} individual${selectedMembers === 1 ? "" : "s"}`);
+      summary.textContent = parts.length ? `Sending to ${parts.join(" and ")}` : "No recipients selected";
+    }
+
+    const selectVisible = document.getElementById("coach-announcement-select-visible");
+    if (selectVisible) selectVisible.textContent = allVisibleSelected ? "Clear shown" : "Select shown";
   }
 
   function filterMemberOptions() {
@@ -94,7 +124,32 @@
     document.querySelectorAll("[data-announcement-member-option]").forEach(option => {
       option.classList.toggle("hidden", search && !option.dataset.memberName.includes(search));
     });
-    updateMemberSelectionState();
+    updateRecipientSelectionState();
+  }
+
+  function setRecipientTab(tabName) {
+    document.querySelectorAll("[data-recipient-tab]").forEach(button => {
+      const active = button.dataset.recipientTab === tabName;
+      button.classList.toggle("is-active", active);
+      button.setAttribute("aria-selected", String(active));
+    });
+    document.querySelectorAll("[data-recipient-pane]").forEach(pane => {
+      pane.classList.toggle("hidden", pane.dataset.recipientPane !== tabName);
+    });
+  }
+
+  function toggleVisibleMembers() {
+    const visibleInputs = Array.from(document.querySelectorAll("[data-announcement-member-option]:not(.hidden) input"));
+    const shouldSelect = visibleInputs.some(input => !input.checked);
+    visibleInputs.forEach(input => { input.checked = shouldSelect; });
+    updateRecipientSelectionState();
+  }
+
+  function clearRecipients() {
+    document.querySelectorAll("[data-announcement-group], [data-announcement-member]").forEach(input => {
+      input.checked = false;
+    });
+    updateRecipientSelectionState();
   }
 
   function toggleTargetOptions() {
@@ -109,6 +164,7 @@
   function audienceLabel(announcement) {
     if (announcement.audience_type === "facility") return "Entire facility";
     if (announcement.audience_type === "athletes") return "All athletes";
+    if (announcement.audience_type === "h2k") return "All H2K members";
 
     const groupNames = (announcement.groupIds || [])
       .map(id => groups.find(group => group.id === id)?.name)
@@ -187,7 +243,7 @@
   }
 
   async function loadAudienceOptions() {
-    const [groupResult, memberResult] = await Promise.all([
+    const [groupResult, memberResult, groupMemberResult] = await Promise.all([
       db
         .from("groups")
         .select("id,name,member_type")
@@ -203,19 +259,37 @@
         `)
         .eq("facility_id", access.facilityId)
         .eq("status", "approved")
-        .in("role", ["athlete", "h2k_member"])
+        .in("role", ["athlete", "h2k_member"]),
+      db
+        .from("group_members")
+        .select("group_id")
     ]);
 
     if (groupResult.error) throw groupResult.error;
     if (memberResult.error) throw memberResult.error;
+    if (groupMemberResult.error) throw groupMemberResult.error;
 
-    groups = groupResult.data || [];
+    const groupMemberCounts = (groupMemberResult.data || []).reduce((counts, row) => {
+      counts[row.group_id] = (counts[row.group_id] || 0) + 1;
+      return counts;
+    }, {});
+    groups = (groupResult.data || []).map(group => ({
+      ...group,
+      memberCount: groupMemberCounts[group.id] || 0
+    }));
     members = (memberResult.data || []).map(row => {
       const profile = normalizeRelation(row.profile);
       const memberProfile = normalizeRelation(row.member_profile);
       return {
         id: memberProfile?.id,
         name: profile?.full_name || profile?.email || "Unnamed Member",
+        email: profile?.email || "No email",
+        initials: (profile?.full_name || profile?.email || "Member")
+          .split(/\s+/)
+          .map(part => part[0])
+          .join("")
+          .slice(0, 2)
+          .toUpperCase(),
         type: memberProfile?.member_type || (row.role === "h2k_member" ? "h2k" : "athlete")
       };
     }).filter(member => member.id).sort((a, b) => a.name.localeCompare(b.name));
@@ -387,7 +461,13 @@
     form.addEventListener("submit", publishAnnouncement);
     document.getElementById("coach-announcement-audience")?.addEventListener("change", toggleTargetOptions);
     document.getElementById("coach-announcement-member-search")?.addEventListener("input", filterMemberOptions);
-    document.getElementById("coach-announcement-members")?.addEventListener("change", updateMemberSelectionState);
+    document.getElementById("coach-announcement-targets")?.addEventListener("change", updateRecipientSelectionState);
+    document.getElementById("coach-announcement-targets")?.addEventListener("click", event => {
+      const tab = event.target.closest("[data-recipient-tab]");
+      if (tab) setRecipientTab(tab.dataset.recipientTab);
+    });
+    document.getElementById("coach-announcement-select-visible")?.addEventListener("click", toggleVisibleMembers);
+    document.getElementById("coach-announcement-clear-recipients")?.addEventListener("click", clearRecipients);
     document.getElementById("coach-announcement-list")?.addEventListener("click", event => {
       if (event.target.closest("#clear-expired-announcements")) {
         clearExpiredAnnouncements();
