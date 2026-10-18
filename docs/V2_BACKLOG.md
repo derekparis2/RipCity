@@ -236,7 +236,7 @@ isolated, and phone/desktop staging checks pass.
 
 ## 8. Targeted Coach Announcements
 
-- **Status:** Ready for UI verification
+- **Status:** Complete
 - **Branch:** `derek/targeted-announcements`
 - **Plan detail:** [Coach announcements and notes](VERSION_2_PLAN.md#5-coach-announcements-and-notes) · [Notification direction](VERSION_2_PLAN.md#notification-direction)
 
@@ -259,13 +259,15 @@ Private coach-note UI, a generalized notification center, delivery channels,
 and richer read/dismissal behavior are deferred to V3. The existing private
 `coach_notes` table remains protected and is not removed.
 
-**Complete when:** Coaches can create and manage facility/group/member
-announcements, members see only their targeted announcements, sender identity
-is accurate, and allowed/denied targeting tests pass in both staging facilities.
-
-All 26 expanded staging checks passed on 2026-10-18. Phone/desktop verification
-remains for the collapsed coach composer, recipient picker, compact member
-display, and reversible daily dismissal flow.
+**Completed:** Coaches and facility admins can create and manage facility,
+All Athletes, All H2K, multi-group, and individual-member announcements without
+duplicating a message for members who belong to overlapping groups. Sender
+identity, importance, one-day default expiration, optional custom expiration,
+expired-message cleanup, compact member display, same-day dismissal, and
+restoration are implemented. The collapsed coach composer and searchable
+recipient picker were verified on phone and desktop, and all 26 expanded
+two-facility staging RLS checks passed on 2026-10-18. This package is ready to
+merge into `v2-development`.
 
 ---
 
@@ -307,6 +309,13 @@ historical attribution, adding database-safe duplicate prevention, and testing
 two same-facility coaches plus a denied other-facility coach. It must preserve
 production history and add two-facility write/isolation tests.
 
+The member UI already collapses duplicate assignment rows by workout and date,
+but the database can still store overlapping group/facility/member assignments.
+The final implementation must resolve those overlaps to one effective member
+assignment so the workout appears once, is counted once in attendance and
+leaderboards, and has one unambiguous set-log history even when a member belongs
+to multiple selected groups.
+
 The true multi-facility universal catalog with facility overrides/hides is V3
 scope. V2 keeps the current Rip City exercise library behavior.
 
@@ -314,7 +323,8 @@ scope. V2 keeps the current Rip City exercise library behavior.
 historical workouts are archived instead of destructively deleted, and the
 approved workout-to-habit automation is verified in staging. Multiple facility
 coaches can safely assign workouts, every assignment shows who assigned it, and
-concurrent duplicate assignments are prevented.
+overlapping-target or concurrent duplicate assignments cannot produce multiple
+effective workouts for the same member and date.
 
 ---
 

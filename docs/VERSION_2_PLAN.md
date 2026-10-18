@@ -1059,6 +1059,10 @@ Done criteria:
 - Prevent duplicate assignment of the same workout, target, and date even when
   two coaches act at nearly the same time; browser-only duplicate filtering is
   not enough for this race.
+- Treat overlapping facility, group, and individual targets as one effective
+  assignment per member for the same workout and date. Members in multiple
+  selected groups must see and log one workout, and attendance/leaderboard
+  calculations must count it once.
 - Add staging coverage with two coaches in one facility plus a coach in the
   second facility. Both same-facility coaches may assign; the other-facility
   coach must be denied.
