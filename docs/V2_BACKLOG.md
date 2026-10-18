@@ -115,32 +115,27 @@ Future platform operations are tracked in
 [`VERSION_3_PLAN.md`](VERSION_3_PLAN.md). The second staging facility and
 cross-facility coach remain tenant-isolation fixtures, not supported V2 UI.
 
-**Complete when:** Pending, rejected, and inactive accounts receive the correct
+**Completed:** Pending, rejected, and inactive accounts receive the correct
 blocked experience; only facility admins can deactivate/reactivate coaches;
 ordinary member lifecycle rules remain enforced; reactivation restores access
 through the same membership and relationships; and the lifecycle staging checks
-pass. These conditions are complete on `derek/facility-access`; merge the
-reviewed branch into `v2-development` to complete the package in the shared V2
-line.
+pass. These conditions were verified on `derek/facility-access` and merged into
+`v2-development`.
 
 ---
 
-## 5. Facility Configuration And Module Visibility
+## Package 5 Moved To V3
 
-- **Status:** Planned
-- **Suggested branch:** `<name>/facility-configuration`
-- **Plan detail:** [Facility and module configuration](VERSION_2_PLAN.md#v2-modifications-needed) · [Facility time and date rules](VERSION_2_PLAN.md#facility-time-and-date-rules) · [Branding and UI](VERSION_2_PLAN.md#brandingui)
+The former **Facility Configuration And Module Visibility** package is no
+longer part of V2. Self-service facility settings, configurable branding and
+terminology, module switches, generalized facility-local time handling, and
+onboarding additional real facilities are tracked in
+[`VERSION_3_PLAN.md`](VERSION_3_PLAN.md#facility-configuration-and-module-visibility).
 
-This package makes the visible V2 app configurable for its one active facility
-per account. It
-includes facility display name, branding, terminology, enabled modules, member
-types, authoritative time zone, facility-local date helpers, and removal of
-hardcoded Rip City/H2K assumptions. It also includes the cleaner H2K date-picker
-behavior because that depends on facility-local dates.
-
-**Complete when:** Rip City and Test Facility Alpha show their own correct
-configuration, modules, and dates without leaking branding or facility-specific
-features into each other.
+V2 retains only the safeguards required for the Rip City release: strict
+facility data isolation, H2K visibility based on member type, and correct Rip
+City behavior using `America/New_York`. Package number 5 is intentionally
+retired so existing package and pull-request references do not change.
 
 ---
 
@@ -238,20 +233,26 @@ isolated, and phone/desktop staging checks pass.
 
 ---
 
-## 8. Coach Communication
+## 8. Targeted Coach Announcements
 
-- **Status:** Planned
+- **Status:** Ready
 - **Suggested branch:** `<name>/coach-communication`
 - **Plan detail:** [Coach announcements and notes](VERSION_2_PLAN.md#5-coach-announcements-and-notes) · [Notification direction](VERSION_2_PLAN.md#notification-direction)
 
-This package covers the connected communication system: private facility-scoped
-coach notes, targeted and expiring announcements, real coach sender identity,
-member dismissal behavior, and the first in-app per-user notification/read-state
-foundation.
+The V2 communication slice lets coaches/admins publish announcements to their
+full facility, one or more groups, or one or more individual members. Members
+see only announcements that target them, with the real sender and publish date
+shown on the member dashboard. Facility-scoped RLS and two-facility tests are
+required. Expiration is included if it can be completed safely without delaying
+the core targeting flow.
 
-**Complete when:** Notes remain private to authorized coaches/admins,
-announcements reach only their intended facility audience, and members control
-only their own dismissal and read state.
+Private coach-note UI, a generalized notification center, delivery channels,
+and richer read/dismissal behavior are deferred to V3. The existing private
+`coach_notes` table remains protected and is not removed.
+
+**Complete when:** Coaches can create and manage facility/group/member
+announcements, members see only their targeted announcements, sender identity
+is accurate, and allowed/denied targeting tests pass in both staging facilities.
 
 ---
 
@@ -278,15 +279,14 @@ without prematurely pulling unapproved V3 baseball features into V2.
 
 ---
 
-## 10. Workout Data Safety And Universal Catalog
+## 10. Workout Data Safety And Assignment Attribution
 
 - **Status:** Planned
 - **Suggested branch:** `<name>/workout-data-safety`
-- **Plan detail:** [Universal and facility exercise library](VERSION_2_PLAN.md#universal-and-facility-exercise-library) · [Workout editing and version history](VERSION_2_PLAN.md#workout-builder-editing-and-version-history)
+- **Plan detail:** [Workout editing and version history](VERSION_2_PLAN.md#workout-builder-editing-and-version-history)
 
 This follow-up adds the database behavior that was designed but not implemented
-by the builder refactor: a true universal catalog with facility overrides and
-hides, safe editing/versioning for workouts with past or started assignments,
+by the builder refactor: safe editing/versioning for workouts with past or started assignments,
 archive behavior for historical workouts, and the approved workout-completion
 connection to H2K training habits. It also finalizes multi-coach assignment
 behavior by displaying the assigning coach to members and coaches, preserving
@@ -294,8 +294,10 @@ historical attribution, adding database-safe duplicate prevention, and testing
 two same-facility coaches plus a denied cross-facility coach. It must preserve
 production history and add two-facility write/isolation tests.
 
-**Complete when:** Universal exercise changes cannot leak between facilities,
-coaches can correct future workouts without changing past assignments or logs,
+The true multi-facility universal catalog with facility overrides/hides is V3
+scope. V2 keeps the current Rip City exercise library behavior.
+
+**Complete when:** Coaches can correct future workouts without changing past assignments or logs,
 historical workouts are archived instead of destructively deleted, and the
 approved workout-to-habit automation is verified in staging. Multiple facility
 coaches can safely assign workouts, every assignment shows who assigned it, and
@@ -338,19 +340,22 @@ rollback steps are documented and rehearsed.
 
 ---
 
-## Known Fixes Already Included Above
+## Known Fixes And Scope Placement
 
-- Hardcoded Rip City branding → Package 5.
+- Configurable facility branding → V3 facility configuration.
 - Pending message shown to inactive accounts → Package 4.
 - Future multi-facility and baseball-development work →
   [`VERSION_3_PLAN.md`](VERSION_3_PLAN.md).
 - Goals RLS does not support member-created goals → Package 3.
-- Facility modules, terminology, and time zones are not data-driven → Package 5.
-- Universal exercise overrides/hides are not implemented → Package 10.
+- Data-driven modules, terminology, branding, and generalized facility time
+  zones → V3 facility configuration.
+- Universal exercise overrides/hides are not implemented → V3 facility
+  configuration.
 - Workout archive/version rules remain incomplete → Package 10.
-- Group archive/delete rules remain incomplete → Package 5 or final release
-  scope review.
-- Announcements and per-user notifications have no V2 tables → Package 8.
+- Group archive/delete rules remain incomplete → final release scope review or
+  V3 facility operations.
+- Targeted announcements have no V2 tables → Package 8; the generalized
+  notification system is V3.
 - Current automated staging checks are read-only → each schema-changing package
   adds its own allowed and denied create/update/delete tests.
 - No shared staging web preview or tested recovery procedure → Package 2.

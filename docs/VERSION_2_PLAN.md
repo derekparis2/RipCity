@@ -10,7 +10,7 @@ and one active facility per account.
 
 Core V2 direction:
 
-- Facility isolation and configuration
+- Facility isolation and Rip City release readiness
 - Goals
 - Leaderboards
 - Progress tracking
@@ -38,18 +38,25 @@ Do not start coding these sections until the product rules below are filled in.
 
 Rip City is the first beta facility, not the full identity of the product. The product should become a facility-configurable coaching platform that can support many gyms, academies, teams, and training programs without rebuilding the app for each one.
 
-The long-term goal is for a facility to choose its modules, colors, logo, groups, member types, and terminology with little or no custom code work from Derek.
+The long-term goal is for a facility to choose its modules, colors, logo,
+groups, member types, and terminology with little or no custom code work from
+Derek. That configurable multi-facility product is V3 scope. V2 proves the
+shared foundation through Rip City while keeping facility data isolated.
 
 ### Decisions
 
 - Rip City stays the beta/proof facility.
-- New shared features should be built for any facility first, then configured for Rip City.
-- Facility-specific features should be optional modules, not hardcoded platform behavior.
+- New shared features should avoid data-model choices that prevent future
+  facility reuse, but V2 does not need a general facility-settings interface.
+- Facility-specific modules and self-service configuration are defined in the
+  V3 plan.
 - H2K habits should remain a Rip City/member-type module unless another facility enables a similar habit module.
 - Facility coaches/admins should only manage their own facility.
 - Members should only see their own facility experience.
-- Facility branding should move toward data/config-driven behavior instead of one-off CSS edits.
-- Manual setup is acceptable early, but V2 should avoid choices that block future self-serve setup.
+- Rip City branding may remain the V2 release experience. Data-driven branding
+  and terminology move to V3.
+- V2 should avoid choices that block future self-service setup without building
+  that setup prematurely.
 - V2 product flows use one active facility membership per account. The existing
   second-facility and cross-facility staging rows remain isolation fixtures,
   not supported product UI.
@@ -112,19 +119,18 @@ The permissions matrix must explicitly cover view, create, edit, delete,
 archive, approve, role-management, and facility-settings actions for every
 module before that module is production-ready.
 
-### V2 Modifications Needed
+### V2 Configuration Boundary
 
-#### Facility Config
-
-- Add or prepare for a facility settings layer that controls logo, colors, display name, enabled modules, and member terminology.
-- Decide which config belongs in the existing `facilities` table and which config needs a new table later.
-- Keep the first version simple enough that Derek can manually configure a facility in Supabase if needed.
-
-#### Module Config
-
-- Treat workouts, habits, goals, leaderboards, announcements, progress, scheduling, and payments as modules that can eventually be enabled or disabled by facility.
-- Make H2K habits optional and member-type-aware.
-- Avoid showing modules to members whose facility or member type does not use them.
+- Do not build self-service facility settings, branding, terminology, or module
+  switches in V2.
+- Keep Rip City as the only real V2 facility experience; Test Facility Alpha is
+  a staging isolation fixture, not a second supported launch.
+- Keep H2K habits and navigation hidden from athletes through the existing
+  member-type rules.
+- Preserve facility IDs and facility-scoped RLS so V3 can add real
+  configuration without rebuilding V2 data.
+- Track the complete configuration system in
+  [`VERSION_3_PLAN.md`](VERSION_3_PLAN.md#facility-configuration-and-module-visibility).
 
 ### Universal And Facility Exercise Library
 
@@ -219,13 +225,10 @@ Done criteria:
 
 #### Branding/UI
 
-- Replace hardcoded Rip City labels where they should be facility labels.
-- Keep Rip City visual style as the current design inspiration, but make colors/logo configurable over time.
-- Avoid building future pages that assume every facility is baseball-only or H2K-only.
-- Keep facility branding separate from core layout structure.
-- Coach/admin tools may use one consistent platform color system across
-  facilities. Member-facing branding remains the higher priority for
-  facility-specific colors and identity.
+- Keep Rip City branding for the V2 release.
+- Avoid making shared data structures baseball-only or H2K-only.
+- Keep coach/admin layout structure separable from branding so V3 can introduce
+  configurable facility identity without rebuilding those pages.
 
 #### Signup/Invites
 
@@ -249,14 +252,11 @@ Done criteria:
 
 #### Facility Time And Date Rules
 
-- Every facility has one authoritative IANA time zone.
 - Rip City's time zone is `America/New_York`.
-- Store event timestamps in UTC, but calculate facility days, workout dates,
-  habit days, Monday-Sunday weeks, streaks, announcement visibility, and
-  leaderboard periods using the facility time zone.
-- Audit current browser-local date calculations before changing them. V1
-  currently protects local calendar dates from `toISOString()` rollover, but it
-  does not yet use a facility time-zone setting.
+- Store event timestamps in UTC and keep Rip City calendar behavior correct for
+  workouts, habits, Monday-Sunday weeks, streaks, and leaderboard periods.
+- A generalized per-facility time-zone layer and facility-local date helpers are
+  V3 configuration work.
 
 #### Lifecycle Rules
 
@@ -280,19 +280,18 @@ Done criteria:
 
 #### Developer Workflow
 
-- Use staging Supabase to create fake second facilities and test customization.
-- Add comments around code paths where facility config changes what the user sees.
-- Track any remaining hardcoded Rip City assumptions during the cleanup pass.
+- Use the fake second staging facility to test isolation, not V2 customization.
+- Track hardcoded Rip City assumptions that must be revisited before onboarding
+  another real facility in V3.
 
 ### Done Criteria
 
 - A second facility can exist in staging without seeing Rip City data.
-- The app can show different facility names/logos/colors from config, even if setup is still manual.
-- H2K-specific modules do not leak into facilities/member types that should not see them.
+- H2K-specific experiences do not appear for Rip City athletes.
 - New V2 features are designed as shared platform modules unless intentionally marked facility-specific.
 - The roles/permissions matrix is documented and matches tested RLS behavior.
-- Facility-local dates remain correct for users whose device time zone differs
-  from the facility time zone and across daylight-saving changes.
+- Rip City workout, habit, streak, and leaderboard dates behave correctly in
+  `America/New_York`.
 - Deactivated users can be reactivated without losing their historical relationships.
 - Pending, rejected, inactive, and unconnected accounts receive distinct,
   accurate blocked-access messages.
@@ -548,7 +547,8 @@ eventually connect workouts, goals, profile metrics, and sport-specific data.
 ### V2 Status
 
 Progress tracking is intentionally on hold for now because it is too broad to
-build well without more product decisions.
+build well without more product decisions. Testing Days remain a V2 candidate
+until the Rip City coach discussion on 2026-10-18.
 
 Goals define what a member is trying to reach. Progress is the history and
 numbers that show whether the member is moving toward those goals. In V2, use
@@ -619,17 +619,16 @@ official calculated maxes until the formula and coaching language are approved.
 
 ### Product Purpose
 
-Coach announcements and notes should let coaches communicate important updates
-to members while also tracking private context, follow-ups, concerns, reminders,
-and development observations.
+The V2 slice lets coaches communicate important updates to targeted members.
+Private note UI and a generalized notification system are deferred to V3.
 
-### Coach Notes Decisions
+### Coach Notes Future Decisions
 
 - Coach notes are private/internal.
 - Members cannot see coach notes.
 - Parents cannot see coach notes.
 - All coaches/admins in the same facility can read notes.
-- Notes are primarily attached to a specific member in V2.
+- Notes are primarily attached to a specific member when the V3 UI is built.
 - Notes should show newest first.
 - Delete should require confirmation.
 - Coaches can only edit/delete notes they created.
@@ -639,12 +638,12 @@ and development observations.
 
 - Announcements are visible to members.
 - Announcements should show who they are from.
-- Members can close/dismiss announcements after reading them.
+- Member dismissal/read state may follow after the core V2 targeting workflow.
 - Coaches/admins can create announcements for their own facility.
 - Announcement targets:
   - Full facility
-  - Member group
-  - Specific member
+  - One or more member groups
+  - One or more specific members
 - Coaches cannot edit each other's announcements.
 - Admins can manage announcements in their facility.
 - Announcements should support expiration dates so old messages do not stay
@@ -663,22 +662,24 @@ and development observations.
 
 Keep the existing `coach_notes` table for private coach-only notes.
 
-Add a new `coach_announcements` table:
+Add a facility-scoped `coach_announcements` table plus normalized group/member
+recipient tables so one announcement can target multiple groups or members.
+The announcement record includes:
 
 - `id`
 - `facility_id`
 - `created_by`
 - `title`
 - `body`
-- `target_type`: facility, group, member
-- `target_group_id`
-- `target_member_profile_id`
 - `publish_date`
 - `expires_at`
 - `created_at`
 - `updated_at`
 
-Add a new `coach_announcement_dismissals` table:
+Add dismissal/read state later if it remains required after the first targeted
+announcement workflow is reviewed.
+
+Possible future `coach_announcement_dismissals` fields:
 
 - `id`
 - `announcement_id`
@@ -700,8 +701,9 @@ announcement version is tested.
 
 ### Early Recommendation
 
-Start with private coach-only notes attached to a member, plus simple member
-dashboard announcements with dismiss support.
+Start with facility/group/member announcements on the member dashboard. Keep
+private notes protected in the database, but defer their UI until the targeted
+announcement workflow is stable.
 
 ---
 
@@ -720,7 +722,7 @@ still staying coach-controlled and development-focused.
 - Should coach shoutouts appear on member dashboards?
 - Should birthday alerts be coach-only or member-visible?
 
-### Possible V2 Features
+### Possible V3 Features
 
 - Better profile cards
 - Active goals on profile
@@ -878,7 +880,7 @@ Create a repeatable checklist covering:
 - Facility, group, and member workout assignments and logged history.
 - H2K visibility, habit logging, Monday-Sunday scoring, and date backfill.
 - Workout creation, editing, deletion/archive behavior, session logging, and history.
-- Facility branding, module visibility, and time-zone boundaries.
+- Rip City branding, member-type feature visibility, and date boundaries.
 - Loading, empty, error, offline, and permission-denied states.
 - Supported mobile and desktop layouts.
 - Migration verification, backup confirmation, rollback/recovery instructions,
@@ -1137,7 +1139,8 @@ historical archives remain under `sql/`. Continue this structure for V2.
 3. Create the staging Supabase project and reproducible release-safety workflow.
 4. Rebuild staging from repository-controlled migrations and fake seed data;
    verify two-facility isolation and all important roles.
-5. Complete the V2 single-facility configuration and module-visibility audit.
+5. Audit only the Rip City hardcoded assumptions that affect V2 correctness;
+   record reusable facility configuration work in the V3 plan.
 6. Complete the codebase cleanup and maintainability pass.
 7. Create the repeatable regression, accessibility, migration, and release checklist.
 8. Finish the beta feedback polish queue that affects daily use.
