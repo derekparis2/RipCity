@@ -3602,7 +3602,7 @@ td {
     margin-top: 4px;
   }
 
-  .roster-group-editor {
+  .roster-member-card > .roster-group-editor {
     grid-column: 1 / -1;
     display: none;
     gap: 12px;
@@ -3610,8 +3610,8 @@ td {
     padding-top: 14px;
   }
 
-  .roster-member-card.is-editing-groups .roster-group-editor,
-  .roster-member-card.has-unsaved-changes .roster-group-editor {
+  .roster-member-card.is-editing-groups > .roster-group-editor,
+  .roster-member-card.has-unsaved-changes > .roster-group-editor {
     display: grid;
   }
 

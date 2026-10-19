@@ -19,10 +19,16 @@ for (const [file, activePage] of Object.entries(coachPages)) {
 
 const dashboard = await readFile("coach-dashboard.html", "utf8");
 const roster = await readFile("coach-roster.html", "utf8");
+const leaderboardStyles = await readFile("css/coach-leaderboards.css", "utf8");
+const profile = await readFile("profile.html", "utf8");
 assert.doesNotMatch(dashboard, /data-copy-signup-link/, "signup links are no longer on the coach dashboard");
+assert.match(dashboard, /id="coach-review-member-search"/, "workout completion can be filtered by member");
 assert.match(roster, /data-copy-signup-link="athlete"/, "roster offers the athlete signup link");
 assert.match(roster, /data-copy-signup-link="h2k"/, "roster offers the H2K signup link");
 assert.doesNotMatch(roster, /data-copy-signup-link="general"/, "roster does not offer the unused general signup link");
+assert.match(roster, /id="create-group-form"/, "group creation remains directly available on the roster");
+assert.doesNotMatch(leaderboardStyles, /h2k-header-actions a:not\(:first-child\)/, "mobile leaderboard navigation does not hide coach links");
+assert.match(profile, /<details class="panel profile-edit-panel" open>/, "member profile editor is open by default");
 
 const memberHistory = await readFile("member-history.html", "utf8");
 assert.match(memberHistory, /id="member-history-hero-description"/, "member history copy can be specialized by member type");
@@ -45,7 +51,7 @@ const activePages = [
 
 for (const file of activePages) {
   const html = await readFile(file, "utf8");
-  assert.match(html, /css\/styles\.css\?v=ui-polish-1/, `${file} loads the current shared stylesheet release`);
+  assert.match(html, /css\/styles\.css\?v=ui-polish-2/, `${file} loads the current shared stylesheet release`);
 }
 
 console.log("UI structure tests passed");
