@@ -5989,7 +5989,7 @@ td {
 
   .coach-workout-member-row {
     display: grid;
-    grid-template-columns: minmax(180px, 1fr) repeat(4, minmax(92px, auto)) auto;
+    grid-template-columns: minmax(180px, 1fr) minmax(360px, 1.5fr) auto;
     gap: 10px;
     align-items: center;
     border: 1px solid var(--border);
@@ -6005,6 +6005,31 @@ td {
 
   .coach-workout-member-row span {
     color: var(--muted);
+    font-size: 12px;
+  }
+
+  .coach-review-member-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(78px, 1fr));
+    gap: 8px;
+    align-items: center;
+  }
+
+  .coach-review-member-metrics > span:not(.coach-review-status) {
+    display: grid;
+    gap: 2px;
+  }
+
+  .coach-review-member-metrics small {
+    color: var(--muted);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .coach-review-member-metrics strong {
+    color: var(--text);
     font-size: 12px;
   }
 
@@ -7200,7 +7225,7 @@ body {
 }
 
 .coach-workout-member-row {
-  grid-template-columns: minmax(190px, 1fr) repeat(4, minmax(84px, auto)) auto;
+  grid-template-columns: minmax(190px, 1fr) minmax(360px, 1.5fr) auto;
 }
 
 .session-exercise-header {
@@ -9032,14 +9057,40 @@ details[open] > .compact-panel-summary > span:last-child::after {
   margin-block: 4px;
 }
 
+.coach-dashboard-intro-grid + .coach-announcements-panel {
+  margin-top: 16px;
+}
+
 .roster-signup-panel {
+  display: block;
   margin-bottom: 16px;
   border-color: rgba(91, 178, 255, 0.28);
   background: linear-gradient(120deg, rgba(91, 178, 255, 0.08), rgba(20, 20, 22, 0.94) 52%);
 }
 
+.roster-signup-panel .compact-panel-summary {
+  width: 100%;
+}
+
+.roster-signup-panel .compact-panel-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px 24px;
+}
+
 .roster-signup-panel .compact-panel-body > p:first-child {
-  margin-top: 0;
+  margin: 0;
+  max-width: 720px;
+}
+
+.roster-signup-panel .auth-message {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.roster-signup-panel .auth-message:empty {
+  display: none;
 }
 
 .coach-signup-link-actions {
@@ -9054,8 +9105,32 @@ details[open] > .compact-panel-summary > span:last-child::after {
   background: rgba(255, 255, 255, 0.025);
 }
 
+.roster-group-editor-heading {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.roster-group-editor-heading strong {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 22px;
+  text-transform: uppercase;
+}
+
+.roster-group-editor-heading span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.roster-mobile-manage-btn {
+  display: none;
+}
+
 .coach-review-filter-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .coach-review-more-filters {
@@ -9083,6 +9158,53 @@ details[open] > .compact-panel-summary > span:last-child::after {
 
 .coach-review-more-filters select {
   min-height: 44px;
+}
+
+.coach-review-more-filter-content {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+  margin-top: 12px;
+}
+
+.coach-review-more-filter-content label {
+  margin-top: 0;
+}
+
+.coach-workout-review-card > summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.coach-workout-review-card > summary::-webkit-details-marker {
+  display: none;
+}
+
+.coach-workout-review-card:not([open]) > .coach-workout-progress,
+.coach-workout-review-card:not([open]) > .coach-workout-latest,
+.coach-workout-review-card:not([open]) > .coach-workout-member-table {
+  display: none;
+}
+
+.coach-review-toggle-label {
+  border-color: rgba(91, 178, 255, 0.38) !important;
+  color: #8cc8ff !important;
+  font-weight: 800;
+}
+
+.coach-workout-review-card[open] .coach-review-toggle-label {
+  font-size: 0;
+}
+
+.coach-workout-review-card[open] .coach-review-toggle-label::after {
+  content: "Hide members";
+  font-size: 12px;
+}
+
+.coach-workout-latest {
+  margin-top: 10px !important;
+  font-size: 12px;
 }
 
 .approval-admin-tools {
@@ -9257,6 +9379,25 @@ details[open] > .compact-panel-summary > span:last-child::after {
     display: none;
   }
 
+  .coach-page .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .coach-page .stat-card {
+    min-height: 0;
+    padding: 14px;
+  }
+
+  .roster-mobile-manage-btn {
+    display: inline-flex;
+    width: 100%;
+  }
+
+  .roster-member-card:not(.is-mobile-expanded) .roster-member-groups,
+  .roster-member-card:not(.is-mobile-expanded) > .roster-group-editor {
+    display: none;
+  }
+
   .coach-review-filter-grid {
     grid-template-columns: 1fr 1fr;
   }
@@ -9336,14 +9477,31 @@ details[open] > .compact-panel-summary > span:last-child::after {
     grid-template-columns: 1fr;
   }
 
+  .roster-filter-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .coach-review-more-filter-content,
+  .coach-review-member-metrics {
+    grid-template-columns: 1fr 1fr;
+  }
+
   .coach-review-filter-grid label:first-child,
   .roster-filter-grid label:last-child {
     grid-column: auto;
   }
 
+  .roster-filter-grid label:last-child {
+    grid-column: 1 / -1;
+  }
+
   .coach-signup-link-actions {
     display: grid;
     grid-template-columns: 1fr 1fr;
+  }
+
+  .roster-signup-panel .compact-panel-body {
+    grid-template-columns: 1fr;
   }
 
   .coach-signup-link-actions button {

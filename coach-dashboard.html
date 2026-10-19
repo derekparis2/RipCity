@@ -190,6 +190,11 @@
 
         <div class="coach-review-filter-grid">
           <label>
+            Find Member
+            <input type="search" id="coach-review-member-search" placeholder="Search by name..." autocomplete="off" />
+          </label>
+
+          <label>
             Member Type
             <select id="coach-review-member-type-filter">
               <option value="all">All members</option>
@@ -216,12 +221,15 @@
 
         <details class="coach-review-more-filters">
           <summary>Filter by assignment</summary>
-          <label>
-            Assignment
-            <select id="coach-review-target-filter">
-              <option value="all">All assignments</option>
-            </select>
-          </label>
+          <div class="coach-review-more-filter-content">
+            <label>
+              Assignment
+              <select id="coach-review-target-filter">
+                <option value="all">All assignments</option>
+              </select>
+            </label>
+            <button class="text-button" id="coach-review-clear-filters" type="button">Clear filters</button>
+          </div>
         </details>
 
         <div class="coach-review-section">

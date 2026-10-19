@@ -143,9 +143,12 @@
           </div>
         </div>
 
-        <details class="roster-group-editor">
-          <summary class="compact-panel-summary"><strong>Create a group</strong><span aria-hidden="true">Open +</span></summary>
-          <form id="create-group-form" class="roster-group-form compact-panel-body">
+        <div class="roster-group-editor">
+          <div class="roster-group-editor-heading">
+            <strong>Add a group</strong>
+            <span>Organize members for workouts and announcements.</span>
+          </div>
+          <form id="create-group-form" class="roster-group-form">
           <label>
             Group Name
             <input id="new-group-name" type="text" placeholder="Example: Freshman Pitchers" />
@@ -176,7 +179,7 @@
 
           <button class="outline-btn full-btn" type="submit">Create Group</button>
           </form>
-        </details>
+        </div>
 
         <div id="roster-group-list" class="roster-group-list">
           <div class="empty-state">Loading groups...</div>

@@ -381,6 +381,17 @@ function renderRosterMembers() {
     });
   });
 
+  document.querySelectorAll("[data-toggle-roster-member]").forEach(button => {
+    button.addEventListener("click", () => {
+      const card = document.querySelector(`[data-roster-member-card="${button.dataset.memberProfileId}"]`);
+      if (!card) return;
+
+      const isExpanded = card.classList.toggle("is-mobile-expanded");
+      button.setAttribute("aria-expanded", String(isExpanded));
+      button.textContent = isExpanded ? "Close" : "Manage";
+    });
+  });
+
   document.querySelectorAll("[data-save-member-groups]").forEach(button => {
     button.addEventListener("click", () => saveMemberGroupChanges(button.dataset.memberProfileId));
   });
@@ -457,6 +468,16 @@ function renderRosterMemberCard(member) {
           <small>${window.RipCityUI.text(meta || "No profile details yet")}</small>
         </div>
       </div>
+
+      <button
+        class="outline-btn small-inline-btn roster-mobile-manage-btn"
+        type="button"
+        data-toggle-roster-member
+        data-member-profile-id="${window.RipCityUI.attr(member.memberProfileId)}"
+        aria-expanded="false"
+      >
+        Manage
+      </button>
 
       <div class="roster-member-groups">
         <span>Current Groups</span>

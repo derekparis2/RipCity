@@ -851,6 +851,7 @@ function renderCoachReviewFilters() {
 
 function getCoachReviewFilters() {
   return {
+    memberSearch: document.getElementById("coach-review-member-search")?.value.trim().toLowerCase() || "",
     memberType: document.getElementById("coach-review-member-type-filter")?.value || "all",
     selectedDate: document.getElementById("coach-review-date-filter")?.value || getTodayString(),
     targetKey: document.getElementById("coach-review-target-filter")?.value || "all",
@@ -861,7 +862,9 @@ function getCoachReviewFilters() {
 function getFilteredMembersForReviewRow(row, filters) {
   return row.assignedMembers.filter(member => {
     const status = getMemberCompletionStatus(member);
+    const searchableMemberText = `${member.name || ""} ${member.sport || ""}`.toLowerCase();
 
+    if (filters.memberSearch && !searchableMemberText.includes(filters.memberSearch)) return false;
     if (filters.memberType !== "all" && member.memberType !== filters.memberType) return false;
     if (filters.status !== "all" && status !== filters.status) return false;
 
@@ -980,7 +983,7 @@ function renderCoachWorkoutReviewList(list, rows, emptyText) {
     return;
   }
 
-  list.innerHTML = rows.map(row => {
+  list.innerHTML = rows.map((row, visibleIndex) => {
     const members = row.filteredMembers || row.assignedMembers;
     const memberCount = members.length;
     const completedMembers = members
@@ -998,8 +1001,8 @@ function renderCoachWorkoutReviewList(list, rows, emptyText) {
       : 0;
 
     return `
-      <article class="coach-workout-review-card">
-        <div class="coach-workout-review-header">
+      <details class="coach-workout-review-card"${visibleIndex === 0 ? " open" : ""}>
+        <summary class="coach-workout-review-header">
           <div>
             <p class="eyebrow">${row.workout?.focus || "Workout"}</p>
             <h4>${window.RipCityUI.text(row.workout?.title, "Untitled Workout")}</h4>
@@ -1009,18 +1012,20 @@ function renderCoachWorkoutReviewList(list, rows, emptyText) {
           <div class="coach-workout-review-summary">
             <span><strong>${completedMembers}/${memberCount}</strong> Complete</span>
             <span><strong>${activeMembers}</strong> In Progress</span>
-            <span><strong>${window.RipCityUI.text(window.RipCityWorkoutData.formatDateTimeLabel(latestLog))}</strong> Latest</span>
+            <span class="coach-review-toggle-label" aria-hidden="true">View members</span>
           </div>
-        </div>
+        </summary>
 
         <div class="progress-bar coach-workout-progress">
           <div style="width: ${window.RipCityUI.percent(completionPercent)}%"></div>
         </div>
 
+        <p class="coach-workout-latest">Latest activity: ${window.RipCityUI.text(window.RipCityWorkoutData.formatDateTimeLabel(latestLog))}</p>
+
         <div class="coach-workout-member-table">
           ${members.map(member => renderCoachWorkoutMemberRow(member, row.originalIndex)).join("")}
         </div>
-      </article>
+      </details>
     `;
   }).join("");
 }
@@ -1053,10 +1058,12 @@ function renderCoachWorkoutMemberRow(member, rowIndex) {
         </div>
       </div>
 
-      <span class="coach-review-status ${statusClass}">${window.RipCityUI.text(getMemberCompletionStatusLabel(status))}</span>
-      <span>${member.summary.completedSets}/${member.summary.totalSets} sets</span>
-      <span>${member.summary.completionPercent}%</span>
-      <span>${window.RipCityUI.text(window.RipCityWorkoutData.formatDateTimeLabel(member.summary.lastLoggedAt))}</span>
+      <div class="coach-review-member-metrics">
+        <span class="coach-review-status ${statusClass}">${window.RipCityUI.text(getMemberCompletionStatusLabel(status))}</span>
+        <span><small>Sets</small><strong>${member.summary.completedSets}/${member.summary.totalSets}</strong></span>
+        <span><small>Progress</small><strong>${member.summary.completionPercent}%</strong></span>
+        <span class="coach-review-member-latest"><small>Latest</small><strong>${window.RipCityUI.text(window.RipCityWorkoutData.formatDateTimeLabel(member.summary.lastLoggedAt))}</strong></span>
+      </div>
       <button
         class="outline-btn small-inline-btn"
         type="button"
@@ -1321,6 +1328,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ?.addEventListener("click", refreshCoachWorkoutReview);
 
   [
+    "coach-review-member-search",
     "coach-review-member-type-filter",
     "coach-review-date-filter",
     "coach-review-target-filter",
@@ -1330,6 +1338,18 @@ document.addEventListener("DOMContentLoaded", () => {
       .getElementById(id)
       ?.addEventListener("input", () => renderCoachWorkoutReview(coachWorkoutReviewRows));
   });
+
+  document
+    .getElementById("coach-review-clear-filters")
+    ?.addEventListener("click", () => {
+      const today = getTodayString();
+      document.getElementById("coach-review-member-search").value = "";
+      document.getElementById("coach-review-member-type-filter").value = "all";
+      document.getElementById("coach-review-date-filter").value = today;
+      document.getElementById("coach-review-status-filter").value = "all";
+      document.getElementById("coach-review-target-filter").value = "all";
+      renderCoachWorkoutReview(coachWorkoutReviewRows);
+    });
 
   document
     .getElementById("coach-logout-btn")
