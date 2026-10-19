@@ -5,12 +5,14 @@ alter table public.goals
   add column if not exists due_date date,
   add column if not exists completed_at timestamptz;
 
+alter table public.goals
+  drop constraint if exists goals_status_check;
+
 update public.goals
 set status = 'completed'
 where status = 'complete';
 
 alter table public.goals
-  drop constraint if exists goals_status_check,
   add constraint goals_status_check
     check (status in ('active', 'completed', 'paused')),
   add constraint goals_timeline_check
@@ -26,6 +28,11 @@ returns trigger
 language plpgsql
 as $$
 begin
+  if new.id is distinct from old.id
+    or new.created_at is distinct from old.created_at then
+    raise exception 'Goal identity and audit fields cannot be changed';
+  end if;
+
   if app_private.is_facility_coach(app_private.member_profile_facility_id(old.member_profile_id)) then
     new.completed_at := case
       when new.status = 'completed' then coalesce(new.completed_at, old.completed_at, now())
@@ -83,6 +90,8 @@ with check (
   app_private.owns_member_profile(member_profile_id)
   and created_by = auth.uid()
   and source = 'member'
+  and status = 'active'
+  and completed_at is null
 );
 
 create policy "goals coaches can insert facility goals"
@@ -93,6 +102,8 @@ with check (
   app_private.is_facility_coach(app_private.member_profile_facility_id(member_profile_id))
   and created_by = auth.uid()
   and source = 'coach'
+  and status = 'active'
+  and completed_at is null
 );
 
 create policy "goals members can update own goals"
