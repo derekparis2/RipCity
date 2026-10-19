@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/styles.css?v=ui-polish-3" />
+  <link rel="stylesheet" href="css/styles.css?v=ui-polish-4" />
 </head>
 
 <body class="auth-body coach-dashboard-page">
@@ -195,12 +195,12 @@
       </details>
     </section>
 
-    <section class="dashboard-grid h2k-dashboard-grid">
+    <section class="dashboard-grid h2k-dashboard-grid coach-workout-review-section">
       <article class="panel coach-workout-review-panel">
         <div class="panel-heading">
           <div>
             <p class="eyebrow">WORKOUT REVIEW</p>
-            <h3>Member Completion</h3>
+            <h3>Workout Completion</h3>
           </div>
 
           <button class="outline-btn" id="refresh-workout-review-btn">Refresh</button>
@@ -208,70 +208,37 @@
 
         <p id="coach-workout-review-message" class="auth-message"></p>
 
-        <div class="coach-review-filter-grid">
+        <div class="coach-review-workout-picker">
+          <label class="coach-review-workout-search">
+            Find Assigned Workout
+            <input type="search" id="coach-review-workout-search" placeholder="Type a workout, group, or date..." autocomplete="off" />
+          </label>
+
+          <label>
+            Workout Assignment
+            <select id="coach-review-workout-picker">
+              <option value="">Loading assigned workouts...</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="coach-review-member-tools">
+          <label>
+            View Group
+            <select id="coach-review-group-filter" disabled>
+              <option value="all">All assigned members</option>
+            </select>
+          </label>
+
           <label>
             Find Member
-            <input type="search" id="coach-review-member-search" placeholder="Search by name..." autocomplete="off" />
-          </label>
-
-          <label>
-            Member Type
-            <select id="coach-review-member-type-filter">
-              <option value="all">All members</option>
-              <option value="athlete">Athletes</option>
-              <option value="h2k">H2K</option>
-            </select>
-          </label>
-
-          <label>
-            Workout
-            <select id="coach-review-workout-filter">
-              <option value="all">All workouts</option>
-            </select>
-          </label>
-
-          <label>
-            Status
-            <select id="coach-review-status-filter">
-              <option value="all">All statuses</option>
-              <option value="complete">Complete</option>
-              <option value="in_progress">In Progress</option>
-              <option value="not_started">Not Started</option>
-            </select>
+            <input type="search" id="coach-review-member-search" placeholder="Search this workout's members..." autocomplete="off" />
           </label>
         </div>
 
-        <div class="coach-review-filter-actions">
-          <button class="text-button" id="coach-review-clear-filters" type="button">Clear filters</button>
+        <div id="coach-workout-review-list" class="coach-workout-review-list">
+          <div class="empty-state">Loading assigned workouts...</div>
         </div>
-
-        <div class="coach-review-section">
-          <div class="coach-review-subheading">
-            <div>
-              <p class="eyebrow">THIS WEEK</p>
-              <h4>Weekly Workout Completion</h4>
-            </div>
-            <span id="coach-review-week-count">0 workouts</span>
-          </div>
-
-          <div id="coach-workout-review-list" class="coach-workout-review-list">
-            <div class="empty-state">Loading this week's workout completion...</div>
-          </div>
-        </div>
-
-        <details class="coach-review-previous">
-          <summary>
-            <span>
-              <span class="eyebrow">HISTORY</span>
-              <strong>Previous Four Weeks</strong>
-            </span>
-            <span id="coach-review-previous-count">Click to view</span>
-          </summary>
-
-          <div id="coach-workout-previous-list" class="coach-workout-review-list">
-            <div class="empty-state">Loading previous workout completion...</div>
-          </div>
-        </details>
 
         <div id="coach-workout-detail" class="coach-workout-detail hidden"></div>
       </article>
@@ -285,7 +252,7 @@
   <script src="js/shared/access-control.js"></script>
   <script src="js/shared/workout-data.js"></script>
   <script src="js/shared/attention-rules.js?v=coach-attention-1"></script>
-  <script src="js/coach/coach-dashboard.js?v=ui-polish-3"></script>
+  <script src="js/coach/coach-dashboard.js?v=ui-polish-4"></script>
   <script src="js/coach/coach-announcements.js?v=targeted-announcements-4"></script>
 </body>
 </html>

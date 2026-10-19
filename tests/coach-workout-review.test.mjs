@@ -7,6 +7,9 @@ const context = {
   document: { addEventListener() {} },
   window: {
     RipCityWorkoutData: {
+      formatDateLabel(value) {
+        return value;
+      },
       summarizeSetLogs(logs) {
         return {
           completedSets: logs.length,
@@ -40,6 +43,8 @@ const members = [{
   memberType: "athlete",
   name: "Test Athlete"
 }];
+const groups = [{ id: "group-1", name: "Test Team" }];
+const groupMemberships = [{ group_id: "group-1", member_profile_id: "member-1" }];
 const logs = assignments.map((assignment, index) => ({
   id: `log-${index + 1}`,
   workout_assignment_id: assignment.id,
@@ -50,9 +55,10 @@ const logs = assignments.map((assignment, index) => ({
 const rows = context.buildCoachWorkoutReviewRows(
   assignments,
   members,
-  [],
+  groupMemberships,
   logs,
-  "facility-1"
+  "facility-1",
+  groups
 );
 
 assert.equal(rows.length, 1, "same workout and date render as one review card");
@@ -60,5 +66,18 @@ assert.equal(rows[0].assignments.length, 2, "the grouped card retains both assig
 assert.equal(rows[0].assignedMembers.length, 1, "overlapping assignment targets show a member once");
 assert.equal(rows[0].assignedMembers[0].logs.length, 2, "logs from grouped assignments stay available");
 assert.equal(rows[0].assignedMembers[0].summary.isComplete, true, "grouped logs produce the combined completion summary");
+assert.equal(rows[0].groupSummaries.length, 1, "facility assignments can be compared by facility group");
+assert.equal(rows[0].groupSummaries[0].completionPercent, 100, "group rankings use member completion percentage");
+
+assert.equal(
+  context.getFilteredWorkoutReviewRows(rows, "shared").length,
+  1,
+  "workout review search matches the workout title"
+);
+assert.equal(
+  context.getFilteredWorkoutReviewRows(rows, "missing workout").length,
+  0,
+  "workout review search hides nonmatching workouts"
+);
 
 console.log("coach workout review tests passed");

@@ -22,9 +22,12 @@ const roster = await readFile("coach-roster.html", "utf8");
 const leaderboardStyles = await readFile("css/coach-leaderboards.css", "utf8");
 const profile = await readFile("profile.html", "utf8");
 assert.doesNotMatch(dashboard, /data-copy-signup-link/, "signup links are no longer on the coach dashboard");
-assert.match(dashboard, /id="coach-review-member-search"/, "workout completion can be filtered by member");
-assert.match(dashboard, /id="coach-review-workout-filter"/, "workout completion can be filtered by workout");
-assert.doesNotMatch(dashboard, /id="coach-review-target-filter"/, "redundant assignment-target filter was removed");
+assert.match(dashboard, /id="coach-review-workout-search"/, "workout completion can be searched by assigned workout");
+assert.match(dashboard, /id="coach-review-workout-picker"/, "coach chooses one workout assignment to review");
+assert.match(dashboard, /id="coach-review-group-filter"/, "selected workout can be filtered by assigned group");
+assert.match(dashboard, /id="coach-review-member-search"/, "member search is scoped to the selected workout");
+assert.doesNotMatch(dashboard, /id="coach-review-member-type-filter"/, "workout completion no longer uses a redundant member-type filter");
+assert.doesNotMatch(dashboard, /id="coach-review-status-filter"/, "member statuses are visible inside each workout instead of filtering the workout list");
 assert.match(dashboard, /<details class="panel coach-attention-panel"/, "needs-attention follow-up is collapsible");
 assert.match(dashboard, /id="coach-attention-search"/, "needs-attention follow-up is searchable");
 assert.match(dashboard, /id="coach-attention-type-filter"/, "needs-attention follow-up can be filtered by program");
@@ -56,7 +59,7 @@ const activePages = [
 
 for (const file of activePages) {
   const html = await readFile(file, "utf8");
-  assert.match(html, /css\/styles\.css\?v=ui-polish-3/, `${file} loads the current shared stylesheet release`);
+  assert.match(html, /css\/styles\.css\?v=ui-polish-4/, `${file} loads the current shared stylesheet release`);
 }
 
 console.log("UI structure tests passed");

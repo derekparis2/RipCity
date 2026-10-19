@@ -9232,43 +9232,225 @@ details[open] > .compact-panel-summary > span:last-child::after {
   display: none;
 }
 
-.coach-review-filter-grid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+.coach-review-workout-picker,
+.coach-review-member-tools {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.7fr);
+  gap: 14px;
+  margin-top: 18px;
 }
 
-.coach-workout-review-card > summary {
-  cursor: pointer;
-  list-style: none;
+.coach-workout-review-section {
+  margin-top: 20px;
 }
 
-.coach-workout-review-card > summary::-webkit-details-marker {
-  display: none;
+.coach-review-member-tools {
+  margin-top: 12px;
 }
 
-.coach-workout-review-card:not([open]) > .coach-workout-progress,
-.coach-workout-review-card:not([open]) > .coach-workout-latest,
-.coach-workout-review-card:not([open]) > .coach-workout-member-table {
-  display: none;
-}
-
-.coach-review-toggle-label {
-  border-color: rgba(91, 178, 255, 0.38) !important;
-  color: #8cc8ff !important;
-  font-weight: 800;
-}
-
-.coach-workout-review-card[open] .coach-review-toggle-label {
-  font-size: 0;
-}
-
-.coach-workout-review-card[open] .coach-review-toggle-label::after {
-  content: "Hide members";
+.coach-review-workout-picker label,
+.coach-review-member-tools label,
+.coach-review-workout-search {
+  display: grid;
+  gap: 8px;
+  color: var(--muted);
   font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.coach-review-workout-picker input,
+.coach-review-workout-picker select,
+.coach-review-member-tools input,
+.coach-review-member-tools select {
+  width: 100%;
+  min-height: 52px;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--panel-2);
+  color: var(--text);
+  font: inherit;
+  font-size: 16px;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.coach-review-workout-picker input:focus,
+.coach-review-workout-picker select:focus,
+.coach-review-member-tools input:focus,
+.coach-review-member-tools select:focus {
+  border-color: rgba(91, 178, 255, 0.72);
+  outline: 2px solid rgba(91, 178, 255, 0.18);
+  outline-offset: 1px;
+}
+
+.coach-workout-review-card[data-selected-workout] {
+  margin-top: 8px;
+  border-color: rgba(91, 178, 255, 0.35);
 }
 
 .coach-workout-latest {
   margin-top: 10px !important;
   font-size: 12px;
+}
+
+.coach-workout-member-groups {
+  display: grid;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.coach-workout-status-group {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.coach-workout-status-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.coach-workout-status-group > .coach-workout-status-heading {
+  cursor: pointer;
+  list-style: none;
+}
+
+.coach-workout-status-group > .coach-workout-status-heading::-webkit-details-marker {
+  display: none;
+}
+
+.coach-workout-status-group > .coach-workout-status-heading h5::before {
+  content: "+";
+  display: inline-block;
+  width: 18px;
+  color: currentColor;
+}
+
+.coach-workout-status-group[open] > .coach-workout-status-heading h5::before {
+  content: "−";
+}
+
+.coach-workout-status-heading h5 {
+  margin: 0;
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 20px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.coach-workout-status-heading span {
+  min-width: 30px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: var(--panel-2);
+  text-align: center;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.coach-workout-status-group.is-complete .coach-workout-status-heading {
+  color: #70de87;
+}
+
+.coach-workout-status-group.is-in-progress .coach-workout-status-heading {
+  color: #8cc8ff;
+}
+
+.coach-workout-status-group.is-not-started .coach-workout-status-heading {
+  color: var(--muted);
+}
+
+.coach-workout-status-empty {
+  margin: 0;
+  padding: 14px 16px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.coach-workout-status-group .coach-workout-member-table {
+  border: 0;
+  border-radius: 0;
+}
+
+.coach-workout-group-comparison {
+  overflow: hidden;
+  margin-top: 16px;
+  border: 1px solid rgba(91, 178, 255, 0.25);
+  border-radius: 14px;
+  background: rgba(91, 178, 255, 0.035);
+}
+
+.coach-workout-group-comparison .coach-workout-status-heading {
+  color: #8cc8ff;
+}
+
+.coach-workout-group-comparison .coach-workout-status-heading span {
+  min-width: auto;
+}
+
+.coach-workout-group-ranking {
+  display: grid;
+}
+
+.coach-workout-group-ranking button {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) auto 64px;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 12px 16px;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.coach-workout-group-ranking button:last-child {
+  border-bottom: 0;
+}
+
+.coach-workout-group-ranking button:hover,
+.coach-workout-group-ranking button:focus-visible {
+  background: rgba(91, 178, 255, 0.08);
+}
+
+.coach-workout-group-ranking strong {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.coach-workout-group-ranking strong > span {
+  display: inline-grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--panel-2);
+  color: #8cc8ff;
+  font-size: 12px;
+}
+
+.coach-workout-group-ranking button > span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.coach-workout-group-ranking b {
+  color: #8cc8ff;
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 22px;
+  text-align: right;
 }
 
 .approval-admin-tools {
@@ -9471,6 +9653,26 @@ details[open] > .compact-panel-summary > span:last-child::after {
 
   .coach-attention-tools .outline-btn {
     width: 100%;
+  }
+
+  .coach-review-workout-picker,
+  .coach-review-member-tools {
+    grid-template-columns: 1fr;
+  }
+
+  .coach-workout-group-ranking button {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 5px 10px;
+  }
+
+  .coach-workout-group-ranking button > span {
+    grid-column: 1 / -1;
+    padding-left: 36px;
+  }
+
+  .coach-workout-group-ranking b {
+    grid-column: 2;
+    grid-row: 1;
   }
 
   .roster-mobile-manage-btn {
