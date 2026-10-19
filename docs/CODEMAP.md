@@ -8,7 +8,7 @@ Use this as the quick orientation guide before editing.
 - `login.html`, `signup.html`, and `pending.html` handle account entry.
 - `member-dashboard.html` is the shared member home for athletes and H2K members.
 - `workout-session.html` is the member workout logging screen.
-- `coach-dashboard.html`, `coach-roster.html`, `coach-workouts.html`, and `coach-approvals.html` are the coach/admin surfaces.
+- `coach-dashboard.html`, `coach-roster.html`, `coach-workouts.html`, `coach-approvals.html`, and `coach-profile.html` are the coach/admin surfaces.
 
 ## Shared JavaScript
 
@@ -23,6 +23,7 @@ Use this as the quick orientation guide before editing.
 - `js/coach/coach-approvals.js` lets coaches/admins approve or reject pending members.
 - `js/coach/coach-roster.js` manages facility members, group membership, member status, and H2K band color.
 - `js/coach/coach-dashboard.js` powers H2K score review and coach workout completion review.
+- `js/coach/coach-profile.js` powers coach profile editing.
 - `js/coach/coach-workouts.js` powers workout creation, assignment, recent workout reuse, and the exercise library.
 - `js/member/member-dashboard.js` powers member stats, H2K habits, today’s workout, workout history, and feedback link display.
 - `js/member/profile.js` powers member profile editing and the read-only H2K band display.

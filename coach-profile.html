@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Coach Profile</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body class="auth-body">
+  <main class="coach-page">
+    <header class="h2k-header">
+      <div class="auth-brand">
+        <img src="assets/rip-city-logo.png" alt="Rip City logo">
+        <div>
+          <h1>RIP CITY</h1>
+          <p>Coach Profile</p>
+        </div>
+      </div>
+
+      <div class="h2k-header-actions">
+        <a class="outline-link" href="coach-dashboard.html">Coach Dashboard</a>
+        <a class="outline-link" href="coach-roster.html">Roster</a>
+        <a class="outline-link" href="coach-workouts.html">Workout Builder</a>
+        <a class="outline-link" href="coach-approvals.html">Approvals</a>
+        <button class="outline-btn" id="coach-profile-logout-btn" type="button">Log Out</button>
+      </div>
+    </header>
+
+    <section class="hero-card h2k-hero">
+      <div>
+        <p class="eyebrow">PROFILE & COMMUNITY</p>
+        <h3>Build your Rip City coach profile.</h3>
+        <p>Keep your account details current so members and coaches know who you are.</p>
+      </div>
+    </section>
+
+    <section class="dashboard-grid member-dashboard-grid profile-dashboard-grid">
+      <article class="panel">
+        <p class="eyebrow">PUBLIC PREVIEW</p>
+        <div class="profile-preview-heading">
+          <h3 id="coach-preview-name">Coach Name</h3>
+        </div>
+
+        <div class="profile-preview-card">
+          <div class="profile-avatar" id="coach-profile-avatar">?</div>
+
+          <div>
+            <h4 id="coach-preview-username">@username</h4>
+            <p id="coach-preview-bio">Your bio will show here.</p>
+          </div>
+        </div>
+
+        <div class="profile-detail-list">
+          <div>
+            <span>Birthday</span>
+            <strong id="coach-preview-birthday">Not added</strong>
+          </div>
+
+          <div>
+            <span>Role</span>
+            <strong id="coach-preview-role">Coach</strong>
+          </div>
+        </div>
+      </article>
+
+      <article class="panel">
+        <div>
+          <p class="eyebrow">EDIT PROFILE</p>
+          <h3>Coach Info</h3>
+        </div>
+
+        <p id="coach-profile-message" class="auth-message" aria-live="polite"></p>
+
+        <form id="coach-profile-form" class="profile-form">
+          <label>
+            Full Name
+            <input type="text" id="coach-profile-full-name" required />
+          </label>
+
+          <label>
+            Username
+            <input type="text" id="coach-profile-username" placeholder="ex: coachripcity" />
+          </label>
+
+          <label>
+            Bio
+            <textarea id="coach-profile-bio" rows="4" placeholder="Tell people a little about yourself..."></textarea>
+          </label>
+
+          <label>
+            Birthday
+            <input type="date" id="coach-profile-birthday" />
+          </label>
+
+          <div class="profile-photo-editor">
+            <label>
+              Profile Picture
+              <input type="file" id="coach-profile-picture-file" accept="image/png,image/jpeg,image/webp,image/gif" />
+              <small class="field-help">Upload a square photo if possible. Max size: 5 MB.</small>
+            </label>
+
+            <input type="hidden" id="coach-profile-picture-url" />
+            <button class="outline-btn" type="button" id="coach-profile-picture-remove">Remove Photo</button>
+          </div>
+
+          <button class="primary-btn" type="submit">Save Profile</button>
+        </form>
+      </article>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/shared/supabaseClient.js"></script>
+  <script src="js/shared/ui-utils.js"></script>
+  <script src="js/shared/access-control.js"></script>
+  <script src="js/coach/coach-profile.js"></script>
+</body>
+</html>
