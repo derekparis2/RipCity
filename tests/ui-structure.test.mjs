@@ -23,6 +23,11 @@ const leaderboardStyles = await readFile("css/coach-leaderboards.css", "utf8");
 const profile = await readFile("profile.html", "utf8");
 assert.doesNotMatch(dashboard, /data-copy-signup-link/, "signup links are no longer on the coach dashboard");
 assert.match(dashboard, /id="coach-review-member-search"/, "workout completion can be filtered by member");
+assert.match(dashboard, /id="coach-review-workout-filter"/, "workout completion can be filtered by workout");
+assert.doesNotMatch(dashboard, /id="coach-review-target-filter"/, "redundant assignment-target filter was removed");
+assert.match(dashboard, /<details class="panel coach-attention-panel"/, "needs-attention follow-up is collapsible");
+assert.match(dashboard, /id="coach-attention-search"/, "needs-attention follow-up is searchable");
+assert.match(dashboard, /id="coach-attention-type-filter"/, "needs-attention follow-up can be filtered by program");
 assert.match(roster, /data-copy-signup-link="athlete"/, "roster offers the athlete signup link");
 assert.match(roster, /data-copy-signup-link="h2k"/, "roster offers the H2K signup link");
 assert.doesNotMatch(roster, /data-copy-signup-link="general"/, "roster does not offer the unused general signup link");
@@ -51,7 +56,7 @@ const activePages = [
 
 for (const file of activePages) {
   const html = await readFile(file, "utf8");
-  assert.match(html, /css\/styles\.css\?v=ui-polish-2/, `${file} loads the current shared stylesheet release`);
+  assert.match(html, /css\/styles\.css\?v=ui-polish-3/, `${file} loads the current shared stylesheet release`);
 }
 
 console.log("UI structure tests passed");

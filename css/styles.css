@@ -3123,6 +3123,103 @@ td {
     margin-top: 18px;
   }
 
+  .coach-attention-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .coach-attention-summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .coach-attention-summary h3,
+  .coach-attention-summary p {
+    margin-top: 0;
+  }
+
+  .coach-attention-summary > div > p:last-child {
+    margin-bottom: 0;
+    color: var(--muted);
+  }
+
+  .coach-attention-summary-action {
+    flex: 0 0 auto;
+    color: #9dccff;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .coach-attention-summary-action::before {
+    content: "Review +";
+  }
+
+  .coach-attention-panel[open] .coach-attention-summary-action::before {
+    content: "Close \2212";
+  }
+
+  .coach-attention-content {
+    margin-top: 20px;
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
+  }
+
+  .coach-attention-rule-copy {
+    margin: 0;
+    color: var(--muted);
+  }
+
+  .coach-attention-tools {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) minmax(170px, 0.45fr) auto;
+    align-items: end;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .coach-attention-tools label {
+    display: grid;
+    gap: 7px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+  }
+
+  .coach-attention-tools input,
+  .coach-attention-tools select {
+    width: 100%;
+    min-width: 0;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    border-radius: 12px;
+    color: var(--text);
+    padding: 12px 13px;
+    font: inherit;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  .coach-attention-tools input:focus,
+  .coach-attention-tools select:focus {
+    border-color: #63b3ff;
+    outline: 2px solid rgba(99, 179, 255, 0.2);
+  }
+
+  .coach-attention-results-count {
+    margin: 12px 0 0;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 700;
+  }
+
   .coach-attention-card {
     display: flex;
     align-items: center;
@@ -5611,6 +5708,12 @@ td {
     font-weight: 800;
     text-transform: none;
     letter-spacing: 0;
+  }
+
+  .coach-review-filter-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
   }
 
   .coach-review-section {
@@ -9133,45 +9236,6 @@ details[open] > .compact-panel-summary > span:last-child::after {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
-.coach-review-more-filters {
-  margin: 12px 0 18px;
-  padding: 11px 14px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-}
-
-.coach-review-more-filters summary {
-  cursor: pointer;
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 800;
-}
-
-.coach-review-more-filters label {
-  display: grid;
-  gap: 7px;
-  margin-top: 12px;
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.coach-review-more-filters select {
-  min-height: 44px;
-}
-
-.coach-review-more-filter-content {
-  display: grid;
-  grid-template-columns: minmax(220px, 1fr) auto;
-  gap: 12px;
-  align-items: end;
-  margin-top: 12px;
-}
-
-.coach-review-more-filter-content label {
-  margin-top: 0;
-}
-
 .coach-workout-review-card > summary {
   cursor: pointer;
   list-style: none;
@@ -9386,6 +9450,27 @@ details[open] > .compact-panel-summary > span:last-child::after {
   .coach-page .stat-card {
     min-height: 0;
     padding: 14px;
+  }
+
+  .coach-attention-summary {
+    align-items: flex-start;
+  }
+
+  .coach-attention-summary > div > p:last-child {
+    font-size: 13px;
+  }
+
+  .coach-attention-tools {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .coach-attention-tools label:first-child,
+  .coach-attention-tools .outline-btn {
+    grid-column: 1 / -1;
+  }
+
+  .coach-attention-tools .outline-btn {
+    width: 100%;
   }
 
   .roster-mobile-manage-btn {
