@@ -1134,7 +1134,7 @@ function renderCoachWorkoutStatusGroup(status, members, rowIndex) {
   };
 
   return `
-    <details class="coach-workout-status-group is-${status.replace("_", "-")}" ${status === "complete" ? "" : "open"}>
+    <details class="coach-workout-status-group is-${status.replace("_", "-")}">
       <summary class="coach-workout-status-heading">
         <h5>${labels[status]}</h5>
         <span>${matchingMembers.length}</span>
