@@ -3123,6 +3123,103 @@ td {
     margin-top: 18px;
   }
 
+  .coach-attention-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .coach-attention-summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .coach-attention-summary h3,
+  .coach-attention-summary p {
+    margin-top: 0;
+  }
+
+  .coach-attention-summary > div > p:last-child {
+    margin-bottom: 0;
+    color: var(--muted);
+  }
+
+  .coach-attention-summary-action {
+    flex: 0 0 auto;
+    color: #9dccff;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .coach-attention-summary-action::before {
+    content: "Review +";
+  }
+
+  .coach-attention-panel[open] .coach-attention-summary-action::before {
+    content: "Close \2212";
+  }
+
+  .coach-attention-content {
+    margin-top: 20px;
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
+  }
+
+  .coach-attention-rule-copy {
+    margin: 0;
+    color: var(--muted);
+  }
+
+  .coach-attention-tools {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) minmax(170px, 0.45fr) auto;
+    align-items: end;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .coach-attention-tools label {
+    display: grid;
+    gap: 7px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+  }
+
+  .coach-attention-tools input,
+  .coach-attention-tools select {
+    width: 100%;
+    min-width: 0;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    border-radius: 12px;
+    color: var(--text);
+    padding: 12px 13px;
+    font: inherit;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  .coach-attention-tools input:focus,
+  .coach-attention-tools select:focus {
+    border-color: #63b3ff;
+    outline: 2px solid rgba(99, 179, 255, 0.2);
+  }
+
+  .coach-attention-results-count {
+    margin: 12px 0 0;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 700;
+  }
+
   .coach-attention-card {
     display: flex;
     align-items: center;
@@ -3602,7 +3699,7 @@ td {
     margin-top: 4px;
   }
 
-  .roster-group-editor {
+  .roster-member-card > .roster-group-editor {
     grid-column: 1 / -1;
     display: none;
     gap: 12px;
@@ -3610,8 +3707,8 @@ td {
     padding-top: 14px;
   }
 
-  .roster-member-card.is-editing-groups .roster-group-editor,
-  .roster-member-card.has-unsaved-changes .roster-group-editor {
+  .roster-member-card.is-editing-groups > .roster-group-editor,
+  .roster-member-card.has-unsaved-changes > .roster-group-editor {
     display: grid;
   }
 
@@ -5613,6 +5710,12 @@ td {
     letter-spacing: 0;
   }
 
+  .coach-review-filter-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+  }
+
   .coach-review-section {
     margin-top: 22px;
   }
@@ -5989,7 +6092,7 @@ td {
 
   .coach-workout-member-row {
     display: grid;
-    grid-template-columns: minmax(180px, 1fr) repeat(4, minmax(92px, auto)) auto;
+    grid-template-columns: minmax(180px, 1fr) minmax(360px, 1.5fr) auto;
     gap: 10px;
     align-items: center;
     border: 1px solid var(--border);
@@ -6005,6 +6108,31 @@ td {
 
   .coach-workout-member-row span {
     color: var(--muted);
+    font-size: 12px;
+  }
+
+  .coach-review-member-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(78px, 1fr));
+    gap: 8px;
+    align-items: center;
+  }
+
+  .coach-review-member-metrics > span:not(.coach-review-status) {
+    display: grid;
+    gap: 2px;
+  }
+
+  .coach-review-member-metrics small {
+    color: var(--muted);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .coach-review-member-metrics strong {
+    color: var(--text);
     font-size: 12px;
   }
 
@@ -7200,7 +7328,7 @@ body {
 }
 
 .coach-workout-member-row {
-  grid-template-columns: minmax(190px, 1fr) repeat(4, minmax(84px, auto)) auto;
+  grid-template-columns: minmax(190px, 1fr) minmax(360px, 1.5fr) auto;
 }
 
 .session-exercise-header {
@@ -8909,6 +9037,777 @@ body {
   gap: 12px;
   overflow-y: auto;
   overscroll-behavior: contain;
+}
+
+/* =====================================================
+   SHARED RESPONSIVE NAVIGATION + UI POLISH
+   ===================================================== */
+
+.coach-header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.coach-nav,
+.coach-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.coach-nav-toggle {
+  display: none;
+}
+
+.coach-nav-link {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 13px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.1;
+  text-align: center;
+  text-decoration: none;
+  transition: border-color 160ms ease, color 160ms ease, background 160ms ease;
+}
+
+.coach-nav-link:hover,
+.coach-nav-link.active {
+  border-color: rgba(91, 178, 255, 0.58);
+  background: rgba(91, 178, 255, 0.11);
+  color: var(--text);
+}
+
+.coach-nav-link.active {
+  box-shadow: inset 0 -2px 0 #65b8ff;
+}
+
+.coach-context-link {
+  width: fit-content;
+  margin-bottom: 14px;
+}
+
+.compact-panel-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  min-height: 50px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.compact-panel-summary::-webkit-details-marker {
+  display: none;
+}
+
+.compact-panel-summary > span:first-child {
+  display: grid;
+  gap: 5px;
+}
+
+.compact-panel-summary strong {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 27px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.compact-panel-summary > span:last-child {
+  color: #65b8ff;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+details[open] > .compact-panel-summary > span:last-child {
+  font-size: 0;
+}
+
+details[open] > .compact-panel-summary > span:last-child::after {
+  content: "Close −";
+  font-size: 13px;
+}
+
+.compact-panel-body {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+
+.coach-dashboard-intro-grid {
+  grid-template-columns: 1fr;
+}
+
+.dashboard-feedback-panel {
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding-block: 16px;
+}
+
+.dashboard-feedback-panel h3,
+.dashboard-feedback-panel p:not(.eyebrow) {
+  margin-block: 4px;
+}
+
+.coach-dashboard-intro-grid + .coach-announcements-panel {
+  margin-top: 16px;
+}
+
+.roster-signup-panel {
+  display: block;
+  margin-bottom: 16px;
+  border-color: rgba(91, 178, 255, 0.28);
+  background: linear-gradient(120deg, rgba(91, 178, 255, 0.08), rgba(20, 20, 22, 0.94) 52%);
+}
+
+.roster-signup-panel .compact-panel-summary {
+  width: 100%;
+}
+
+.roster-signup-panel .compact-panel-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px 24px;
+}
+
+.roster-signup-panel .compact-panel-body > p:first-child {
+  margin: 0;
+  max-width: 720px;
+}
+
+.roster-signup-panel .auth-message {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.roster-signup-panel .auth-message:empty {
+  display: none;
+}
+
+.coach-signup-link-actions {
+  justify-content: flex-start;
+}
+
+.roster-group-editor {
+  margin-bottom: 18px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.roster-group-editor-heading {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.roster-group-editor-heading strong {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 22px;
+  text-transform: uppercase;
+}
+
+.roster-group-editor-heading span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.roster-mobile-manage-btn {
+  display: none;
+}
+
+.coach-review-workout-picker,
+.coach-review-member-tools {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.7fr);
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.coach-workout-review-section {
+  margin-top: 20px;
+}
+
+.coach-review-member-tools {
+  margin-top: 12px;
+}
+
+.coach-review-workout-picker label,
+.coach-review-member-tools label,
+.coach-review-workout-search {
+  display: grid;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.coach-review-workout-picker input,
+.coach-review-workout-picker select,
+.coach-review-member-tools input,
+.coach-review-member-tools select {
+  width: 100%;
+  min-height: 52px;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--panel-2);
+  color: var(--text);
+  font: inherit;
+  font-size: 16px;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.coach-review-workout-picker input:focus,
+.coach-review-workout-picker select:focus,
+.coach-review-member-tools input:focus,
+.coach-review-member-tools select:focus {
+  border-color: rgba(91, 178, 255, 0.72);
+  outline: 2px solid rgba(91, 178, 255, 0.18);
+  outline-offset: 1px;
+}
+
+.coach-workout-review-card[data-selected-workout] {
+  margin-top: 8px;
+  border-color: rgba(91, 178, 255, 0.35);
+}
+
+.coach-workout-latest {
+  margin-top: 10px !important;
+  font-size: 12px;
+}
+
+.coach-workout-member-groups {
+  display: grid;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.coach-workout-status-group {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.coach-workout-status-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.coach-workout-status-group > .coach-workout-status-heading {
+  cursor: pointer;
+  list-style: none;
+}
+
+.coach-workout-status-group > .coach-workout-status-heading::-webkit-details-marker {
+  display: none;
+}
+
+.coach-workout-status-group > .coach-workout-status-heading h5::before {
+  content: "+";
+  display: inline-block;
+  width: 18px;
+  color: currentColor;
+}
+
+.coach-workout-status-group[open] > .coach-workout-status-heading h5::before {
+  content: "−";
+}
+
+.coach-workout-status-heading h5 {
+  margin: 0;
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 20px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.coach-workout-status-heading span {
+  min-width: 30px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: var(--panel-2);
+  text-align: center;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.coach-workout-status-group.is-complete .coach-workout-status-heading {
+  color: #70de87;
+}
+
+.coach-workout-status-group.is-in-progress .coach-workout-status-heading {
+  color: #8cc8ff;
+}
+
+.coach-workout-status-group.is-not-started .coach-workout-status-heading {
+  color: var(--muted);
+}
+
+.coach-workout-status-empty {
+  margin: 0;
+  padding: 14px 16px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.coach-workout-status-group .coach-workout-member-table {
+  border: 0;
+  border-radius: 0;
+}
+
+.coach-workout-group-comparison {
+  overflow: hidden;
+  margin-top: 16px;
+  border: 1px solid rgba(91, 178, 255, 0.25);
+  border-radius: 14px;
+  background: rgba(91, 178, 255, 0.035);
+}
+
+.coach-workout-group-comparison .coach-workout-status-heading {
+  color: #8cc8ff;
+}
+
+.coach-workout-group-comparison .coach-workout-status-heading span {
+  min-width: auto;
+}
+
+.coach-workout-group-ranking {
+  display: grid;
+}
+
+.coach-workout-group-ranking button {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) auto 64px;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 12px 16px;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.coach-workout-group-ranking button:last-child {
+  border-bottom: 0;
+}
+
+.coach-workout-group-ranking button:hover,
+.coach-workout-group-ranking button:focus-visible {
+  background: rgba(91, 178, 255, 0.08);
+}
+
+.coach-workout-group-ranking strong {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.coach-workout-group-ranking strong > span {
+  display: inline-grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--panel-2);
+  color: #8cc8ff;
+  font-size: 12px;
+}
+
+.coach-workout-group-ranking button > span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.coach-workout-group-ranking b {
+  color: #8cc8ff;
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 22px;
+  text-align: right;
+}
+
+.approval-admin-tools {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.approval-admin-tool {
+  margin: 0;
+  align-self: start;
+}
+
+.approval-admin-tool .primary-btn {
+  width: 100%;
+}
+
+.exercise-library-page-grid {
+  grid-template-columns: 1fr;
+  align-items: start;
+}
+
+.exercise-library-create-card:not([open]) {
+  min-height: 0;
+}
+
+.exercise-library-show-more,
+.roster-show-more {
+  width: 100%;
+  margin-top: 6px;
+  border-color: rgba(91, 178, 255, 0.34);
+  color: #65b8ff;
+}
+
+.profile-edit-panel {
+  align-self: start;
+}
+
+.profile-page-message {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.member-streak-flame {
+  display: inline-block;
+  margin-left: 8px;
+  font-family: system-ui, sans-serif;
+  font-size: 0.7em;
+  filter: saturate(0.85);
+  transform: translateY(-2px);
+}
+
+.member-streak-flame.strong {
+  filter: saturate(1.2) drop-shadow(0 0 7px rgba(255, 139, 46, 0.48));
+  transform: translateY(-2px) scale(1.08);
+}
+
+.member-streak-flame.hot {
+  filter: saturate(1.55) hue-rotate(-12deg) drop-shadow(0 0 9px rgba(255, 75, 48, 0.65));
+  transform: translateY(-2px) scale(1.18);
+}
+
+@media (max-width: 1040px) {
+  .coach-page > .h2k-header,
+  .approval-page > .h2k-header {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .coach-header-actions {
+    position: relative;
+    width: auto;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .coach-nav-toggle {
+    display: inline-flex;
+  }
+
+  .coach-nav-links {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    z-index: 80;
+    width: min(310px, calc(100vw - 32px));
+    display: none;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: rgba(18, 18, 20, 0.98);
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.48);
+  }
+
+  .coach-nav.open .coach-nav-links {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .coach-nav-link {
+    min-height: 48px;
+  }
+
+  .approval-admin-tools {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .coach-page,
+  .approval-page {
+    width: min(100% - 20px, 1180px);
+  }
+
+  .h2k-header {
+    align-items: center;
+    padding-block: 12px;
+  }
+
+  .auth-brand img {
+    width: 48px;
+    height: 48px;
+  }
+
+  .auth-brand h1 {
+    font-size: 24px;
+  }
+
+  .auth-brand p {
+    font-size: 12px;
+  }
+
+  .coach-header-actions {
+    width: auto;
+    flex-wrap: nowrap;
+  }
+
+  .coach-header-actions > .outline-btn,
+  .coach-nav-toggle {
+    min-height: 42px;
+    padding: 9px 11px;
+    font-size: 12px;
+  }
+
+  .coach-nav-links {
+    position: fixed;
+    top: 76px;
+    right: 10px;
+    left: 10px;
+    width: auto;
+  }
+
+  .coach-nav.open .coach-nav-links {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-card {
+    min-height: 0;
+    padding: 20px;
+  }
+
+  .hero-card h3 {
+    font-size: clamp(34px, 10vw, 46px);
+  }
+
+  .dashboard-feedback-panel {
+    display: grid;
+  }
+
+  .dashboard-feedback-panel p:not(.eyebrow) {
+    display: none;
+  }
+
+  .coach-page .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .coach-page .stat-card {
+    min-height: 0;
+    padding: 14px;
+  }
+
+  .coach-attention-summary {
+    align-items: flex-start;
+  }
+
+  .coach-attention-summary > div > p:last-child {
+    font-size: 13px;
+  }
+
+  .coach-attention-tools {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .coach-attention-tools label:first-child,
+  .coach-attention-tools .outline-btn {
+    grid-column: 1 / -1;
+  }
+
+  .coach-attention-tools .outline-btn {
+    width: 100%;
+  }
+
+  .coach-review-workout-picker,
+  .coach-review-member-tools {
+    grid-template-columns: 1fr;
+  }
+
+  .coach-workout-group-ranking button {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 5px 10px;
+  }
+
+  .coach-workout-group-ranking button > span {
+    grid-column: 1 / -1;
+    padding-left: 36px;
+  }
+
+  .coach-workout-group-ranking b {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .roster-mobile-manage-btn {
+    display: inline-flex;
+    width: 100%;
+  }
+
+  .roster-member-card:not(.is-mobile-expanded) .roster-member-groups,
+  .roster-member-card:not(.is-mobile-expanded) > .roster-group-editor {
+    display: none;
+  }
+
+  .coach-review-filter-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .coach-review-filter-grid label:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .roster-filter-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .roster-filter-grid label:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .coach-roster-list,
+  .pending-users-list,
+  .coach-management-list {
+    gap: 10px;
+  }
+
+  .roster-member-card,
+  .pending-user-card,
+  .coach-management-card {
+    padding: 14px;
+  }
+
+  .compact-panel-summary strong {
+    font-size: 23px;
+  }
+
+  .profile-dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .member-stats-grid .stat-card {
+    padding: 14px;
+  }
+
+  .member-stats-grid .stat-card strong {
+    font-size: clamp(29px, 9vw, 40px);
+  }
+}
+
+@media (max-width: 430px) {
+  .coach-page,
+  .approval-page {
+    width: calc(100% - 14px);
+  }
+
+  .h2k-header {
+    gap: 8px;
+  }
+
+  .auth-brand {
+    gap: 8px;
+  }
+
+  .auth-brand img {
+    width: 42px;
+    height: 42px;
+  }
+
+  .auth-brand h1 {
+    font-size: 21px;
+  }
+
+  .coach-header-actions > .outline-btn,
+  .coach-nav-toggle {
+    min-height: 38px;
+    padding: 7px 9px;
+  }
+
+  .coach-review-filter-grid,
+  .roster-filter-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .roster-filter-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .coach-review-more-filter-content,
+  .coach-review-member-metrics {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .coach-review-filter-grid label:first-child,
+  .roster-filter-grid label:last-child {
+    grid-column: auto;
+  }
+
+  .roster-filter-grid label:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .coach-signup-link-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .roster-signup-panel .compact-panel-body {
+    grid-template-columns: 1fr;
+  }
+
+  .coach-signup-link-actions button {
+    width: 100%;
+  }
+
+  .member-shell-nav {
+    gap: 3px;
+    padding: 6px;
+  }
+
+  .member-shell-nav .nav-link-anchor {
+    min-width: 0;
+    padding-inline: 3px;
+  }
+
+  .member-shell-nav .mobile-nav-text {
+    font-size: 10px;
+  }
 }
 
 .workout-session-body.session-logging-mode .session-current-context {

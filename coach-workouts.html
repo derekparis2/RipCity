@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/styles.css?v=workout-builder-refactor-1" />
+  <link rel="stylesheet" href="css/styles.css?v=ui-polish-4" />
 </head>
 
 <body class="auth-body">
@@ -24,11 +24,8 @@
         </div>
       </div>
 
-      <div class="h2k-header-actions">
-        <a class="outline-link" href="coach-dashboard.html">Coach Dashboard</a>
-        <a class="outline-link" href="coach-roster.html">Roster</a>
-        <a class="outline-link" href="coach-leaderboards.html">Leaderboards</a>
-        <a class="outline-link" href="coach-approvals.html">Approvals</a>
+      <div class="h2k-header-actions coach-header-actions">
+        <nav class="coach-nav" data-coach-nav="workouts" aria-label="Coach navigation"></nav>
         <button class="outline-btn" id="coach-workouts-logout-btn">Log Out</button>
       </div>
     </header>
@@ -258,6 +255,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/shared/supabaseClient.js"></script>
   <script src="js/shared/ui-utils.js"></script>
+  <script src="js/coach/coach-nav.js?v=ui-polish-1"></script>
   <script src="js/shared/access-control.js"></script>
   <script src="js/shared/workout-data.js"></script>
   <script src="js/coach/workouts/core.js"></script>

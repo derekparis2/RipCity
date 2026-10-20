@@ -717,6 +717,25 @@ function setMemberTypeText(memberType) {
   });
 }
 
+function renderMemberStreakFlame(streak, valueElementId) {
+  document.querySelectorAll(".member-streak-flame").forEach(flame => flame.remove());
+  const streakValue = Number(streak) || 0;
+  if (streakValue < 5) return;
+
+  const valueElement = document.getElementById(valueElementId);
+  const valueContainer = valueElement?.closest("strong") || valueElement;
+  if (!valueContainer) return;
+
+  const flame = document.createElement("span");
+  const heatLevel = streakValue >= 20 ? "hot" : streakValue >= 10 ? "strong" : "lit";
+  flame.className = `member-streak-flame ${heatLevel}`;
+  flame.textContent = "🔥";
+  flame.setAttribute("role", "img");
+  flame.setAttribute("aria-label", `${streakValue}-day streak`);
+  flame.title = `${streakValue}-day streak`;
+  valueContainer.appendChild(flame);
+}
+
 function updateMemberShell() {
   const profile = currentAccess?.profile;
   const memberType = getMemberTypeLabel();
@@ -730,6 +749,12 @@ function updateMemberShell() {
     currentMemberProfile?.member_type === "h2k"
       ? "Review weekly training and H2K results."
       : "Review your weekly workout completion."
+  );
+  setMemberText(
+    "member-history-hero-description",
+    currentMemberProfile?.member_type === "h2k"
+      ? "Review recent H2K scores and consistency week by week."
+      : "Review assigned-workout completion and training consistency."
   );
 
   const avatar = document.getElementById("member-avatar");
@@ -945,6 +970,7 @@ async function updateScores() {
     metrics.fourWeekAverage === null
   );
   setMemberText("weekly-percent-h2k", metrics.currentStreak);
+  renderMemberStreakFlame(metrics.currentStreak, "weekly-percent-h2k");
   setMemberText("h2k-status", `${metrics.currentWeekScore}/${metrics.currentWeekMax}`);
   setMemberText("member-stat-one-suffix", `/${h2kHabits.length}`);
   setMemberText("member-stat-two-suffix", metrics.fourWeekAverage === null
@@ -1214,6 +1240,7 @@ function updateSharedWorkoutStats() {
   setMemberText("weekly-percent-h2k", metrics.fourWeek.percent ?? "—");
   setMemberText("member-stat-three-suffix", metrics.fourWeek.percent === null ? "" : "%");
   setMemberText("h2k-status", `${metrics.currentStreak} day${metrics.currentStreak === 1 ? "" : "s"}`);
+  renderMemberStreakFlame(metrics.currentStreak, "h2k-status");
   setMemberText("h2k-status-detail", `Longest streak: ${metrics.longestStreak} assigned workout day${metrics.longestStreak === 1 ? "" : "s"}`);
 }
 

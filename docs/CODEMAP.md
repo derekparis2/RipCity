@@ -12,6 +12,9 @@ Use this as the quick orientation guide before editing.
   remains the dedicated profile page.
 - `js/member/member-nav.js` owns the shared member destination map so member
   tabs do not drift or disappear between pages.
+- `js/coach/coach-nav.js` owns the shared coach/admin destination map and the
+  compact mobile menu so Dashboard, Roster, Workout Builder, Leaderboards, and
+  Approvals remain available from every coach surface.
 - `workout-session.html` is the member workout logging screen.
 - `coach-dashboard.html`, `coach-roster.html`, `coach-workouts.html`,
   `coach-exercises.html`, `coach-leaderboards.html`, and `coach-approvals.html`
@@ -40,7 +43,9 @@ Use this as the quick orientation guide before editing.
   pending members. Facility admins can also create coach links and decide
   pending coach requests, then deactivate or reactivate existing coach
   memberships without deleting history.
-- `js/coach/coach-roster.js` manages facility members, group membership, member status, and H2K band color.
+- `js/coach/coach-roster.js` manages facility members, group membership, member
+  status, H2K band color, roster pagination, and the two program-specific member
+  signup links.
 - `js/coach/coach-dashboard.js` powers the coach needs-attention queue and
   workout completion review.
 - `js/coach/coach-announcements.js` powers the dashboard announcement composer,
@@ -58,6 +63,8 @@ Use this as the quick orientation guide before editing.
   behavior in `history.js`, exercise-library behavior in `exercise-library.js`,
   the standalone library controller in `exercise-library-page.js`, and common
   state/helpers in `core.js` and `data.js`.
+- The standalone Exercise Library progressively renders 24 matching exercises
+  at a time; changing a search or filter resets that visible result window.
 - `js/member/member-dashboard.js` powers member stats, H2K habits, today’s workout, workout history, and feedback link display.
 - `js/member/member-announcements.js` renders the active facility, group, and
   individual announcements permitted to the signed-in member by RLS.

@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=coach-goal-collapse-1" />
+  <link rel="stylesheet" href="css/styles.css?v=ui-polish-4" />
 </head>
 <body class="auth-body member-goals-page coach-member-detail-page">
   <main class="coach-page">
@@ -16,13 +16,13 @@
         <img src="assets/rip-city-logo.png" alt="Rip City logo">
         <div><h1>RIP CITY</h1><p>Member Detail</p></div>
       </div>
-      <div class="h2k-header-actions">
-        <a class="outline-link" href="coach-roster.html">Back to Roster</a>
-        <a class="outline-link" href="coach-dashboard.html">Coach Dashboard</a>
+      <div class="h2k-header-actions coach-header-actions">
+        <nav class="coach-nav" data-coach-nav="roster" aria-label="Coach navigation"></nav>
         <button class="outline-btn" id="coach-member-detail-logout" type="button">Log Out</button>
       </div>
     </header>
 
+    <a class="outline-link coach-context-link" href="coach-roster.html">← Back to Roster</a>
     <p class="auth-message" id="coach-member-detail-message" aria-live="polite"></p>
     <section class="panel coach-member-detail-summary" id="coach-member-detail-summary">
       <div class="empty-state">Loading member...</div>
@@ -107,6 +107,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/shared/supabaseClient.js"></script>
   <script src="js/shared/ui-utils.js"></script>
+  <script src="js/coach/coach-nav.js?v=ui-polish-1"></script>
   <script src="js/shared/access-control.js"></script>
   <script src="js/shared/workout-data.js"></script>
   <script src="js/shared/goal-progress.js?v=goal-values-1"></script>

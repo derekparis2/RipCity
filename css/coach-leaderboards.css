@@ -230,10 +230,6 @@
     align-items: center;
   }
 
-  .leaderboard-header .h2k-header-actions a:not(:first-child) {
-    display: none;
-  }
-
   .leaderboard-header .auth-brand p {
     display: none;
   }
