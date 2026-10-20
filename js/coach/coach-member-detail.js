@@ -75,12 +75,33 @@ function renderDetailMember() {
   const profile = detailMember.member_profile?.[0] || detailMember.member_profile || {};
   const groups = (detailMember.group_members || []).map(item => item.group?.name).filter(Boolean);
   const safeProfilePictureUrl = getSafeImageUrl(detailMember.profile?.profile_picture_url);
+  const formatMemberBirthday = birthday => birthday
+    ? new Date(`${birthday}T12:00:00`).toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+      year: "numeric"
+    })
+    : "";
+  const profileDetails = [
+    ["Username", detailMember.profile?.username ? `@${detailMember.profile.username}` : ""],
+    ["Birthday", formatMemberBirthday(detailMember.profile?.birthday)],
+    ["Sport", profile.sport],
+    ["Position", profile.position],
+    ["School", profile.school],
+    ["Graduation year", profile.graduation_year],
+    ["Height", profile.height],
+    ["Body weight", profile.body_weight],
+    ["Training focus", profile.training_focus],
+    ["Favorite lift", profile.favorite_lift]
+  ].filter(([, value]) => value !== null && value !== undefined && value !== "");
   document.getElementById("coach-member-detail-summary").innerHTML = `
     <div class="coach-member-detail-heading">
       ${window.RipCityUI.avatarMarkup(detailMember.profile?.full_name, safeProfilePictureUrl, "roster-avatar")}
       <div><p class="eyebrow">${window.RipCityUI.text(profile.member_type === "h2k" ? "H2K MEMBER" : "ATHLETE")}</p><h2>${window.RipCityUI.text(detailMember.profile?.full_name, "Unnamed Member")}</h2><p>${window.RipCityUI.text(detailMember.profile?.email)}</p></div>
     </div>
-    <div class="member-goal-meta"><span>${window.RipCityUI.text(groups.join(", ") || "No groups")}</span>${profile.h2k_band_color ? `<span>${window.RipCityUI.text(`${profile.h2k_band_color} Band`)}</span>` : ""}</div>`;
+    <div class="member-goal-meta"><span>${window.RipCityUI.text(groups.join(", ") || "No groups")}</span>${profile.h2k_band_color ? `<span>${window.RipCityUI.text(`${profile.h2k_band_color} Band`)}</span>` : ""}</div>
+    ${detailMember.profile?.bio ? `<p>${window.RipCityUI.text(detailMember.profile.bio)}</p>` : ""}
+    ${profileDetails.length ? `<p class="eyebrow">PROFILE DETAILS</p><div class="profile-detail-list">${profileDetails.map(([label, value]) => `<div><span>${window.RipCityUI.text(label)}</span><strong>${window.RipCityUI.text(value)}</strong></div>`).join("")}</div>` : `<p class="empty-state">This member has not added profile details yet.</p>`}`;
 }
 
 function renderDetailGoals() {
@@ -296,8 +317,8 @@ async function loadMember() {
 
   const { data, error } = await db.from("facility_members").select(`
     id, facility_id, role, status,
-    profile:profiles!facility_members_profile_id_fkey (id, full_name, email, profile_picture_url),
-    member_profile:member_profiles (id, member_type, h2k_band_color)
+    profile:profiles!facility_members_profile_id_fkey (id, full_name, email, profile_picture_url, username, bio, birthday),
+    member_profile:member_profiles (id, member_type, h2k_band_color, sport, position, school, graduation_year, height, body_weight, training_focus, favorite_lift)
   `).eq("id", membershipId).eq("facility_id", detailAccess.membership.facility_id).single();
 
   if (error) throw error;

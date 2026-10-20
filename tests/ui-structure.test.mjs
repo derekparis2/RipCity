@@ -9,6 +9,7 @@ const coachPages = {
   "coach-approvals.html": "approvals",
   "coach-member-detail.html": "roster",
   "coach-exercises.html": "workouts",
+  "profile.html": "profile",
 };
 
 for (const [file, activePage] of Object.entries(coachPages)) {
@@ -37,6 +38,13 @@ assert.doesNotMatch(roster, /data-copy-signup-link="general"/, "roster does not 
 assert.match(roster, /id="create-group-form"/, "group creation remains directly available on the roster");
 assert.doesNotMatch(leaderboardStyles, /h2k-header-actions a:not\(:first-child\)/, "mobile leaderboard navigation does not hide coach links");
 assert.match(profile, /<details class="panel profile-edit-panel" open>/, "member profile editor is open by default");
+assert.match(profile, /data-coach-nav="profile"/, "coach profile uses shared coach navigation");
+assert.match(profile, /js\/member\/profile\.js\?v=coach-profile-1/, "profile editor supports coach accounts");
+const profileScript = await readFile("js/member/profile.js", "utf8");
+assert.match(profileScript, /if \(!profileAccess\.isCoach\)/, "coach profiles save without requiring a member profile");
+const coachMemberDetail = await readFile("js/coach/coach-member-detail.js", "utf8");
+assert.match(coachMemberDetail, /training_focus, favorite_lift/, "coach member detail loads training profile fields");
+assert.match(coachMemberDetail, /profile\.bio/, "coach member detail shows the member bio");
 
 const memberHistory = await readFile("member-history.html", "utf8");
 assert.match(memberHistory, /id="member-history-hero-description"/, "member history copy can be specialized by member type");
