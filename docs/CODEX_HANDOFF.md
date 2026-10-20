@@ -256,8 +256,9 @@ Coach onboarding:
 - Derek/platform owner creates the facility and establishes its first admin.
 - Facility admins create/invite or approve additional coaches for their own
   facility.
-- Ordinary coaches may approve ordinary members but cannot approve, create, or
-  promote coach/admin memberships.
+- Ordinary coaches can review pending member requests but cannot approve,
+  reject, deactivate, reactivate, create, or promote facility memberships.
+  Facility admins own every account-lifecycle decision in V2.
 - A shared signup link never grants an elevated role without admin approval.
 
 Testing Days:

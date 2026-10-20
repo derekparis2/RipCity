@@ -1,8 +1,8 @@
 // =====================================================
 // COACH ROSTER
 // =====================================================
-// Coaches use this page to manage members and group memberships inside their
-// own facility. Group membership drives group workout visibility.
+// Coaches use this page to manage member coaching details and group membership
+// inside their facility. Account lifecycle changes are facility-admin only.
 
 let rosterAccess = null;
 let rosterMembers = [];
@@ -450,6 +450,17 @@ function renderRosterMemberCard(member) {
   ].filter(Boolean).join(" · ");
   const nextStatus = member.status === "inactive" ? "approved" : "inactive";
   const statusActionLabel = member.status === "inactive" ? "Reactivate" : "Deactivate";
+  const lifecycleAction = rosterAccess?.isAdmin ? `
+          <button
+            class="danger-btn small-inline-btn"
+            type="button"
+            data-member-status-action
+            data-facility-member-id="${window.RipCityUI.attr(member.facilityMemberId)}"
+            data-next-status="${window.RipCityUI.attr(nextStatus)}"
+          >
+            ${statusActionLabel}
+          </button>
+        ` : "";
 
   return `
     <article class="roster-member-card" data-roster-member-card="${window.RipCityUI.attr(member.memberProfileId)}">
@@ -539,15 +550,7 @@ function renderRosterMemberCard(member) {
           >
             Reset
           </button>
-          <button
-            class="danger-btn small-inline-btn"
-            type="button"
-            data-member-status-action
-            data-facility-member-id="${window.RipCityUI.attr(member.facilityMemberId)}"
-            data-next-status="${window.RipCityUI.attr(nextStatus)}"
-          >
-            ${statusActionLabel}
-          </button>
+          ${lifecycleAction}
         </div>
       </div>
     </article>
@@ -682,6 +685,11 @@ async function deleteRosterGroup(groupId) {
 }
 
 async function setRosterMemberStatus(facilityMemberId, nextStatus) {
+  if (!rosterAccess?.isAdmin) {
+    showRosterMessage("Only a facility administrator can change member account access.", true);
+    return;
+  }
+
   const member = rosterMembers.find(item => item.facilityMemberId === facilityMemberId);
   if (!member) return;
 

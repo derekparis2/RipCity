@@ -123,6 +123,13 @@ through the same membership and relationships; and the lifecycle staging checks
 pass. These conditions were verified on `derek/facility-access` and merged into
 `v2-development`.
 
+**Admin-only member lifecycle hardening:** In progress on
+`derek/admin-member-lifecycle`. This follow-up removes ordinary-coach member
+approval and status-change permissions from both the UI and RLS. It is complete
+when the migration is applied to staging and the expanded lifecycle suite proves
+that coaches can still view members but only facility admins can approve,
+reject, deactivate, or reactivate accounts.
+
 ---
 
 ## Package 5 Moved To V3

@@ -24,11 +24,13 @@ they are intentionally revisited.
 - The second staging facility and its dedicated Alpha accounts exist only to
   test isolation. V2 test identities each belong to one facility.
 - Facility admins can perform coaching work and broadly manage their facility.
-- New signups remain pending until a facility coach/admin approves them.
+- New signups remain pending until a facility admin approves them.
 - The platform owner establishes the first facility admin. After that,
   facility admins control coach onboarding for their own facility, including
   creating/inviting coaches or approving a pending coach request.
-- Ordinary coaches cannot approve, promote, or create coach/admin memberships.
+- Ordinary coaches can review pending requests but cannot approve, reject,
+  deactivate, reactivate, promote, or create facility memberships. A future
+  request/flag workflow may let them ask an admin to review an account.
 - Deactivation preserves history; reactivation restores the existing historical
   relationships.
 

@@ -55,10 +55,12 @@ const password = await prompt.question("Shared staging test password (input is n
 prompt.close();
 if (!password) throw new Error("A staging test password is required.");
 
-const [ripAdmin, alphaAdmin, alphaCoach, pendingMember, inactiveMember] = await Promise.all([
+const [ripAdmin, ripCoach, alphaAdmin, alphaCoach, alphaAthlete, pendingMember, inactiveMember] = await Promise.all([
   signIn("rcadmin@example.com", password),
+  signIn("rccoach@example.com", password),
   signIn("alphaadmin@example.com", password),
   signIn("alphacoach@example.com", password),
+  signIn("alphaathlete@example.com", password),
   signIn("rcpending@example.com", password),
   signIn("rcinactive@example.com", password)
 ]);
@@ -105,6 +107,25 @@ let alphaCoachMembershipId;
 let alphaCoachOriginalStatus = "approved";
 
 try {
+  const ordinaryCoachApproval = await updateMembership(
+    ripCoach.token,
+    pendingMembership.id,
+    "approved"
+  );
+  assert(
+    ordinaryCoachApproval.response.ok && ordinaryCoachApproval.body.length === 0,
+    "ordinary coach cannot approve a pending ordinary member"
+  );
+
+  const unchangedPendingMember = await request(
+    `facility_members?select=id,status&id=eq.${pendingMembership.id}`,
+    ripAdmin.token
+  );
+  assert(
+    unchangedPendingMember.body[0]?.status === "pending",
+    "denied coach approval leaves the member pending"
+  );
+
   const rejected = await updateMembership(ripAdmin.token, pendingMembership.id, "rejected");
   assert(rejected.response.ok && rejected.body[0]?.status === "rejected", "facility admin can reject a pending member");
 
@@ -156,6 +177,35 @@ try {
   assert(
     alphaCoachMembership?.role === "coach" && alphaCoachMembership?.status === "approved",
     "Alpha coach starts with approved coach access"
+  );
+
+  const { body: alphaAthleteRows } = await request(
+    `facility_members?select=id,status,role&profile_id=eq.${alphaAthlete.userId}&facility_id=eq.${alpha.id}`,
+    alphaAdmin.token
+  );
+  const alphaAthleteMembership = alphaAthleteRows[0];
+  assert(
+    alphaAthleteMembership?.role === "athlete" && alphaAthleteMembership?.status === "approved",
+    "Alpha athlete starts with approved member access"
+  );
+
+  const ordinaryCoachMemberUpdate = await updateMembership(
+    alphaCoach.token,
+    alphaAthleteMembership.id,
+    "inactive"
+  );
+  assert(
+    ordinaryCoachMemberUpdate.response.ok && ordinaryCoachMemberUpdate.body.length === 0,
+    "ordinary coach cannot deactivate an ordinary member"
+  );
+
+  const unchangedAlphaAthlete = await request(
+    `facility_members?select=id,status&id=eq.${alphaAthleteMembership.id}`,
+    alphaAdmin.token
+  );
+  assert(
+    unchangedAlphaAthlete.body[0]?.status === "approved",
+    "denied coach update leaves the member approved"
   );
 
   const { body: alphaAdminRows } = await request(

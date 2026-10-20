@@ -24,6 +24,9 @@ staging application.
   message for the current day.
 - `20261018113000_add_h2k_announcement_audience.sql` adds the matching one-click
   all-H2K audience while preserving custom group and individual targeting.
+- `20261019190000_restrict_member_lifecycle_to_facility_admins.sql` removes the
+  ordinary-coach membership update policy so only facility admins can approve,
+  reject, deactivate, reactivate, or change membership roles.
 - Future changes must use a later UTC timestamp and a descriptive name, such as
   `20260817090000_add_facility_timezone.sql`.
 
