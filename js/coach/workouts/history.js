@@ -188,11 +188,12 @@ function renderRecentWorkouts() {
           </button>
         </div>
 
-        <div class="recent-assignment-list">
-          <div class="recent-assignment-heading">
+        <details class="recent-assignment-list">
+          <summary class="recent-assignment-heading">
             <strong>Calendar Assignments</strong>
             <span>${assignments.length ? `${assignments.length} assignment${assignments.length === 1 ? "" : "s"}` : "No assignments"}</span>
-          </div>
+          </summary>
+          <div class="recent-assignment-content">
           ${assignments.length ? assignments.map(assignment => `
             <div class="recent-assignment-row">
               <span>
@@ -204,7 +205,8 @@ function renderRecentWorkouts() {
               </button>
             </div>
           `).join("") : `<div class="empty-state compact-empty-state">This workout is saved but not assigned to a date.</div>`}
-        </div>
+          </div>
+        </details>
 
         <form class="recent-workout-edit-form hidden" data-workout-edit-form="${window.RipCityUI.attr(workout.id)}">
           <label>
