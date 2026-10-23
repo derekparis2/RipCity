@@ -1,8 +1,8 @@
 // =====================================================
 // COACH ROSTER
 // =====================================================
-// Coaches use this page to manage members and group memberships inside their
-// own facility. Group membership drives group workout visibility.
+// Coaches use this page to manage member coaching details and group membership
+// inside their facility. Account lifecycle changes are facility-admin only.
 
 let rosterAccess = null;
 let rosterMembers = [];
@@ -102,6 +102,13 @@ function getMemberGroupIds(memberProfileId) {
 function getMemberGroups(memberProfileId) {
   const groupIds = new Set(getMemberGroupIds(memberProfileId));
   return rosterGroups.filter(group => groupIds.has(group.id));
+}
+
+function canManageRosterGroup(group) {
+  return Boolean(
+    rosterAccess?.isAdmin ||
+    (group?.created_by && group.created_by === rosterAccess?.profile?.id)
+  );
 }
 
 function getCheckedGroupIds(memberProfileId) {
@@ -313,6 +320,7 @@ function renderGroupList() {
 
   list.innerHTML = rosterGroups.map(group => {
     const count = rosterGroupMemberships.filter(row => row.group_id === group.id).length;
+    const canManage = canManageRosterGroup(group);
 
     return `
       <article class="roster-group-card">
@@ -322,13 +330,15 @@ function renderGroupList() {
         </div>
         <div class="roster-group-card-actions">
           <b>${count}</b>
-          <button
-            class="danger-btn small-inline-btn"
-            type="button"
-            data-delete-roster-group="${window.RipCityUI.attr(group.id)}"
-          >
-            Delete
-          </button>
+          ${canManage ? `
+            <button
+              class="danger-btn small-inline-btn"
+              type="button"
+              data-delete-roster-group="${window.RipCityUI.attr(group.id)}"
+            >
+              Delete
+            </button>
+          ` : `<span class="muted-small">Removal restricted</span>`}
         </div>
       </article>
     `;
@@ -450,6 +460,17 @@ function renderRosterMemberCard(member) {
   ].filter(Boolean).join(" · ");
   const nextStatus = member.status === "inactive" ? "approved" : "inactive";
   const statusActionLabel = member.status === "inactive" ? "Reactivate" : "Deactivate";
+  const lifecycleAction = rosterAccess?.isAdmin ? `
+          <button
+            class="danger-btn small-inline-btn"
+            type="button"
+            data-member-status-action
+            data-facility-member-id="${window.RipCityUI.attr(member.facilityMemberId)}"
+            data-next-status="${window.RipCityUI.attr(nextStatus)}"
+          >
+            ${statusActionLabel}
+          </button>
+        ` : "";
 
   return `
     <article class="roster-member-card" data-roster-member-card="${window.RipCityUI.attr(member.memberProfileId)}">
@@ -514,6 +535,7 @@ function renderRosterMemberCard(member) {
                 data-member-profile-id="${window.RipCityUI.attr(member.memberProfileId)}"
                 data-group-id="${window.RipCityUI.attr(group.id)}"
                 ${groupIds.has(group.id) ? "checked" : ""}
+                ${groupIds.has(group.id) && !canManageRosterGroup(group) ? "disabled" : ""}
               />
               <span>${window.RipCityUI.text(group.name)}</span>
             </label>
@@ -539,15 +561,7 @@ function renderRosterMemberCard(member) {
           >
             Reset
           </button>
-          <button
-            class="danger-btn small-inline-btn"
-            type="button"
-            data-member-status-action
-            data-facility-member-id="${window.RipCityUI.attr(member.facilityMemberId)}"
-            data-next-status="${window.RipCityUI.attr(nextStatus)}"
-          >
-            ${statusActionLabel}
-          </button>
+          ${lifecycleAction}
         </div>
       </div>
     </article>
@@ -635,6 +649,10 @@ async function saveMemberGroupChanges(memberProfileId) {
 async function deleteRosterGroup(groupId) {
   const group = rosterGroups.find(item => item.id === groupId);
   if (!group) return;
+  if (!canManageRosterGroup(group)) {
+    showRosterMessage("Only the coach who created this group or a facility administrator can delete it.", true);
+    return;
+  }
 
   const memberCount = rosterGroupMemberships.filter(row => row.group_id === groupId).length;
 
@@ -682,6 +700,11 @@ async function deleteRosterGroup(groupId) {
 }
 
 async function setRosterMemberStatus(facilityMemberId, nextStatus) {
+  if (!rosterAccess?.isAdmin) {
+    showRosterMessage("Only a facility administrator can change member account access.", true);
+    return;
+  }
+
   const member = rosterMembers.find(item => item.facilityMemberId === facilityMemberId);
   if (!member) return;
 
@@ -732,7 +755,8 @@ async function createRosterGroup(event) {
         facility_id: rosterAccess.membership.facility_id,
         name,
         group_type: groupType,
-        member_type: memberType
+        member_type: memberType,
+        created_by: rosterAccess.profile.id
       });
 
     if (error) throw error;

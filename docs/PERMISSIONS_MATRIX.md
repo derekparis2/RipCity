@@ -13,8 +13,9 @@ boundary is defined in [`VERSION_3_PLAN.md`](VERSION_3_PLAN.md).
 
 - **Facility admin:** Facility-scoped. Can perform coaching work and broadly
   manage people, roles, groups, content, and settings in that facility.
-- **Coach:** Facility-scoped. Can perform coaching workflows and manage ordinary
-  members, but cannot create facilities or promote people to coach/admin.
+- **Coach:** Facility-scoped. Can perform coaching workflows and manage member
+  training data, but cannot approve, reject, deactivate, or reactivate accounts
+  or create/promote people to coach/admin.
 - **Athlete / H2K member:** Facility-scoped member roles. Members access only
   their own authorized experience and relevant facility/group content.
 - **Parent:** No V2 application access until parent visibility and RLS are
@@ -41,11 +42,11 @@ historical relationships. It must not create a disconnected replacement user.
 | --- | --- | --- | --- |
 | Facilities | View own facility; configuration UI is deferred to V3; cannot create/archive facilities | View basic own-facility information | View only information required for own experience |
 | Branding, modules, and time zone | No V2 settings UI; future management is defined in V3 | No V2 management access | Consume the current Rip City experience only |
-| Memberships | View and manage all own-facility memberships and roles | View members; approve, reject, deactivate, and reactivate ordinary members only | View own membership only |
+| Memberships | View and manage all own-facility memberships and roles | View own-facility members; cannot approve, reject, deactivate, reactivate, or change account roles | View own membership only |
 | Coach/admin roles | Create, update, or deactivate own-facility coach/admin memberships | Cannot create or promote coach/admin memberships | No access |
 | Coach invitations | Create seven-day, single-use coach links for own facility | Cannot create coach links | May claim a valid link, which creates pending access only |
 | Member profiles | View and manage profiles in own facility | View and coach-manage profiles in own facility | View/edit allowed fields on own profile only |
-| Groups | Create, view, edit, archive, and manage membership | Create, view, edit, archive, and manage membership | View own groups only |
+| Groups | Create, view, edit, archive/delete, and manage membership for all own-facility groups | Create groups; edit/delete only own groups; add members to facility groups; remove members only from own groups | View own groups only |
 | Workouts | Full own-facility coaching access | Create, assign, edit, archive, and delete allowed drafts | View assigned workouts and log own results |
 | Exercise library | Manage own-facility exercises, overrides, and hides | Manage own-facility exercises, overrides, and hides | Read exercises only through assigned workout experience |
 | Habits | Manage facility habits and view facility member logs | Manage facility habits and view facility member logs | View applicable habits and manage own logs |
@@ -62,9 +63,9 @@ historical relationships. It must not create a disconnected replacement user.
 Coach onboarding follows the elevated-role row above: the platform owner
 establishes the first facility admin, and an existing facility admin creates,
 invites, or approves later coaches/admins for that facility. Ordinary coaches
-may approve ordinary members but cannot approve a pending coach request or
-change someone into an elevated role. Invite possession alone never grants an
-elevated membership.
+can review pending requests but cannot make account-lifecycle decisions for
+members, coaches, or admins. Invite possession alone never grants an elevated
+membership.
 
 ## Lifecycle Rules
 
@@ -75,6 +76,9 @@ elevated membership.
 - Goals use true deletion in V2 according to the creator/role rules above.
 - Coaches edit/delete only their own notes; facility admins can manage all
   facility notes.
+- Coaches delete groups and remove existing group members only from groups they
+  created. Facility admins retain full own-facility group management. Seeded or
+  legacy groups without a creator are admin-managed.
 - Universal exercises are never deleted or edited by facility roles. A facility
   edit creates an override; a facility delete creates a facility-only hide.
 

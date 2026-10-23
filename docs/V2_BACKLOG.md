@@ -106,10 +106,10 @@ reactivate coaches from the approval page; ordinary coaches cannot change coach
 access. Member and coach reactivation update the existing membership row rather
 than creating a replacement.
 
-All 20 account-lifecycle staging checks passed on 2026-10-16. They verified
-pending/rejected/inactive blocking, admin-only coach lifecycle management, and
-same-row restoration of member profiles, group relationships, and facility
-access. Every temporarily changed fake-account status was restored afterward.
+The original 20 account-lifecycle checks passed on 2026-10-16. The expanded
+25-check suite passed on 2026-10-23 after admin-only member lifecycle
+enforcement was applied. It also proves ordinary coaches cannot approve or
+deactivate members. Every temporarily changed fake-account status was restored.
 
 Future platform operations are tracked in
 [`VERSION_3_PLAN.md`](VERSION_3_PLAN.md). The second staging facility and its
@@ -122,6 +122,14 @@ ordinary member lifecycle rules remain enforced; reactivation restores access
 through the same membership and relationships; and the lifecycle staging checks
 pass. These conditions were verified on `derek/facility-access` and merged into
 `v2-development`.
+
+**Admin-only permissions hardening:** In progress on
+`derek/admin-member-lifecycle`. Member lifecycle enforcement is complete in
+staging: coaches can still view members, but only facility admins can approve,
+reject, deactivate, or reactivate accounts. The same branch now records group
+creators so coaches can delete groups or remove existing members only from
+groups they created, while admins retain full group control. This slice is
+complete when the group-ownership migration and staging suite pass.
 
 ---
 

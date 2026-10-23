@@ -104,8 +104,9 @@ Coach onboarding direction:
   owner/admin.
 - A facility admin must be able to create or invite additional coach accounts,
   or at minimum approve a pending coach signup and assign the coach role.
-- Ordinary coaches may continue approving ordinary member signups, but they
-  cannot promote someone to coach/admin or approve a coach-level membership.
+- Ordinary coaches can review pending member signups but cannot approve,
+  reject, deactivate, or reactivate any account. Facility admins make every
+  member and coach lifecycle decision in V2.
 - Coach signup must remain facility-scoped and pending until a facility admin
   approves it. A copied or forwarded link must never grant coach access by
   itself.
@@ -297,6 +298,9 @@ Done criteria:
   accurate blocked-access messages.
 - Facility admins can deactivate/reactivate coaches by updating the existing
   membership; ordinary coaches cannot manage coach access.
+- Facility admins can manage all own-facility groups. Ordinary coaches can
+  delete groups or remove existing group members only from groups they created;
+  seeded/legacy groups without an owner are admin-managed.
 
 ---
 

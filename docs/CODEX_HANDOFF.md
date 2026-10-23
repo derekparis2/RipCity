@@ -115,8 +115,10 @@ Current signup-link decision:
 - The same branch adds status-specific blocked-account messaging and admin-only
   coach deactivation/reactivation. These updates reuse existing membership rows
   so account, member-profile, group, and historical relationships remain intact.
-  All 20 account-lifecycle staging checks passed on 2026-10-16 and restored the
-  temporarily changed fake-account statuses.
+  The expanded 25-check account-lifecycle suite passed on 2026-10-23 after
+  admin-only member lifecycle enforcement was applied. It proves ordinary
+  coaches cannot approve or deactivate members and restores all temporarily
+  changed fake-account statuses.
 
 Production Supabase audit status:
 
@@ -256,8 +258,12 @@ Coach onboarding:
 - Derek/platform owner creates the facility and establishes its first admin.
 - Facility admins create/invite or approve additional coaches for their own
   facility.
-- Ordinary coaches may approve ordinary members but cannot approve, create, or
-  promote coach/admin memberships.
+- Ordinary coaches can review pending member requests but cannot approve,
+  reject, deactivate, reactivate, create, or promote facility memberships.
+  Facility admins own every account-lifecycle decision in V2.
+- Facility admins manage all groups. Coaches may create groups and add members,
+  but can delete a group or remove existing members only from groups they
+  created. Null-owned seeded/legacy groups are admin-managed.
 - A shared signup link never grants an elevated role without admin approval.
 
 Testing Days:

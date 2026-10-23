@@ -1,8 +1,8 @@
 // =====================================================
 // COACH APPROVALS PAGE
 // =====================================================
-// Coaches/admins use this page to approve or reject new members.
-// New signups stay in facility_members.status = "pending" until approved.
+// Coaches can review pending signups, but only facility admins can approve or
+// reject them. New signups stay pending until an admin makes that decision.
 
 let approvalAccess = null;
 
@@ -63,6 +63,13 @@ async function loadPendingUsers() {
   approvalAccess = access;
   document.getElementById("coach-invite-panel")?.classList.toggle("hidden", !access.isAdmin);
   document.getElementById("coach-management-panel")?.classList.toggle("hidden", !access.isAdmin);
+
+  const accessNote = document.getElementById("approval-access-note");
+  if (accessNote) {
+    accessNote.textContent = access.isAdmin
+      ? "Approve or reject new users before they can access the app."
+      : "Review pending signups here. A facility admin must approve, reject, deactivate, or reactivate an account.";
+  }
 
   showApprovalMessage("Loading pending users...");
 
@@ -228,7 +235,7 @@ function renderPendingUsers(users, access) {
   list.innerHTML = users.map(user => {
     const profile = user.profile;
     const isElevatedRequest = user.role === "coach" || user.role === "admin";
-    const canDecide = !isElevatedRequest || access.isAdmin;
+    const canDecide = access.isAdmin;
 
     return `
       <article class="pending-user-card${isElevatedRequest ? " elevated-request" : ""}">
@@ -238,7 +245,7 @@ function renderPendingUsers(users, access) {
             <span>${window.RipCityUI.text(profile?.email, "No email")}</span>
             <span>${window.RipCityUI.text(formatApprovalRole(user.role))}</span>
             <span>Status: ${window.RipCityUI.text(user.status)}</span>
-            ${isElevatedRequest ? "<span>Facility-admin approval required</span>" : ""}
+            ${!canDecide ? "<span>Facility-admin action required</span>" : ""}
           </div>
         </div>
 
@@ -272,6 +279,10 @@ function renderPendingUsers(users, access) {
 async function updateApprovalStatus(facilityMemberId, status, role) {
   const access = await requireApprovalCoachOrAdmin();
   if (!access) return;
+  if (!access.isAdmin) {
+    showApprovalMessage("Only a facility administrator can approve or reject member access.", true);
+    return;
+  }
 
   const isElevatedRequest = role === "coach" || role === "admin";
   const confirmText = status === "approved" && isElevatedRequest
