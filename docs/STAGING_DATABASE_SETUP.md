@@ -197,9 +197,10 @@ athlete login accounts receive matching activity so the member dashboard and
 coach leaderboard can be compared. Rerun it when the test dates become stale.
 It is staging-only and must never be promoted to production.
 
-Status: applied and verified in Rip City Staging on 2026-10-15. The result was
-10 display-only members, 728 fixture habit logs, 50 fixture assignments, and
-38 completed fixture assignments.
+Status: refreshed and verified in Rip City Staging on 2026-10-23 after habits
+were shared with athletes. The result was 10 display-only members, 1,464
+fixture habit logs, 50 fixture assignments, and 38 completed fixture
+assignments.
 
 The manual role smoke tests and the repeatable read-only RLS suite were then
 completed. The maintained suite covers facility isolation, member self-only

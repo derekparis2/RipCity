@@ -4,7 +4,7 @@ Rip City is a Supabase-backed member platform for athletes, H2K members, coaches
 
 The current direction is a shared platform first:
 - shared dashboard, profile, workouts, goals, progress, leaderboards, coach notes
-- H2K-specific habit scoring
+- shared Rip City athlete/H2K habit scoring
 - athlete-specific performance modules later
 - future schedule, attendance, payments, and parent access
 
@@ -17,8 +17,8 @@ For the product roadmap, start with `docs/BUILD_PLAN.md`.
 - Coach/admin approval page
 - Coach roster and group management
 - Coach account profile editing and member profile details from the roster
-- Coach dashboard for H2K habit score overview and workout completion review
-- Shared member dashboard with optional H2K habit tracking
+- Coach dashboard for member habit follow-up and workout completion review
+- Shared member dashboard and habit tracking for athletes and H2K members
 - Today’s workout and workout history on the member dashboard
 - Coach workout builder with blocks and exercises
 - Member, group, and facility workout assignment
@@ -74,8 +74,8 @@ Use approved Supabase test accounts for end-to-end checks.
 ## Testing Checklist
 
 - Sign up a member and approve them as a coach/admin.
-- Log in as an H2K member.
-- Confirm habits load and save.
+- Log in once as an H2K member and once as an athlete.
+- Confirm the same habits load and save for both programs.
 - Confirm today’s workout appears when assigned to the member, their group, or the facility.
 - Open the workout session.
 - Save one set.

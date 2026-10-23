@@ -34,6 +34,12 @@ the two staging facilities were added and verified on 2026-08-28.
 
 Staging migration status:
 
+- `20261023180000_add_workout_attribution_rpc.sql` was applied to staging on
+  2026-10-23. It exposes only creator/assigner display names for workout
+  assignments the authenticated caller is already authorized to read. The
+  focused athlete-habit and workout-attribution staging checks all passed.
+  Production has not received this migration.
+
 - `20261019190000_restrict_member_lifecycle_to_facility_admins.sql` was applied
   to staging on 2026-10-23. The expanded 25-check account-lifecycle suite passed
   and proves ordinary coaches cannot approve or deactivate members.
@@ -168,7 +174,7 @@ project. The rollout was verified with:
 
 - Coach/admin login and dashboard access.
 - Existing H2K member login, habits, workout dashboard, and session access.
-- Existing athlete login with H2K UI hidden.
+- Existing athlete login with shared Rip City habit access.
 - New signup, pending approval, coach approval, and approved member login.
 - `anon` access intentionally includes `facilities SELECT` and `groups SELECT`
   for the current signup flow.
@@ -204,7 +210,8 @@ After any RLS or signup change:
 2. Confirm pending members can only see their own pending state.
 3. Confirm approved members can see only their facility, profile, assignments,
    workouts, and logs they are authorized for.
-4. Confirm athletes do not see H2K-only modules.
+4. Confirm Rip City athletes and H2K members can use shared habits while
+   facility isolation remains intact.
 5. Confirm coaches/admins can manage only their facility.
 6. Confirm no current role has an accidental cross-facility data bypass. The
    future platform-owner/support-mode design is V3 scope.
@@ -244,6 +251,6 @@ Open `http://localhost:3000/login.html`, then test:
 - Coach login and approval page.
 - Coach workout builder assignment to member, group, and facility.
 - H2K member dashboard habits and today workout.
-- Athlete dashboard without H2K habits.
+- Athlete dashboard with the same Rip City habits and athlete workout access.
 - Workout session Save Set and Save All Sets.
 - Refresh workout session and confirm saved logs reload.

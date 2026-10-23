@@ -2,12 +2,12 @@
 // H2K HABIT TRACKING
 // =====================================================
 // This file controls the shared member dashboard.
-// It loads assigned workouts for every member and H2K habits for H2K members.
+// It loads assigned workouts and Rip City habits for every approved member.
 
 let currentAccess = null;
 let currentMemberProfile = null;
 let currentMemberGroupIds = [];
-let h2kHabits = [];
+let sharedHabits = [];
 let todayLogs = [];
 let todayWorkoutAssignments = [];
 let workoutCalendarAssignments = [];
@@ -31,6 +31,7 @@ function setMemberText(id, value) {
 const MEMBER_WORKOUT_ASSIGNMENT_SELECT = `
   id,
   assigned_date,
+  assigned_by,
   target_type,
   target_facility_id,
   target_group_id,
@@ -42,6 +43,7 @@ const MEMBER_WORKOUT_ASSIGNMENT_SELECT = `
     focus,
     description,
     estimated_minutes,
+    created_by,
     workout_blocks (
       id,
       name,
@@ -173,7 +175,7 @@ async function getMemberProfile(facilityMemberId) {
   return window.RipCityAccess.getMemberProfileForMembership(facilityMemberId);
 }
 
-// Loads the H2K habits that were seeded into Supabase.
+// Loads the shared Rip City habits that were seeded into Supabase.
 async function loadHabits(facilityId) {
   const { data, error } = await db
     .from("habits")
@@ -746,15 +748,11 @@ function updateMemberShell() {
   setMemberText("member-sidebar-name", profile?.full_name || "Member");
   setMemberText(
     "member-history-link-detail",
-    currentMemberProfile?.member_type === "h2k"
-      ? "Review weekly training and H2K results."
-      : "Review your weekly workout completion."
+    "Review weekly habit results and completed training."
   );
   setMemberText(
     "member-history-hero-description",
-    currentMemberProfile?.member_type === "h2k"
-      ? "Review recent H2K scores and consistency week by week."
-      : "Review assigned-workout completion and training consistency."
+    "Review habit scores and consistency week by week."
   );
 
   const avatar = document.getElementById("member-avatar");
@@ -846,7 +844,7 @@ function updateHabitDateControls() {
 }
 
 async function setHabitDate(dateKey) {
-  if (!currentMemberProfile || currentMemberProfile.member_type !== "h2k") return;
+  if (!currentMemberProfile) return;
 
   const today = getTodayString();
   selectedHabitDate = dateKey > today ? today : dateKey;
@@ -884,12 +882,12 @@ function renderHabitCards() {
   const list = document.getElementById("h2k-habit-list");
   if (!list) return;
 
-  if (!h2kHabits.length) {
+  if (!sharedHabits.length) {
     list.innerHTML = `<div class="empty-state">No habits found.</div>`;
     return;
   }
 
-  list.innerHTML = h2kHabits.map(habit => {
+  list.innerHTML = sharedHabits.map(habit => {
     const completed = isHabitCompleteForSelectedDate(habit.id);
 
     return `
@@ -946,7 +944,7 @@ async function toggleHabit(habitId) {
   }
 }
 
-// Updates H2K habit status values used for daily feedback.
+// Updates shared habit status values used for daily feedback.
 async function updateScores() {
   const todayKey = getTodayString();
   const { data: allLogs, error } = await db
@@ -959,7 +957,7 @@ async function updateScores() {
 
   const metrics = window.RipCityMetrics.calculateH2KMetrics({
     logs: allLogs || [],
-    habitCount: h2kHabits.length || 6,
+    habitCount: sharedHabits.length || 6,
     todayKey
   });
 
@@ -972,7 +970,7 @@ async function updateScores() {
   setMemberText("weekly-percent-h2k", metrics.currentStreak);
   renderMemberStreakFlame(metrics.currentStreak, "weekly-percent-h2k");
   setMemberText("h2k-status", `${metrics.currentWeekScore}/${metrics.currentWeekMax}`);
-  setMemberText("member-stat-one-suffix", `/${h2kHabits.length}`);
+  setMemberText("member-stat-one-suffix", `/${sharedHabits.length}`);
   setMemberText("member-stat-two-suffix", metrics.fourWeekAverage === null
     ? ""
     : `/${metrics.fourWeekMax}`);
@@ -1020,15 +1018,11 @@ async function loadMemberWeeklyHistory() {
       memberHistoryWeeks.length - 1
     );
 
-    if (currentMemberProfile.member_type === "h2k") {
-      memberHistoryLogs = await loadHabitLogsForRange(
-        currentMemberProfile.id,
-        memberHistoryWeeks[memberHistoryWeeks.length - 1].startKey,
-        memberHistoryWeeks[0].endKey
-      );
-    } else {
-      memberHistoryLogs = workoutCalendarLogs;
-    }
+    memberHistoryLogs = await loadHabitLogsForRange(
+      currentMemberProfile.id,
+      memberHistoryWeeks[memberHistoryWeeks.length - 1].startKey,
+      memberHistoryWeeks[0].endKey
+    );
 
     renderMemberWeeklyHistory();
     showMemberWeeklyHistoryMessage("");
@@ -1051,9 +1045,7 @@ function renderMemberWeeklyHistory() {
 
   updateMemberHistoryStepper(week);
 
-  const row = currentMemberProfile.member_type === "h2k"
-    ? buildH2KWeeklyScoreRow(week, memberHistoryLogs, h2kHabits.length * 7)
-    : buildTrainingWeeklyScoreRow(week);
+  const row = buildHabitWeeklyScoreRow(week, memberHistoryLogs, sharedHabits.length * 7);
 
   list.innerHTML = renderWeeklyScoreCard(row);
 }
@@ -1068,9 +1060,7 @@ function updateMemberHistoryStepper(week) {
   if (context) context.textContent = week.isCurrentWeek ? "CURRENT WEEK" : "WEEK";
   if (label) label.textContent = formatWeekRangeLabel(week);
   if (eyebrow) {
-    eyebrow.textContent = currentMemberProfile?.member_type === "h2k"
-      ? "H2K PROGRESS"
-      : "TRAINING PROGRESS";
+    eyebrow.textContent = "HABIT PROGRESS";
   }
   if (previousButton) previousButton.disabled = selectedMemberHistoryWeekIndex >= memberHistoryWeeks.length - 1;
   if (nextButton) nextButton.disabled = selectedMemberHistoryWeekIndex <= 0;
@@ -1088,7 +1078,7 @@ function changeMemberHistoryWeek(direction) {
   renderMemberWeeklyHistory();
 }
 
-function buildH2KWeeklyScoreRow(week, logs, maxWeeklyScore) {
+function buildHabitWeeklyScoreRow(week, logs, maxWeeklyScore) {
   const weekLogs = logs.filter(log =>
     log.log_date >= week.startKey &&
     log.log_date <= week.endKey
@@ -1104,42 +1094,12 @@ function buildH2KWeeklyScoreRow(week, logs, maxWeeklyScore) {
 
   return {
     label: formatWeekRangeLabel(week),
-    typeLabel: "H2K Score",
+    typeLabel: "Habit Score",
     score,
     maxScore: maxWeeklyScore,
     percent: maxWeeklyScore ? Math.round((score / maxWeeklyScore) * 100) : 0,
     loggedDays,
     detail: `${loggedDays}/7 days logged`,
-    isCurrentWeek: week.isCurrentWeek
-  };
-}
-
-function buildTrainingWeeklyScoreRow(week) {
-  const weekAssignments = workoutCalendarAssignments.filter(assignment =>
-    assignment.assigned_date >= week.startKey &&
-    assignment.assigned_date <= week.endKey
-  );
-  const pastOrCurrentAssignments = weekAssignments.filter(assignment =>
-    assignment.assigned_date <= getTodayString()
-  );
-  const summaries = pastOrCurrentAssignments.map(assignment => {
-    const logs = workoutCalendarLogs.filter(log => log.workout_assignment_id === assignment.id);
-    return window.RipCityWorkoutData.summarizeSetLogs(logs, assignment.workout);
-  });
-  const completedWorkouts = summaries.filter(summary => summary.isComplete).length;
-  const completedSets = summaries.reduce((total, summary) => total + summary.completedSets, 0);
-  const totalSets = summaries.reduce((total, summary) => total + summary.totalSets, 0);
-  const assignedCount = pastOrCurrentAssignments.length;
-
-  return {
-    label: formatWeekRangeLabel(week),
-    typeLabel: "Training Week",
-    score: completedWorkouts,
-    maxScore: assignedCount,
-    percent: totalSets ? Math.round((completedSets / totalSets) * 100) : 0,
-    loggedDays: new Set(pastOrCurrentAssignments.map(assignment => assignment.assigned_date)).size,
-    detail: `${completedSets}/${totalSets} sets logged`,
-    secondaryDetail: `${assignedCount} assigned workout${assignedCount === 1 ? "" : "s"}`,
     isCurrentWeek: week.isCurrentWeek
   };
 }
@@ -1165,7 +1125,7 @@ function renderWeeklyScoreCard(row) {
   `;
 }
 
-function toggleH2KModuleVisibility() {
+function applyMemberModuleVisibility() {
   const isH2K = currentMemberProfile?.member_type === "h2k";
   const habitsSection = document.getElementById("h2k-habits-section");
   const statsSection = document.getElementById("member-stats-section");
@@ -1180,68 +1140,15 @@ function toggleH2KModuleVisibility() {
 
   if (trainingProgressCard) trainingProgressCard.classList.remove("hidden");
 
-  if (habitsSection) {
-    habitsSection.classList.toggle("hidden", !isH2K);
-  }
-
-  window.RipCityMemberNav?.setH2KVisibility(isH2K);
-
-  if (isH2K) {
-    setMemberText("member-stat-one-label", "Today’s Score");
-    setMemberText("member-stat-one-detail", "Habits completed today");
-    setMemberText("member-stat-two-label", "Weekly Score");
-    setMemberText("member-stat-two-detail", "Possible weekly points");
-    setMemberText("member-stat-one-suffix", `/${h2kHabits.length || 6}`);
-    setMemberText("member-stat-two-suffix", `/${(h2kHabits.length || 6) * 7}`);
-    setMemberText("member-stat-three-suffix", " days");
-    return;
-  }
-
-  if (!isH2K) {
-    setMemberText("member-stat-one-label", "This Week");
-    setMemberText("member-stat-one-detail", "Assigned workout attendance");
-    setMemberText("member-stat-two-label", "Completed This Week");
-    setMemberText("member-stat-two-detail", "Completed / assigned workouts");
-    setMemberText("member-stat-three-label", "4-Week Attendance");
-    setMemberText("member-stat-three-detail", "Previous four completed weeks");
-    setMemberText("member-stat-four-label", "Current Streak");
-    setMemberText("member-stat-one-suffix", "");
-    setMemberText("member-stat-two-suffix", "");
-    setMemberText("member-stat-three-suffix", "");
-    setMemberText("h2k-status", "Training");
-    setMemberText("h2k-status-detail", "Open assigned workouts and track progress");
-  }
-}
-
-function updateSharedWorkoutStats() {
-  if (currentMemberProfile?.member_type === "h2k") return;
-
-  const today = getTodayString();
-  const metricAssignments = workoutCalendarAssignments
-    .filter(assignment => assignment.assigned_date <= today)
-    .map(assignment => {
-    const logs = workoutCalendarLogs.filter(log => log.workout_assignment_id === assignment.id);
-    const summary = window.RipCityWorkoutData.summarizeSetLogs(logs, assignment.workout);
-    return {
-      id: assignment.id,
-      assigned_date: assignment.assigned_date,
-      isComplete: summary.isComplete
-    };
-  });
-  const metrics = window.RipCityMetrics.calculateAthleteMetrics({
-    assignments: metricAssignments,
-    todayKey: today
-  });
-
-  setMemberText("today-score", metrics.currentWeek.percent ?? "—");
-  setMemberText("member-stat-one-suffix", metrics.currentWeek.percent === null ? "" : "%");
-  setMemberText("weekly-score-h2k", `${metrics.currentWeek.completed}/${metrics.currentWeek.assigned}`);
-  document.getElementById("weekly-score-h2k")?.classList.remove("is-text-value");
-  setMemberText("weekly-percent-h2k", metrics.fourWeek.percent ?? "—");
-  setMemberText("member-stat-three-suffix", metrics.fourWeek.percent === null ? "" : "%");
-  setMemberText("h2k-status", `${metrics.currentStreak} day${metrics.currentStreak === 1 ? "" : "s"}`);
-  renderMemberStreakFlame(metrics.currentStreak, "h2k-status");
-  setMemberText("h2k-status-detail", `Longest streak: ${metrics.longestStreak} assigned workout day${metrics.longestStreak === 1 ? "" : "s"}`);
+  habitsSection?.classList.remove("hidden");
+  window.RipCityMemberNav?.setH2KVisibility(true);
+  setMemberText("member-stat-one-label", "Today’s Score");
+  setMemberText("member-stat-one-detail", "Habits completed today");
+  setMemberText("member-stat-two-label", "Weekly Score");
+  setMemberText("member-stat-two-detail", "Possible weekly points");
+  setMemberText("member-stat-one-suffix", `/${sharedHabits.length || 6}`);
+  setMemberText("member-stat-two-suffix", `/${(sharedHabits.length || 6) * 7}`);
+  setMemberText("member-stat-three-suffix", " days");
 }
 
 // =====================================================
@@ -1295,12 +1202,13 @@ async function loadTodayAssignedWorkouts() {
       });
     });
 
+    const attributedAssignments = await window.RipCityWorkoutData
+      .loadAssignmentAttributions(visibleAssignments);
     const accessibleAssignments = window.RipCityWorkoutData
-      .dedupeAssignmentsByWorkoutDate(visibleAssignments);
+      .dedupeAssignmentsByWorkoutDate(attributedAssignments);
     todayWorkoutAssignments = accessibleAssignments;
 
     renderTodayWorkouts(accessibleAssignments);
-    updateSharedWorkoutStats();
     showTodayWorkoutMessage("");
   } catch (error) {
     console.error(error);
@@ -1351,6 +1259,7 @@ function renderTodayWorkouts(assignments) {
             <p class="eyebrow">${window.RipCityUI.text(workout.focus, "Workout")}</p>
             <h3>${window.RipCityUI.text(workout.title)}</h3>
             <p>${window.RipCityUI.text(workout.description, "No description added.")}</p>
+            <small>Created by ${window.RipCityUI.text(window.RipCityWorkoutData.getWorkoutCreatorName(assignment))} · Assigned by ${window.RipCityUI.text(window.RipCityWorkoutData.getAssignmentAssignerName(assignment))}</small>
           </div>
 
           <div class="today-workout-actions">
@@ -1452,8 +1361,10 @@ async function loadWorkoutHistory() {
       });
     });
 
+    const attributedAssignments = await window.RipCityWorkoutData
+      .loadAssignmentAttributions(visibleAssignments);
     const assignments = window.RipCityWorkoutData
-      .dedupeAssignmentsByWorkoutDate(visibleAssignments)
+      .dedupeAssignmentsByWorkoutDate(attributedAssignments)
       .sort((a, b) => b.assigned_date.localeCompare(a.assigned_date));
 
     const logs = await window.RipCityWorkoutData.loadSetLogsForAssignments(
@@ -1469,7 +1380,6 @@ async function loadWorkoutHistory() {
 
     renderTrainingCalendar();
     updateTrainingCalendarDefaultOpen(assignments, today);
-    updateSharedWorkoutStats();
     showWorkoutHistoryMessage("");
   } catch (error) {
     console.error(error);
@@ -1563,7 +1473,7 @@ function renderWorkoutCalendarMonth() {
     button.addEventListener("click", () => {
       selectedWorkoutDate = button.dataset.workoutCalendarDate;
       renderTrainingCalendar();
-      if (currentMemberProfile?.member_type === "h2k" && selectedWorkoutDate <= getTodayString()) {
+      if (selectedWorkoutDate <= getTodayString()) {
         setHabitDate(selectedWorkoutDate);
       }
     });
@@ -1609,6 +1519,7 @@ function renderWorkoutCalendarRow(assignment) {
           <p class="eyebrow">${window.RipCityUI.text(window.RipCityWorkoutData.formatDateLabel(assignment.assigned_date))}</p>
           <h4>${window.RipCityUI.text(workout?.title, "Untitled Workout")}</h4>
           <p>${window.RipCityUI.text(status)} · ${summary.completedSets}/${summary.totalSets} sets</p>
+          <small>Assigned by ${window.RipCityUI.text(window.RipCityWorkoutData.getAssignmentAssignerName(assignment))}</small>
         </div>
 
         <a class="outline-link workout-open-link" href="workout-session.html?assignment=${window.RipCityUI.attr(assignment.id)}">
@@ -1727,26 +1638,20 @@ async function initMemberPage() {
     updateMemberShell();
 
     currentMemberGroupIds = await getCurrentMemberGroupIds(currentMemberProfile.id);
-    toggleH2KModuleVisibility();
+    applyMemberModuleVisibility();
 
-    const isH2K = currentMemberProfile.member_type === "h2k";
-    const needsHabits = isH2K && ["dashboard", "habits", "history"].includes(page);
+    const needsHabits = ["dashboard", "habits", "history"].includes(page);
     const needsWorkoutHistory = ["dashboard", "training", "history"].includes(page);
 
     if (needsHabits) {
-      h2kHabits = await loadHabits(currentAccess.membership.facility_id);
-    }
-
-    if (page === "habits" && !isH2K) {
-      window.location.replace("member-dashboard.html");
-      return;
+      sharedHabits = await loadHabits(currentAccess.membership.facility_id);
     }
 
     if (needsWorkoutHistory) await loadWorkoutHistory();
     if (page === "history") await loadMemberWeeklyHistory();
     if (page === "goals") await loadMemberGoals();
 
-    if (isH2K && ["dashboard", "habits"].includes(page)) {
+    if (["dashboard", "habits"].includes(page)) {
       await refreshH2KDashboard();
     }
 

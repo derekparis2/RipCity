@@ -1,7 +1,7 @@
 // =====================================================
 // COACH LEADERBOARDS
 // =====================================================
-// Facility-scoped H2K habit consistency and athlete workout attendance.
+// Facility-scoped habit consistency for H2K members and athletes.
 
 let leaderboardAccess = null;
 let leaderboardMembers = [];
@@ -12,30 +12,8 @@ let athleteLeaderboardRows = [];
 let activeLeaderboardType = "h2k";
 const selectedLeaderboardMetric = {
   h2k: "fourWeekAverage",
-  athlete: "fourWeekAttendance"
+  athlete: "fourWeekAverage"
 };
-
-const LEADERBOARD_ASSIGNMENT_SELECT = `
-  id,
-  assigned_date,
-  target_type,
-  target_facility_id,
-  target_group_id,
-  target_member_profile_id,
-  workout:workouts (
-    id,
-    facility_id,
-    workout_blocks (
-      id,
-      block_order,
-      workout_exercises (
-        id,
-        sets,
-        exercise_order
-      )
-    )
-  )
-`;
 
 function showLeaderboardMessage(message, isError = false) {
   const element = document.getElementById("leaderboard-message");
@@ -113,24 +91,6 @@ async function loadHabitLeaderboardData(facilityId, memberProfileIds) {
   return { habitCount: (habits || []).length || 6, logs: logs || [] };
 }
 
-async function loadAthleteLeaderboardData(facilityId) {
-  const todayKey = window.RipCityWorkoutData.getTodayString();
-  const { data: assignments, error } = await db
-    .from("workout_assignments")
-    .select(LEADERBOARD_ASSIGNMENT_SELECT)
-    .lte("assigned_date", todayKey)
-    .order("assigned_date", { ascending: false });
-
-  if (error) throw error;
-
-  const facilityAssignments = (assignments || []).filter(row => row.workout?.facility_id === facilityId);
-  const logs = await window.RipCityWorkoutData.loadSetLogsForAssignments(
-    facilityAssignments.map(row => row.id)
-  );
-
-  return { assignments: facilityAssignments, logs };
-}
-
 function getMemberGroupIds(memberProfileId) {
   return leaderboardGroupMemberships
     .filter(row => row.member_profile_id === memberProfileId)
@@ -150,9 +110,8 @@ function formatDayCount(value, label = "day") {
 // This registry is the extension point for future lift, testing, and sport
 // leaderboards. A future metric supplies one score function and one display
 // function without changing the ranking or filtering system.
-function getLeaderboardMetricDefinitions(type = activeLeaderboardType) {
-  if (type === "h2k") {
-    return [
+function getLeaderboardMetricDefinitions() {
+  return [
       {
         key: "fourWeekAverage",
         label: "4-Week Average",
@@ -191,54 +150,6 @@ function getLeaderboardMetricDefinitions(type = activeLeaderboardType) {
           secondary: "Longest streak"
         })
       }
-    ];
-  }
-
-  return [
-    {
-      key: "fourWeekAttendance",
-      label: "4-Week Attendance",
-      score: row => row.metrics.fourWeek.percent,
-      display: row => ({
-        primary: row.metrics.fourWeek.percent === null ? "No workouts" : `${row.metrics.fourWeek.percent}%`,
-        secondary: row.metrics.fourWeek.assigned
-          ? `${row.metrics.fourWeek.completed}/${row.metrics.fourWeek.assigned} completed`
-          : "Previous 4 weeks"
-      })
-    },
-    {
-      key: "currentWeekAttendance",
-      label: "Current Week",
-      score: row => row.metrics.currentWeek.percent,
-      display: row => ({
-        primary: row.metrics.currentWeek.percent === null ? "No workouts" : `${row.metrics.currentWeek.percent}%`,
-        secondary: row.metrics.currentWeek.assigned
-          ? `${row.metrics.currentWeek.completed}/${row.metrics.currentWeek.assigned} completed`
-          : "This week"
-      })
-    },
-    {
-      key: "currentStreak",
-      label: "Current Streak",
-      score: row => row.metrics.hasAssignments ? row.metrics.currentStreak : null,
-      display: row => ({
-        primary: row.metrics.hasAssignments
-          ? formatDayCount(row.metrics.currentStreak, "workout day")
-          : "No workouts",
-        secondary: "Current streak"
-      })
-    },
-    {
-      key: "longestStreak",
-      label: "Longest Streak",
-      score: row => row.metrics.hasAssignments ? row.metrics.longestStreak : null,
-      display: row => ({
-        primary: row.metrics.hasAssignments
-          ? formatDayCount(row.metrics.longestStreak, "workout day")
-          : "No workouts",
-        secondary: "Longest streak"
-      })
-    }
   ];
 }
 
@@ -256,22 +167,9 @@ function getOrderedMetricDefinitions() {
   ];
 }
 
-function isAssignmentForMember(assignment, member, facilityId) {
-  if (assignment.target_type === "facility") {
-    return assignment.target_facility_id === facilityId;
-  }
-  if (assignment.target_type === "member") {
-    return assignment.target_member_profile_id === member.memberProfileId;
-  }
-  if (assignment.target_type === "group") {
-    return getMemberGroupIds(member.memberProfileId).includes(assignment.target_group_id);
-  }
-  return false;
-}
-
-function buildH2KRows(habitData, todayKey) {
+function buildHabitRows(memberType, habitData, todayKey) {
   return leaderboardMembers
-    .filter(member => member.memberType === "h2k")
+    .filter(member => member.memberType === memberType)
     .map(member => ({
       ...member,
       groupIds: getMemberGroupIds(member.memberProfileId),
@@ -282,38 +180,6 @@ function buildH2KRows(habitData, todayKey) {
         todayKey
       })
     }));
-}
-
-function buildAthleteRows(athleteData, facilityId, todayKey) {
-  return leaderboardMembers
-    .filter(member => member.memberType === "athlete")
-    .map(member => {
-      const visibleAssignments = window.RipCityWorkoutData.dedupeAssignmentsByWorkoutDate(
-        athleteData.assignments.filter(assignment => isAssignmentForMember(assignment, member, facilityId))
-      );
-      const metricAssignments = visibleAssignments.map(assignment => {
-        const logs = athleteData.logs.filter(log => {
-          return log.workout_assignment_id === assignment.id &&
-            log.member_profile_id === member.memberProfileId;
-        });
-        const summary = window.RipCityWorkoutData.summarizeSetLogs(logs, assignment.workout);
-        return {
-          id: assignment.id,
-          assigned_date: assignment.assigned_date,
-          isComplete: summary.isComplete
-        };
-      });
-
-      return {
-        ...member,
-        groupIds: getMemberGroupIds(member.memberProfileId),
-        groupNames: getMemberGroupNames(member.memberProfileId),
-        metrics: window.RipCityMetrics.calculateAthleteMetrics({
-          assignments: metricAssignments,
-          todayKey
-        })
-      };
-    });
 }
 
 function populateGroupFilter() {
@@ -409,9 +275,7 @@ function renderLeaderboards() {
   const selectedMetric = orderedMetrics[0];
 
   if (context) {
-    context.textContent = isH2K
-      ? `Ranked by ${selectedMetric.label}. A streak day requires at least four completed habits.`
-      : `Ranked by ${selectedMetric.label}. Only workouts assigned to each athlete count.`;
+    context.textContent = `Ranked by ${selectedMetric.label}. A streak day requires at least four completed habits.`;
   }
 
   if (!rows.length) {
@@ -462,14 +326,13 @@ async function refreshLeaderboards() {
       leaderboardMembers.map(member => member.memberProfileId)
     );
 
-    const h2kMembers = leaderboardMembers.filter(member => member.memberType === "h2k");
-    const [habitData, athleteData] = await Promise.all([
-      loadHabitLeaderboardData(facilityId, h2kMembers.map(member => member.memberProfileId)),
-      loadAthleteLeaderboardData(facilityId)
-    ]);
+    const habitData = await loadHabitLeaderboardData(
+      facilityId,
+      leaderboardMembers.map(member => member.memberProfileId)
+    );
 
-    h2kLeaderboardRows = buildH2KRows(habitData, todayKey);
-    athleteLeaderboardRows = buildAthleteRows(athleteData, facilityId, todayKey);
+    h2kLeaderboardRows = buildHabitRows("h2k", habitData, todayKey);
+    athleteLeaderboardRows = buildHabitRows("athlete", habitData, todayKey);
     populateGroupFilter();
     populateMetricFilter();
     renderLeaderboards();

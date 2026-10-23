@@ -180,19 +180,18 @@ as Package 10 rather than being incorrectly counted as implemented here.
 - **Plan detail:** [Leaderboards](VERSION_2_PLAN.md#3-leaderboards)
 
 This package finalizes the first V2 metrics and coach leaderboard experience.
-The branch adds separate facility-scoped coach H2K and
-athlete boards, group filtering, search, tied competition ranks, rolling
-four-week metrics, selectable ranking metrics, and shared personal
-member-dashboard metrics. H2K streaks require at least four habits per day;
-athlete attendance counts only workouts
-actually assigned to that athlete. The package also simplifies the coach
+The branch adds separate facility-scoped coach H2K and athlete boards, group
+filtering, search, tied competition ranks, rolling four-week habit metrics,
+selectable ranking metrics, and shared personal member-dashboard metrics. Both
+programs use the same habit-score and four-habits-per-day streak rules, while
+assigned-workout completion remains in the workout review. The package also simplifies the coach
 dashboard into a coach-approved needs-attention queue and moves 12-week history
 onto each member's detail page.
 
-**Completed:** The coach boards, personal member metrics, attention queue,
+**Completed:** The coach boards, personal member habit metrics, attention queue,
 member-detail history, repeatable ten-member leaderboard fixture, and shared
 metric calculation layer are implemented. The leaderboard and attention-rule
-test suites pass, and the seeded ties, streaks, attendance, zero-score states,
+test suites pass, and the seeded ties, habit streaks, attendance-review, zero-score states,
 filters, and responsive preview were reviewed with fake staging data.
 
 Member-facing top-five leaderboard pages are intentionally separated into the
@@ -209,12 +208,12 @@ page split.
 
 This frontend-only package turns the overloaded member dashboard into a focused
 home screen and dedicated Training, Habits, History, Goals, and Profile pages.
-It keeps H2K-only navigation hidden from athletes, uses one consistent member
-navigation map, preserves the existing facility-scoped feature behavior, and
+It uses one consistent member navigation map, preserves the existing
+facility-scoped feature behavior, and
 gives the Goals workflow a clearer create/edit and active-progress layout.
 
-**Completed:** Every member tab now opens its own focused page, H2K-only habits
-remain hidden from athletes, and the shared navigation stays consistent across
+**Completed:** Every member tab now opens its own focused page and the shared
+navigation stays consistent across
 dashboard, profile, and workout views. The Goals page includes collapsed goal
 cards, a separate collapsed paused section, completed-goal history with recorded
 completion dates, clearer start/current/finish values, and a compact create/edit
@@ -244,7 +243,7 @@ isolated, and phone/desktop staging checks pass.
 
 ## 7C. Shared UI Polish And Coach Mobile Navigation
 
-- **Status:** In progress
+- **Status:** Complete
 - **Branch:** `derek/ui-polish`
 - **Plan detail:** [Responsive UI standard](VERSION_2_PLAN.md#responsive-ui-standard) · [Beta feedback polish queue](VERSION_2_PLAN.md#8-beta-feedback-polish-queue)
 
@@ -260,10 +259,11 @@ streak flame with stronger heat at longer streaks, a compact profile editor,
 and consistent stylesheet delivery across active pages. Coach profile editing
 and announcement sender-profile behavior remain separate account/profile work.
 
-**Complete when:** Coach destinations remain consistent across every coach and
-admin page, the changed coach/member pages pass phone and desktop checks, the
-signup and access workflows still behave as before, and the branch review is
-approved.
+**Completed:** Coach destinations are consistent across coach/admin pages, the
+Roster and Approvals workflows use focused progressive disclosure, long lists
+are easier to use, workout review is workout-first, member history copy is
+member-type appropriate, and the responsive phone/desktop pass was merged into
+`v2-development`.
 
 ---
 
@@ -327,20 +327,43 @@ without prematurely pulling unapproved V3 baseball features into V2.
 
 ---
 
-## 10. Workout Data Safety And Assignment Attribution
+## 10A. Shared Member Habits And Assignment Attribution
 
-- **Status:** Planned
+- **Status:** Complete
+- **Branch:** `derek/athlete-habits`
+- **Plan detail:** [Member mobile dashboard](VERSION_2_PLAN.md#member-mobile-dashboard) · [Multi-coach workout assignment](VERSION_2_PLAN.md#multi-coach-workout-assignment)
+
+This release-blocking package gives Rip City athletes the same daily habit
+tracking, weekly score, rolling history, and Habits navigation as H2K members.
+It also makes shared staff ownership visible: every coach can use authorized
+facility workouts, while member workout cards/sessions and coach history/review
+show who created the workout and who assigned it. A narrow database function
+returns display names only for assignments the signed-in user is already
+authorized to read, without exposing coach email or profile records to members.
+
+**Completed:** Rip City athletes and H2K members share habit navigation,
+logging, weekly scores, coach/member history, and identical habit leaderboard
+metrics in separate program tabs. Members and coaches see the workout creator
+and assigning coach without exposing broader coach-profile data. The focused
+local tests and two-facility staging test passed on 2026-10-23. The shared
+leaderboard fixture was also refreshed successfully with 1,464 habit logs, 50
+assignments, and 38 completed assignments; merging this pull request into
+`v2-development` completes the package.
+
+---
+
+## 10B. Workout Versioning, Archive, And Duplicate Hardening
+
+- **Status:** Planned post-launch hardening
 - **Suggested branch:** `<name>/workout-data-safety`
 - **Plan detail:** [Workout editing and version history](VERSION_2_PLAN.md#workout-builder-editing-and-version-history)
 
-This follow-up adds the database behavior that was designed but not implemented
-by the builder refactor: safe editing/versioning for workouts with past or started assignments,
-archive behavior for historical workouts, and the approved workout-completion
-connection to H2K training habits. It also finalizes multi-coach assignment
-behavior by displaying the assigning coach to members and coaches, preserving
-historical attribution, adding database-safe duplicate prevention, and testing
-two same-facility coaches plus a denied other-facility coach. It must preserve
-production history and add two-facility write/isolation tests.
+This follow-up owns safe editing/versioning for workouts with past or started
+assignments, archive behavior for historical workouts, the approved
+workout-completion connection to daily habits, and database-safe duplicate
+prevention. Assignment creator/assigner visibility is completed in Package 10A.
+This package must preserve production history and add two-facility write and
+isolation tests.
 
 The member UI already collapses duplicate assignment rows by workout and date,
 but the database can still store overlapping group/facility/member assignments.
@@ -354,8 +377,7 @@ scope. V2 keeps the current Rip City exercise library behavior.
 
 **Complete when:** Coaches can correct future workouts without changing past assignments or logs,
 historical workouts are archived instead of destructively deleted, and the
-approved workout-to-habit automation is verified in staging. Multiple facility
-coaches can safely assign workouts, every assignment shows who assigned it, and
+approved workout-to-habit automation is verified in staging, while
 overlapping-target or concurrent duplicate assignments cannot produce multiple
 effective workouts for the same member and date.
 
@@ -407,7 +429,9 @@ rollback steps are documented and rehearsed.
   zones → V3 facility configuration.
 - Universal exercise overrides/hides are not implemented → V3 facility
   configuration.
-- Workout archive/version rules remain incomplete → Package 10.
+- Workout archive/version and database duplicate rules remain incomplete →
+  Package 10B; they are post-launch hardening, not part of the final pre-main
+  feature branch.
 - Group archive/delete rules remain incomplete → final release scope review or
   V3 facility operations.
 - Targeted announcements have no V2 tables → Package 8; the generalized

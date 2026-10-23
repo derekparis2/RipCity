@@ -28,9 +28,9 @@ Use this as the quick orientation guide before editing.
 - `js/shared/ui-utils.js` contains display safety helpers, shared formatting
   helpers, and the temporary member/coach dashboard feedback-link config.
 - `js/shared/workout-data.js` contains shared workout assignment visibility, date handling, block sorting, and set-log summary helpers.
-- `js/shared/leaderboard-metrics.js` contains the shared H2K score, workout
-  attendance, rolling-average, streak, and competition-ranking rules used by
-  coach and member views.
+- `js/shared/leaderboard-metrics.js` contains shared habit-score and legacy
+  workout-attendance calculations plus rolling-average, streak, and
+  competition-ranking rules used by coach and member views.
 - `js/shared/attention-rules.js` contains the coach-approved consecutive missed
   habit and assigned-workout follow-up rules.
 
@@ -50,8 +50,8 @@ Use this as the quick orientation guide before editing.
   workout completion review.
 - `js/coach/coach-announcements.js` powers the dashboard announcement composer,
   audience selection, published list, and authorized deletion.
-- `js/coach/member-history.js` powers the 12-week H2K or assigned-workout
-  history shown on an individual coach member-detail page.
+- `js/coach/member-history.js` powers the shared 12-week habit history shown on
+  an individual coach member-detail page.
 - `js/coach/coach-leaderboards.js` powers the facility-scoped H2K and athlete
   leaderboard page, including group filters, member search, and the selectable
   metric registry used to rank by rolling results or streaks. Future lift and
@@ -65,7 +65,8 @@ Use this as the quick orientation guide before editing.
   state/helpers in `core.js` and `data.js`.
 - The standalone Exercise Library progressively renders 24 matching exercises
   at a time; changing a search or filter resets that visible result window.
-- `js/member/member-dashboard.js` powers member stats, H2K habits, today’s workout, workout history, and feedback link display.
+- `js/member/member-dashboard.js` powers shared athlete/H2K habit stats,
+  today’s workout, workout history, and feedback link display.
 - `js/member/member-announcements.js` renders the active facility, group, and
   individual announcements permitted to the signed-in member by RLS.
 - `js/member/profile.js` powers member profile editing and the read-only H2K band display.

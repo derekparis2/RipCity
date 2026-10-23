@@ -34,9 +34,9 @@ shape, including zero Auth users, zero application profiles, the Rip City
 facility, and 88 starter exercises. It aborts instead of writing if those safety
 conditions do not match.
 
-The fake second facility intentionally receives no H2K habits. H2K remains a
-Rip City-specific module, and this scenario helps prove that it does not leak
-into another facility.
+The fake second facility intentionally receives no Rip City habit definitions.
+Configurable habit modules for other facilities remain V3 scope, and this
+scenario helps prove Rip City habits do not leak into another facility.
 
 Status: successfully applied and verified in Rip City Staging on 2026-08-28.
 
@@ -58,14 +58,14 @@ coach, and athlete accounts.
 `03_leaderboard_demo_data.sql` is an optional, repeatable staging fixture for
 leaderboard QA. Run it after `02_test_account_profiles.sql`. It adds five fake
 display-only H2K members and five fake display-only athletes without creating
-more Auth accounts, then generates habit scores, streaks, ties, workout
-assignments, completions, and one no-assignment athlete relative to the day the
-fixture is run. The existing `rch2k@example.com` and
+more Auth accounts, then generates equivalent habit scores, streaks, and ties
+for both programs plus workout-review assignments and completions relative to
+the day the fixture is run. The existing `rch2k@example.com` and
 `rcathlete@example.com` accounts remain the login-capable member test paths.
 
 The fixture deletes and rebuilds only its own marked habit rows and fixed-ID
 workout. It must never be run in production.
 
-Status: successfully applied and verified in Rip City Staging on 2026-10-15.
-The verification result was 10 display-only members, 728 fixture habit logs,
-50 fixture assignments, and 38 completed fixture assignments.
+Status: refreshed and verified in Rip City Staging on 2026-10-23 after the
+shared-habits update. The result was 10 display-only members, 1,464 fixture
+habit logs, 50 fixture assignments, and 38 completed fixture assignments.

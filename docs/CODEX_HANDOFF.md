@@ -68,7 +68,8 @@ Core direction:
 
 - Facility-isolated platform foundation first.
 - Rip City configuration second.
-- H2K habits are an optional/member-type-specific module, not the whole app.
+- Rip City athletes and H2K members share the V2 habit module; future facilities
+  decide whether to enable an equivalent module in V3.
 - Facility data must stay isolated.
 - Facility coaches/admins should only manage their own facility.
 - Members should only see their own facility experience.
@@ -123,6 +124,11 @@ Current signup-link decision:
   2026-10-23. All 15 group-ownership checks passed, proving coach-owned removal,
   full facility-admin management, and cross-facility denial; fixtures were
   cleaned up.
+- `20261023180000_add_workout_attribution_rpc.sql` was applied to staging on
+  2026-10-23. The focused athlete-habit and attribution checks passed: Rip City
+  athletes can use shared habits, authorized members receive creator/assigner
+  display names, another facility is denied, and facility coaches retain shared
+  workout visibility. Production remains unchanged.
 
 Production Supabase audit status:
 
@@ -181,10 +187,12 @@ Current status:
   removed from the maintained fixture on 2026-10-18; each of the nine V2 test
   identities now belongs to one facility.
 - The optional leaderboard demo fixture is maintained at
-  `supabase/seeds/staging/v2/03_leaderboard_demo_data.sql`. It was applied and
-  verified in staging on 2026-10-15: 10 display-only members, 728 marked habit
-  logs, 50 workout assignments, and 38 completed assignments. It provides
-  six-person rankings, ties, streaks, attendance, and no-score states.
+  `supabase/seeds/staging/v2/03_leaderboard_demo_data.sql`. Its original version
+  was applied on 2026-10-15. The current repeatable version gives the separate
+  H2K and athlete tabs equivalent habit scores, ties, streaks, and no-score
+  states while retaining workout assignments for workout-review QA. It was
+  refreshed and verified on 2026-10-23 with 10 display-only members, 1,464
+  fixture habit logs, 50 fixture assignments, and 38 completed assignments.
 - Manual role smoke tests passed, followed by all 45 automated read-only RLS
   checks. The shared pending/inactive message is being replaced by distinct
   lifecycle states on `derek/facility-access`; facility selection is V3 scope.
@@ -254,6 +262,8 @@ Workout assignments:
   workouts, including workouts created by another coach.
 - Member and coach views should show the assigning coach using the existing
   `workout_assignments.assigned_by` relationship.
+- Member and coach views should separately show the workout creator using
+  `workouts.created_by`; members must receive only authorized display names.
 - Add database-safe duplicate prevention and same-facility/cross-facility
   multi-coach staging tests before production release.
 

@@ -191,6 +191,7 @@ async function loadWorkoutAssignment(assignmentId) {
     .select(`
       id,
       assigned_date,
+      assigned_by,
       target_type,
       target_group_id,
       target_member_profile_id,
@@ -202,6 +203,7 @@ async function loadWorkoutAssignment(assignmentId) {
         focus,
         description,
         estimated_minutes,
+        created_by,
         workout_blocks (
           id,
           name,

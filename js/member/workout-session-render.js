@@ -220,7 +220,7 @@ function renderWorkoutOverview(workout, blocks, steps) {
         <span><small>Focus</small><strong>${window.RipCityUI.text(workout.focus, "Workout")}</strong></span>
         <span><small>Estimated</small><strong>${window.RipCityUI.text(workout.estimated_minutes ? `${workout.estimated_minutes} min` : "—")}</strong></span>
         <span><small>Assigned</small><strong>${window.RipCityUI.text(formatWorkoutAssignmentDate(workoutAssignment.assigned_date))}</strong></span>
-        <span><small>Blocks</small><strong>${blocks.length}</strong></span>
+        <span><small>Assigned By</small><strong>${window.RipCityUI.text(window.RipCityWorkoutData.getAssignmentAssignerName(workoutAssignment))}</strong></span>
       </div>
 
       <div class="session-overview-blocks">
