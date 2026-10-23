@@ -119,6 +119,10 @@ Current signup-link decision:
   admin-only member lifecycle enforcement was applied. It proves ordinary
   coaches cannot approve or deactivate members and restores all temporarily
   changed fake-account statuses.
+- `20261023120000_add_group_creator_permissions.sql` was applied to staging on
+  2026-10-23. All 15 group-ownership checks passed, proving coach-owned removal,
+  full facility-admin management, and cross-facility denial; fixtures were
+  cleaned up.
 
 Production Supabase audit status:
 

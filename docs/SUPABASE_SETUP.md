@@ -34,6 +34,14 @@ the two staging facilities were added and verified on 2026-08-28.
 
 Staging migration status:
 
+- `20261019190000_restrict_member_lifecycle_to_facility_admins.sql` was applied
+  to staging on 2026-10-23. The expanded 25-check account-lifecycle suite passed
+  and proves ordinary coaches cannot approve or deactivate members.
+- `20261023120000_add_group_creator_permissions.sql` was applied to staging on
+  2026-10-23. All 15 group-ownership checks passed: coaches can remove only
+  coach-owned groups/memberships, admins retain full management, and
+  cross-facility access remains blocked. Production has received neither
+  permissions-hardening migration.
 - `20261018100000_add_targeted_coach_announcements.sql` was applied to staging
   on 2026-10-18. The first RLS test exposed that its invoker creation RPC could
   not pass the table insert policy; no test announcements were left behind.

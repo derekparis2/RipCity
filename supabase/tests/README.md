@@ -95,6 +95,9 @@ group only when they created that group. It also verifies that facility admins
 retain full removal access and that cross-facility access stays blocked. A
 `finally` cleanup removes all temporary groups.
 
+Status: all 15 group-ownership checks passed against Rip City Staging on
+2026-10-23, and all temporary groups and memberships were cleaned up.
+
 ## Targeted Announcement Checks
 
 After applying `20261018100000_add_targeted_coach_announcements.sql`,

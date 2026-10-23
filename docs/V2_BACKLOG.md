@@ -123,13 +123,13 @@ through the same membership and relationships; and the lifecycle staging checks
 pass. These conditions were verified on `derek/facility-access` and merged into
 `v2-development`.
 
-**Admin-only permissions hardening:** In progress on
-`derek/admin-member-lifecycle`. Member lifecycle enforcement is complete in
-staging: coaches can still view members, but only facility admins can approve,
-reject, deactivate, or reactivate accounts. The same branch now records group
-creators so coaches can delete groups or remove existing members only from
-groups they created, while admins retain full group control. This slice is
-complete when the group-ownership migration and staging suite pass.
+**Admin-only permissions hardening:** Complete on
+`derek/admin-member-lifecycle`. Coaches can still view members, but only
+facility admins can approve, reject, deactivate, or reactivate accounts. Group
+creators are now recorded so coaches can delete groups or remove existing
+members only from groups they created, while admins retain full group control.
+The 25 account-lifecycle checks and 15 group-ownership checks passed in staging
+on 2026-10-23, with all temporary fixture changes cleaned up.
 
 ---
 
