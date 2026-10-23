@@ -3,6 +3,7 @@ import fs from "node:fs";
 
 const memberNav = fs.readFileSync("js/member/member-nav.js", "utf8");
 const memberDashboard = fs.readFileSync("js/member/member-dashboard.js", "utf8");
+const accessControl = fs.readFileSync("js/shared/access-control.js", "utf8");
 const workoutData = fs.readFileSync("js/shared/workout-data.js", "utf8");
 const workoutHistory = fs.readFileSync("js/coach/workouts/history.js", "utf8");
 const coachLeaderboards = fs.readFileSync("js/coach/coach-leaderboards.js", "utf8");
@@ -28,6 +29,11 @@ assert.match(
   "all member pages load shared habit data where needed"
 );
 assert.match(memberDashboard, /Habit Score/, "member weekly history uses shared habit scoring");
+assert.doesNotMatch(
+  accessControl,
+  /\.single\(\)/,
+  "shared access lookups do not rely on fragile PostgREST single-object coercion"
+);
 assert.match(
   coachLeaderboards,
   /athlete:\s*"fourWeekAverage"/,
