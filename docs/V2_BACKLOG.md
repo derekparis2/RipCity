@@ -347,8 +347,8 @@ metrics in separate program tabs. Members and coaches see the workout creator
 and assigning coach without exposing broader coach-profile data. The focused
 local tests and two-facility staging test passed on 2026-10-23. The shared
 leaderboard fixture was also refreshed successfully with 1,464 habit logs, 50
-assignments, and 38 completed assignments; merging this pull request into
-`v2-development` completes the package.
+assignments, and 38 completed assignments. The package was merged into
+`v2-development` on 2026-10-23.
 
 ---
 
@@ -403,8 +403,8 @@ checks pass, and the old combined stylesheet can be removed safely.
 
 ## 12. Final V2 Release Hardening
 
-- **Status:** Ready after Package 10A merges
-- **Suggested branch:** `<name>/v2-release-hardening`
+- **Status:** In progress
+- **Branch:** `derek/v2-release-hardening`
 - **Plan detail:** [Version boundary](VERSION_2_PLAN.md#version-boundary) · [Release rule](VERSION_2_PLAN.md#release-rule) · [V2 regression and release checklist](VERSION_2_PLAN.md#v2-regression-and-release-checklist)
 
 This final package is for integration fixes, security and accessibility gaps,

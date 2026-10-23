@@ -165,8 +165,9 @@ production, and never overwrite live Rip City rows during a V2 release.
 ## Production Release Gate
 
 Merging `v2-development` into `main` is not the complete V2 release process.
-Before that release, the frontend Supabase configuration must select production
-for the production deployment and staging for staging/previews. Then both
+Follow `V2_PRODUCTION_RELEASE.md` from the release-hardening branch. The shared
+frontend configuration selects production only for the exact live hostname;
+localhost, staging, and deploy previews fail safely to staging. Both
 contributors must verify:
 
 - A tested production backup and recovery procedure exists.

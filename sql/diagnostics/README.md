@@ -1,5 +1,11 @@
 # Read-Only Database Diagnostics
 
+- `preflight_v2_production_release.sql` checks the live V1 schema and data
+  assumptions required by the ordered V2 migrations. Run it before any V2
+  production write.
+- `verify_v2_production_release.sql` verifies the required V2 tables, columns,
+  functions, RLS state, and catalog corrections after the approved migrations
+  finish and before the V2 frontend deploys.
 - `verify_staging_baseline.sql` checks the verified schema, RLS, grants,
   Storage, and required seed counts.
 - `export_production_exercise_templates.sql` exports non-member exercise

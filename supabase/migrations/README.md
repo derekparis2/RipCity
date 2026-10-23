@@ -4,6 +4,16 @@ Files run in timestamp order and are treated as immutable after successful
 staging application.
 
 - `20260816221135_initial_verified_baseline.sql` is for a fresh empty project.
+- `20260829140000_add_v2_goals.sql` adds the V2 goal lifecycle, timeline, due
+  date, completion timestamp, and creator-aware member/coach permissions.
+- `20260830120000_add_goal_checkins.sql` adds facility-safe goal progress
+  check-ins and protects their identity fields.
+- `20260914140000_add_unilateral_exercise_flags.sql` adds non-null Each Side
+  flags to exercise templates and workout snapshots.
+- `20260914220000_correct_jump_and_med_ball_exercise_defaults.sql` applies the
+  coach-approved Vertical Jump and medicine-ball catalog defaults.
+- `20260914223000_apply_approved_exercise_input_audit.sql` applies the remaining
+  coach-approved prescribed-distance and Each Side defaults.
 - `20261016120000_add_secure_coach_invites.sql` adds seven-day, single-use
   coach invitations, atomic pending-membership claims, and admin-only invite
   management. It does not change reusable member signup links.
@@ -30,6 +40,8 @@ staging application.
 - `20261023120000_add_group_creator_permissions.sql` records group creators and
   restricts coach group/member removal to coach-owned groups while preserving
   full facility-admin management.
+- `20261023180000_add_workout_attribution_rpc.sql` exposes creator and assigner
+  display names only for workout assignments the signed-in user may view.
 - Future changes must use a later UTC timestamp and a descriptive name, such as
   `20260817090000_add_facility_timezone.sql`.
 
