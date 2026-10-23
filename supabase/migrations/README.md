@@ -27,6 +27,9 @@ staging application.
 - `20261019190000_restrict_member_lifecycle_to_facility_admins.sql` removes the
   ordinary-coach membership update policy so only facility admins can approve,
   reject, deactivate, reactivate, or change membership roles.
+- `20261023120000_add_group_creator_permissions.sql` records group creators and
+  restricts coach group/member removal to coach-owned groups while preserving
+  full facility-admin management.
 - Future changes must use a later UTC timestamp and a descriptive name, such as
   `20260817090000_add_facility_timezone.sql`.
 

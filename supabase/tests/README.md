@@ -77,8 +77,23 @@ reactivation uses the same membership, member profile, and group relationships.
 A `finally` cleanup restores every fixture to its original status even if a
 check fails.
 
-Status: all 20 account-lifecycle checks passed against Rip City Staging on
-2026-10-16, and all temporary fixture-status changes were restored.
+Status: all 25 account-lifecycle checks passed against Rip City Staging on
+2026-10-23 after admin-only member lifecycle enforcement was applied, and all
+temporary fixture-status changes were restored.
+
+## Group Ownership Checks
+
+After applying `20261023120000_add_group_creator_permissions.sql`, run:
+
+```bash
+node supabase/tests/staging_group_ownership_checks.mjs
+```
+
+The test creates temporary admin-owned and coach-owned groups. It proves that
+coaches can add members to facility groups but can remove members or delete a
+group only when they created that group. It also verifies that facility admins
+retain full removal access and that cross-facility access stays blocked. A
+`finally` cleanup removes all temporary groups.
 
 ## Targeted Announcement Checks
 

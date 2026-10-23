@@ -63,6 +63,15 @@ they are intentionally revisited.
 - Workouts with assignments or member logs should normally be archived so the
   normal UI stays clean without losing history.
 
+## Group Ownership
+
+- Facility admins can edit/delete every own-facility group and add/remove any
+  own-facility group membership.
+- Coaches can create groups and add members to facility groups, but can delete
+  a group or remove an existing member only when they created that group.
+- Seeded and legacy groups without a recorded creator are admin-managed.
+- Group ownership restrictions must be enforced by RLS as well as the roster UI.
+
 ## Notifications
 
 - V2 begins with in-app notifications only.

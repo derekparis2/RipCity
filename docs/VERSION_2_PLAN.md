@@ -298,6 +298,9 @@ Done criteria:
   accurate blocked-access messages.
 - Facility admins can deactivate/reactivate coaches by updating the existing
   membership; ordinary coaches cannot manage coach access.
+- Facility admins can manage all own-facility groups. Ordinary coaches can
+  delete groups or remove existing group members only from groups they created;
+  seeded/legacy groups without an owner are admin-managed.
 
 ---
 
