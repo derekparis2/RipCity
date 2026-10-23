@@ -79,19 +79,23 @@ Core direction:
 ## Current V2 Priorities
 
 See `docs/VERSION_2_PLAN.md` for detailed product requirements and
-`docs/V2_BACKLOG.md` for the maintained implementation order and status. Current
-build order:
+`docs/V2_BACKLOG.md` for the maintained implementation order and status. The
+immediate build order is now:
 
-1. Document platform foundations: permissions, lifecycle, signup links, modules,
-   facility time zones, testing, accessibility, and notifications.
-2. Audit the live production schema read-only against every SQL file and app query.
-3. Create staging Supabase and a reproducible rebuild/release-safety workflow.
-4. Verify two-facility isolation using entirely fake staging data.
-5. Complete V2 single-facility config and codebase cleanup audits; preserve the
-   second staging facility for isolation testing.
-6. Finish beta feedback polish that affects daily use.
-7. Continue with goals, coach member detail, leaderboards, progress, notes, and
-   profile/community work in the order defined by `docs/VERSION_2_PLAN.md`.
+1. Merge Package 10A (`derek/athlete-habits`) into `v2-development` after its
+   final review.
+2. Create `derek/v2-release-hardening` from the fully updated
+   `v2-development`; do not merge V2 directly into `main`.
+3. Inventory and rehearse the ordered production migrations, verify a current
+   production backup/recovery path, and keep existing production data intact.
+4. Configure the production build to use production Supabase while staging,
+   previews, and localhost continue using staging Supabase.
+5. Run the focused production-release checklist, obtain both contributor
+   approvals, then deploy database changes before dependent frontend assets.
+
+Member-facing leaderboards, Testing Days/progress, workout data hardening, and
+stylesheet splitting are explicitly planned post-launch and must not expand the
+pre-main release branch.
 
 Current signup-link decision:
 

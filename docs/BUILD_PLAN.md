@@ -21,9 +21,14 @@ Shared modules:
 - Schedule later
 - Payments later
 
-Program-specific modules:
-- H2K: habit tracking / 42-point weekly score
-- Athlete-specific expansion is tracked in `VERSION_3_PLAN.md`.
+Rip City shared member module:
+- Athletes and H2K members use the same habit tracking and 42-point weekly
+  score in V2.
+
+Program-specific fields and future modules:
+- H2K retains band information; athletes retain sport, age-group, and position
+  information.
+- Athlete-specific baseball expansion is tracked in `VERSION_3_PLAN.md`.
 
 Core rule:
 If a feature can be used by other facilities, build it into the shared platform.

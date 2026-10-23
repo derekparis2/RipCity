@@ -225,7 +225,7 @@ were verified on the pull-request preview.
 
 ## 7B. Member-Facing Leaderboards
 
-- **Status:** Planned
+- **Status:** Planned post-launch
 - **Suggested branch:** `<name>/member-leaderboards`
 - **Plan detail:** [Leaderboards](VERSION_2_PLAN.md#3-leaderboards)
 
@@ -254,10 +254,10 @@ H2K signup actions to Roster; makes pending approvals the primary approvals
 workflow; progressively renders long roster and exercise-library lists; and
 reduces tall forms and secondary controls through purposeful disclosure.
 
-The member side gains an athlete-specific History description, a five-day
-streak flame with stronger heat at longer streaks, a compact profile editor,
-and consistent stylesheet delivery across active pages. Coach profile editing
-and announcement sender-profile behavior remain separate account/profile work.
+The member side gains a shared habit-history experience, a five-day streak
+flame with stronger heat at longer streaks, a compact profile editor, and
+consistent stylesheet delivery across active pages. Coach profile editing and
+announcement sender-profile behavior remain separate account/profile work.
 
 **Completed:** Coach destinations are consistent across coach/admin pages, the
 Roster and Approvals workflows use focused progressive disclosure, long lists
@@ -299,14 +299,14 @@ identity, importance, one-day default expiration, optional custom expiration,
 expired-message cleanup, compact member display, same-day dismissal, and
 restoration are implemented. The collapsed coach composer and searchable
 recipient picker were verified on phone and desktop, and all 26 expanded
-two-facility staging RLS checks passed on 2026-10-18. This package is ready to
-merge into `v2-development`.
+two-facility staging RLS checks passed on 2026-10-18. This package was merged
+into `v2-development`.
 
 ---
 
 ## 9. Testing Days, Progress, Profiles, And Controlled Community
 
-- **Status:** Blocked on Rip City product decisions
+- **Status:** Planned post-launch
 - **Suggested branch:** `<name>/progress-community`
 - **Plan detail:** [Progress tracking](VERSION_2_PLAN.md#4-progress-tracking) · [Profile and community](VERSION_2_PLAN.md#6-profile-and-community)
 
@@ -317,9 +317,9 @@ and controlled community information. It also contains the proposed Testing
 Day workflow: coaches define a testing session and ordered tests, select a
 group/members, enter the roster's results efficiently, and connect approved
 results to member progress and the existing leaderboard metric selector. The
-Rip City coach discussion scheduled for 2026-10-18 determines whether the full
-Testing Day workflow is required in V2 or becomes a V3 feature built on a V2
-foundation.
+Rip City approved Testing Days as the next major product feature, but the work
+is intentionally scheduled after the current V2 production release so release
+preparation does not mix with a new schema and workflow.
 
 **Complete when:** The first approved shared progress metrics, testing-result
 rules, and private/public profile rules work consistently for both facilities
@@ -385,7 +385,7 @@ effective workouts for the same member and date.
 
 ## 11. Stylesheet And UI Structure Cleanup
 
-- **Status:** Planned
+- **Status:** Planned post-launch
 - **Suggested branch:** `<name>/stylesheet-cleanup`
 - **Plan detail:** [Codebase cleanup and maintainability](VERSION_2_PLAN.md#9-codebase-cleanup-and-maintainability)
 
@@ -403,7 +403,7 @@ checks pass, and the old combined stylesheet can be removed safely.
 
 ## 12. Final V2 Release Hardening
 
-- **Status:** Planned
+- **Status:** Ready after Package 10A merges
 - **Suggested branch:** `<name>/v2-release-hardening`
 - **Plan detail:** [Version boundary](VERSION_2_PLAN.md#version-boundary) · [Release rule](VERSION_2_PLAN.md#release-rule) · [V2 regression and release checklist](VERSION_2_PLAN.md#v2-regression-and-release-checklist)
 
@@ -421,10 +421,11 @@ rollback steps are documented and rehearsed.
 ## Known Fixes And Scope Placement
 
 - Configurable facility branding → V3 facility configuration.
-- Pending message shown to inactive accounts → Package 4.
+- Distinct pending, rejected, inactive, and unconnected experiences were
+  completed in Package 4.
 - Future multi-facility and baseball-development work →
   [`VERSION_3_PLAN.md`](VERSION_3_PLAN.md).
-- Goals RLS does not support member-created goals → Package 3.
+- Member-created and coach-created goals were completed in Package 3.
 - Data-driven modules, terminology, branding, and generalized facility time
   zones → V3 facility configuration.
 - Universal exercise overrides/hides are not implemented → V3 facility
@@ -434,11 +435,12 @@ rollback steps are documented and rehearsed.
   feature branch.
 - Group archive/delete rules remain incomplete → final release scope review or
   V3 facility operations.
-- Targeted announcements have no V2 tables → Package 8; the generalized
-  notification system is V3.
-- Current automated staging checks are read-only → each schema-changing package
-  adds its own allowed and denied create/update/delete tests.
-- No shared staging web preview or tested recovery procedure → Package 2.
+- Targeted announcements and their facility-scoped RLS were completed in
+  Package 8; the generalized notification system remains V3.
+- Schema-changing packages include focused allowed/denied write tests in
+  addition to the baseline read-only isolation suite.
+- Shared Netlify staging previews and the repository-based Supabase rebuild
+  procedure were completed in Package 2.
 
 If a new requirement or bug is discovered, place it inside the related package.
 Create a separate package only when it represents a substantial independent
