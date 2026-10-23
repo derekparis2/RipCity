@@ -14,7 +14,12 @@ function buildRecentWorkoutSelect(includeOptionalExerciseColumns = true) {
     focus,
     description,
     estimated_minutes,
+    created_by,
     created_at,
+    creator:profiles!workouts_created_by_fkey (
+      id,
+      full_name
+    ),
     workout_blocks (
       id,
       name,
@@ -37,6 +42,11 @@ function buildRecentWorkoutSelect(includeOptionalExerciseColumns = true) {
     workout_assignments (
       id,
       assigned_date,
+      assigned_by,
+      assigner:profiles!workout_assignments_assigned_by_fkey (
+        id,
+        full_name
+      ),
       target_type,
       target_facility_id,
       target_group_id,
@@ -165,6 +175,7 @@ function renderRecentWorkouts() {
           <p class="eyebrow">${window.RipCityUI.text(workout.focus, "Workout")}</p>
           <h4>${window.RipCityUI.text(workout.title)}</h4>
           <p>${window.RipCityUI.text(workout.description, "No description added.")}</p>
+          <small>Created by ${window.RipCityUI.text(window.RipCityWorkoutData.getProfileName(workout.creator))}</small>
         </div>
 
         <div class="workout-meta-row">
@@ -198,7 +209,7 @@ function renderRecentWorkouts() {
             <div class="recent-assignment-row">
               <span>
                 <strong>${window.RipCityUI.text(formatDisplayDate(assignment.assigned_date))}</strong>
-                ${window.RipCityUI.text(getAssignmentTargetLabel(assignment))}
+                ${window.RipCityUI.text(getAssignmentTargetLabel(assignment))} · Assigned by ${window.RipCityUI.text(window.RipCityWorkoutData.getProfileName(assignment.assigner))}
               </span>
               <button class="outline-btn small-inline-btn danger-outline-btn" type="button" data-remove-assignment="${window.RipCityUI.attr(assignment.id)}">
                 Remove Assignment

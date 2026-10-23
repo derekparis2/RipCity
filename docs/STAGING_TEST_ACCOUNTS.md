@@ -11,7 +11,7 @@ it, paste it into documentation, or reuse it for production/personal accounts.
 | `rcadmin@example.com` | Rip City | Admin | Approved | Full facility-admin workflows |
 | `rccoach@example.com` | Rip City | Coach | Approved | Normal Rip City coaching workflows |
 | `rcathlete@example.com` | Rip City | Athlete | Approved | Approved athlete experience |
-| `rch2k@example.com` | Rip City | H2K member | Approved | H2K habits and member experience |
+| `rch2k@example.com` | Rip City | H2K member | Approved | Shared habits and H2K profile experience |
 | `rcpending@example.com` | Rip City | Athlete | Pending | Pending-access denial and approval |
 | `rcinactive@example.com` | Rip City | Athlete | Inactive | Deactivation and reactivation history |
 | `alphaadmin@example.com` | Test Facility Alpha | Admin | Approved | Second-facility administration |
@@ -46,7 +46,8 @@ Verified on 2026-08-28:
 - Rip City admin reached the coach experience and saw Rip City data.
 - Test Facility Alpha admin saw only Alpha Test Athlete; no Rip City member data
   appeared.
-- Test Facility Alpha athlete saw the member experience without H2K habits.
+- Test Facility Alpha athlete remained isolated from Rip City habit data and
+  workout attribution.
 - Rip City H2K member saw the six Rip City habits.
 - Rip City athlete did not see H2K member UI.
 - Pending and inactive members were blocked from normal application access.

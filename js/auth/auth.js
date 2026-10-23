@@ -132,7 +132,7 @@ async function redirectByProfile(userId) {
   }
 
   // Athletes and H2K members share the member dashboard. Program-specific
-  // modules such as H2K habits are enabled from member profile data.
+  // program-specific profile fields are enabled from member profile data.
   window.location.href = "member-dashboard.html";
 }
 

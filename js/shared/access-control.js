@@ -49,11 +49,12 @@
         )
       `)
       .eq("id", userId)
-      .single();
+      .limit(1);
 
     if (error) throw error;
+    if (!data?.length) throw new Error("Account profile could not be found.");
 
-    return data;
+    return data[0];
   }
 
   function isCoachRole(role) {
@@ -115,11 +116,12 @@
       .from("member_profiles")
       .select("*")
       .eq("facility_member_id", facilityMemberId)
-      .single();
+      .limit(1);
 
     if (error) throw error;
+    if (!data?.length) throw new Error("Member profile could not be found.");
 
-    return data;
+    return data[0];
   }
 
   window.RipCityAccess = {

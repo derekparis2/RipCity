@@ -113,8 +113,9 @@ they are intentionally revisited.
 
 - H2K is a Rip City-specific member type/module.
 - Other facilities should not be assumed to use H2K.
-- H2K habits should remain optional program-specific functionality inside the
-  shared member dashboard.
+- Rip City's V2 habits are shared by H2K members and athletes. H2K-only profile
+  fields such as band color remain program-specific; configurable habit-module
+  availability for other facilities belongs to V3.
 
 ## Exercise Library Inheritance
 

@@ -148,6 +148,9 @@ async function refreshWorkoutSession() {
       return;
     }
 
+    [workoutAssignment] = await window.RipCityWorkoutData
+      .loadAssignmentAttributions([workoutAssignment]);
+
     existingSetLogs = await loadExistingSetLogs(workoutAssignment.id);
 
     updateWorkoutHeader();
@@ -177,13 +180,12 @@ function getWorkoutSessionMemberTypeLabel() {
 
 function updateWorkoutSessionShell() {
   const subtitle = document.getElementById("workout-session-brand-subtitle");
-  const isH2K = workoutMemberProfile?.member_type === "h2k";
 
   if (subtitle) {
     subtitle.textContent = getWorkoutSessionMemberTypeLabel();
   }
 
-  window.RipCityMemberNav?.setH2KVisibility(isH2K);
+  window.RipCityMemberNav?.setH2KVisibility(true);
 
   document.querySelectorAll(".member-role-pending").forEach(element => {
     element.classList.remove("member-role-pending");

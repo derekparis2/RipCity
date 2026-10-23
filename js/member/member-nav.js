@@ -19,7 +19,6 @@
       href: "member-habits.html",
       desktop: "Habits",
       mobile: "Habits",
-      h2kOnly: true,
       icon: '<path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm-1.3 13.4-4-4 1.4-1.4 2.6 2.6 5.2-5.2 1.4 1.4z"></path>'
     },
     {
@@ -50,10 +49,9 @@
       const activePage = nav.dataset.memberNav;
       nav.innerHTML = items.map(item => `
         <a
-          class="nav-link nav-link-anchor ${item.key === activePage ? "active" : ""} ${item.h2kOnly ? "hidden" : ""}"
+          class="nav-link nav-link-anchor ${item.key === activePage ? "active" : ""}"
           href="${item.href}"
           data-member-nav-key="${item.key}"
-          ${item.h2kOnly ? 'data-member-habits-link="true"' : ""}
           ${item.key === activePage ? 'aria-current="page"' : ""}
         >
           <span class="mobile-nav-icon" aria-hidden="true">
@@ -67,9 +65,8 @@
   }
 
   function setH2KVisibility(isH2K) {
-    document.querySelectorAll("[data-member-habits-link]").forEach(link => {
-      link.classList.toggle("hidden", !isH2K);
-    });
+    // Retained for older pages that still call this helper. Habits are now a
+    // shared Rip City member feature, so athlete and H2K navigation is equal.
   }
 
   window.RipCityMemberNav = {

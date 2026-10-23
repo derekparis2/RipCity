@@ -95,6 +95,9 @@ group only when they created that group. It also verifies that facility admins
 retain full removal access and that cross-facility access stays blocked. A
 `finally` cleanup removes all temporary groups.
 
+Status: all 15 group-ownership checks passed against Rip City Staging on
+2026-10-23, and all temporary groups and memberships were cleaned up.
+
 ## Targeted Announcement Checks
 
 After applying `20261018100000_add_targeted_coach_announcements.sql`,
@@ -115,3 +118,20 @@ Status: all 26 targeted-announcement checks passed against Rip City Staging on
 2026-10-18 after all four announcement migrations were applied. This includes
 the reversible member-dismissal flow and isolated all-athlete/all-H2K
 audiences. All temporary announcements and dismissals were cleaned up.
+
+## Athlete Habits And Workout Attribution Checks
+
+After applying `20261023180000_add_workout_attribution_rpc.sql`, run:
+
+```bash
+node supabase/tests/staging_athlete_habits_attribution_checks.mjs
+```
+
+The focused staging test verifies that a Rip City athlete can read and write
+the same facility-scoped habits as an H2K member, members can retrieve creator
+and assigner display names only for visible workout assignments, another
+facility cannot retrieve those names, and a Rip City coach retains shared
+facility workout visibility. Its temporary habit log is removed in cleanup.
+
+Status: all focused athlete-habit and workout-attribution checks passed against
+Rip City Staging on 2026-10-23, and the temporary habit log was cleaned up.

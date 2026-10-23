@@ -50,7 +50,8 @@ shared foundation through Rip City while keeping facility data isolated.
   facility reuse, but V2 does not need a general facility-settings interface.
 - Facility-specific modules and self-service configuration are defined in the
   V3 plan.
-- H2K habits should remain a Rip City/member-type module unless another facility enables a similar habit module.
+- Rip City athletes and H2K members share the daily habit module in V2. Whether
+  another facility enables habits remains future facility configuration.
 - Facility coaches/admins should only manage their own facility.
 - Members should only see their own facility experience.
 - Rip City branding may remain the V2 release experience. Data-driven branding
@@ -126,8 +127,8 @@ module before that module is production-ready.
   switches in V2.
 - Keep Rip City as the only real V2 facility experience; Test Facility Alpha is
   a staging isolation fixture, not a second supported launch.
-- Keep H2K habits and navigation hidden from athletes through the existing
-  member-type rules.
+- Keep Rip City's shared member habits facility-scoped; athlete and H2K members
+  both receive the same habit navigation, logging, weekly score, and history.
 - Preserve facility IDs and facility-scoped RLS so V3 can add real
   configuration without rebuilding V2 data.
 - Track the complete configuration system in
@@ -288,7 +289,8 @@ Done criteria:
 ### Done Criteria
 
 - A second facility can exist in staging without seeing Rip City data.
-- H2K-specific experiences do not appear for Rip City athletes.
+- H2K-only profile fields such as band color do not appear for Rip City
+  athletes; the V2 habit module is intentionally shared by both programs.
 - New V2 features are designed as shared platform modules unless intentionally marked facility-specific.
 - The roles/permissions matrix is documented and matches tested RLS behavior.
 - Rip City workout, habit, streak, and leaderboard dates behave correctly in
@@ -448,7 +450,8 @@ platform into something negative or overly competitive.
 - If a member is not in the top 5, they should still be able to see their own
   rank separately.
 - Time ranges should depend on the leaderboard metric.
-- H2K habit leaderboards should support weekly, monthly, and all-time views.
+- Shared habit leaderboards may later support weekly, monthly, and all-time
+  views for both H2K members and athletes.
 - H2K band-level leaderboards should be considered.
 - H2K band recognition means featuring members with the highest band levels,
   such as Red Band first, then Black, Blue, Green, Grey, White, and No Band.
@@ -465,8 +468,8 @@ platform into something negative or overly competitive.
 - Weekly leaderboards use Monday through Sunday.
 - Monthly leaderboards use the calendar month.
 - All-time leaderboards use all saved records.
-- H2K streaks count consecutive days with at least 4 checked behaviors.
-- Athlete streaks count consecutive assigned workout days completed.
+- Habit streaks for both member programs count consecutive days with at least
+  4 checked behaviors.
 - Longest streak should be a leaderboard metric.
 - Current streak and longest streak should eventually appear on member profiles.
 - Lifting max leaderboards should wait until estimated max calculations are
@@ -485,28 +488,25 @@ platform into something negative or overly competitive.
 
 - The coach experience starts with separate H2K and athlete tabs, facility and
   group scoping, member search, full lists, and competition ranking for ties.
-- The primary H2K ranking is average weekly habit points across the previous
-  four completed Monday-Sunday weeks. The current partial week is shown
-  separately and does not affect that rolling average.
-- An H2K streak day requires at least four distinct completed habits. The
-  current day does not break a streak while it is still in progress.
-- The primary athlete ranking is workout attendance across the previous four
-  completed weeks. Its denominator contains only workouts actually assigned to
-  that athlete; no assigned workouts displays as no score rather than 0% or
-  100%.
-- An athlete streak counts consecutive assigned workout dates completed. Dates
-  without an assignment are ignored, every assignment on a date must be
-  complete, and an incomplete current-day assignment does not break the streak
-  until that day has ended.
+- Both tabs rank their members by the same Rip City habit metrics: average
+  weekly habit points across the previous four completed Monday-Sunday weeks,
+  current-week score, current streak, and longest streak. The current partial
+  week does not affect the rolling average.
+- A streak day requires at least four distinct completed habits for either
+  member program. The current day does not break a streak while it is still in
+  progress.
+- Assigned-workout completion remains available in the separate coach workout
+  review and attention tools; it is not the athlete leaderboard score.
 - Personal versions of these same metrics appear on the member dashboard using
   one shared calculation module.
 - The coach dashboard is an action queue rather than a second leaderboard.
-  An H2K member needs attention after three consecutive completed calendar
-  days without habit tracking. An athlete needs attention when their last two
-  completed assigned-workout days both contain no exercise data. The current
-  day does not count as missed while it is still in progress.
-- Individual 12-week habit or assigned-workout history belongs on the coach
-  member-detail page, not on the main coach dashboard.
+  Either member type needs habit attention after three consecutive completed
+  calendar days without habit tracking. Athletes additionally need workout
+  attention when their last two completed assigned-workout days both contain
+  no exercise data. The current day does not count as missed while it is still
+  in progress.
+- Individual 12-week habit history belongs on the coach member-detail page,
+  while assignment completion belongs in coach workout review.
 - Future lift, speed, jump, and sport-testing results should extend the same
   selectable leaderboard metric registry after the Testing Day data model and
   member-visibility rules are approved. Do not build a second unrelated
@@ -514,9 +514,9 @@ platform into something negative or overly competitive.
 
 ### Possible V2 Leaderboards
 
-- H2K weekly habit score
-- H2K monthly habit score
-- H2K all-time habit score
+- Weekly habit score for either member program
+- Monthly habit score for either member program
+- All-time habit score for either member program
 - H2K highest band recognition
 - Workout completion percentage
 - Sets logged
@@ -524,7 +524,7 @@ platform into something negative or overly competitive.
 - Longest streak
 - Current streak
 - Group consistency
-- Rolling 4-week H2K average
+- Rolling 4-week habit average for either member program
 - Lifting estimated maxes later
 - Sport-specific athlete metrics later
 
@@ -950,7 +950,7 @@ These are items that came from the first live beta feedback or from testing on
 mobile. They should be cleaned up during V2, but they do not need to block the
 current beta as long as the core workflow still works.
 
-### H2K Habit Backfill
+### Shared Member Habit Backfill
 
 Current V1 behavior lets members move backward or forward by day and edit missed
 habit logs. This solves the immediate problem, but the UI should be redesigned
@@ -965,7 +965,7 @@ V2 direction:
   drawer.
 - Make the selected date obvious so members do not accidentally log the wrong
   day.
-- Keep Monday through Sunday as the H2K training week.
+- Keep Monday through Sunday as the shared Rip City habit week.
 
 ### Coach And Admin Responsive Navigation
 
@@ -991,13 +991,13 @@ V2 direction:
 
 - Keep the bottom mobile nav.
 - Keep Dashboard in the central mobile-nav position and place Training directly
-  to its left. H2K keeps its additional Habits destination without changing
-  this relationship.
+  to its left. Habits remains a shared destination for Rip City athletes and
+  H2K members without changing this relationship.
 - Use dedicated Dashboard, Training, Habits, History, Goals, and Profile views.
 - Keep the dashboard focused on personal metrics, feedback, and concise links
   into those feature pages instead of rendering every workflow at once.
-- Keep Habits visible only to H2K members while every other approved member
-  destination remains present across member pages and workout sessions.
+- Keep Habits visible to both approved Rip City athlete and H2K members across
+  member pages and workout sessions.
 - Reduce tall stacked cards where a compact row or summary will work better.
 - Keep the desktop dashboard layout separate where it already feels good.
 - Make the training calendar the main place to find today, past, and future
@@ -1075,6 +1075,9 @@ Done criteria:
 - Deactivating a coach must not remove the coach name from historical
   assignments. If an identity is genuinely unavailable, show a neutral
   fallback instead of breaking the workout query.
+- Preserve `workouts.created_by` as the historical workout author and show the
+  creator separately from the assigning coach. Members receive only authorized
+  display names, not broader coach profile data.
 - Prevent duplicate assignment of the same workout, target, and date even when
   two coaches act at nearly the same time; browser-only duplicate filtering is
   not enough for this race.

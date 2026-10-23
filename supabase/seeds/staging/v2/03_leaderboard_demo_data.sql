@@ -2,8 +2,9 @@
 --
 -- Purpose:
 -- - Add five display-only H2K members and five display-only athletes.
--- - Seed rolling habit scores, ties, streaks, workout attendance, and no-score
---   cases around the date this script is run.
+-- - Seed equivalent rolling habit scores, ties, streaks, and no-score cases for
+--   both programs around the date this script is run.
+-- - Keep workout-attendance fixtures for the separate coach workout-review UI.
 -- - Keep rch2k@example.com and rcathlete@example.com as the login-capable
 --   accounts used to verify the matching member dashboard cards.
 --
@@ -131,14 +132,20 @@ on conflict (id) do update set
 -- Remove only prior rows owned by this repeatable leaderboard fixture.
 delete from public.habit_logs where notes = 'leaderboard-fixture-v1';
 
-with h2k_members (member_profile_id, weekly_score, current_streak) as (
+with fixture_members (member_profile_id, weekly_score, current_streak) as (
   values
     ('20000000-0000-4000-8000-000000000004'::uuid, 30, 3),
     ('42000000-0000-4000-8000-000000000001'::uuid, 42, 7),
     ('42000000-0000-4000-8000-000000000002'::uuid, 36, 5),
     ('42000000-0000-4000-8000-000000000003'::uuid, 30, 3),
     ('42000000-0000-4000-8000-000000000004'::uuid, 20, 1),
-    ('42000000-0000-4000-8000-000000000005'::uuid, 8, 0)
+    ('42000000-0000-4000-8000-000000000005'::uuid, 8, 0),
+    ('20000000-0000-4000-8000-000000000003'::uuid, 30, 3),
+    ('42000000-0000-4000-8000-000000000011'::uuid, 42, 7),
+    ('42000000-0000-4000-8000-000000000012'::uuid, 36, 5),
+    ('42000000-0000-4000-8000-000000000013'::uuid, 30, 3),
+    ('42000000-0000-4000-8000-000000000014'::uuid, 20, 1),
+    ('42000000-0000-4000-8000-000000000015'::uuid, 8, 0)
 ),
 ranked_habits as (
   select
@@ -156,7 +163,7 @@ weekly_slots as (
     (date_trunc('week', (now() at time zone 'America/New_York')::date)::date - (week_number * 7) + day_offset)::date as log_date,
     ((day_offset * habit.habit_count) + habit.habit_number) as score_slot,
     member.weekly_score
-  from h2k_members member
+  from fixture_members member
   cross join generate_series(1, 4) week_number
   cross join generate_series(0, 6) day_offset
   cross join ranked_habits habit
@@ -166,7 +173,7 @@ current_streak_slots as (
     member.member_profile_id,
     habit.id as habit_id,
     ((now() at time zone 'America/New_York')::date - day_offset)::date as log_date
-  from h2k_members member
+  from fixture_members member
   cross join lateral generate_series(0, greatest(member.current_streak - 1, -1)) day_offset
   cross join ranked_habits habit
   where member.current_streak > 0 and habit.habit_number <= 4

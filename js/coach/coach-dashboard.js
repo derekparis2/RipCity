@@ -1,8 +1,8 @@
 // =====================================================
 // COACH DASHBOARD
 // =====================================================
-// This page gives coaches/admins a quick view of H2K
-// habit tracking across approved members.
+// This page gives coaches/admins a quick view of shared Rip City habit
+// tracking and athlete workout follow-up across approved members.
 
 let coachAccess = null;
 let coachHabits = [];
@@ -22,6 +22,11 @@ const COACH_WEEKLY_HISTORY_WEEKS = 12;
 const COACH_WORKOUT_ASSIGNMENT_SELECT = `
   id,
   assigned_date,
+  assigned_by,
+  assigner:profiles!workout_assignments_assigned_by_fkey (
+    id,
+    full_name
+  ),
   target_type,
   target_facility_id,
   target_group_id,
@@ -33,6 +38,11 @@ const COACH_WORKOUT_ASSIGNMENT_SELECT = `
     focus,
     description,
     estimated_minutes,
+    created_by,
+    creator:profiles!workouts_created_by_fkey (
+      id,
+      full_name
+    ),
     workout_blocks (
       id,
       name,
@@ -160,7 +170,7 @@ async function requireCoachOrAdminForDashboard() {
   });
 }
 
-// Loads the active H2K habits for the facility.
+// Loads the active shared habits for the facility.
 // This tells us the daily max score.
 async function loadCoachHabits(facilityId) {
   const { data, error } = await db
@@ -175,7 +185,7 @@ async function loadCoachHabits(facilityId) {
   return data || [];
 }
 
-// Loads approved H2K members and their profile info.
+// Loads approved H2K members and their profile info for legacy dashboard cards.
 async function loadApprovedH2KMembers(facilityId) {
   // This page is H2K-specific for now. Later, the same shape can be expanded
   // for athletes once workout completion and progress metrics are visible.
@@ -209,7 +219,7 @@ async function loadApprovedH2KMembers(facilityId) {
   return data || [];
 }
 
-// Loads habit logs for the current week for all H2K members.
+// Loads habit logs for the current week.
 async function loadHabitLogsForMembers(memberProfileIds) {
   if (!memberProfileIds.length) return [];
 
@@ -320,7 +330,7 @@ function renderCoachMemberList(rows) {
   }
 
   list.innerHTML = rows.map(row => {
-    // The weekly bar is a quick visual read of H2K consistency this week.
+    // The weekly bar is a quick visual read of habit consistency this week.
     const weeklyPercent = row.maxWeeklyScore > 0
       ? Math.round((row.weeklyScore / row.maxWeeklyScore) * 100)
       : 0;
@@ -459,18 +469,11 @@ async function refreshCoachWeeklyHistory() {
       selectedCoachWeeklyWeekIndex,
       coachWeeklyHistoryWeeks.length - 1
     );
-    if (selectedMember.memberType === "h2k") {
-      coachWeeklyHistoryLogs = await loadHabitLogsForMemberRange(
-        selectedMember.memberProfileId,
-        coachWeeklyHistoryWeeks[coachWeeklyHistoryWeeks.length - 1].startKey,
-        coachWeeklyHistoryWeeks[0].endKey
-      );
-    } else {
-      coachWeeklyHistoryLogs = await loadCoachMemberTrainingHistoryLogs(
-        selectedMember,
-        coachWeeklyHistoryWeeks
-      );
-    }
+    coachWeeklyHistoryLogs = await loadHabitLogsForMemberRange(
+      selectedMember.memberProfileId,
+      coachWeeklyHistoryWeeks[coachWeeklyHistoryWeeks.length - 1].startKey,
+      coachWeeklyHistoryWeeks[0].endKey
+    );
 
     renderCoachWeeklyHistory();
     showCoachWeeklyHistoryMessage("");
@@ -493,12 +496,7 @@ function renderCoachWeeklyHistory() {
 
   updateCoachWeeklyHistoryStepper(week);
 
-  const selectedMember = coachHistoryMembers.find(member =>
-    member.memberProfileId === selectedCoachWeeklyMemberId
-  );
-  const row = selectedMember?.memberType === "h2k"
-    ? buildWeeklyScoreRow(week, coachWeeklyHistoryLogs, coachHabits.length * 7)
-    : buildCoachTrainingWeeklyScoreRow(week);
+  const row = buildWeeklyScoreRow(week, coachWeeklyHistoryLogs, coachHabits.length * 7);
 
   list.innerHTML = renderWeeklyScoreCard(row);
 }
@@ -575,7 +573,7 @@ function buildWeeklyScoreRow(week, logs, maxWeeklyScore) {
 
   return {
     label: formatWeekRangeLabel(week),
-    typeLabel: "H2K Score",
+    typeLabel: "Habit Score",
     score,
     maxScore: maxWeeklyScore,
     percent: maxWeeklyScore ? Math.round((score / maxWeeklyScore) * 100) : 0,
@@ -1043,6 +1041,15 @@ function renderCoachWorkoutReview() {
   bindCoachWorkoutDetailButtons();
 }
 
+function getWorkoutReviewAssignerNames(row) {
+  const assignments = row.assignments?.length ? row.assignments : [row.assignment];
+  const names = assignments
+    .map(assignment => window.RipCityWorkoutData.getProfileName(assignment?.assigner))
+    .filter(Boolean);
+
+  return [...new Set(names)].join(", ") || "Coach";
+}
+
 function renderCoachWorkoutReviewList(list, rows, emptyText) {
   if (!list) return;
 
@@ -1076,6 +1083,7 @@ function renderCoachWorkoutReviewList(list, rows, emptyText) {
             <p class="eyebrow">${row.workout?.focus || "Workout"}</p>
             <h4>${window.RipCityUI.text(row.workout?.title, "Untitled Workout")}</h4>
             <p>${window.RipCityUI.text(window.RipCityWorkoutData.formatDateLabel(row.assignment.assigned_date))} · ${window.RipCityUI.text(row.targetLabel)}</p>
+            <small>Created by ${window.RipCityUI.text(window.RipCityWorkoutData.getProfileName(row.workout?.creator))} · Assigned by ${window.RipCityUI.text(getWorkoutReviewAssignerNames(row))}</small>
           </div>
 
           <div class="coach-workout-review-summary">
@@ -1316,17 +1324,17 @@ async function loadHabitLogsForAttention(memberProfileIds, todayKey) {
 
 function buildCoachAttentionRows(members, habitLogs, todayKey) {
   return members.map(member => {
-    if (member.memberType === "h2k") {
-      const attention = window.RipCityAttentionRules.calculateHabitAttention({
-        logs: habitLogs.filter(log => log.member_profile_id === member.memberProfileId),
-        todayKey,
-        trackingStartDate: member.trackingStartDate
-      });
+    const habitAttention = window.RipCityAttentionRules.calculateHabitAttention({
+      logs: habitLogs.filter(log => log.member_profile_id === member.memberProfileId),
+      todayKey,
+      trackingStartDate: member.trackingStartDate
+    });
 
-      return attention.needsAttention ? {
+    if (member.memberType === "h2k") {
+      return habitAttention.needsAttention ? {
         ...member,
         reason: "No habit tracking for 3 consecutive days",
-        detail: "H2K habit follow-up"
+        detail: "Habit follow-up"
       } : null;
     }
 
@@ -1343,10 +1351,14 @@ function buildCoachAttentionRows(members, habitLogs, todayKey) {
       todayKey
     });
 
-    return attention.needsAttention ? {
+    const reasons = [];
+    if (habitAttention.needsAttention) reasons.push("No habit tracking for 3 consecutive days");
+    if (attention.needsAttention) reasons.push("No exercise data for 2 consecutive assigned-workout days");
+
+    return reasons.length ? {
       ...member,
-      reason: "No exercise data for 2 consecutive assigned-workout days",
-      detail: "Athlete workout follow-up"
+      reason: reasons.join(" · "),
+      detail: reasons.length > 1 ? "Athlete habit + workout follow-up" : "Athlete follow-up"
     } : null;
   }).filter(Boolean).sort((a, b) => {
     return a.memberType.localeCompare(b.memberType) || a.name.localeCompare(b.name);
@@ -1426,10 +1438,10 @@ async function refreshCoachDashboard() {
     const facilityId = coachAccess.membership.facility_id;
     const todayKey = getTodayString();
     const members = await loadApprovedFacilityMembers(facilityId);
-    const h2kMemberIds = members
-      .filter(member => member.memberType === "h2k")
-      .map(member => member.memberProfileId);
-    const habitLogs = await loadHabitLogsForAttention(h2kMemberIds, todayKey);
+    const habitLogs = await loadHabitLogsForAttention(
+      members.map(member => member.memberProfileId),
+      todayKey
+    );
 
     await refreshCoachWorkoutReview();
     const attentionRows = buildCoachAttentionRows(members, habitLogs, todayKey);

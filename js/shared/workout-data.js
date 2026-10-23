@@ -22,6 +22,40 @@
     return Array.isArray(rowOrRows) ? rowOrRows[0] : rowOrRows;
   }
 
+  function getProfileName(rowOrRows, fallback = "Coach") {
+    return normalizeJoinedOne(rowOrRows)?.full_name || fallback;
+  }
+
+  function getWorkoutCreatorName(assignment) {
+    return assignment?.attribution?.workout_creator_name ||
+      getProfileName(assignment?.workout?.creator);
+  }
+
+  function getAssignmentAssignerName(assignment) {
+    return assignment?.attribution?.assignment_assigner_name ||
+      getProfileName(assignment?.assigner);
+  }
+
+  async function loadAssignmentAttributions(assignments) {
+    const assignmentIds = [...new Set(
+      assignments.map(assignment => assignment?.id).filter(Boolean)
+    )];
+    if (!assignmentIds.length) return assignments;
+
+    const { data, error } = await db.rpc("get_workout_attributions", {
+      check_assignment_ids: assignmentIds
+    });
+    if (error) throw error;
+
+    const byAssignmentId = new Map(
+      (data || []).map(row => [row.assignment_id, row])
+    );
+    return assignments.map(assignment => ({
+      ...assignment,
+      attribution: byAssignmentId.get(assignment.id) || null
+    }));
+  }
+
   function getAssignmentTargetPriority(assignment) {
     const priorities = {
       member: 3,
@@ -200,12 +234,16 @@
     formatDateTimeLabel,
     formatLocalDate,
     getAssignmentTargetPriority,
+    getAssignmentAssignerName,
+    getProfileName,
+    getWorkoutCreatorName,
     getBlockExercises,
     getTodayString,
     getWorkoutBlocks,
     getWorkoutExercises,
     getWorkoutTotalSets,
     isAssignmentVisibleToMember,
+    loadAssignmentAttributions,
     loadMemberGroupIds,
     loadSetLogsForAssignments,
     normalizeJoinedOne,

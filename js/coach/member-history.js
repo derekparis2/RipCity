@@ -1,7 +1,7 @@
 // =====================================================
 // COACH MEMBER WEEKLY HISTORY
 // =====================================================
-// Member-specific habit or workout history shown from coach-member-detail.
+// Member-specific habit history shown from coach-member-detail.
 
 (function () {
   const HISTORY_WEEK_COUNT = 12;
@@ -10,28 +10,6 @@
   let historyWeeks = [];
   let historyData = null;
   let selectedWeekIndex = 0;
-
-  const ASSIGNMENT_SELECT = `
-    id,
-    assigned_date,
-    target_type,
-    target_facility_id,
-    target_group_id,
-    target_member_profile_id,
-    workout:workouts (
-      id,
-      facility_id,
-      workout_blocks (
-        id,
-        block_order,
-        workout_exercises (
-          id,
-          sets,
-          exercise_order
-        )
-      )
-    )
-  `;
 
   function formatLocalDate(date) {
     return [
@@ -97,46 +75,10 @@
 
     if (habitError) throw habitError;
     if (logError) throw logError;
-    return { type: "h2k", logs: logs || [], weeklyMax: (habits || []).length * 7 };
+    return { logs: logs || [], weeklyMax: (habits || []).length * 7 };
   }
 
-  async function loadWorkoutHistory(memberProfile) {
-    const { data: memberships, error: membershipError } = await db
-      .from("group_members")
-      .select("group_id")
-      .eq("member_profile_id", memberProfile.id);
-    if (membershipError) throw membershipError;
-
-    const groupIds = (memberships || []).map(row => row.group_id);
-    const { data, error } = await db
-      .from("workout_assignments")
-      .select(ASSIGNMENT_SELECT)
-      .gte("assigned_date", historyWeeks.at(-1).startKey)
-      .lte("assigned_date", historyWeeks[0].endKey)
-      .order("assigned_date", { ascending: false });
-    if (error) throw error;
-
-    const assignments = window.RipCityWorkoutData.dedupeAssignmentsByWorkoutDate(
-      (data || []).filter(assignment => {
-        if (assignment.workout?.facility_id !== historyMember.facility_id) return false;
-        if (assignment.target_type === "facility") {
-          return assignment.target_facility_id === historyMember.facility_id;
-        }
-        if (assignment.target_type === "member") {
-          return assignment.target_member_profile_id === memberProfile.id;
-        }
-        return assignment.target_type === "group" && groupIds.includes(assignment.target_group_id);
-      })
-    );
-    const logs = await window.RipCityWorkoutData.loadSetLogsForAssignments(
-      assignments.map(assignment => assignment.id),
-      memberProfile.id
-    );
-
-    return { type: "athlete", assignments, logs };
-  }
-
-  function buildH2KRow(week) {
+  function buildHabitRow(week) {
     const weekLogs = historyData.logs.filter(log => {
       return log.log_date >= week.startKey && log.log_date <= week.endKey;
     });
@@ -148,36 +90,11 @@
     ).size;
 
     return {
-      typeLabel: "H2K Score",
+      typeLabel: "Habit Score",
       score,
       maxScore: historyData.weeklyMax,
       detail: `${loggedDays}/7 days logged`,
       percent: historyData.weeklyMax ? Math.round((score / historyData.weeklyMax) * 100) : 0
-    };
-  }
-
-  function buildAthleteRow(week) {
-    const todayKey = formatLocalDate(new Date());
-    const assignments = historyData.assignments.filter(assignment => {
-      return assignment.assigned_date >= week.startKey &&
-        assignment.assigned_date <= week.endKey &&
-        assignment.assigned_date <= todayKey;
-    });
-    const summaries = assignments.map(assignment => {
-      const logs = historyData.logs.filter(log => log.workout_assignment_id === assignment.id);
-      return window.RipCityWorkoutData.summarizeSetLogs(logs, assignment.workout);
-    });
-    const completedWorkouts = summaries.filter(summary => summary.isComplete).length;
-    const completedSets = summaries.reduce((total, summary) => total + summary.completedSets, 0);
-    const totalSets = summaries.reduce((total, summary) => total + summary.totalSets, 0);
-
-    return {
-      typeLabel: "Training Week",
-      score: completedWorkouts,
-      maxScore: assignments.length,
-      detail: `${completedSets}/${totalSets} sets logged`,
-      secondaryDetail: `${assignments.length} assigned workout${assignments.length === 1 ? "" : "s"}`,
-      percent: totalSets ? Math.round((completedSets / totalSets) * 100) : 0
     };
   }
 
@@ -191,7 +108,7 @@
     document.getElementById("coach-member-history-prev").disabled = selectedWeekIndex >= historyWeeks.length - 1;
     document.getElementById("coach-member-history-next").disabled = selectedWeekIndex <= 0;
 
-    const row = historyData.type === "h2k" ? buildH2KRow(week) : buildAthleteRow(week);
+    const row = buildHabitRow(week);
     list.innerHTML = `
       <article class="weekly-score-card ${week.isCurrentWeek ? "is-current-week" : ""}">
         <div class="weekly-score-main">
@@ -217,12 +134,9 @@
     try {
       const memberProfile = getMemberProfile();
       historyWeeks = buildWeeks();
-      historyData = memberProfile.member_type === "h2k"
-        ? await loadHabitHistory(memberProfile)
-        : await loadWorkoutHistory(memberProfile);
-      document.getElementById("coach-member-history-description").textContent = historyData.type === "h2k"
-        ? "Review this member’s H2K habit score for the last 12 weeks."
-        : "Review this athlete’s assigned workout completion for the last 12 weeks.";
+      historyData = await loadHabitHistory(memberProfile);
+      document.getElementById("coach-member-history-description").textContent =
+        "Review this member’s habit score for the last 12 weeks.";
       render();
       showMessage("");
     } catch (error) {
