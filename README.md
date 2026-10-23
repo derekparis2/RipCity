@@ -16,6 +16,7 @@ For the product roadmap, start with `docs/BUILD_PLAN.md`.
 - Signup, login, pending approval, and logout flows
 - Coach/admin approval page
 - Coach roster and group management
+- Coach account profile editing and member profile details from the roster
 - Coach dashboard for H2K habit score overview and workout completion review
 - Shared member dashboard with optional H2K habit tracking
 - Today’s workout and workout history on the member dashboard

@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>Member Profile</title>
+  <title>Profile</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,7 +28,7 @@
     <div class="mode-card">
       <span>Current View</span>
       <strong class="member-role-pending" id="profile-program-label">Profile</strong>
-      <a class="outline-link small-btn" href="member-dashboard.html">Dashboard</a>
+      <a class="outline-link small-btn" id="profile-home-link" href="member-dashboard.html">Dashboard</a>
     </div>
 
     <nav class="member-shell-nav profile-shell-nav" data-member-nav="profile" aria-label="Member navigation"></nav>
@@ -47,10 +47,11 @@
     <header class="topbar">
       <div>
         <p class="eyebrow">PROFILE</p>
-        <h2>Member Profile</h2>
+        <h2 id="profile-page-heading">Member Profile</h2>
       </div>
 
-      <div class="topbar-actions">
+      <div class="topbar-actions coach-header-actions">
+        <nav class="coach-nav hidden" data-coach-nav="profile" aria-label="Coach navigation"></nav>
         <button class="outline-btn" id="profile-logout-btn">Log Out</button>
       </div>
     </header>
@@ -58,12 +59,14 @@
     <section class="hero-card h2k-hero">
       <div>
         <p class="eyebrow">PROFILE & COMMUNITY</p>
-        <h3>Build your Rip City profile.</h3>
-        <p>
+        <h3 id="profile-hero-heading">Build your Rip City profile.</h3>
+        <p id="profile-hero-description">
           Keep your member info current so coaches and teammates know who you are.
         </p>
       </div>
     </section>
+
+    <p id="profile-message" class="auth-message profile-page-message" role="status" aria-live="polite"></p>
 
     <section class="dashboard-grid member-dashboard-grid profile-dashboard-grid">
       <article class="panel">
@@ -95,11 +98,9 @@
         </div>
       </article>
 
-      <p id="profile-message" class="auth-message profile-page-message" role="status" aria-live="polite"></p>
-
       <details class="panel profile-edit-panel" open>
         <summary class="compact-panel-summary">
-          <span><span class="eyebrow">EDIT PROFILE</span><strong>Member Info</strong></span>
+          <span><span class="eyebrow">EDIT PROFILE</span><strong id="profile-editor-heading">Member Info</strong></span>
           <span aria-hidden="true">Open +</span>
         </summary>
 
@@ -125,7 +126,7 @@
             <input type="date" id="profile-birthday" />
           </label>
 
-          <label>
+          <label class="member-profile-fields">
             Gender
             <select id="profile-gender">
               <option value="">Prefer not to say</option>
@@ -171,7 +172,7 @@
             </label>
           </div>
 
-          <div class="form-row">
+          <div class="form-row member-profile-fields">
             <label>
               School
               <input type="text" id="profile-school" />
@@ -183,7 +184,7 @@
             </label>
           </div>
 
-          <div class="form-row">
+          <div class="form-row member-profile-fields">
             <label>
               Height
               <input type="text" id="profile-height" placeholder="ex: 5'10" />
@@ -195,12 +196,12 @@
             </label>
           </div>
 
-          <label>
+          <label class="member-profile-fields">
             Training Focus
             <input type="text" id="profile-training-focus" placeholder="Strength, speed, mobility, consistency..." />
           </label>
 
-          <label>
+          <label class="member-profile-fields">
             Favorite Lift
             <input type="text" id="profile-favorite-lift" placeholder="Trap bar deadlift, bench, squat..." />
           </label>
@@ -217,6 +218,7 @@
   <script src="js/shared/ui-utils.js"></script>
   <script src="js/shared/access-control.js"></script>
   <script src="js/member/member-nav.js?v=member-mobile-nav-1"></script>
-  <script src="js/member/profile.js?v=member-page-split-1"></script>
+  <script src="js/coach/coach-nav.js?v=ui-polish-1"></script>
+  <script src="js/member/profile.js?v=coach-profile-1"></script>
 </body>
 </html>

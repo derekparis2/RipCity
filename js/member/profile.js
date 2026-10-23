@@ -119,8 +119,9 @@ function updateProfilePreview() {
   const birthday = getInputValue("profile-birthday") || "Not added";
   const pictureUrl = getInputValue("profile-picture-url");
 
-  const program =
-    currentMemberProfile?.member_type === "h2k"
+  const program = profileAccess?.isCoach
+    ? (profileAccess.membership.role === "admin" ? "Admin" : "Coach")
+    : currentMemberProfile?.member_type === "h2k"
       ? "H2K Member"
       : "Athlete";
   const bandBadge = document.getElementById("preview-h2k-band");
@@ -142,12 +143,19 @@ function updateProfilePreview() {
 
 function updateProfileFieldVisibility() {
   const isAthlete = currentMemberProfile?.member_type === "athlete";
+  document.querySelectorAll(".member-profile-fields").forEach(element => {
+    element.classList.toggle("hidden", !currentMemberProfile);
+  });
   document.querySelectorAll(".athlete-profile-fields").forEach(element => {
     element.classList.toggle("hidden", !isAthlete);
   });
 }
 
 function getProfileMemberTypeLabel() {
+  if (profileAccess?.isCoach) {
+    return profileAccess.membership.role === "admin" ? "Admin" : "Coach";
+  }
+
   const profileType = String(currentMemberProfile?.member_type || "").toLowerCase();
   const role = String(profileAccess?.membership?.role || "").toLowerCase();
 
@@ -158,6 +166,7 @@ function getProfileMemberTypeLabel() {
 }
 
 function updateProfileShellNav() {
+  const isCoach = Boolean(profileAccess?.isCoach);
   const isH2K = currentMemberProfile?.member_type === "h2k";
   const subtitle = document.getElementById("profile-brand-subtitle");
   const programLabel = document.getElementById("profile-program-label");
@@ -166,8 +175,31 @@ function updateProfileShellNav() {
   const sidebarBand = document.getElementById("profile-sidebar-band");
   const sidebarAvatar = document.getElementById("profile-sidebar-avatar");
   const memberTypeLabel = getProfileMemberTypeLabel();
+  const memberNav = document.querySelector("[data-member-nav]");
+  const coachNav = document.querySelector("[data-coach-nav]");
+  const homeLink = document.getElementById("profile-home-link");
+  const pageHeading = document.getElementById("profile-page-heading");
+  const editorHeading = document.getElementById("profile-editor-heading");
+  const heroHeading = document.getElementById("profile-hero-heading");
+  const heroDescription = document.getElementById("profile-hero-description");
   const fullName = profileAccess?.profile?.full_name || "Member";
   const pictureUrl = getSafeImageUrl(profileAccess?.profile?.profile_picture_url);
+
+  memberNav?.classList.toggle("hidden", isCoach);
+  coachNav?.classList.toggle("hidden", !isCoach);
+  if (homeLink) {
+    homeLink.href = isCoach ? "coach-dashboard.html" : "member-dashboard.html";
+    homeLink.textContent = isCoach ? "Coach Dashboard" : "Dashboard";
+  }
+  if (pageHeading) pageHeading.textContent = isCoach ? "Coach Profile" : "Member Profile";
+  if (editorHeading) editorHeading.textContent = isCoach ? "Coach Info" : "Member Info";
+  document.title = isCoach ? "Coach Profile" : "Member Profile";
+  if (heroHeading) heroHeading.textContent = isCoach ? "Build your Rip City coach profile." : "Build your Rip City profile.";
+  if (heroDescription) {
+    heroDescription.textContent = isCoach
+      ? "Keep your account and profile details current for your facility."
+      : "Keep your member info current so coaches and teammates know who you are.";
+  }
 
   if (subtitle) {
     subtitle.textContent = memberTypeLabel;
@@ -232,7 +264,7 @@ function updateGenderFieldState() {
 function fillProfileForm() {
   // Populate the edit form from both profile tables.
   const profile = profileAccess.profile;
-  const member = currentMemberProfile;
+  const member = currentMemberProfile || {};
 
   setInputValue("profile-full-name", profile.full_name);
   setInputValue("profile-username", profile.username);
@@ -356,36 +388,39 @@ async function saveProfile(event) {
 
     if (profileError) throw profileError;
 
-    const gradYear = getInputValue("profile-grad-year");
-    const bodyWeight = getInputValue("profile-body-weight");
-    const isAthlete = currentMemberProfile.member_type === "athlete";
-    const memberProfileUpdate = {
-      sport: isAthlete ? getInputValue("profile-sport") || null : null,
-      position: isAthlete ? getInputValue("profile-position") || null : null,
-      school: getInputValue("profile-school") || null,
-      graduation_year: gradYear ? Number(gradYear) : null,
-      height: getInputValue("profile-height") || null,
-      body_weight: bodyWeight ? Number(bodyWeight) : null,
-      training_focus: getInputValue("profile-training-focus") || null,
-      favorite_lift: getInputValue("profile-favorite-lift") || null,
-      updated_at: new Date().toISOString()
-    };
+    if (currentMemberProfile) {
+      const gradYear = getInputValue("profile-grad-year");
+      const bodyWeight = getInputValue("profile-body-weight");
+      const isAthlete = currentMemberProfile.member_type === "athlete";
+      const memberProfileUpdate = {
+        sport: isAthlete ? getInputValue("profile-sport") || null : null,
+        position: isAthlete ? getInputValue("profile-position") || null : null,
+        school: getInputValue("profile-school") || null,
+        graduation_year: gradYear ? Number(gradYear) : null,
+        height: getInputValue("profile-height") || null,
+        body_weight: bodyWeight ? Number(bodyWeight) : null,
+        training_focus: getInputValue("profile-training-focus") || null,
+        favorite_lift: getInputValue("profile-favorite-lift") || null,
+        updated_at: new Date().toISOString()
+      };
 
-    if (profileSupportsGender) {
-      memberProfileUpdate.gender = getInputValue("profile-gender") || null;
+      if (profileSupportsGender) {
+        memberProfileUpdate.gender = getInputValue("profile-gender") || null;
+      }
+
+      const { error: memberError } = await db
+        .from("member_profiles")
+        .update(memberProfileUpdate)
+        .eq("id", currentMemberProfile.id);
+
+      if (memberError) throw memberError;
     }
-
-    // Save training/program fields second.
-    const { error: memberError } = await db
-      .from("member_profiles")
-      .update(memberProfileUpdate)
-      .eq("id", currentMemberProfile.id);
-
-    if (memberError) throw memberError;
 
     // Reload fresh data after saving.
     profileAccess.profile = await getProfileUser(profileAccess.profile.id);
-    currentMemberProfile = await getMemberProfile(profileAccess.membership.id);
+    if (!profileAccess.isCoach) {
+      currentMemberProfile = await getMemberProfile(profileAccess.membership.id);
+    }
     selectedProfilePictureFile = null;
 
     updateProfileShellNav();
@@ -410,7 +445,9 @@ async function initProfilePage() {
 
     if (!profileAccess) return;
 
-    currentMemberProfile = await getMemberProfile(profileAccess.membership.id);
+    if (!profileAccess.isCoach) {
+      currentMemberProfile = await getMemberProfile(profileAccess.membership.id);
+    }
 
     updateProfileShellNav();
     fillProfileForm();

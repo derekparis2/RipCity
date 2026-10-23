@@ -4,6 +4,7 @@ const coachNavigationItems = [
   { key: "workouts", label: "Workout Builder", href: "coach-workouts.html" },
   { key: "leaderboards", label: "Leaderboards", href: "coach-leaderboards.html" },
   { key: "approvals", label: "Approvals", href: "coach-approvals.html" },
+  { key: "profile", label: "Profile", href: "profile.html" },
 ];
 
 function initializeCoachNavigation() {
