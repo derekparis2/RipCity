@@ -4,6 +4,55 @@ Use this runbook only from `derek/v2-release-hardening`. Production is the
 existing Rip City project (`fdzmfohcuratbuitkwoy`) and contains live data.
 Staging data and staging seeds must never be copied into production.
 
+## Current Release Evidence
+
+The read-only production preflight passed on 2026-10-23: all 21 required V1
+tables and six required private helpers exist; Rip City and the catalog rows
+needed by the migrations match expectations; existing goal statuses are
+compatible; and none of the checked V2 objects is partially present.
+
+The same preflight recorded this before-migration row-count snapshot:
+
+| Table | Rows |
+| --- | ---: |
+| `exercise_set_logs` | 6 |
+| `exercise_templates` | 93 |
+| `facility_members` | 21 |
+| `goals` | 0 |
+| `group_members` | 14 |
+| `groups` | 5 |
+| `habit_logs` | 41 |
+| `member_profiles` | 20 |
+| `profiles` | 21 |
+| `workout_assignments` | 4 |
+| `workouts` | 4 |
+
+These counts are a timestamped comparison point, not a freeze on legitimate
+live activity before release.
+
+The manual production database backup was created and restore-tested on
+2026-10-23. The private backup is stored outside Git at
+`~/Documents/RipCity-Production-Backup-2026-10-23/` and contains separate
+`roles.sql`, `schema.sql`, and `data.sql` exports. SHA-256 checksums were
+recorded when the files were created. The exports restored successfully into
+an isolated local Supabase stack, and all 11 row counts above matched the
+production snapshot exactly. This verifies the application database export;
+Auth settings and identities, Storage configuration and objects, and project
+redirect settings still require the separate inventory in release step 3.
+
+The separate managed-service inventory on 2026-10-23 found 21 Auth users, one
+Storage bucket, and zero Storage objects. Because no uploaded objects exist,
+there are no production files to download for this release. The Auth identity
+list, bucket configuration, and current Auth URL/provider settings must still
+be saved privately outside Git with the database backup.
+
+All 15 approved V2 upgrade migrations were applied successfully to production
+in the documented order on 2026-10-23. The post-migration production verifier
+then passed all nine checks: required columns, tables, functions, RLS coverage,
+non-null unilateral flags, supported goal statuses, and corrected Rip City
+exercise defaults. The V2 frontend had not been deployed when these database
+checks completed.
+
 ## Release Order
 
 The release order is intentionally database first and frontend second. The V2
