@@ -42,6 +42,9 @@ staging application.
   full facility-admin management.
 - `20261023180000_add_workout_attribution_rpc.sql` exposes creator and assigner
   display names only for workout assignments the signed-in user may view.
+- `20261023210000_admin_assign_signup_groups.sql` removes athlete group choice
+  from signup permissions and adds facility-admin-only, atomic initial-group
+  assignment plus athlete approval enforcement.
 - Future changes must use a later UTC timestamp and a descriptive name, such as
   `20260817090000_add_facility_timezone.sql`.
 

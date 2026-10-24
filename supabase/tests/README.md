@@ -135,3 +135,22 @@ facility workout visibility. Its temporary habit log is removed in cleanup.
 
 Status: all focused athlete-habit and workout-attribution checks passed against
 Rip City Staging on 2026-10-23, and the temporary habit log was cleaned up.
+
+## Admin-Assigned Signup Group Checks
+
+After applying `20261023210000_admin_assign_signup_groups.sql`, run:
+
+```bash
+node supabase/tests/staging_signup_group_approval_checks.mjs
+```
+
+The test uses the pending Rip City athlete fixture and a temporary athlete
+group. It proves pending athletes cannot self-assign, ordinary coaches cannot
+approve, cross-facility groups are rejected, direct group-less approval is
+blocked, and a facility admin can atomically assign the initial group and
+approve the athlete. Cleanup restores the pending fixture's original status
+and group memberships and removes the temporary group.
+
+Status: all 12 admin-assigned signup-group checks passed against Rip City
+Staging on 2026-10-24. The pending athlete fixture was restored and the
+temporary group was removed.
