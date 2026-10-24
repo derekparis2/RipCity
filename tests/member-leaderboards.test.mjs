@@ -19,7 +19,9 @@ assert.match(migration, /grant execute .* to authenticated/i, "approved signed-i
 
 assert.match(page, /data-member-page="leaderboards"/, "member leaderboard has a dedicated page");
 assert.match(page, /id="member-own-rank"/, "member leaderboard provides a separate own-rank card");
+assert.match(page, /class="member-own-rank-content"/, "own-rank value and description receive the intended responsive layout");
 assert.match(controller, /db\.rpc\("get_member_habit_leaderboard"/, "browser reads the privacy-safe RPC");
+assert.match(controller, /previous four completed Monday–Sunday weeks/, "rolling-average guidance explains its actual date window");
 assert.doesNotMatch(controller, /\.from\("habit_logs"\)/, "member browser never downloads facility-wide habit logs");
 assert.doesNotMatch(controller, /\.from\("facility_members"\)/, "member browser never downloads the facility roster");
 assert.match(controller, /All \$\{programLabel\}/, "the full-program scope is labeled by member program");

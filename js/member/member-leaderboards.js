@@ -126,9 +126,15 @@
     const scope = document.getElementById("member-leaderboard-scope");
     const scopeLabel = scope?.selectedOptions?.[0]?.textContent || `All ${label}s`;
     const metric = selectedMetric();
+    const explanations = {
+      fourWeekAverage: "Average weekly habit points across the previous four completed Monday–Sunday weeks.",
+      currentWeekScore: "Habit points earned from Monday through today.",
+      currentStreak: "A streak day requires at least four completed habits.",
+      longestStreak: "A streak day requires at least four completed habits."
+    };
     document.getElementById("member-leaderboard-program-eyebrow").textContent = `${label.toUpperCase()} LEADERBOARD`;
     document.getElementById("member-leaderboard-title").textContent = `${scopeLabel} Top 5`;
-    document.getElementById("member-leaderboard-explanation").textContent = `Ranked by ${metric.label}. A streak day requires at least four completed habits.`;
+    document.getElementById("member-leaderboard-explanation").textContent = `Ranked by ${metric.label}. ${explanations[metric.key]}`;
   }
 
   async function loadLeaderboard() {
