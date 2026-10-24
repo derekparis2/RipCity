@@ -57,6 +57,53 @@
     return Math.round((Number(value) + Number.EPSILON) * 10) / 10;
   }
 
+  function formatDayCount(value, label = "day") {
+    return `${value} ${label}${value === 1 ? "" : "s"}`;
+  }
+
+  function getHabitLeaderboardMetricDefinitions() {
+    return [
+      {
+        key: "fourWeekAverage",
+        label: "4-Week Average",
+        score: row => row.metrics.hasScore ? row.metrics.fourWeekAverage : null,
+        display: row => ({
+          primary: row.metrics.fourWeekAverage === null
+            ? "No score"
+            : `${row.metrics.fourWeekAverage} / ${row.metrics.fourWeekMax}`,
+          secondary: "Previous 4 weeks"
+        })
+      },
+      {
+        key: "currentWeekScore",
+        label: "Current Week",
+        score: row => row.metrics.currentWeekScore,
+        display: row => ({
+          primary: `${row.metrics.currentWeekScore} / ${row.metrics.currentWeekMax}`,
+          secondary: `${row.metrics.currentWeekQualifiedDays} qualified days`
+        })
+      },
+      {
+        key: "currentStreak",
+        label: "Current Streak",
+        score: row => row.metrics.currentStreak,
+        display: row => ({
+          primary: formatDayCount(row.metrics.currentStreak),
+          secondary: "Current streak"
+        })
+      },
+      {
+        key: "longestStreak",
+        label: "Longest Streak",
+        score: row => row.metrics.longestStreak,
+        display: row => ({
+          primary: formatDayCount(row.metrics.longestStreak),
+          secondary: "Longest streak"
+        })
+      }
+    ];
+  }
+
   function getHabitDayMap(logs) {
     const byDate = new Map();
 
@@ -263,7 +310,9 @@
     buildPreviousCompletedWeeks,
     calculateAthleteMetrics,
     calculateH2KMetrics,
+    formatDayCount,
     formatDateKey,
+    getHabitLeaderboardMetricDefinitions,
     getMonday,
     parseDateKey
   };

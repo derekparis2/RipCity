@@ -1648,8 +1648,15 @@ async function initMemberPage() {
     }
 
     if (needsWorkoutHistory) await loadWorkoutHistory();
-    if (page === "history") await loadMemberWeeklyHistory();
+    if (["habits", "history"].includes(page)) await loadMemberWeeklyHistory();
     if (page === "goals") await loadMemberGoals();
+    if (page === "leaderboards") {
+      await window.RipCityMemberLeaderboards.initialize({
+        access: currentAccess,
+        profile: currentMemberProfile,
+        groupIds: currentMemberGroupIds
+      });
+    }
 
     if (["dashboard", "habits"].includes(page)) {
       await refreshH2KDashboard();

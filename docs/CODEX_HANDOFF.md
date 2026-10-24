@@ -80,22 +80,16 @@ Core direction:
 
 See `docs/VERSION_2_PLAN.md` for detailed product requirements and
 `docs/V2_BACKLOG.md` for the maintained implementation order and status. The
-immediate build order is now:
+current post-launch order is:
 
-1. Complete `derek/v2-release-hardening`; do not merge `v2-development`
-   directly into `main`.
-2. Follow `docs/V2_PRODUCTION_RELEASE.md` to inventory and rehearse the ordered
-   production migrations, verify a current
-   production backup/recovery path, and keep existing production data intact.
-3. Verify the hostname-based frontend configuration uses production Supabase
-   only on the exact live hostname while staging,
-   previews, and localhost continue using staging Supabase.
-4. Run the focused production-release checklist, obtain both contributor
-   approvals, then deploy database changes before dependent frontend assets.
+1. Finish the privacy-safe member leaderboard on
+   `derek/member-leaderboards`.
+2. Confirm Testing Day result-entry rules with the Rip City coach, then build
+   Testing Days as a separate feature.
+3. Start V3 only after those two post-launch features are settled.
 
-Member-facing leaderboards, Testing Days/progress, workout data hardening, and
-stylesheet splitting are explicitly planned post-launch and must not expand the
-pre-main release branch.
+New feature branches start from current `main`. The V2 production release and
+its ordered production migration sequence are complete.
 
 Current signup-link decision:
 
@@ -268,9 +262,11 @@ Leaderboards:
 - Coaches can see both within their facility.
 - Tied scores share rank.
 - Rows should show full name and profile picture.
-- H2K streak = consecutive days with at least 4 checked behaviors.
-- Athlete streak = assigned workout days completed.
-- Rolling 4-week H2K average is important to the coach.
+- H2K and athlete habit streaks count consecutive days with at least 4 checked
+  behaviors.
+- Both programs use the same approved habit metrics while their leaderboard
+  membership remains completely separate.
+- Rolling 4-week habit average is important to the coach.
 
 Workout assignments:
 

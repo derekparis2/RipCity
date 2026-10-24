@@ -10,6 +10,14 @@ vm.runInContext(
 );
 
 const metrics = context.window.RipCityMetrics;
+const metricDefinitions = metrics.getHabitLeaderboardMetricDefinitions();
+assert.deepEqual(
+  Array.from(metricDefinitions, metric => metric.key),
+  ["fourWeekAverage", "currentWeekScore", "currentStreak", "longestStreak"],
+  "coach and member leaderboards share one approved metric registry"
+);
+assert.equal(metrics.formatDayCount(1), "1 day");
+assert.equal(metrics.formatDayCount(5), "5 days");
 const todayKey = "2026-10-15";
 const habitLogs = [];
 

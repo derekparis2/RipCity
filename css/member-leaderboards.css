@@ -1,0 +1,231 @@
+.member-leaderboard-panel {
+  overflow: hidden;
+}
+
+.member-leaderboard-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.member-leaderboard-controls label {
+  display: grid;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.member-leaderboard-controls select {
+  width: 100%;
+  min-height: 50px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--text);
+  padding: 0 14px;
+  font: 700 16px "Inter", sans-serif;
+}
+
+.member-leaderboard-context {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+  color: var(--muted);
+}
+
+.member-leaderboard-context p {
+  margin: 0;
+}
+
+.member-leaderboard-privacy {
+  flex: 0 0 auto;
+  border: 1px solid rgba(94, 184, 255, 0.45);
+  border-radius: 999px;
+  padding: 7px 10px;
+  color: #9dccff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.member-top-five {
+  display: grid;
+  gap: 10px;
+}
+
+.member-leaderboard-row {
+  display: grid;
+  grid-template-columns: 52px 46px minmax(0, 1fr) minmax(145px, auto);
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface-2);
+}
+
+.member-leaderboard-row.is-podium {
+  border-color: rgba(94, 184, 255, 0.42);
+  background: linear-gradient(90deg, rgba(94, 184, 255, 0.09), var(--surface-2) 48%);
+}
+
+.member-leaderboard-row.is-self {
+  box-shadow: inset 4px 0 #69bdff;
+}
+
+.member-leaderboard-rank {
+  color: #9dccff;
+  font: 800 26px "Barlow Condensed", sans-serif;
+  text-align: center;
+}
+
+.member-leaderboard-avatar {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: #29292e;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.member-leaderboard-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.member-leaderboard-person,
+.member-leaderboard-score,
+.member-own-rank-content > div {
+  min-width: 0;
+}
+
+.member-leaderboard-person strong,
+.member-leaderboard-person span,
+.member-leaderboard-score strong,
+.member-leaderboard-score span,
+.member-own-rank-content strong,
+.member-own-rank-content span {
+  display: block;
+}
+
+.member-leaderboard-person strong {
+  overflow: hidden;
+  font-size: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.member-leaderboard-person span,
+.member-leaderboard-score span,
+.member-own-rank-content span {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.member-leaderboard-score {
+  text-align: right;
+}
+
+.member-leaderboard-score strong {
+  font-size: 17px;
+}
+
+.member-own-rank {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 4px;
+  padding: 18px;
+  border: 1px solid rgba(94, 184, 255, 0.55);
+  border-radius: 18px;
+  background: rgba(94, 184, 255, 0.07);
+}
+
+.member-own-rank h3,
+.member-own-rank p {
+  margin: 0;
+}
+
+.member-own-rank-content {
+  display: grid;
+  grid-template-columns: auto minmax(130px, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+}
+
+.member-own-rank-number {
+  color: #9dccff;
+  font: 800 34px "Barlow Condensed", sans-serif;
+}
+
+.member-own-rank-note {
+  margin: 0 !important;
+  border-radius: 999px;
+  background: var(--surface-2);
+  padding: 8px 11px;
+  font-size: 11px !important;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+@media (max-width: 700px) {
+  .member-leaderboard-hero p:not(.eyebrow) {
+    display: block;
+  }
+
+  .member-leaderboard-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .member-leaderboard-context {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .member-leaderboard-row {
+    grid-template-columns: 38px minmax(0, 1fr) minmax(100px, auto);
+    gap: 9px;
+    padding: 12px 10px;
+  }
+
+  .member-leaderboard-avatar {
+    display: none;
+  }
+
+  .member-leaderboard-rank {
+    font-size: 21px;
+  }
+
+  .member-leaderboard-person strong,
+  .member-leaderboard-score strong {
+    font-size: 14px;
+  }
+
+  .member-own-rank {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .member-own-rank-content {
+    grid-template-columns: auto minmax(0, 1fr);
+    width: 100%;
+  }
+
+  .member-own-rank-note {
+    grid-column: 1 / -1;
+  }
+}

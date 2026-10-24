@@ -56,6 +56,8 @@ If a feature is only for Rip City baseball, build it as an optional program-spec
 - Shared daily and weekly habit scores
 - Coach view of member habit scores
 - Coach workout builder
+- Separate coach Athlete and H2K habit leaderboards
+- Member Top 5 and own-rank leaderboard work in progress
 - Workout blocks: Warmup, A Block, B Block, Finisher, etc.
 - Group/date workout assignment
 - Member can see today’s assigned workout

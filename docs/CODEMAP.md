@@ -7,9 +7,10 @@ Use this as the quick orientation guide before editing.
 - `index.html` redirects to `login.html`.
 - `login.html`, `signup.html`, and `pending.html` handle account entry.
 - `member-dashboard.html` is the concise shared member home for athletes and H2K members.
-- `member-training.html`, `member-habits.html`, `member-history.html`, and
-  `member-goals.html` are the dedicated member feature pages. `profile.html`
-  remains the dedicated profile page.
+- `member-training.html`, `member-habits.html`, `member-leaderboards.html`, and
+  `member-goals.html` are the dedicated member feature pages. Weekly habit
+  history is part of Habits; the older `member-history.html` route remains only
+  as a compatibility page. `profile.html` remains the dedicated profile page.
 - `js/member/member-nav.js` owns the shared member destination map so member
   tabs do not drift or disappear between pages.
 - `js/coach/coach-nav.js` owns the shared coach/admin destination map and the
@@ -69,6 +70,9 @@ Use this as the quick orientation guide before editing.
   today’s workout, workout history, and feedback link display.
 - `js/member/member-announcements.js` renders the active facility, group, and
   individual announcements permitted to the signed-in member by RLS.
+- `js/member/member-leaderboards.js` renders the program-separated member Top
+  5 and own-rank view. It reads only the privacy-safe leaderboard RPC rather
+  than loading facility rosters or other members' raw habit logs.
 - `js/member/profile.js` powers member profile editing and the read-only H2K band display.
 - `js/member/workout-session-core.js`, `js/member/workout-session-render.js`, and
   `js/member/workout-session.js` split workout logging into state/loaders,

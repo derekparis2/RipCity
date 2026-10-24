@@ -155,3 +155,19 @@ Cleanup restores both fixtures and removes the temporary groups.
 Status: all 19 expanded athlete/H2K signup-group checks passed against Rip City
 Staging on 2026-10-24. Both fixture accounts were restored and both temporary
 groups were removed.
+
+## Member Leaderboard Privacy Checks
+
+After applying `20261024150000_add_member_habit_leaderboards.sql`, run:
+
+```bash
+node supabase/tests/staging_member_leaderboard_rls_checks.mjs
+```
+
+The staging-only test verifies that Athlete and H2K rankings remain separate,
+Test Facility Alpha remains isolated, members can scope only to groups they
+belong to, coaches cannot use the member-only RPC, and each response contains
+only top-five positions plus the caller's own position.
+
+Status: all 25 member-leaderboard privacy and RLS checks passed against Rip
+City Staging on 2026-10-24.

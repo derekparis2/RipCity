@@ -468,7 +468,8 @@ platform into something negative or overly competitive.
 - Coaches can choose the metric used to rank a leaderboard. The first coach
   version supports rolling averages, current-week results, and current/longest
   streaks; future lift and testing metrics should plug into the same selector.
-- Members can see facility top 5 and their own group top 5 for safe metrics.
+- Members can see their own program's all-Athlete or all-H2K top 5 and their
+  own group top 5 for safe metrics. They never see a combined facility board.
 - Weekly leaderboards use Monday through Sunday.
 - Monthly leaderboards use the calendar month.
 - All-time leaderboards use all saved records.
