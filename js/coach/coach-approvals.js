@@ -5,6 +5,7 @@
 // reject them. New signups stay pending until an admin makes that decision.
 
 let approvalAccess = null;
+let approvalMemberGroups = [];
 
 function showApprovalMessage(message, isError = false) {
   const element = document.getElementById("approval-message");
@@ -56,6 +57,33 @@ function formatApprovalRole(role) {
   return labels[role] || role;
 }
 
+function getApprovalMemberProfile(user) {
+  if (Array.isArray(user.member_profile)) return user.member_profile[0] || null;
+  return user.member_profile || null;
+}
+
+function getApprovalGroupsForMemberType(memberType) {
+  return approvalMemberGroups.filter(group => (
+    group.member_type === memberType || group.member_type === "both"
+  ));
+}
+
+function renderApprovalGroupOptions(memberType) {
+  const matchingGroups = getApprovalGroupsForMemberType(memberType);
+  const groupLabel = memberType === "h2k" ? "H2K" : "athlete";
+
+  if (!matchingGroups.length) {
+    return `<option value="">No ${groupLabel} groups available — create one in Roster</option>`;
+  }
+
+  return `
+    <option value="">Select training group</option>
+    ${matchingGroups.map(group => `
+      <option value="${window.RipCityUI.attr(group.id)}">${window.RipCityUI.text(group.name)}</option>
+    `).join("")}
+  `;
+}
+
 async function loadPendingUsers() {
   const access = await requireApprovalCoachOrAdmin();
   if (!access) return;
@@ -74,26 +102,41 @@ async function loadPendingUsers() {
   showApprovalMessage("Loading pending users...");
 
   try {
-    const { data, error } = await db
-      .from("facility_members")
-      .select(`
-        id,
-        role,
-        status,
-        created_at,
-        profile:profiles!facility_members_profile_id_fkey (
+    const [pendingResult, groupsResult] = await Promise.all([
+      db
+        .from("facility_members")
+        .select(`
           id,
-          full_name,
-          email
-        )
-      `)
-      .eq("facility_id", access.membership.facility_id)
-      .eq("status", "pending")
-      .order("created_at", { ascending: false });
+          role,
+          status,
+          created_at,
+          profile:profiles!facility_members_profile_id_fkey (
+            id,
+            full_name,
+            email
+          ),
+          member_profile:member_profiles (
+            id,
+            member_type
+          )
+        `)
+        .eq("facility_id", access.membership.facility_id)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false }),
+      db
+        .from("groups")
+        .select("id, name, member_type")
+        .eq("facility_id", access.membership.facility_id)
+        .in("member_type", ["athlete", "h2k", "both"])
+        .order("name", { ascending: true })
+    ]);
 
-    if (error) throw error;
+    if (pendingResult.error) throw pendingResult.error;
+    if (groupsResult.error) throw groupsResult.error;
 
-    renderPendingUsers(data || [], access);
+    approvalMemberGroups = groupsResult.data || [];
+
+    renderPendingUsers(pendingResult.data || [], access);
     showApprovalMessage("");
 
     if (access.isAdmin) {
@@ -234,7 +277,12 @@ function renderPendingUsers(users, access) {
 
   list.innerHTML = users.map(user => {
     const profile = user.profile;
+    const memberProfile = getApprovalMemberProfile(user);
     const isElevatedRequest = user.role === "coach" || user.role === "admin";
+    const isGroupedMember = (
+      (user.role === "athlete" && memberProfile?.member_type === "athlete")
+      || (user.role === "h2k_member" && memberProfile?.member_type === "h2k")
+    );
     const canDecide = access.isAdmin;
 
     return `
@@ -247,11 +295,19 @@ function renderPendingUsers(users, access) {
             <span>Status: ${window.RipCityUI.text(user.status)}</span>
             ${!canDecide ? "<span>Facility-admin action required</span>" : ""}
           </div>
+          ${canDecide && isGroupedMember ? `
+            <label class="pending-user-group-control" for="approval-group-${window.RipCityUI.attr(user.id)}">
+              <span>Initial ${memberProfile.member_type === "h2k" ? "H2K" : "training"} group</span>
+              <select id="approval-group-${window.RipCityUI.attr(user.id)}" data-approval-group="${window.RipCityUI.attr(user.id)}">
+                ${renderApprovalGroupOptions(memberProfile.member_type)}
+              </select>
+            </label>
+          ` : ""}
         </div>
 
         <div class="pending-user-actions">
           ${canDecide ? `
-            <button class="approve-btn" data-approve-user="${window.RipCityUI.attr(user.id)}" data-approval-role="${window.RipCityUI.attr(user.role)}">Approve</button>
+            <button class="approve-btn" data-approve-user="${window.RipCityUI.attr(user.id)}" data-approval-role="${window.RipCityUI.attr(user.role)}"${isGroupedMember ? " disabled" : ""}>Approve</button>
             <button class="reject-btn" data-reject-user="${window.RipCityUI.attr(user.id)}" data-approval-role="${window.RipCityUI.attr(user.role)}">Reject</button>
           ` : "<span>Waiting for a facility admin</span>"}
         </div>
@@ -265,6 +321,13 @@ function renderPendingUsers(users, access) {
       "approved",
       button.dataset.approvalRole
     ));
+  });
+
+  document.querySelectorAll("[data-approval-group]").forEach(select => {
+    select.addEventListener("change", () => {
+      const button = document.querySelector(`[data-approve-user="${select.dataset.approvalGroup}"]`);
+      if (button) button.disabled = !select.value;
+    });
   });
 
   document.querySelectorAll("[data-reject-user]").forEach(button => {
@@ -285,6 +348,15 @@ async function updateApprovalStatus(facilityMemberId, status, role) {
   }
 
   const isElevatedRequest = role === "coach" || role === "admin";
+  const isGroupedMemberApproval = status === "approved" && ["athlete", "h2k_member"].includes(role);
+  const selectedGroupId = isGroupedMemberApproval
+    ? document.querySelector(`[data-approval-group="${facilityMemberId}"]`)?.value || ""
+    : "";
+
+  if (isGroupedMemberApproval && !selectedGroupId) {
+    showApprovalMessage("Choose an initial group before approving this member.", true);
+    return;
+  }
   const confirmText = status === "approved" && isElevatedRequest
     ? `Approve this ${formatApprovalRole(role).toLowerCase()}? This grants access to facility coaching tools.`
     : status === "approved"
@@ -294,6 +366,21 @@ async function updateApprovalStatus(facilityMemberId, status, role) {
   if (!confirm(confirmText)) return;
 
   try {
+    if (isGroupedMemberApproval) {
+      const { data, error } = await db.rpc("approve_pending_member", {
+        pending_facility_member_id: facilityMemberId,
+        initial_group_id: selectedGroupId
+      });
+
+      if (error) throw error;
+      if (!data?.length || data[0].status !== "approved") {
+        throw new Error("The member was not approved as expected.");
+      }
+
+      await loadPendingUsers();
+      return;
+    }
+
     const updateData = {
       status
     };

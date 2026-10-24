@@ -23,7 +23,7 @@
       <div class="auth-heading">
         <p class="eyebrow" id="signup-eyebrow">JOIN RIP CITY</p>
         <h2 id="signup-title">Create Account</h2>
-        <p id="signup-description">After signing up, a coach will approve your account before you can access the app.</p>
+        <p id="signup-description">After signing up, a facility administrator will assign your training group and approve your account.</p>
       </div>
 
       <form id="signup-form" class="auth-form">
@@ -65,13 +65,6 @@
           <div>
             <label for="signup-confirm-password">Re-enter Password <span class="required-label">Required</span></label>
             <input id="signup-confirm-password" type="password" minlength="6" required />
-          </div>
-
-          <div class="athlete-only">
-            <label for="signup-training-group">Training Group <span class="required-label">Required</span></label>
-            <select id="signup-training-group">
-              <option value="">Loading groups...</option>
-            </select>
           </div>
 
           <div class="athlete-only">
@@ -125,6 +118,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/shared/supabaseClient.js"></script>
-  <script src="js/auth/auth.js?v=coach-invites-3"></script>
+  <script src="js/auth/auth.js?v=admin-assigned-groups-1"></script>
 </body>
 </html>

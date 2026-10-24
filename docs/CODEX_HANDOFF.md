@@ -132,7 +132,19 @@ Current signup-link decision:
   2026-10-23. The focused athlete-habit and attribution checks passed: Rip City
   athletes can use shared habits, authorized members receive creator/assigner
   display names, another facility is denied, and facility coaches retain shared
-  workout visibility. Production remains unchanged.
+  workout visibility. Production received this migration during the V2 release
+  on 2026-10-23.
+- `20261023210000_admin_assign_signup_groups.sql` was applied to staging on
+  2026-10-24. Its focused checks passed: pending athletes cannot self-assign,
+  ordinary coaches cannot approve, cross-facility groups are rejected, direct
+  group-less approval is blocked, and a facility admin atomically assigns the
+  initial group and approves the athlete. The test restored the pending fixture
+  and removed its temporary group. Production has not received this migration.
+- `20261024120000_admin_assign_all_member_signup_groups.sql` extends that
+  workflow to H2K members with matching H2K/shared-group validation. It was
+  applied to staging on 2026-10-24, and all 19 expanded athlete/H2K checks
+  passed with both fixtures restored and temporary groups removed. Production
+  has not received it.
 
 Production Supabase audit status:
 

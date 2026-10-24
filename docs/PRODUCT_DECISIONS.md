@@ -31,6 +31,9 @@ they are intentionally revisited.
 - Ordinary coaches can review pending requests but cannot approve, reject,
   deactivate, reactivate, promote, or create facility memberships. A future
   request/flag workflow may let them ask an admin to review an account.
+- Athletes and H2K members do not choose a group during signup. A facility
+  admin must select the member's initial matching same-facility group as part
+  of approval; group assignment and approval succeed or fail together.
 - Deactivation preserves history; reactivation restores the existing historical
   relationships.
 
