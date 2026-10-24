@@ -34,6 +34,13 @@ the two staging facilities were added and verified on 2026-08-28.
 
 Staging migration status:
 
+- `20261024170000_add_testing_days_foundation.sql` was applied to staging on
+  2026-10-24. Result writes remain intentionally denied until the official
+  entry role is approved. Production has not received this migration.
+- `20261024173000_fix_testing_day_save_column_resolution.sql` is the required
+  staging follow-up for the ambiguous save-RPC column reference discovered by
+  the focused RLS test. Apply it before rerunning the Testing Day checks.
+
 - `20261023180000_add_workout_attribution_rpc.sql` was applied to staging on
   2026-10-23. It exposes only creator/assigner display names for workout
   assignments the authenticated caller is already authorized to read. The

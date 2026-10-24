@@ -50,6 +50,13 @@ staging application.
 - `20261024150000_add_member_habit_leaderboards.sql` adds a privacy-safe member
   leaderboard RPC that exposes only the caller's program top-five positions
   plus their own position, with optional caller-owned group scope.
+- `20261024170000_add_testing_days_foundation.sql` adds facility-scoped Testing
+  Days, ordered test snapshots, deduplicated group/individual participant
+  rosters, result-ready storage, and transactional scheduling RPCs. Result
+  writes intentionally remain denied until the official-entry role is approved.
+- `20261024173000_fix_testing_day_save_column_resolution.sql` removes an
+  ambiguous `testing_day_id` PL/pgSQL reference that initially prevented the
+  transactional Testing Day save RPC from completing.
 - Future changes must use a later UTC timestamp and a descriptive name, such as
   `20260817090000_add_facility_timezone.sql`.
 

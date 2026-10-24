@@ -18,7 +18,7 @@ Use this as the quick orientation guide before editing.
   Approvals remain available from every coach surface.
 - `workout-session.html` is the member workout logging screen.
 - `coach-dashboard.html`, `coach-roster.html`, `coach-workouts.html`,
-  `coach-exercises.html`, `coach-leaderboards.html`, and `coach-approvals.html`
+  `coach-exercises.html`, `coach-testing.html`, `coach-leaderboards.html`, and `coach-approvals.html`
   are the coach/admin surfaces.
   The Exercise Library is intentionally linked only from the Workout Builder.
 
@@ -58,6 +58,9 @@ Use this as the quick orientation guide before editing.
   metric registry used to rank by rolling results or streaks. Future lift and
   testing leaderboards should extend that registry rather than add a separate
   ranking implementation.
+- `js/coach/coach-testing.js` powers Testing Day creation, multi-group and
+  individual roster selection, ordered test batteries, scheduling, and
+  cancellation. Result entry is intentionally absent pending the approved role.
 - `js/coach/workouts/` powers workout creation, assignment, recent workout reuse,
   and the exercise library. `page.js` is the page controller, with the form UI
   in `builder.js`, assignment behavior in `assignments.js`, saved-workout
@@ -70,6 +73,9 @@ Use this as the quick orientation guide before editing.
   today’s workout, workout history, and feedback link display.
 - `js/member/member-announcements.js` renders the active facility, group, and
   individual announcements permitted to the signed-in member by RLS.
+- `js/member/member-testing-days.js` renders assigned scheduled Testing Days and
+  their ordered test batteries on the member Training page without loading or
+  writing results.
 - `js/member/member-leaderboards.js` renders the program-separated member Top
   5 and own-rank view. It reads only the privacy-safe leaderboard RPC rather
   than loading facility rosters or other members' raw habit logs.

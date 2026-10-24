@@ -555,9 +555,9 @@ eventually connect workouts, goals, profile metrics, and sport-specific data.
 
 ### V2 Status
 
-Progress tracking is intentionally on hold for now because it is too broad to
-build well without more product decisions. Testing Days remain a V2 candidate
-until the Rip City coach discussion on 2026-10-18.
+Broad progress tracking remains on hold because it is too large to build well
+without more product decisions. The Testing Day scheduling foundation is now
+in progress as a separate post-release feature.
 
 Goals define what a member is trying to reach. Progress is the history and
 numbers that show whether the member is moving toward those goals. In V2, use
@@ -566,35 +566,38 @@ metrics deserve a dedicated module.
 
 ### Testing Day Direction
 
-Rip City may need a coach-run Testing Day workflow where coaches define a set
-of tests, select a group or individual participants, and enter results for many
-members from one roster-style screen. This is a candidate for V2 if Rip City
-considers it necessary for winter training; otherwise V2 should preserve the
-foundation and schedule the full workflow for V3.
+Rip City approved a coach-run Testing Day workflow. The first delivery lets
+coaches and facility admins define a set of tests and select any combination of
+groups and individual participants. Who may enter official results is still an
+open decision, so result writes remain disabled in this first delivery.
 
 Testing Day should not be modeled as an ordinary workout. A durable design is
 expected to include:
 
-- A facility-scoped testing session with name, date, status, creator, and
-  selected group/members.
+- A facility-scoped testing session with name, date, status, creator, and a
+  snapshotted participant roster built from selected groups/members.
 - Ordered test definitions with a name, unit, input type, and whether a higher
   or lower result ranks better.
-- Per-member results that record the entering coach, optional notes, and any
-  approved attempt/best-result behavior.
-- A roster-style coach entry screen so an entire testing group can be entered
+- A result-ready table that can record the entering account, optional notes,
+  and approved values once entry permissions are decided.
+- A future roster-style entry screen so an entire testing group can be entered
   efficiently without opening every member separately.
 - A clear connection to member progress history and the existing selectable
   leaderboard metric registry once visibility and ranking rules are approved.
 - Facility-scoped RLS and two-facility tests so coaches can never enter or read
   another facility's testing data.
 
-Questions for the Rip City coach on 2026-10-18:
+Already decided:
+
+- Group and individual selection are both supported and are deduplicated into
+  one snapshotted roster.
+
+Decisions still required before result entry:
 
 - Which tests are used regularly?
 - Does each test store one result, multiple attempts, or only the best result?
 - Are results entered only by coaches, or can members submit results for coach
   verification?
-- Is testing normally run for a full group, selected members, or both?
 - Which results should members see, and which may appear on leaderboards?
 - Do previous testing days need side-by-side comparison or charts in the first
   release?

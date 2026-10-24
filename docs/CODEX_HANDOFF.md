@@ -82,11 +82,12 @@ See `docs/VERSION_2_PLAN.md` for detailed product requirements and
 `docs/V2_BACKLOG.md` for the maintained implementation order and status. The
 current post-launch order is:
 
-1. Finish the privacy-safe member leaderboard on
+1. Review and merge the privacy-safe member leaderboard from
    `derek/member-leaderboards`.
-2. Confirm Testing Day result-entry rules with the Rip City coach, then build
-   Testing Days as a separate feature.
-3. Start V3 only after those two post-launch features are settled.
+2. Finish the Testing Day scheduling foundation on `derek/testing-days`.
+3. Confirm who enters official Testing Day results before building any result
+   form or granting result-write permission.
+4. Start broader V3 work after these post-launch features are settled.
 
 New feature branches start from current `main`. The V2 production release and
 its ordered production migration sequence are complete.
@@ -294,12 +295,12 @@ Coach onboarding:
 
 Testing Days:
 
-- A proposed coach-run Testing Day workflow would support ordered tests,
-  group/member selection, roster-style result entry, progress history, and
-  future leaderboard metrics.
-- The exact tests, attempts/best-result behavior, permissions, visibility, and
-  V2-versus-V3 boundary are pending Derek's Rip City coach discussion on
-  2026-10-18.
+- `derek/testing-days` adds the separate coach/admin scheduler, ordered test
+  battery, reusable definitions, deduplicated group/individual roster snapshot,
+  and assigned member Training schedule.
+- The migration creates result-ready storage but intentionally grants no result
+  writes. Who enters results, attempt/best-result behavior, member result
+  visibility, and leaderboard eligibility remain pending.
 
 Coach notes / announcements:
 

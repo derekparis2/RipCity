@@ -169,9 +169,10 @@ Future workout features:
 - Coach completion dashboard
 
 Testing/progress direction:
-- Coach-created Testing Days with reusable or custom tests
-- Group/member participant selection
-- Roster-style result entry by coaches
+- Coach/admin-created Testing Days with reusable or custom ordered tests
+- Multi-group and individual participant selection with a deduplicated roster snapshot
+- Assigned Testing Day schedules on member Training
+- Roster-style result entry after the official-entry role is approved
 - Testing results connected to progress history and approved leaderboard metrics
 - Exact test, attempt, visibility, and ranking rules pending Rip City feedback
 

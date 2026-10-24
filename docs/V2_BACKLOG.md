@@ -323,26 +323,37 @@ into `v2-development`.
 
 ---
 
-## 9. Testing Days, Progress, Profiles, And Controlled Community
+## 9A. Testing Day Scheduling Foundation
 
-- **Status:** Planned post-launch
-- **Suggested branch:** `<name>/progress-community`
+- **Status:** In progress
+- **Branch:** `derek/testing-days`
 - **Plan detail:** [Progress tracking](VERSION_2_PLAN.md#4-progress-tracking) · [Profile and community](VERSION_2_PLAN.md#6-profile-and-community)
 
-This package begins only after the remaining metric, write-permission, and
-privacy decisions are made. It combines the first useful progress experience
-with the profile surfaces that display approved goals, achievements, streaks,
-and controlled community information. It also contains the proposed Testing
-Day workflow: coaches define a testing session and ordered tests, select a
-group/members, enter the roster's results efficiently, and connect approved
-results to member progress and the existing leaderboard metric selector. The
-Rip City approved Testing Days as the next major product feature, but the work
-is intentionally scheduled after the current V2 production release so release
-preparation does not mix with a new schema and workflow.
+This package creates Testing Days as a feature separate from workouts. A coach
+or facility admin can create a draft or scheduled day, select any combination
+of groups and individuals, and define an ordered battery of reusable or custom
+tests. The database snapshots and deduplicates the participant roster so later
+group changes do not rewrite the historical day. Assigned members can see the
+schedule and test battery from Training.
 
-**Complete when:** The first approved shared progress metrics, testing-result
-rules, and private/public profile rules work consistently for both facilities
-without prematurely pulling unapproved V3 baseball features into V2.
+The result table and test metadata are included, but every authenticated result
+write remains blocked until Rip City decides who enters official results.
+
+**Complete when:** The migration is applied to staging; coach/admin creation,
+editing, scheduling, cancellation, roster deduplication, member schedule
+visibility, two-facility isolation, and the intentional result-write denial all
+pass review and focused tests.
+
+## 9B. Testing Results And Progress Integration
+
+- **Status:** Waiting on product decision
+- **Suggested branch:** `<name>/testing-results`
+
+This follow-up begins after Rip City decides who may enter results, whether a
+test stores one result or multiple attempts, which results members may see, and
+which testing metrics may appear on leaderboards. It owns roster-style result
+entry, result correction rules, comparisons over time, and approved progress or
+leaderboard integration.
 
 ---
 
