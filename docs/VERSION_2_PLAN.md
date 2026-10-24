@@ -108,6 +108,10 @@ Coach onboarding direction:
 - Ordinary coaches can review pending member signups but cannot approve,
   reject, deactivate, or reactivate any account. Facility admins make every
   member and coach lifecycle decision in V2.
+- Athlete signup does not include group selection. During approval, a facility
+  admin must choose the athlete's initial same-facility training group. The
+  group assignment and approval are one atomic database action, and pending
+  athletes cannot assign themselves to a group.
 - Coach signup must remain facility-scoped and pending until a facility admin
   approves it. A copied or forwarded link must never grant coach access by
   itself.

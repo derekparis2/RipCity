@@ -2357,6 +2357,30 @@ td {
   padding: 6px 9px;
 }
 
+.pending-user-group-control {
+  display: grid;
+  gap: 7px;
+  max-width: 360px;
+  margin-top: 14px;
+}
+
+.pending-user-group-control > span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.pending-user-group-control select {
+  width: 100%;
+}
+
+.approve-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
 .pending-user-actions {
   display: flex;
   gap: 10px;

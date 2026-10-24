@@ -131,6 +131,14 @@ members only from groups they created, while admins retain full group control.
 The 25 account-lifecycle checks and 15 group-ownership checks passed in staging
 on 2026-10-23, with all temporary fixture changes cleaned up.
 
+**Signup-group approval hardening:** Complete on
+`derek/admin-assigned-signup-groups`. Athlete signup no longer exposes a group
+selector. Facility admins select the initial athlete group during approval,
+and a transactional database operation prevents self-assignment, cross-facility
+assignment, or approval without a valid group. All 12 focused staging checks
+passed on 2026-10-24 and restored the fixture state. This slice is ready to
+merge after the migration is applied to production.
+
 ---
 
 ## Package 5 Moved To V3
