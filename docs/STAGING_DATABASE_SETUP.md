@@ -1,0 +1,208 @@
+# Rip City Staging Database Setup
+
+## Purpose
+
+This runbook creates the current audited Rip City application structure in a
+new, empty Supabase staging project. It does not copy production member data,
+Auth users, uploaded files, secrets, or project settings.
+
+Target project:
+
+- Name: **Rip City Staging**
+- Reference: `xjgmjliqqkhfnqphigbk`
+- URL: `https://xjgmjliqqkhfnqphigbk.supabase.co`
+- Data rule: fake data only
+
+Status: the baseline and every verification check passed in Rip City Staging on
+2026-08-16. Staging Auth was configured locally on 2026-08-28 and connected to
+the shared Netlify staging deployment on 2026-09-11. The project contains
+required configuration, nine fake test identities, and no workout/activity
+data.
+
+Never run the initial baseline against production. Production reference
+`fdzmfohcuratbuitkwoy` is intentionally different.
+
+## What The Baseline Contains
+
+The verified baseline combines the repository-controlled schema, current
+profile fields, final gender constraint, RLS helpers and policies, signup group
+support, username login, final H2K band constraint and protection trigger,
+exercise library, profile-picture Storage setup, and required Rip City seeds.
+
+It also fixes the known rebuild problems identified in the 2026-08-08 audit:
+
+- Only one case-insensitive username index is created.
+- Exercise-library tables receive explicit, narrow API privileges.
+- Exercise-substitution policies use short canonical names that stay below
+  PostgreSQL's 63-byte identifier limit.
+- The H2K protection trigger function is not directly executable by API roles.
+- Default privileges leave future public tables closed until reviewed grants
+  and RLS policies are added.
+
+## Canonical One-Run Migration
+
+The complete verified migration is:
+
+`supabase/migrations/20260816221135_initial_verified_baseline.sql`
+
+It is wrapped in one transaction: if a statement fails, PostgreSQL rolls the
+entire baseline back instead of leaving a partially created application schema.
+
+The baseline is for a fresh project. It is not an upgrade migration and should
+not be rerun over an existing application schema.
+
+## Run It In Supabase
+
+1. Open **Rip City Staging** in the Supabase dashboard.
+2. Confirm the project reference is `xjgmjliqqkhfnqphigbk`.
+3. Open **SQL Editor** and create a new query.
+4. Open `supabase/migrations/20260816221135_initial_verified_baseline.sql`
+   locally and copy all of it.
+5. Paste it into the staging query.
+6. Reconfirm the browser URL contains `xjgmjliqqkhfnqphigbk`.
+7. Click **Run** once.
+8. Stop and save the complete error if Supabase reports any failure. Do not run
+   individual repair statements until the source migration is corrected.
+
+The baseline creates no Auth users. Its only rows are required Rip City setup
+data: one facility, five groups, six habits, and 88 repository-controlled
+starter exercise templates.
+
+The catalog-correction migration applied on 2026-09-14 supplies the 88th
+template, Vertical Jump, and corrects the medicine-ball input defaults. A fresh
+rebuild must run all active migrations in filename order before staging seeds.
+
+The secure coach-onboarding migration
+`20261016120000_add_secure_coach_invites.sql` is not part of the initial
+baseline. Run it in filename order for a fresh rebuild and verify it with
+`supabase/tests/staging_coach_invite_rls_checks.mjs` after the fake Auth
+accounts have been installed. It was applied to Rip City Staging and all 12
+checks passed on 2026-10-16.
+
+The follow-up migration
+`20261016200000_harden_secure_coach_invites.sql` must run immediately after it.
+It generates invite secrets and seven-day expiration timestamps on the server,
+prevents consumed invites from being reopened, and supports retrying an
+interrupted account with a fresh link. It was applied to staging on 2026-10-16,
+and the expanded 14-check coach-invite suite passed. Production remains
+unchanged.
+
+The second follow-up migration
+`20261016201500_lock_down_coach_invite_writes.sql` prevents role-changing from
+being used to reopen a claimed invite and blocks direct client writes to
+server-owned coach-invite metadata. It was applied to staging on 2026-10-16,
+and the expanded 16-check coach-invite suite passed.
+
+Production currently contains 93 exercise templates. Git history confirms the
+starter seed has always contained 87, so six production templates were added
+outside the repository seed. They are production data, not silently invented
+baseline rows, and must be exported/classified during the production-backup
+work before a disaster-recovery procedure is considered complete.
+
+The 2026-08-16 comparison confirmed all six have a creator and all 87 seeded
+names remain present. Production also changes `Push-Up` and `Tempo Push-Up`
+from the seeded `completion` input type to `weight_reps`. See the dated audit
+for the exact six names. These mutable facility changes should be restored from
+a production-data backup rather than folded into the clean starter baseline by
+default.
+
+## Verify The Result
+
+After the baseline succeeds, run the read-only file:
+
+`sql/diagnostics/verify_staging_baseline.sql`
+
+Every row in its single result table must say `PASS`.
+
+Do not proceed to fake users or V2 migrations if any verification check fails.
+
+## Project Settings After SQL Verification
+
+Match the staging Auth behavior needed by the current application without
+copying production secrets or real accounts:
+
+- Email/password sign-in enabled.
+- Email confirmation disabled for the current signup/approval workflow.
+- Anonymous sign-in disabled.
+- Site URL set to `https://ripcitystaging.netlify.app`, never the production
+  beta URL.
+- Redirect URLs added for the stable staging site, Netlify pull-request
+  previews, and optional localhost testing:
+  - `https://ripcitystaging.netlify.app/**`
+  - `https://**--ripcitystaging.netlify.app/**`
+  - `http://localhost:3000/**`
+
+Status: the Auth-provider toggles were completed 2026-08-28 and the deployed
+URL configuration was updated 2026-09-11. New-user email signups are enabled;
+email confirmation, anonymous sign-ins, and manual linking are disabled.
+
+The Netlify and Auth setup, PR-preview workflow, migration checks, recovery
+steps, and post-deploy tests are maintained in
+`docs/STAGING_RELEASE_CHECKLIST.md`.
+
+Storage objects and Auth users must be created separately; SQL schema files do
+not restore them.
+
+## Next Milestone
+
+After schema and Auth verification, run the staging-only seed:
+
+`supabase/seeds/staging/v2/01_two_facility_foundation.sql`
+
+Run it before creating fake Auth users. Its fail-closed guard requires the
+verified empty staging shape and rejects any database with existing Auth users
+or application profiles.
+
+Status: completed and verified in Rip City Staging on 2026-08-28. The result is:
+
+- Rip City: five groups and six habits.
+- Test Facility Alpha: two athlete groups and zero habits.
+- Total Auth users and application profiles remain zero.
+
+After the seed passes, create entirely fake Auth users and application rows for
+all active roles and pending/inactive statuses across both facilities. Then run
+the cross-facility RLS matrix before starting V2
+feature migrations.
+
+Use the maintained fake identities and intended role/status mapping in
+`docs/STAGING_TEST_ACCOUNTS.md`. Store their shared password privately; never
+add it to the repository.
+
+After all nine fake Auth identities exist and are auto-confirmed, run:
+
+`supabase/seeds/staging/v2/02_test_account_profiles.sql`
+
+The fixture requires exactly those nine Auth users and an otherwise empty set
+of application profiles/memberships. It looks up Auth UUIDs by fake email and
+stores no password.
+
+Status: completed and verified in Rip City Staging on 2026-08-28. The original
+result had nine profiles and ten memberships. The obsolete Alpha membership
+for `rccoach@example.com` was removed from the maintained fixture on
+2026-10-18, leaving nine profiles and nine one-facility memberships; pending
+and inactive fixtures retain their intended statuses.
+
+The staging-only cleanup file
+`supabase/seeds/staging/v2/04_remove_cross_facility_coach_fixture.sql` was
+applied successfully on 2026-10-18 to bring the existing project to that
+maintained shape.
+
+For leaderboard testing, optionally run the repeatable fixture:
+
+`supabase/seeds/staging/v2/03_leaderboard_demo_data.sql`
+
+It adds ten display-only members without Auth identities and generates
+date-relative habit and workout-completion records. The existing H2K and
+athlete login accounts receive matching activity so the member dashboard and
+coach leaderboard can be compared. Rerun it when the test dates become stale.
+It is staging-only and must never be promoted to production.
+
+Status: refreshed and verified in Rip City Staging on 2026-10-23 after habits
+were shared with athletes. The result was 10 display-only members, 1,464
+fixture habit logs, 50 fixture assignments, and 38 completed fixture
+assignments.
+
+The manual role smoke tests and the repeatable read-only RLS suite were then
+completed. The maintained suite covers facility isolation, member self-only
+records, and pending/inactive protected-data denial without a V2
+multi-facility identity.

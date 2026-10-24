@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Member Training</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css?v=ui-polish-4" />
+</head>
+<body class="auth-body member-dashboard-body member-feature-page" data-member-page="training">
+  <aside class="sidebar member-sidebar">
+    <div class="brand"><div class="brand-mark"><img src="assets/rip-city-logo.png" alt="Rip City logo"></div><div><h1>RIP CITY</h1><p class="member-role-pending" id="member-brand-subtitle">Member</p></div></div>
+    <div class="mode-card"><span>Current View</span><strong class="member-role-pending" id="member-program-label">Member</strong><a class="outline-link small-btn" href="profile.html">View Profile</a></div>
+    <nav class="member-shell-nav" data-member-nav="training" aria-label="Member navigation"></nav>
+    <div class="user-card"><div class="avatar" id="member-avatar">RC</div><div><strong id="member-sidebar-name">Member</strong><span class="h2k-band-badge hidden" id="member-band-color">No Band</span><span class="member-role-pending" id="member-sidebar-role">Approved</span></div></div>
+  </aside>
+
+  <main class="main-content member-main-content member-feature-main">
+    <header class="topbar"><div><p class="eyebrow" id="member-dashboard-date">TRAINING</p><h2>Training Calendar</h2></div><div class="topbar-actions"><button class="outline-btn" id="h2k-logout-btn">Log Out</button></div></header>
+    <section class="hero-card h2k-hero member-feature-hero"><div><p class="eyebrow">YOUR SCHEDULE</p><h3>Every assigned workout, organized by day.</h3><p>Select a date to open, preview, or review a workout.</p></div></section>
+
+    <section class="panel training-calendar-panel future-workouts-panel member-page-panel" id="training-calendar-panel">
+      <div class="panel-heading"><div><p class="eyebrow">SCHEDULE</p><h3>Training Calendar</h3></div><p id="workout-history-message" class="auth-message" aria-live="polite"></p></div>
+      <div class="training-calendar-layout">
+        <div id="future-workout-list" class="future-calendar training-calendar"><div class="empty-state">Loading assigned workouts...</div></div>
+        <div class="training-calendar-day"><div class="training-calendar-day-heading"><span class="eyebrow">SELECTED DAY</span><strong id="training-calendar-selected-date">Today</strong></div><div id="workout-history-list" class="workout-history-list compact-workout-list"><div class="empty-state">Select a date to view workouts.</div></div></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/shared/supabaseClient.js"></script>
+  <script src="js/shared/ui-utils.js"></script>
+  <script src="js/shared/access-control.js?v=single-row-fix-1"></script>
+  <script src="js/shared/workout-data.js?v=workout-attribution-1"></script>
+  <script src="js/shared/leaderboard-metrics.js?v=coach-leaderboards-2"></script>
+  <script src="js/member/member-nav.js?v=shared-habits-1"></script>
+  <script src="js/member/member-dashboard.js?v=shared-habits-1"></script>
+</body>
+</html>

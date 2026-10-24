@@ -2,6 +2,11 @@
 
 Use this checklist before putting Rip City on a live URL for testers.
 
+This file describes the original beta deployment checks. For V2 feature
+branches, Netlify Deploy Previews, staging Supabase migrations, recovery, and
+the eventual V2 production release gate, use
+`docs/STAGING_RELEASE_CHECKLIST.md`.
+
 ## Hosting Choice
 
 Rip City is currently a static frontend that talks directly to Supabase with the
@@ -20,9 +25,9 @@ Good beta options:
 Before inviting testers:
 
 1. Add the live site URL to Supabase Auth allowed redirect URLs.
-2. Add local development URLs if you still test locally:
-   - `http://localhost:8000`
-   - `http://127.0.0.1:8000`
+2. Add the exact local password-reset redirects if you still test locally:
+   - `http://localhost:3000/set-password.html`
+   - `http://127.0.0.1:3000/set-password.html`
 3. Confirm email confirmation behavior.
 4. If email confirmation is enabled, retest signup because app profile rows may
    need a server-side signup handler later.
@@ -31,7 +36,8 @@ Before inviting testers:
 
 Confirm these migrations/features are present in the live project:
 
-- Base schema and Rip City seed data.
+- Approved migrations from `supabase/migrations/` and required Rip City
+  configuration.
 - Profile fields.
 - Username login support.
 - Signup group selection support.
@@ -59,7 +65,7 @@ Run these on the deployed URL, not only localhost:
 2. H2K member login.
 3. Athlete login.
 4. New signup and pending approval.
-5. Coach approval.
+5. Coach approval, rejection, deactivation, and reactivation.
 6. Workout builder create and assign.
 7. Member dashboard workout visibility.
 8. Workout session Save Set and Save All Sets.
@@ -70,6 +76,8 @@ Run these on the deployed URL, not only localhost:
 
 - Any logged-out user can see member data.
 - A pending member can access the dashboard.
+- A rejected or inactive account can access protected facility pages.
+- An ordinary coach can deactivate or reactivate another coach.
 - A member can see another member's private logs/profile data.
 - A coach can see or manage another facility's data.
 - Signup creates an auth user but no app profile/membership rows.

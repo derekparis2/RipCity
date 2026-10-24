@@ -7,12 +7,12 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/styles.css?v=ui-polish-4" />
 </head>
 
 <body class="auth-body">
   <main class="approval-page">
-    <section class="approval-header">
+    <header class="h2k-header">
       <div class="auth-brand">
         <img src="assets/rip-city-logo.png" alt="Rip City logo">
         <div>
@@ -21,24 +21,21 @@
         </div>
       </div>
 
+      <div class="h2k-header-actions coach-header-actions">
+        <nav class="coach-nav" data-coach-nav="approvals" aria-label="Coach navigation"></nav>
+        <button class="outline-btn" id="approval-logout-btn">Log Out</button>
+      </div>
+    </header>
+
+    <section class="approval-header">
       <div>
         <p class="eyebrow">COACH ADMIN</p>
         <h2>Pending Approvals</h2>
-        <p>Approve or reject new users before they can access the app.</p>
+        <p id="approval-access-note">Loading account permissions...</p>
       </div>
     </section>
 
-    <section class="panel feedback-panel coach-feedback-panel">
-      <div>
-        <p class="eyebrow">BETA FEEDBACK</p>
-        <h3>Tell us what to improve.</h3>
-        <p>Send notes on signup approval, roles, or anything confusing before members get access.</p>
-      </div>
-
-      <a class="primary-link" href="#" target="_blank" rel="noopener" data-feedback-link>Open Feedback Form</a>
-    </section>
-
-    <section class="panel">
+    <section class="panel approval-requests-panel">
       <div class="panel-heading">
         <div>
           <p class="eyebrow">PENDING USERS</p>
@@ -52,17 +49,39 @@
       <div id="pending-users-list" class="pending-users-list"></div>
     </section>
 
-    <div class="approval-actions-bottom">
-      <button class="outline-btn" id="approval-logout-btn">Log Out</button>
-      <a class="outline-link" href="coach-roster.html">Roster</a>
-      <a class="outline-link" href="coach-dashboard.html">Coach Dashboard</a>
-    </div>
+    <section class="approval-admin-tools" aria-label="Facility admin tools">
+      <details class="panel hidden approval-admin-tool" id="coach-invite-panel">
+        <summary class="compact-panel-summary">
+          <span><span class="eyebrow">ADMIN ONLY</span><strong>Invite a Coach</strong></span>
+          <span aria-hidden="true">Open +</span>
+        </summary>
+        <div class="compact-panel-body">
+          <p>Create a single-use signup link that expires after seven days. The new coach still requires approval.</p>
+          <button class="primary-btn" type="button" id="create-coach-invite-btn">Create &amp; Copy Coach Link</button>
+          <p id="coach-invite-message" class="auth-message" role="status" aria-live="polite"></p>
+        </div>
+      </details>
+
+      <details class="panel hidden approval-admin-tool" id="coach-management-panel">
+        <summary class="compact-panel-summary">
+          <span><span class="eyebrow">ADMIN ONLY</span><strong>Coach Access</strong></span>
+          <span aria-hidden="true">Open +</span>
+        </summary>
+        <div class="compact-panel-body">
+          <p>Pause or restore a coach's access without deleting their account or history.</p>
+          <p id="coach-management-message" class="auth-message" role="status" aria-live="polite"></p>
+          <div id="coach-management-list" class="coach-management-list"></div>
+        </div>
+      </details>
+    </section>
+
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabaseClient.js"></script>
-  <script src="js/ui-utils.js"></script>
-  <script src="js/access-control.js"></script>
-  <script src="js/coach-approvals.js"></script>
+  <script src="js/shared/supabaseClient.js"></script>
+  <script src="js/shared/ui-utils.js"></script>
+  <script src="js/coach/coach-nav.js?v=ui-polish-1"></script>
+  <script src="js/shared/access-control.js?v=single-row-fix-1"></script>
+  <script src="js/coach/coach-approvals.js?v=admin-member-lifecycle-1"></script>
 </body>
 </html>

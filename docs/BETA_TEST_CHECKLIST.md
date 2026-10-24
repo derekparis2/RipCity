@@ -26,10 +26,10 @@ Use this checklist when walking Rip City testers through the app.
 - Open Coach Dashboard and review workout completion.
 - Submit one coach feedback form response from a coach page.
 
-## H2K Member Tests
+## Shared Member Habit Tests
 
-- Log in as an H2K member.
-- Confirm the dashboard shows H2K habit score cards.
+- Run these checks once as an H2K member and once as an athlete.
+- Confirm the dashboard shows the shared habit score cards.
 - Complete and un-complete daily habits.
 - Refresh the page and confirm habit progress stays saved.
 - Open today's workout if one is assigned.
@@ -45,8 +45,9 @@ Use this checklist when walking Rip City testers through the app.
 ## Athlete Tests
 
 - Log in as an athlete.
-- Confirm H2K habits do not show.
-- Confirm athlete workout stats show.
+- Confirm the same Habits page, weekly score, four-week average, and habit
+  streaks shown to H2K members are available.
+- Confirm athlete-only sport/profile details still display where relevant.
 - Open today's assigned workout if one exists.
 - Save one set.
 - Save all sets.

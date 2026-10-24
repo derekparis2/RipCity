@@ -1,0 +1,473 @@
+// =====================================================
+// MEMBER PROFILE PAGE
+// =====================================================
+// This page lets an approved member edit their profile.
+// It updates the shared profiles table and member_profiles table.
+
+let profileAccess = null;
+let currentMemberProfile = null;
+let profileSupportsGender = false;
+let selectedProfilePictureFile = null;
+
+const PROFILE_PICTURE_BUCKET = "profile-pictures";
+const MAX_PROFILE_PICTURE_BYTES = 5 * 1024 * 1024;
+
+// ----------------------------
+// Page messages / small helpers
+// ----------------------------
+
+function showProfileMessage(message, isError = false) {
+  const element = document.getElementById("profile-message");
+  if (!element) return;
+
+  element.textContent = message;
+  element.classList.toggle("error-message", isError);
+}
+
+async function getProfileSession() {
+  return window.RipCityAccess.getSession();
+}
+
+async function getProfileUser(userId) {
+  // Shared account/profile fields live in profiles.
+  // Program/member-specific fields are loaded separately from member_profiles.
+  return window.RipCityAccess.getProfileWithMemberships(
+    userId,
+    "username,bio,birthday,profile_picture_url"
+  );
+}
+
+async function getMemberProfile(facilityMemberId) {
+  // member_profiles is keyed from facility_members, not directly from auth users.
+  return window.RipCityAccess.getMemberProfileForMembership(facilityMemberId);
+}
+
+async function requireApprovedProfileUser() {
+  // Profile editing is only available after the facility has approved access.
+  return window.RipCityAccess.requireApprovedAccess({
+    extraProfileColumns: "username,bio,birthday,profile_picture_url"
+  });
+}
+
+function setInputValue(id, value) {
+  const element = document.getElementById(id);
+  if (!element) return;
+
+  if (element.tagName === "SELECT" && value && !Array.from(element.options).some(option => option.value === String(value))) {
+    element.add(new Option(value, value));
+  }
+
+  element.value = value || "";
+}
+
+function getInputValue(id) {
+  const element = document.getElementById(id);
+  if (!element) return "";
+
+  return element.value.trim();
+}
+
+function getInitials(name) {
+  return String(name || "Member")
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(part => part.charAt(0).toUpperCase())
+    .join("") || "M";
+}
+
+function getSafeImageUrl(url) {
+  if (!url) return "";
+
+  try {
+    const parsed = new URL(url, window.location.href);
+    return ["http:", "https:", "blob:"].includes(parsed.protocol) ? parsed.href : "";
+  } catch {
+    return "";
+  }
+}
+
+function setProfilePicturePreview(url, fallbackName) {
+  const avatar = document.getElementById("profile-avatar");
+  if (!avatar) return;
+
+  const safeUrl = getSafeImageUrl(url);
+  avatar.textContent = "";
+  avatar.classList.toggle("has-image", Boolean(safeUrl));
+
+  if (safeUrl) {
+    const image = document.createElement("img");
+    image.src = safeUrl;
+    image.alt = `${fallbackName || "Member"} profile picture`;
+    image.addEventListener("error", () => {
+      avatar.classList.remove("has-image");
+      avatar.textContent = (fallbackName || "Member").charAt(0).toUpperCase();
+    });
+    avatar.appendChild(image);
+    return;
+  }
+
+  avatar.textContent = (fallbackName || "Member").charAt(0).toUpperCase();
+}
+
+function updateProfilePreview() {
+  // The preview updates as the user types so the profile page feels less like
+  // a plain settings form and more like a member card.
+  const fullName = getInputValue("profile-full-name") || "Member Name";
+  const username = getInputValue("profile-username") || "username";
+  const bio = getInputValue("profile-bio") || "Your bio will show here.";
+  const birthday = getInputValue("profile-birthday") || "Not added";
+  const pictureUrl = getInputValue("profile-picture-url");
+
+  const program = profileAccess?.isCoach
+    ? (profileAccess.membership.role === "admin" ? "Admin" : "Coach")
+    : currentMemberProfile?.member_type === "h2k"
+      ? "H2K Member"
+      : "Athlete";
+  const bandBadge = document.getElementById("preview-h2k-band");
+
+  document.getElementById("preview-name").textContent = fullName;
+  document.getElementById("preview-username").textContent = `@${username}`;
+  document.getElementById("preview-bio").textContent = bio;
+  document.getElementById("preview-birthday").textContent = birthday;
+  document.getElementById("preview-program").textContent = program;
+  setProfilePicturePreview(pictureUrl, fullName);
+
+  if (bandBadge) {
+    bandBadge.textContent = currentMemberProfile?.h2k_band_color
+      ? `${currentMemberProfile.h2k_band_color} Band`
+      : "No Band";
+    bandBadge.classList.toggle("hidden", currentMemberProfile?.member_type !== "h2k");
+  }
+}
+
+function updateProfileFieldVisibility() {
+  const isAthlete = currentMemberProfile?.member_type === "athlete";
+  document.querySelectorAll(".member-profile-fields").forEach(element => {
+    element.classList.toggle("hidden", !currentMemberProfile);
+  });
+  document.querySelectorAll(".athlete-profile-fields").forEach(element => {
+    element.classList.toggle("hidden", !isAthlete);
+  });
+}
+
+function getProfileMemberTypeLabel() {
+  if (profileAccess?.isCoach) {
+    return profileAccess.membership.role === "admin" ? "Admin" : "Coach";
+  }
+
+  const profileType = String(currentMemberProfile?.member_type || "").toLowerCase();
+  const role = String(profileAccess?.membership?.role || "").toLowerCase();
+
+  if (profileType === "h2k" || role === "h2k_member") return "H2K Member";
+  if (profileType === "athlete" || role === "athlete") return "Athlete";
+
+  return "Member";
+}
+
+function updateProfileShellNav() {
+  const isCoach = Boolean(profileAccess?.isCoach);
+  const isH2K = currentMemberProfile?.member_type === "h2k";
+  const subtitle = document.getElementById("profile-brand-subtitle");
+  const programLabel = document.getElementById("profile-program-label");
+  const sidebarName = document.getElementById("profile-sidebar-name");
+  const sidebarRole = document.getElementById("profile-sidebar-role");
+  const sidebarBand = document.getElementById("profile-sidebar-band");
+  const sidebarAvatar = document.getElementById("profile-sidebar-avatar");
+  const memberTypeLabel = getProfileMemberTypeLabel();
+  const memberNav = document.querySelector("[data-member-nav]");
+  const coachNav = document.querySelector("[data-coach-nav]");
+  const homeLink = document.getElementById("profile-home-link");
+  const pageHeading = document.getElementById("profile-page-heading");
+  const editorHeading = document.getElementById("profile-editor-heading");
+  const heroHeading = document.getElementById("profile-hero-heading");
+  const heroDescription = document.getElementById("profile-hero-description");
+  const fullName = profileAccess?.profile?.full_name || "Member";
+  const pictureUrl = getSafeImageUrl(profileAccess?.profile?.profile_picture_url);
+
+  memberNav?.classList.toggle("hidden", isCoach);
+  coachNav?.classList.toggle("hidden", !isCoach);
+  if (homeLink) {
+    homeLink.href = isCoach ? "coach-dashboard.html" : "member-dashboard.html";
+    homeLink.textContent = isCoach ? "Coach Dashboard" : "Dashboard";
+  }
+  if (pageHeading) pageHeading.textContent = isCoach ? "Coach Profile" : "Member Profile";
+  if (editorHeading) editorHeading.textContent = isCoach ? "Coach Info" : "Member Info";
+  document.title = isCoach ? "Coach Profile" : "Member Profile";
+  if (heroHeading) heroHeading.textContent = isCoach ? "Build your Rip City coach profile." : "Build your Rip City profile.";
+  if (heroDescription) {
+    heroDescription.textContent = isCoach
+      ? "Keep your account and profile details current for your facility."
+      : "Keep your member info current so coaches and teammates know who you are.";
+  }
+
+  if (subtitle) {
+    subtitle.textContent = memberTypeLabel;
+  }
+
+  if (programLabel) {
+    programLabel.textContent = memberTypeLabel;
+  }
+
+  if (sidebarName) {
+    sidebarName.textContent = fullName;
+  }
+
+  if (sidebarRole) {
+    sidebarRole.textContent = memberTypeLabel;
+  }
+
+  if (sidebarBand) {
+    sidebarBand.textContent = currentMemberProfile?.h2k_band_color
+      ? `${currentMemberProfile.h2k_band_color} Band`
+      : "No Band";
+    sidebarBand.classList.toggle("hidden", !isH2K);
+  }
+
+  if (sidebarAvatar) {
+    sidebarAvatar.textContent = "";
+    sidebarAvatar.classList.toggle("has-image", Boolean(pictureUrl));
+
+    if (pictureUrl) {
+      const image = document.createElement("img");
+      image.src = pictureUrl;
+      image.alt = `${fullName} profile picture`;
+      image.addEventListener("error", () => {
+        sidebarAvatar.classList.remove("has-image");
+        sidebarAvatar.textContent = getInitials(fullName);
+      });
+      sidebarAvatar.appendChild(image);
+    } else {
+      sidebarAvatar.textContent = getInitials(fullName);
+    }
+  }
+
+  window.RipCityMemberNav?.setH2KVisibility(isH2K);
+
+  document.querySelectorAll(".member-role-pending").forEach(element => {
+    element.classList.remove("member-role-pending");
+  });
+}
+
+function updateGenderFieldState() {
+  const gender = document.getElementById("profile-gender");
+  const help = document.getElementById("profile-gender-help");
+
+  if (!gender || !help) return;
+
+  gender.disabled = !profileSupportsGender;
+  help.textContent = profileSupportsGender
+    ? ""
+    : "Run the profile gender migration before this field can save.";
+}
+
+function fillProfileForm() {
+  // Populate the edit form from both profile tables.
+  const profile = profileAccess.profile;
+  const member = currentMemberProfile || {};
+
+  setInputValue("profile-full-name", profile.full_name);
+  setInputValue("profile-username", profile.username);
+  setInputValue("profile-bio", profile.bio);
+  setInputValue("profile-birthday", profile.birthday);
+  setInputValue("profile-picture-url", profile.profile_picture_url);
+
+  profileSupportsGender = Object.prototype.hasOwnProperty.call(member, "gender");
+  setInputValue("profile-gender", member.gender);
+  setInputValue("profile-sport", member.sport);
+  setInputValue("profile-position", member.position);
+  setInputValue("profile-school", member.school);
+  setInputValue("profile-grad-year", member.graduation_year);
+  setInputValue("profile-height", member.height);
+  setInputValue("profile-body-weight", member.body_weight);
+  setInputValue("profile-training-focus", member.training_focus);
+  setInputValue("profile-favorite-lift", member.favorite_lift);
+
+  updateProfileFieldVisibility();
+  updateGenderFieldState();
+  updateProfilePreview();
+}
+
+function getSafeProfilePicturePath(file) {
+  const extension = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+  const timestamp = Date.now();
+  return `${profileAccess.profile.id}/${timestamp}.${extension}`;
+}
+
+async function uploadSelectedProfilePicture() {
+  if (!selectedProfilePictureFile) return getInputValue("profile-picture-url") || null;
+
+  if (!selectedProfilePictureFile.type.startsWith("image/")) {
+    throw new Error("Profile picture must be an image file.");
+  }
+
+  if (selectedProfilePictureFile.size > MAX_PROFILE_PICTURE_BYTES) {
+    throw new Error("Profile picture must be 5 MB or smaller.");
+  }
+
+  const path = getSafeProfilePicturePath(selectedProfilePictureFile);
+  const { error } = await db.storage
+    .from(PROFILE_PICTURE_BUCKET)
+    .upload(path, selectedProfilePictureFile, {
+      cacheControl: "3600",
+      upsert: true
+    });
+
+  if (error) throw error;
+
+  const { data } = db.storage
+    .from(PROFILE_PICTURE_BUCKET)
+    .getPublicUrl(path);
+
+  return data.publicUrl;
+}
+
+function handleProfilePictureChange(event) {
+  const file = event.target.files?.[0];
+
+  if (!file) {
+    selectedProfilePictureFile = null;
+    updateProfilePreview();
+    return;
+  }
+
+  if (!file.type.startsWith("image/")) {
+    showProfileMessage("Profile picture must be an image file.", true);
+    event.target.value = "";
+    return;
+  }
+
+  if (file.size > MAX_PROFILE_PICTURE_BYTES) {
+    showProfileMessage("Profile picture must be 5 MB or smaller.", true);
+    event.target.value = "";
+    return;
+  }
+
+  selectedProfilePictureFile = file;
+  setInputValue("profile-picture-url", URL.createObjectURL(file));
+  updateProfilePreview();
+  showProfileMessage("");
+}
+
+function removeProfilePicture() {
+  selectedProfilePictureFile = null;
+  setInputValue("profile-picture-url", "");
+
+  const input = document.getElementById("profile-picture-file");
+  if (input) input.value = "";
+
+  updateProfilePreview();
+}
+
+async function saveProfile(event) {
+  event.preventDefault();
+
+  showProfileMessage("Saving profile...");
+
+  try {
+    const fullName = getInputValue("profile-full-name");
+
+    if (!fullName) {
+      showProfileMessage("Full name is required.", true);
+      return;
+    }
+
+    const profilePictureUrl = await uploadSelectedProfilePicture();
+
+    // Save public/account-level fields first.
+    const { error: profileError } = await db
+      .from("profiles")
+      .update({
+        full_name: fullName,
+        username: getInputValue("profile-username") || null,
+        bio: getInputValue("profile-bio") || null,
+        birthday: getInputValue("profile-birthday") || null,
+        profile_picture_url: profilePictureUrl
+      })
+      .eq("id", profileAccess.profile.id);
+
+    if (profileError) throw profileError;
+
+    if (currentMemberProfile) {
+      const gradYear = getInputValue("profile-grad-year");
+      const bodyWeight = getInputValue("profile-body-weight");
+      const isAthlete = currentMemberProfile.member_type === "athlete";
+      const memberProfileUpdate = {
+        sport: isAthlete ? getInputValue("profile-sport") || null : null,
+        position: isAthlete ? getInputValue("profile-position") || null : null,
+        school: getInputValue("profile-school") || null,
+        graduation_year: gradYear ? Number(gradYear) : null,
+        height: getInputValue("profile-height") || null,
+        body_weight: bodyWeight ? Number(bodyWeight) : null,
+        training_focus: getInputValue("profile-training-focus") || null,
+        favorite_lift: getInputValue("profile-favorite-lift") || null,
+        updated_at: new Date().toISOString()
+      };
+
+      if (profileSupportsGender) {
+        memberProfileUpdate.gender = getInputValue("profile-gender") || null;
+      }
+
+      const { error: memberError } = await db
+        .from("member_profiles")
+        .update(memberProfileUpdate)
+        .eq("id", currentMemberProfile.id);
+
+      if (memberError) throw memberError;
+    }
+
+    // Reload fresh data after saving.
+    profileAccess.profile = await getProfileUser(profileAccess.profile.id);
+    if (!profileAccess.isCoach) {
+      currentMemberProfile = await getMemberProfile(profileAccess.membership.id);
+    }
+    selectedProfilePictureFile = null;
+
+    updateProfileShellNav();
+    fillProfileForm();
+    showProfileMessage("Profile saved.");
+  } catch (error) {
+    console.error(error);
+    showProfileMessage(error.message || "Could not save profile.", true);
+  }
+}
+
+async function logoutProfile() {
+  await db.auth.signOut();
+  window.location.href = "login.html";
+}
+
+async function initProfilePage() {
+  showProfileMessage("Loading profile...");
+
+  try {
+    profileAccess = await requireApprovedProfileUser();
+
+    if (!profileAccess) return;
+
+    if (!profileAccess.isCoach) {
+      currentMemberProfile = await getMemberProfile(profileAccess.membership.id);
+    }
+
+    updateProfileShellNav();
+    fillProfileForm();
+    showProfileMessage("");
+  } catch (error) {
+    console.error(error);
+    showProfileMessage(error.message || "Could not load profile.", true);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  initProfilePage();
+
+  document.getElementById("profile-form").addEventListener("submit", saveProfile);
+  document.getElementById("profile-logout-btn").addEventListener("click", logoutProfile);
+  document.getElementById("profile-picture-file")?.addEventListener("change", handleProfilePictureChange);
+  document.getElementById("profile-picture-remove")?.addEventListener("click", removeProfilePicture);
+
+  // Keep the right-side preview in sync with form edits.
+  document.querySelectorAll("#profile-form input, #profile-form textarea, #profile-form select").forEach(input => {
+    input.addEventListener("input", updateProfilePreview);
+  });
+});

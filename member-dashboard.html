@@ -7,10 +7,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=habit-date-mobile-2" />
+  <link rel="stylesheet" href="css/styles.css?v=ui-polish-4" />
 </head>
 
-<body class="auth-body member-dashboard-body">
+<body class="auth-body member-dashboard-body" data-member-page="dashboard">
   <aside class="sidebar member-sidebar">
     <div class="brand">
       <div class="brand-mark">
@@ -18,70 +18,24 @@
       </div>
       <div>
         <h1>RIP CITY</h1>
-        <p id="member-brand-subtitle">Member</p>
+        <p class="member-role-pending" id="member-brand-subtitle">Member</p>
       </div>
     </div>
 
     <div class="mode-card">
       <span>Current View</span>
-      <strong id="member-program-label">Member</strong>
+      <strong class="member-role-pending" id="member-program-label">Member</strong>
       <a class="outline-link small-btn" href="profile.html">View Profile</a>
     </div>
 
-    <nav class="member-shell-nav">
-      <a class="nav-link nav-link-anchor active" href="#member-dashboard-top">
-        <span class="mobile-nav-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" focusable="false">
-            <path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"></path>
-          </svg>
-        </span>
-        <span class="desktop-nav-text">Dashboard</span>
-        <span class="mobile-nav-text">Dash</span>
-      </a>
-      <a class="nav-link nav-link-anchor" href="#training-calendar-panel">
-        <span class="mobile-nav-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" focusable="false">
-            <path d="M2 10h3v4H2zM19 10h3v4h-3zM6 7h3v10H6zM15 7h3v10h-3zM9 11h6v2H9z"></path>
-          </svg>
-        </span>
-        <span class="desktop-nav-text">Training Calendar</span>
-        <span class="mobile-nav-text">Training</span>
-      </a>
-      <a class="nav-link nav-link-anchor" href="#h2k-habits-section" id="member-habits-nav-link">
-        <span class="mobile-nav-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" focusable="false">
-            <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm-1.3 13.4-4-4 1.4-1.4 2.6 2.6 5.2-5.2 1.4 1.4z"></path>
-          </svg>
-        </span>
-        <span class="desktop-nav-text">Habits</span>
-        <span class="mobile-nav-text">Habits</span>
-      </a>
-      <a class="nav-link nav-link-anchor" href="#member-history-section">
-        <span class="mobile-nav-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" focusable="false">
-            <path d="M5 3h14v3H5zM5 8h9v3H5zM5 13h14v3H5zM5 18h9v3H5z"></path>
-          </svg>
-        </span>
-        <span class="desktop-nav-text">Member History</span>
-        <span class="mobile-nav-text">History</span>
-      </a>
-      <a class="nav-link nav-link-anchor" href="profile.html">
-        <span class="mobile-nav-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" focusable="false">
-            <path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.4 0-8 2.2-8 5v1h16v-1c0-2.8-3.6-5-8-5Z"></path>
-          </svg>
-        </span>
-        <span class="desktop-nav-text">Profile</span>
-        <span class="mobile-nav-text">Profile</span>
-      </a>
-    </nav>
+    <nav class="member-shell-nav" data-member-nav="dashboard" aria-label="Member navigation"></nav>
 
     <div class="user-card">
       <div class="avatar" id="member-avatar">RC</div>
       <div>
         <strong id="member-sidebar-name">Member</strong>
         <span class="h2k-band-badge hidden" id="member-band-color">No Band</span>
-        <span id="member-sidebar-role">Approved</span>
+        <span class="member-role-pending" id="member-sidebar-role">Approved</span>
       </div>
     </div>
   </aside>
@@ -105,8 +59,18 @@
       </div>
     </section>
 
+    <section class="member-announcements-panel hidden" id="member-announcements-panel" aria-labelledby="member-announcements-heading">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">FROM YOUR COACHES</p>
+          <h3 id="member-announcements-heading">Announcements</h3>
+        </div>
+      </div>
+      <div class="member-announcement-list" id="member-announcement-list"></div>
+    </section>
+
     <section class="dashboard-grid h2k-dashboard-grid">
-      <article class="panel feedback-panel">
+      <article class="panel feedback-panel dashboard-feedback-panel">
         <div>
           <p class="eyebrow">BETA FEEDBACK</p>
           <h3>Tell us what to improve.</h3>
@@ -142,107 +106,59 @@
       </article>
 
       <article class="stat-card">
-        <span>Status</span>
+        <span id="member-stat-four-label">Status</span>
         <strong id="h2k-status">Open</strong>
         <small id="h2k-status-detail">Complete habits to improve today’s score</small>
       </article>
     </section>
 
-    <details class="panel training-calendar-panel future-workouts-panel compact-history-panel" id="training-calendar-panel">
-      <summary>
-        <span>
-          <span class="eyebrow">SCHEDULE</span>
-          <strong>Training Calendar</strong>
-        </span>
-        <span class="history-summary-hint">Click to view</span>
-      </summary>
-
-      <div class="compact-history-content">
-        <div class="compact-history-actions">
-          <p id="workout-history-message" class="auth-message"></p>
-        </div>
-
-        <div class="training-calendar-layout">
-          <div id="future-workout-list" class="future-calendar training-calendar">
-            <div class="empty-state">Loading assigned workouts...</div>
-          </div>
-
-          <div class="training-calendar-day">
-            <div class="training-calendar-day-heading">
-              <span class="eyebrow">SELECTED DAY</span>
-              <strong id="training-calendar-selected-date">Today</strong>
-            </div>
-
-            <div id="workout-history-list" class="workout-history-list compact-workout-list">
-              <div class="empty-state">Select a date to view workouts.</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </details>
-
-    <section class="dashboard-grid h2k-dashboard-grid" id="h2k-habits-section">
-      <article class="panel">
-        <div class="panel-heading">
-          <div>
-            <p class="eyebrow" id="h2k-habit-date-eyebrow">TODAY</p>
-            <h3>Daily Habits</h3>
-            <p id="h2k-habit-date-detail" class="muted-small">Editing today</p>
-          </div>
-
-          <div class="habit-date-controls">
-            <button class="outline-btn" id="habit-prev-day-btn" type="button">Back</button>
-            <label>
-              Habit Date
-              <input id="habit-date-input" type="date" />
-            </label>
-            <button class="outline-btn" id="habit-next-day-btn" type="button">Forward</button>
-            <button class="outline-btn" id="habit-today-btn" type="button">Today</button>
-          </div>
-        </div>
-
-        <p id="h2k-message" class="auth-message"></p>
-
-        <div id="h2k-habit-list" class="h2k-habit-list"></div>
-      </article>
-
+    <section class="member-page-links" aria-label="Member tools">
+      <a class="member-page-link-card" href="member-training.html">
+        <span class="eyebrow">TRAINING</span>
+        <strong>Open your calendar</strong>
+        <span>Review assigned workouts and continue logging.</span>
+      </a>
+      <a class="member-page-link-card" href="member-habits.html">
+        <span class="eyebrow">DAILY HABITS</span>
+        <strong>Track today’s habits</strong>
+        <span>Check in and keep your current streak moving.</span>
+      </a>
+      <a class="member-page-link-card" href="member-history.html">
+        <span class="eyebrow">HISTORY</span>
+        <strong>Review your progress</strong>
+        <span id="member-history-link-detail">Review your weekly progress.</span>
+      </a>
+      <a class="member-page-link-card" href="member-goals.html">
+        <span class="eyebrow">GOALS</span>
+        <strong>Update your goals</strong>
+        <span>Add check-ins and keep the next target in view.</span>
+      </a>
     </section>
 
-    <details class="panel compact-history-panel weekly-history-panel" id="member-history-section">
-      <summary>
-        <span>
-          <span class="eyebrow" id="member-history-eyebrow">PROGRESS</span>
-          <strong>Member History</strong>
-        </span>
-        <span class="history-summary-hint">Click to view</span>
-      </summary>
+    <section class="member-dismissed-announcements hidden" id="member-dismissed-announcements-panel">
+      <details>
+        <summary>
+          <span>Dismissed announcements</span>
+          <span id="member-dismissed-announcement-count">0</span>
+        </summary>
+        <div class="member-dismissed-announcement-list" id="member-dismissed-announcement-list"></div>
+      </details>
+    </section>
 
-      <div class="compact-history-content">
-        <div class="compact-history-actions">
-          <p id="member-weekly-history-message" class="auth-message"></p>
-        </div>
-
-        <div class="weekly-history-stepper" id="member-history-stepper">
-          <button class="icon-btn" id="member-history-prev-week" type="button" aria-label="Previous week">‹</button>
-          <div>
-            <span class="eyebrow" id="member-history-week-context">CURRENT WEEK</span>
-            <strong id="member-history-week-label">This Week</strong>
-          </div>
-          <button class="icon-btn" id="member-history-next-week" type="button" aria-label="Next week">›</button>
-        </div>
-
-        <div id="member-weekly-history-list" class="weekly-score-list">
-          <div class="empty-state">Loading member history...</div>
-        </div>
-      </div>
-    </details>
+    <div class="announcement-undo-toast hidden" id="announcement-undo-toast" role="status" aria-live="polite">
+      <span>Announcement dismissed.</span>
+      <button type="button" id="announcement-undo-button">Undo</button>
+    </div>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabaseClient.js"></script>
-  <script src="js/ui-utils.js"></script>
-  <script src="js/access-control.js"></script>
-  <script src="js/workout-data.js"></script>
-  <script src="js/member-dashboard.js?v=habit-date-mobile-2"></script>
+  <script src="js/shared/supabaseClient.js"></script>
+  <script src="js/shared/ui-utils.js"></script>
+  <script src="js/shared/access-control.js?v=single-row-fix-1"></script>
+  <script src="js/shared/workout-data.js?v=workout-attribution-1"></script>
+  <script src="js/shared/leaderboard-metrics.js?v=coach-leaderboards-2"></script>
+  <script src="js/member/member-nav.js?v=shared-habits-1"></script>
+  <script src="js/member/member-dashboard.js?v=shared-habits-1"></script>
+  <script src="js/member/member-announcements.js?v=targeted-announcements-3"></script>
 </body>
 </html>

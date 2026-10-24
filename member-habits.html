@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Member Habits</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css?v=ui-polish-4" />
+</head>
+<body class="auth-body member-dashboard-body member-feature-page" data-member-page="habits">
+  <aside class="sidebar member-sidebar">
+    <div class="brand"><div class="brand-mark"><img src="assets/rip-city-logo.png" alt="Rip City logo"></div><div><h1>RIP CITY</h1><p class="member-role-pending" id="member-brand-subtitle">Member</p></div></div>
+    <div class="mode-card"><span>Current View</span><strong class="member-role-pending" id="member-program-label">Member</strong><a class="outline-link small-btn" href="profile.html">View Profile</a></div>
+    <nav class="member-shell-nav" data-member-nav="habits" aria-label="Member navigation"></nav>
+    <div class="user-card"><div class="avatar" id="member-avatar">RC</div><div><strong id="member-sidebar-name">Member</strong><span class="h2k-band-badge hidden" id="member-band-color">No Band</span><span class="member-role-pending" id="member-sidebar-role">Approved</span></div></div>
+  </aside>
+
+  <main class="main-content member-main-content member-feature-main">
+    <header class="topbar"><div><p class="eyebrow" id="member-dashboard-date">DAILY HABITS</p><h2>Daily Habits</h2></div><div class="topbar-actions"><button class="outline-btn" id="h2k-logout-btn">Log Out</button></div></header>
+    <section class="hero-card h2k-hero member-feature-hero"><div><p class="eyebrow">DAILY CHECK-IN</p><h3>Build the consistency that moves your score.</h3><p>Complete at least four habits to extend your daily streak.</p></div></section>
+
+    <section class="panel member-page-panel" id="h2k-habits-section">
+      <div class="panel-heading"><div><p class="eyebrow" id="h2k-habit-date-eyebrow">TODAY</p><h3>Daily Habits</h3><p id="h2k-habit-date-detail" class="muted-small">Editing today</p></div><div class="habit-date-controls"><button class="outline-btn" id="habit-prev-day-btn" type="button">Back</button><label>Habit Date<input id="habit-date-input" type="date" /></label><button class="outline-btn" id="habit-next-day-btn" type="button">Forward</button><button class="outline-btn" id="habit-today-btn" type="button">Today</button></div></div>
+      <p id="h2k-message" class="auth-message" aria-live="polite"></p>
+      <div id="h2k-habit-list" class="h2k-habit-list"><div class="empty-state">Loading habits...</div></div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/shared/supabaseClient.js"></script><script src="js/shared/ui-utils.js"></script><script src="js/shared/access-control.js?v=single-row-fix-1"></script><script src="js/shared/workout-data.js?v=workout-attribution-1"></script><script src="js/shared/leaderboard-metrics.js?v=coach-leaderboards-2"></script>
+  <script src="js/member/member-nav.js?v=shared-habits-1"></script><script src="js/member/member-dashboard.js?v=shared-habits-1"></script>
+</body>
+</html>

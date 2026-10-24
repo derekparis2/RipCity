@@ -1,0 +1,833 @@
+// =====================================================
+// COACH ROSTER
+// =====================================================
+// Coaches use this page to manage member coaching details and group membership
+// inside their facility. Account lifecycle changes are facility-admin only.
+
+let rosterAccess = null;
+let rosterMembers = [];
+let rosterGroups = [];
+let rosterGroupMemberships = [];
+let rosterSupportsH2KBandColor = true;
+let rosterVisibleLimit = 8;
+
+// H2K bands work like coach-managed training levels. The blank option in the
+// roster UI saves as null and means "No Band" for a member.
+const H2K_BAND_COLORS = [
+  "White",
+  "Grey",
+  "Green",
+  "Blue",
+  "Black",
+  "Red"
+];
+
+function showRosterMessage(message, isError = false) {
+  const element = document.getElementById("coach-roster-message");
+  if (!element) return;
+
+  element.textContent = message;
+  element.classList.toggle("error-message", isError);
+}
+
+function showRosterSignupLinkMessage(message, isError = false) {
+  const element = document.getElementById("coach-signup-link-message");
+  if (!element) return;
+  element.textContent = message;
+  element.classList.toggle("error-message", isError);
+}
+
+function buildRosterSignupLink(type) {
+  const signupUrl = new URL("signup.html", window.location.href);
+  signupUrl.searchParams.set("type", type);
+  return signupUrl.href;
+}
+
+async function copyRosterSignupLink(type) {
+  const link = buildRosterSignupLink(type);
+
+  try {
+    if (navigator.clipboard?.writeText && window.isSecureContext) {
+      await navigator.clipboard.writeText(link);
+    } else {
+      const input = document.createElement("textarea");
+      input.value = link;
+      input.setAttribute("readonly", "");
+      input.style.position = "fixed";
+      input.style.left = "-9999px";
+      document.body.appendChild(input);
+      input.select();
+      const copied = document.execCommand("copy");
+      input.remove();
+      if (!copied) throw new Error("Copy failed");
+    }
+
+    showRosterSignupLinkMessage(`${type === "h2k" ? "H2K" : "Athlete"} signup link copied.`);
+  } catch (error) {
+    console.error(error);
+    showRosterSignupLinkMessage(`Copy this link: ${link}`, true);
+  }
+}
+
+function normalizeMemberProfile(member) {
+  return window.RipCityWorkoutData.normalizeJoinedOne(member.member_profile);
+}
+
+function formatMemberType(memberType) {
+  return memberType === "h2k" ? "H2K" : "Athlete";
+}
+
+function formatRole(role) {
+  const labels = {
+    athlete: "Athlete",
+    h2k_member: "H2K Member",
+    coach: "Coach",
+    admin: "Admin",
+    parent: "Parent"
+  };
+
+  return labels[role] || role;
+}
+
+function groupSupportsMember(group, memberType) {
+  return group.member_type === "both" || group.member_type === memberType;
+}
+
+function getMemberGroupIds(memberProfileId) {
+  return rosterGroupMemberships
+    .filter(row => row.member_profile_id === memberProfileId)
+    .map(row => row.group_id);
+}
+
+function getMemberGroups(memberProfileId) {
+  const groupIds = new Set(getMemberGroupIds(memberProfileId));
+  return rosterGroups.filter(group => groupIds.has(group.id));
+}
+
+function canManageRosterGroup(group) {
+  return Boolean(
+    rosterAccess?.isAdmin ||
+    (group?.created_by && group.created_by === rosterAccess?.profile?.id)
+  );
+}
+
+function getCheckedGroupIds(memberProfileId) {
+  return Array.from(document.querySelectorAll("[data-roster-group-toggle]"))
+    .filter(input => input.dataset.memberProfileId === memberProfileId && input.checked)
+    .map(input => input.dataset.groupId);
+}
+
+function getSelectedBandColor(memberProfileId) {
+  return document.querySelector(`[data-h2k-band-select="${memberProfileId}"]`)?.value || "";
+}
+
+function sameGroupSelection(savedGroupIds, selectedGroupIds) {
+  const saved = new Set(savedGroupIds);
+  const selected = new Set(selectedGroupIds);
+
+  if (saved.size !== selected.size) return false;
+  return [...saved].every(groupId => selected.has(groupId));
+}
+
+function markMemberGroupChanges(memberProfileId) {
+  const card = document.querySelector(`[data-roster-member-card="${memberProfileId}"]`);
+  if (!card) return;
+  const member = rosterMembers.find(row => row.memberProfileId === memberProfileId);
+  const savedBandColor = member?.memberProfile?.h2k_band_color || "";
+  const selectedBandColor = getSelectedBandColor(memberProfileId);
+
+  const hasGroupChanges = !sameGroupSelection(
+    getMemberGroupIds(memberProfileId),
+    getCheckedGroupIds(memberProfileId)
+  );
+  const hasBandChanges = Boolean(
+    rosterSupportsH2KBandColor &&
+    member?.memberType === "h2k" &&
+    savedBandColor !== selectedBandColor
+  );
+  const hasChanges = hasGroupChanges || hasBandChanges;
+
+  card.classList.toggle("has-unsaved-changes", hasChanges);
+  card.querySelectorAll("[data-save-member-groups], [data-reset-member-groups]").forEach(button => {
+    button.disabled = !hasChanges;
+  });
+}
+
+function getFilteredMembers() {
+  const typeFilter = document.getElementById("roster-type-filter").value;
+  const statusFilter = document.getElementById("roster-status-filter").value;
+  const groupFilter = document.getElementById("roster-group-filter").value;
+  const search = document.getElementById("roster-search").value.trim().toLowerCase();
+
+  return rosterMembers.filter(member => {
+    const memberProfile = member.memberProfile;
+    const groupIds = getMemberGroupIds(member.memberProfileId);
+    const searchText = [
+      member.name,
+      member.email,
+      member.role,
+      member.status,
+      memberProfile?.sport,
+      memberProfile?.age_group,
+      memberProfile?.position,
+      memberProfile?.school
+    ].filter(Boolean).join(" ").toLowerCase();
+
+    if (typeFilter !== "all" && member.memberType !== typeFilter) return false;
+    if (statusFilter !== "all" && member.status !== statusFilter) return false;
+    if (groupFilter !== "all" && !groupIds.includes(groupFilter)) return false;
+    if (search && !searchText.includes(search)) return false;
+
+    return true;
+  });
+}
+
+async function requireRosterCoachAccess() {
+  return window.RipCityAccess.requireCoachAccess({
+    onDeniedMessage: showRosterMessage
+  });
+}
+
+function buildRosterMemberSelect(includeBandColor = true) {
+  const bandColorColumn = includeBandColor
+    ? "h2k_band_color,"
+    : "";
+
+  return `
+    id,
+    role,
+    status,
+    created_at,
+    profile:profiles!facility_members_profile_id_fkey (
+      id,
+      full_name,
+      email,
+      profile_picture_url
+    ),
+    member_profile:member_profiles (
+      id,
+      member_type,
+      sport,
+      age_group,
+      position,
+      school,
+      graduation_year,
+      body_weight,
+      training_focus,
+      ${bandColorColumn}
+      facility_member_id
+    )
+  `;
+}
+
+function isMissingBandColorColumnError(error) {
+  return /h2k_band_color/i.test(error?.message || "") ||
+    /h2k_band_color/i.test(error?.details || "");
+}
+
+async function fetchRosterMembers(facilityId, includeBandColor = true) {
+  return db
+    .from("facility_members")
+    .select(buildRosterMemberSelect(includeBandColor))
+    .eq("facility_id", facilityId)
+    .in("role", ["athlete", "h2k_member"])
+    .neq("status", "rejected")
+    .order("created_at", { ascending: false });
+}
+
+async function loadRosterMembers(facilityId) {
+  let { data, error } = await fetchRosterMembers(facilityId, true);
+
+  if (error && isMissingBandColorColumnError(error)) {
+    rosterSupportsH2KBandColor = false;
+    ({ data, error } = await fetchRosterMembers(facilityId, false));
+  } else {
+    rosterSupportsH2KBandColor = true;
+  }
+
+  if (error) throw error;
+
+  return (data || []).map(member => {
+    const memberProfile = normalizeMemberProfile(member);
+
+    return {
+      facilityMemberId: member.id,
+      profileId: member.profile?.id,
+      memberProfileId: memberProfile?.id,
+      memberType: memberProfile?.member_type || (member.role === "h2k_member" ? "h2k" : "athlete"),
+      role: member.role,
+      status: member.status,
+      name: member.profile?.full_name || "Unnamed Member",
+      email: member.profile?.email || "",
+      profilePictureUrl: member.profile?.profile_picture_url || "",
+      memberProfile
+    };
+  }).filter(member => member.memberProfileId);
+}
+
+async function loadRosterGroups(facilityId) {
+  const { data, error } = await db
+    .from("groups")
+    .select("*")
+    .eq("facility_id", facilityId)
+    .order("name", { ascending: true });
+
+  if (error) throw error;
+  return data || [];
+}
+
+async function loadRosterGroupMemberships(memberProfileIds) {
+  if (!memberProfileIds.length) return [];
+
+  const { data, error } = await db
+    .from("group_members")
+    .select("id, group_id, member_profile_id")
+    .in("member_profile_id", memberProfileIds);
+
+  if (error) throw error;
+  return data || [];
+}
+
+function updateRosterStats() {
+  const ungrouped = rosterMembers.filter(member => !getMemberGroupIds(member.memberProfileId).length);
+
+  document.getElementById("roster-total-members").textContent = rosterMembers.length;
+  document.getElementById("roster-athlete-count").textContent =
+    rosterMembers.filter(member => member.memberType === "athlete").length;
+  document.getElementById("roster-h2k-count").textContent =
+    rosterMembers.filter(member => member.memberType === "h2k").length;
+  document.getElementById("roster-ungrouped-count").textContent = ungrouped.length;
+}
+
+function renderGroupFilter() {
+  const select = document.getElementById("roster-group-filter");
+
+  select.innerHTML = `
+    <option value="all">All groups</option>
+    ${rosterGroups.map(group => `
+      <option value="${window.RipCityUI.attr(group.id)}">${window.RipCityUI.text(group.name)}</option>
+    `).join("")}
+  `;
+}
+
+function renderGroupList() {
+  const list = document.getElementById("roster-group-list");
+
+  if (!rosterGroups.length) {
+    list.innerHTML = `<div class="empty-state">No groups created yet.</div>`;
+    return;
+  }
+
+  list.innerHTML = rosterGroups.map(group => {
+    const count = rosterGroupMemberships.filter(row => row.group_id === group.id).length;
+    const canManage = canManageRosterGroup(group);
+
+    return `
+      <article class="roster-group-card">
+        <div>
+          <strong>${window.RipCityUI.text(group.name)}</strong>
+          <span>${window.RipCityUI.text(group.group_type)} · ${window.RipCityUI.text(group.member_type)}</span>
+        </div>
+        <div class="roster-group-card-actions">
+          <b>${count}</b>
+          ${canManage ? `
+            <button
+              class="danger-btn small-inline-btn"
+              type="button"
+              data-delete-roster-group="${window.RipCityUI.attr(group.id)}"
+            >
+              Delete
+            </button>
+          ` : `<span class="muted-small">Removal restricted</span>`}
+        </div>
+      </article>
+    `;
+  }).join("");
+
+  list.querySelectorAll("[data-delete-roster-group]").forEach(button => {
+    button.addEventListener("click", () => deleteRosterGroup(button.dataset.deleteRosterGroup));
+  });
+}
+
+function renderRosterMembers() {
+  const list = document.getElementById("coach-roster-list");
+  const members = getFilteredMembers();
+
+  updateRosterStats();
+
+  if (!members.length) {
+    list.innerHTML = `<div class="empty-state">No members match these filters.</div>`;
+    return;
+  }
+
+  const visibleMembers = members.slice(0, rosterVisibleLimit);
+  list.innerHTML = visibleMembers.map(member => renderRosterMemberCard(member)).join("") +
+    (visibleMembers.length < members.length ? `
+      <button class="outline-btn roster-show-more" type="button" data-roster-show-more>
+        Show ${Math.min(8, members.length - visibleMembers.length)} more members
+      </button>
+    ` : "");
+
+  list.querySelector("[data-roster-show-more]")?.addEventListener("click", () => {
+    rosterVisibleLimit += 8;
+    renderRosterMembers();
+  });
+
+  document.querySelectorAll("[data-roster-group-toggle]").forEach(input => {
+    input.addEventListener("change", () => markMemberGroupChanges(input.dataset.memberProfileId));
+  });
+
+  document.querySelectorAll("[data-h2k-band-select]").forEach(select => {
+    select.addEventListener("change", () => markMemberGroupChanges(select.dataset.h2kBandSelect));
+  });
+
+  document.querySelectorAll("[data-toggle-group-editor]").forEach(button => {
+    button.addEventListener("click", () => {
+      const card = document.querySelector(`[data-roster-member-card="${button.dataset.memberProfileId}"]`);
+      if (!card) return;
+
+      card.classList.toggle("is-editing-groups");
+      button.textContent = card.classList.contains("is-editing-groups") ? "Hide Groups" : "Change Groups";
+    });
+  });
+
+  document.querySelectorAll("[data-toggle-roster-member]").forEach(button => {
+    button.addEventListener("click", () => {
+      const card = document.querySelector(`[data-roster-member-card="${button.dataset.memberProfileId}"]`);
+      if (!card) return;
+
+      const isExpanded = card.classList.toggle("is-mobile-expanded");
+      button.setAttribute("aria-expanded", String(isExpanded));
+      button.textContent = isExpanded ? "Close" : "Manage";
+    });
+  });
+
+  document.querySelectorAll("[data-save-member-groups]").forEach(button => {
+    button.addEventListener("click", () => saveMemberGroupChanges(button.dataset.memberProfileId));
+  });
+
+  document.querySelectorAll("[data-reset-member-groups]").forEach(button => {
+    button.addEventListener("click", () => renderRosterMembers());
+  });
+
+  document.querySelectorAll("[data-member-status-action]").forEach(button => {
+    button.addEventListener("click", () => setRosterMemberStatus(
+      button.dataset.facilityMemberId,
+      button.dataset.nextStatus
+    ));
+  });
+}
+
+function renderH2KBandEditor(member) {
+  if (!rosterSupportsH2KBandColor) {
+    return `
+      <div class="roster-band-editor">
+        <span>H2K Band</span>
+        <p>Run the H2K band migration before coaches can set member bands.</p>
+      </div>
+    `;
+  }
+
+  const currentBand = member.memberProfile?.h2k_band_color || "";
+
+  return `
+    <label class="roster-band-editor">
+      <span>H2K Band</span>
+      <select data-h2k-band-select="${window.RipCityUI.attr(member.memberProfileId)}">
+        <option value="">No Band</option>
+        ${H2K_BAND_COLORS.map(color => `
+          <option value="${window.RipCityUI.attr(color)}" ${currentBand === color ? "selected" : ""}>
+            ${window.RipCityUI.text(color)} Band
+          </option>
+        `).join("")}
+      </select>
+    </label>
+  `;
+}
+
+function renderRosterMemberCard(member) {
+  const memberProfile = member.memberProfile || {};
+  const memberGroups = getMemberGroups(member.memberProfileId);
+  const groupIds = new Set(memberGroups.map(group => group.id));
+  const compatibleGroups = rosterGroups.filter(group => groupSupportsMember(group, member.memberType));
+  const meta = [
+    formatRole(member.role),
+    member.status,
+    memberProfile.sport,
+    memberProfile.age_group,
+    memberProfile.position,
+    memberProfile.school
+  ].filter(Boolean).join(" · ");
+  const nextStatus = member.status === "inactive" ? "approved" : "inactive";
+  const statusActionLabel = member.status === "inactive" ? "Reactivate" : "Deactivate";
+  const lifecycleAction = rosterAccess?.isAdmin ? `
+          <button
+            class="danger-btn small-inline-btn"
+            type="button"
+            data-member-status-action
+            data-facility-member-id="${window.RipCityUI.attr(member.facilityMemberId)}"
+            data-next-status="${window.RipCityUI.attr(nextStatus)}"
+          >
+            ${statusActionLabel}
+          </button>
+        ` : "";
+
+  return `
+    <article class="roster-member-card" data-roster-member-card="${window.RipCityUI.attr(member.memberProfileId)}">
+      <div class="roster-member-main">
+        ${window.RipCityUI.avatarMarkup(member.name, member.profilePictureUrl, "roster-avatar")}
+
+        <div>
+          <div class="roster-member-heading">
+            <h4>${window.RipCityUI.text(member.name)}</h4>
+            <span class="status-pill">${window.RipCityUI.text(formatMemberType(member.memberType))}</span>
+            ${member.memberType === "h2k" ? `
+              <span class="h2k-band-badge">${window.RipCityUI.text(memberProfile.h2k_band_color ? `${memberProfile.h2k_band_color} Band` : "No Band")}</span>
+            ` : ""}
+          </div>
+          <p>${window.RipCityUI.text(member.email)}</p>
+          <small>${window.RipCityUI.text(meta || "No profile details yet")}</small>
+        </div>
+      </div>
+
+      <button
+        class="outline-btn small-inline-btn roster-mobile-manage-btn"
+        type="button"
+        data-toggle-roster-member
+        data-member-profile-id="${window.RipCityUI.attr(member.memberProfileId)}"
+        aria-expanded="false"
+      >
+        Manage
+      </button>
+
+      <div class="roster-member-groups">
+        <span>Current Groups</span>
+        <div class="roster-current-groups">
+          ${memberGroups.length ? memberGroups.map(group => `
+            <strong class="roster-current-group-tag">${window.RipCityUI.text(group.name)}</strong>
+          `).join("") : `<strong class="roster-current-group-tag muted">No groups</strong>`}
+        </div>
+        <button
+          class="outline-btn small-inline-btn roster-change-groups-btn"
+          type="button"
+          data-toggle-group-editor
+          data-member-profile-id="${window.RipCityUI.attr(member.memberProfileId)}"
+        >
+          Change Groups
+        </button>
+        <a class="outline-link small-inline-btn roster-change-groups-btn" href="coach-member-detail.html?membership=${window.RipCityUI.attr(member.facilityMemberId)}">View Member</a>
+      </div>
+
+      <div class="roster-group-editor">
+        <div class="roster-editor-heading">
+          <span>Update Member Settings</span>
+          <em class="roster-unsaved-indicator">Unsaved changes</em>
+        </div>
+
+        ${member.memberType === "h2k" ? renderH2KBandEditor(member) : ""}
+
+        <div class="roster-group-checkboxes">
+          ${compatibleGroups.length ? compatibleGroups.map(group => `
+            <label class="roster-checkbox-pill">
+              <input
+                type="checkbox"
+                data-roster-group-toggle
+                data-member-profile-id="${window.RipCityUI.attr(member.memberProfileId)}"
+                data-group-id="${window.RipCityUI.attr(group.id)}"
+                ${groupIds.has(group.id) ? "checked" : ""}
+                ${groupIds.has(group.id) && !canManageRosterGroup(group) ? "disabled" : ""}
+              />
+              <span>${window.RipCityUI.text(group.name)}</span>
+            </label>
+          `).join("") : `<span class="muted-small">No compatible groups yet.</span>`}
+        </div>
+
+        <div class="roster-member-actions">
+          <button
+            class="primary-btn small-inline-btn"
+            type="button"
+            data-save-member-groups
+            data-member-profile-id="${window.RipCityUI.attr(member.memberProfileId)}"
+            disabled
+          >
+            Save Changes
+          </button>
+          <button
+            class="outline-btn small-inline-btn"
+            type="button"
+            data-reset-member-groups
+            data-member-profile-id="${window.RipCityUI.attr(member.memberProfileId)}"
+            disabled
+          >
+            Reset
+          </button>
+          ${lifecycleAction}
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+async function saveMemberGroupChanges(memberProfileId) {
+  const card = document.querySelector(`[data-roster-member-card="${memberProfileId}"]`);
+  const saveButton = card?.querySelector("[data-save-member-groups]");
+  const member = rosterMembers.find(row => row.memberProfileId === memberProfileId);
+  const savedGroupIds = getMemberGroupIds(memberProfileId);
+  const selectedGroupIds = getCheckedGroupIds(memberProfileId);
+  const selectedBandColor = getSelectedBandColor(memberProfileId);
+  const savedBandColor = member?.memberProfile?.h2k_band_color || "";
+  const selectedSet = new Set(selectedGroupIds);
+  const savedSet = new Set(savedGroupIds);
+  const groupsToAdd = selectedGroupIds.filter(groupId => !savedSet.has(groupId));
+  const groupsToRemove = savedGroupIds.filter(groupId => !selectedSet.has(groupId));
+  const shouldUpdateBandColor = Boolean(
+    rosterSupportsH2KBandColor &&
+    member?.memberType === "h2k" &&
+    selectedBandColor !== savedBandColor
+  );
+
+  if (!groupsToAdd.length && !groupsToRemove.length && !shouldUpdateBandColor) {
+    markMemberGroupChanges(memberProfileId);
+    return;
+  }
+
+  if (saveButton) saveButton.disabled = true;
+  showRosterMessage("Saving member changes...");
+
+  try {
+    if (shouldUpdateBandColor) {
+      const { error } = await db
+        .from("member_profiles")
+        .update({
+          h2k_band_color: selectedBandColor || null,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", memberProfileId);
+
+      if (error) throw error;
+    }
+
+    if (groupsToAdd.length) {
+      const { error } = await db
+        .from("group_members")
+        .upsert(groupsToAdd.map(groupId => ({
+          group_id: groupId,
+          member_profile_id: memberProfileId
+        })), {
+          onConflict: "group_id,member_profile_id",
+          ignoreDuplicates: true
+        });
+
+      if (error) throw error;
+    }
+
+    for (const groupId of groupsToRemove) {
+      const { error } = await db
+        .from("group_members")
+        .delete()
+        .eq("group_id", groupId)
+        .eq("member_profile_id", memberProfileId);
+
+      if (error) throw error;
+    }
+
+    rosterGroupMemberships = await loadRosterGroupMemberships(
+      rosterMembers.map(member => member.memberProfileId)
+    );
+    rosterMembers = await loadRosterMembers(rosterAccess.membership.facility_id);
+
+    renderGroupList();
+    renderRosterMembers();
+    showRosterMessage("Member changes saved.");
+  } catch (error) {
+    console.error(error);
+    renderRosterMembers();
+    showRosterMessage(error.message || "Could not save member changes.", true);
+  }
+}
+
+async function deleteRosterGroup(groupId) {
+  const group = rosterGroups.find(item => item.id === groupId);
+  if (!group) return;
+  if (!canManageRosterGroup(group)) {
+    showRosterMessage("Only the coach who created this group or a facility administrator can delete it.", true);
+    return;
+  }
+
+  const memberCount = rosterGroupMemberships.filter(row => row.group_id === groupId).length;
+
+  showRosterMessage("Checking group before delete...");
+
+  try {
+    const { data: assignments, error: assignmentError } = await db
+      .from("workout_assignments")
+      .select("id")
+      .eq("target_group_id", groupId)
+      .limit(1);
+
+    if (assignmentError) throw assignmentError;
+
+    // Group-targeted assignments cascade on delete, so block deletion when
+    // workout history still points at this group.
+    if ((assignments || []).length) {
+      showRosterMessage("This group has workout assignments. Remove or reassign those workouts before deleting the group.", true);
+      return;
+    }
+
+    const confirmText = memberCount
+      ? `Delete ${group.name}? This removes ${memberCount} member group assignment${memberCount === 1 ? "" : "s"}.`
+      : `Delete ${group.name}?`;
+
+    if (!confirm(confirmText)) {
+      showRosterMessage("");
+      return;
+    }
+
+    const { error } = await db
+      .from("groups")
+      .delete()
+      .eq("id", groupId)
+      .eq("facility_id", rosterAccess.membership.facility_id);
+
+    if (error) throw error;
+
+    await refreshRoster();
+    showRosterMessage("Group deleted.");
+  } catch (error) {
+    console.error(error);
+    showRosterMessage(error.message || "Could not delete group.", true);
+  }
+}
+
+async function setRosterMemberStatus(facilityMemberId, nextStatus) {
+  if (!rosterAccess?.isAdmin) {
+    showRosterMessage("Only a facility administrator can change member account access.", true);
+    return;
+  }
+
+  const member = rosterMembers.find(item => item.facilityMemberId === facilityMemberId);
+  if (!member) return;
+
+  const action = nextStatus === "inactive" ? "deactivate" : "reactivate";
+  const confirmText = nextStatus === "inactive"
+    ? `Deactivate ${member.name}? They will keep their history, but they will not have approved member access.`
+    : `Reactivate ${member.name}? They will regain approved member access.`;
+
+  if (!confirm(confirmText)) return;
+
+  showRosterMessage(`${action === "deactivate" ? "Deactivating" : "Reactivating"} member...`);
+
+  try {
+    const { error } = await db
+      .from("facility_members")
+      .update({ status: nextStatus })
+      .eq("id", facilityMemberId)
+      .eq("facility_id", rosterAccess.membership.facility_id);
+
+    if (error) throw error;
+
+    await refreshRoster();
+    showRosterMessage(nextStatus === "inactive" ? "Member deactivated." : "Member reactivated.");
+  } catch (error) {
+    console.error(error);
+    showRosterMessage(error.message || "Could not update member status.", true);
+  }
+}
+
+async function createRosterGroup(event) {
+  event.preventDefault();
+
+  const name = document.getElementById("new-group-name").value.trim();
+  const groupType = document.getElementById("new-group-type").value;
+  const memberType = document.getElementById("new-group-member-type").value;
+
+  if (!name) {
+    showRosterMessage("Group name is required.", true);
+    return;
+  }
+
+  showRosterMessage("Creating group...");
+
+  try {
+    const { error } = await db
+      .from("groups")
+      .insert({
+        facility_id: rosterAccess.membership.facility_id,
+        name,
+        group_type: groupType,
+        member_type: memberType,
+        created_by: rosterAccess.profile.id
+      });
+
+    if (error) throw error;
+
+    document.getElementById("create-group-form").reset();
+    await refreshRoster();
+    showRosterMessage("Group created.");
+  } catch (error) {
+    console.error(error);
+    showRosterMessage(error.message || "Could not create group.", true);
+  }
+}
+
+async function refreshRoster() {
+  if (!rosterAccess) return;
+
+  showRosterMessage("Loading roster...");
+
+  try {
+    const facilityId = rosterAccess.membership.facility_id;
+
+    rosterGroups = await loadRosterGroups(facilityId);
+    rosterMembers = await loadRosterMembers(facilityId);
+    rosterGroupMemberships = await loadRosterGroupMemberships(
+      rosterMembers.map(member => member.memberProfileId)
+    );
+
+    renderGroupFilter();
+    renderGroupList();
+    renderRosterMembers();
+    showRosterMessage("");
+  } catch (error) {
+    console.error(error);
+    showRosterMessage(error.message || "Could not load roster.", true);
+  }
+}
+
+async function logoutCoachRoster() {
+  await db.auth.signOut();
+  window.location.href = "login.html";
+}
+
+async function initCoachRosterPage() {
+  showRosterMessage("Checking access...");
+
+  try {
+    rosterAccess = await requireRosterCoachAccess();
+    if (!rosterAccess) return;
+
+    await refreshRoster();
+  } catch (error) {
+    console.error(error);
+    showRosterMessage(error.message || "Could not load roster page.", true);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  initCoachRosterPage();
+
+  document.querySelectorAll("[data-copy-signup-link]").forEach(button => {
+    button.addEventListener("click", () => copyRosterSignupLink(button.dataset.copySignupLink));
+  });
+
+  document.getElementById("refresh-roster-btn").addEventListener("click", refreshRoster);
+  document.getElementById("create-group-form").addEventListener("submit", createRosterGroup);
+  document.getElementById("coach-roster-logout-btn").addEventListener("click", logoutCoachRoster);
+
+  ["roster-type-filter", "roster-status-filter", "roster-group-filter", "roster-search"].forEach(id => {
+    document.getElementById(id).addEventListener("input", () => {
+      rosterVisibleLimit = 8;
+      renderRosterMembers();
+    });
+  });
+});

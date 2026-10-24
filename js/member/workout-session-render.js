@@ -1,0 +1,704 @@
+// =====================================================
+// WORKOUT SESSION RENDERING
+// =====================================================
+// Converts the loaded workout assignment into the round/superset UI.
+// Save handlers are attached after each render because the DOM is rebuilt.
+
+function updateWorkoutHeader() {
+  const workout = workoutAssignment.workout;
+
+  document.getElementById("session-workout-title").textContent = workout.title;
+  document.getElementById("session-workout-description").textContent =
+    workout.description || "Log your actual work for each set.";
+
+  document.getElementById("session-focus").textContent = workout.focus || "Workout";
+  document.getElementById("session-minutes").textContent = workout.estimated_minutes || "—";
+  document.getElementById("session-date").textContent = formatWorkoutAssignmentDate(workoutAssignment.assigned_date);
+}
+
+function getAllExercises() {
+  const workout = workoutAssignment.workout;
+
+  return window.RipCityWorkoutData.getWorkoutExercises(workout);
+}
+
+function getTotalSetCount() {
+  return window.RipCityWorkoutData.getWorkoutTotalSets(workoutAssignment.workout);
+}
+
+function getCompletedSetCount() {
+  return existingSetLogs.filter(log => log.completed).length;
+}
+
+function updateSetStats() {
+  const complete = getCompletedSetCount();
+  const total = getTotalSetCount();
+  const progressPercent = total ? Math.round((complete / total) * 100) : 0;
+
+  document.getElementById("session-sets-complete").textContent = complete;
+  document.getElementById("session-sets-total").textContent = total;
+
+  const mobileComplete = document.getElementById("mobile-session-sets-complete");
+  const mobileTotal = document.getElementById("mobile-session-sets-total");
+  const progressLabel = document.getElementById("session-progress-percent");
+  const progressFill = document.getElementById("session-progress-fill");
+
+  if (mobileComplete) mobileComplete.textContent = complete;
+  if (mobileTotal) mobileTotal.textContent = total;
+  if (progressLabel) progressLabel.textContent = progressPercent;
+  if (progressFill) progressFill.style.width = `${progressPercent}%`;
+}
+
+function renderWorkoutSession() {
+  const container = document.getElementById("workout-session-container");
+  const workout = workoutAssignment.workout;
+  const steps = getWorkoutSessionSteps(workout);
+  const blocks = getWorkoutSessionBlocks(workout);
+
+  if (!steps.length) {
+    container.innerHTML = `<div class="empty-state">This workout has no blocks yet.</div>`;
+    return;
+  }
+
+  currentSessionStepIndex = Math.min(
+    Math.max(currentSessionStepIndex, 0),
+    steps.length - 1
+  );
+
+  document.body.classList.toggle("session-overview-mode", workoutSessionView === "overview");
+  document.body.classList.toggle("session-logging-mode", workoutSessionView === "logging");
+
+  if (workoutSessionView === "overview") {
+    container.innerHTML = renderWorkoutOverview(workout, blocks, steps);
+
+    document.querySelector("[data-start-session]")?.addEventListener("click", () => {
+      const firstIncompleteStep = steps.findIndex(step => !isStepComplete(step));
+      goToSessionStep(firstIncompleteStep >= 0 ? firstIncompleteStep : 0);
+    });
+
+    document.querySelectorAll("[data-start-block-index]").forEach(button => {
+      button.addEventListener("click", () => {
+        goToSessionStep(Number(button.dataset.startBlockIndex));
+      });
+    });
+
+    document.querySelectorAll("[data-toggle-preview-exercises]").forEach(button => {
+      button.addEventListener("click", () => {
+        const card = button.closest(".session-overview-block");
+        const isExpanded = card?.classList.toggle("is-preview-expanded") || false;
+        button.setAttribute("aria-expanded", String(isExpanded));
+        button.textContent = isExpanded ? button.dataset.hideLabel : button.dataset.showLabel;
+      });
+    });
+
+    updateSetStats();
+    return;
+  }
+
+  const activeStep = steps[currentSessionStepIndex];
+  const activeBlockIndex = blocks.findIndex(block => block.id === activeStep.block.id);
+  const activeBlock = blocks[activeBlockIndex];
+  const blockSteps = steps.filter(step => step.block.id === activeBlock.id);
+  const activeBlockExercises = window.RipCityWorkoutData.getBlockExercises(activeBlock);
+  const activeExerciseIndex = activeBlockExercises.findIndex(exercise => exercise.id === activeStep.exercise.id);
+  const activeExerciseCount = activeBlockExercises.length;
+
+  container.innerHTML = `
+    <div class="session-step-shell session-block-tone-${activeBlockIndex % 5}">
+      <div class="session-step-topbar">
+        <button class="session-overview-return" type="button" data-session-overview>
+          <span aria-hidden="true">←</span>
+          <span class="session-overview-return-desktop">Workout Preview</span>
+          <span class="session-overview-return-mobile">Preview</span>
+        </button>
+        <div class="session-active-block-title">
+          <p class="eyebrow">BLOCK ${activeBlockIndex + 1} OF ${blocks.length}</p>
+          <h3>${window.RipCityUI.text(activeBlock.name)}</h3>
+        </div>
+        <span class="session-saved-count">${getCompletedSetCount()}/${getTotalSetCount()} saved</span>
+      </div>
+
+      <nav class="session-block-navigation" aria-label="Workout blocks">
+        ${blocks.map((block, blockIndex) => {
+          const firstStepIndex = getBlockStartStepIndex(block, steps);
+          const progress = getBlockStepProgress(block, steps);
+
+          return `
+          <button
+            class="session-block-nav session-block-tone-${blockIndex % 5} ${blockIndex === activeBlockIndex ? "active" : ""} ${progress.complete === progress.total ? "complete" : ""}"
+            type="button"
+            data-session-step-index="${firstStepIndex}"
+            aria-label="Go to ${window.RipCityUI.attr(block.name)}"
+          >
+            <span>Block ${blockIndex + 1}</span>
+            <strong>${window.RipCityUI.text(block.name)}</strong>
+            <small>${progress.complete}/${progress.total} saved</small>
+          </button>
+        `;
+        }).join("")}
+      </nav>
+
+      <div class="session-step-list">
+        ${renderWorkoutStep(activeStep, currentSessionStepIndex, activeExerciseIndex, activeExerciseCount, activeBlockIndex)}
+      </div>
+    </div>
+  `;
+
+  document.querySelectorAll(".save-set-btn").forEach(button => {
+    button.addEventListener("click", () => {
+      saveSetLog(button.dataset.exerciseId, Number(button.dataset.setNumber));
+    });
+  });
+
+  document.querySelectorAll("[data-session-step-index]").forEach(button => {
+    button.addEventListener("click", () => {
+      goToSessionStep(Number(button.dataset.sessionStepIndex));
+    });
+  });
+
+  document.querySelector("[data-session-overview]")?.addEventListener("click", goToSessionOverview);
+
+  document.querySelectorAll(".session-previous-step-btn").forEach(button => {
+    button.addEventListener("click", () => {
+      goToSessionStep(Number(button.dataset.previousStepIndex));
+    });
+  });
+
+  document.querySelectorAll(".session-next-step-btn").forEach(button => {
+    button.addEventListener("click", () => {
+      saveCurrentSetAndGoToStep(Number(button.dataset.nextStepIndex));
+    });
+  });
+
+  updateSetStats();
+}
+
+function getWorkoutSessionBlocks(workout) {
+  return window.RipCityWorkoutData.getWorkoutBlocks(workout)
+    .filter(block => window.RipCityWorkoutData.getBlockExercises(block).length);
+}
+
+function getBlockStepProgress(block, steps) {
+  const blockSteps = steps.filter(step => step.block.id === block.id);
+
+  return {
+    total: blockSteps.length,
+    complete: blockSteps.filter(isStepComplete).length
+  };
+}
+
+function getBlockStartStepIndex(block, steps) {
+  const firstIncompleteStepIndex = steps.findIndex(step =>
+    step.block.id === block.id && !isStepComplete(step)
+  );
+
+  if (firstIncompleteStepIndex >= 0) return firstIncompleteStepIndex;
+  return steps.findIndex(step => step.block.id === block.id);
+}
+
+function renderWorkoutOverview(workout, blocks, steps) {
+  const complete = getCompletedSetCount();
+  const total = getTotalSetCount();
+  const percent = total ? Math.round((complete / total) * 100) : 0;
+  const hasProgress = complete > 0;
+
+  return `
+    <section class="session-overview">
+      <div class="session-overview-heading">
+        <div>
+          <p class="eyebrow">WORKOUT PREVIEW</p>
+          <h2>${window.RipCityUI.text(workout.title)}</h2>
+          <p>${window.RipCityUI.text(workout.description, "Review the blocks, then start when you are ready.")}</p>
+        </div>
+        <div class="session-overview-progress">
+          <strong>${percent}%</strong>
+          <span>${complete} of ${total} sets saved</span>
+        </div>
+      </div>
+
+      <div class="session-overview-meta">
+        <span><small>Focus</small><strong>${window.RipCityUI.text(workout.focus, "Workout")}</strong></span>
+        <span><small>Estimated</small><strong>${window.RipCityUI.text(workout.estimated_minutes ? `${workout.estimated_minutes} min` : "—")}</strong></span>
+        <span><small>Assigned</small><strong>${window.RipCityUI.text(formatWorkoutAssignmentDate(workoutAssignment.assigned_date))}</strong></span>
+        <span><small>Assigned By</small><strong>${window.RipCityUI.text(window.RipCityWorkoutData.getAssignmentAssignerName(workoutAssignment))}</strong></span>
+      </div>
+
+      <div class="session-overview-blocks">
+        ${blocks.map((block, blockIndex) => {
+          const exercises = window.RipCityWorkoutData.getBlockExercises(block);
+          const firstStepIndex = getBlockStartStepIndex(block, steps);
+          const progress = getBlockStepProgress(block, steps);
+          const blockComplete = progress.complete === progress.total;
+          const previewLimit = 3;
+          const hasHiddenExercises = exercises.length > previewLimit;
+          const blockAction = blockComplete
+            ? "Review Block"
+            : progress.complete > 0
+              ? "Continue Block"
+              : "Start Block";
+          const showLabel = blockComplete
+            ? "Show exercises"
+            : `Show all ${exercises.length} exercises`;
+
+          return `
+            <article class="session-overview-block session-block-tone-${blockIndex % 5} ${blockComplete ? "is-complete" : ""} ${hasHiddenExercises ? "has-hidden-exercises" : ""}">
+              <div class="session-overview-block-heading">
+                <div>
+                  <span>Block ${blockIndex + 1}</span>
+                  <h3>${window.RipCityUI.text(block.name)}</h3>
+                </div>
+                <em>${progress.complete}/${progress.total} saved</em>
+              </div>
+              <ol class="session-overview-exercise-list">
+                ${exercises.map((exercise, exerciseIndex) => `
+                  <li class="${exerciseIndex >= previewLimit ? "session-overview-exercise-extra" : ""}">
+                    <span>${window.RipCityUI.text(exercise.name)}</span>
+                    <strong>${window.RipCityUI.text(getExerciseTargetText(exercise))}</strong>
+                  </li>
+                `).join("")}
+              </ol>
+              ${(blockComplete || hasHiddenExercises) ? `
+                <button
+                  class="session-overview-exercise-toggle"
+                  type="button"
+                  data-toggle-preview-exercises
+                  data-show-label="${window.RipCityUI.attr(showLabel)}"
+                  data-hide-label="Hide exercises"
+                  aria-expanded="false"
+                >
+                  ${window.RipCityUI.text(showLabel)}
+                </button>
+              ` : ""}
+              <button class="outline-btn" type="button" data-start-block-index="${firstStepIndex}">
+                ${blockAction}
+              </button>
+            </article>
+          `;
+        }).join("")}
+      </div>
+
+      <div class="session-overview-actions">
+        <button class="primary-btn" type="button" data-start-session>
+          ${hasProgress && complete < total ? "Continue Workout" : complete === total ? "Review Workout" : "Start Workout"}
+        </button>
+      </div>
+    </section>
+  `;
+}
+
+function getWorkoutSessionSteps(workout) {
+  const blocks = window.RipCityWorkoutData.getWorkoutBlocks(workout);
+  const steps = [];
+
+  blocks.forEach(block => {
+    const exercises = window.RipCityWorkoutData.getBlockExercises(block);
+
+    if (!exercises.length) return;
+
+    const maxSets = Math.max(
+      ...exercises.map(exercise => Number(exercise.sets || 1))
+    );
+
+    for (let roundNumber = 1; roundNumber <= maxSets; roundNumber++) {
+      const exercisesForRound = exercises.filter(exercise => {
+        const totalSets = Number(exercise.sets || 1);
+        return roundNumber <= totalSets;
+      });
+
+      exercisesForRound.forEach((exercise, exerciseIndex) => {
+        steps.push({
+          block,
+          exercise,
+          exerciseIndex,
+          roundExerciseCount: exercisesForRound.length,
+          roundNumber,
+          setNumber: roundNumber
+        });
+      });
+    }
+  });
+
+  return steps;
+}
+
+function isStepComplete(step) {
+  return Boolean(findExistingLog(step.exercise.id, step.setNumber)?.completed);
+}
+
+function goToSessionStep(stepIndex) {
+  const workout = workoutAssignment?.workout;
+  if (!workout) return;
+
+  const steps = getWorkoutSessionSteps(workout);
+  const isEnteringLogging = workoutSessionView !== "logging";
+  workoutSessionView = "logging";
+  currentSessionStepIndex = Math.min(Math.max(stepIndex, 0), steps.length - 1);
+  updateWorkoutSessionHistory(isEnteringLogging ? "push" : "replace");
+  renderWorkoutSession();
+  scrollWorkoutSessionViewIntoPlace();
+}
+
+function scrollWorkoutSessionViewIntoPlace() {
+  window.requestAnimationFrame(() => {
+    if (workoutSessionView === "overview") {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      return;
+    }
+
+    document.getElementById("workout-session-container")?.scrollIntoView({
+      behavior: "auto",
+      block: "start"
+    });
+  });
+}
+
+function goToSessionOverview() {
+  if (window.history.state?.ripCityWorkoutSessionView === "logging") {
+    window.history.back();
+    return;
+  }
+
+  workoutSessionView = "overview";
+  updateWorkoutSessionHistory("replace");
+  renderWorkoutSession();
+  scrollWorkoutSessionViewIntoPlace();
+}
+
+function renderWorkoutStep(step, index, exerciseIndex, exerciseCount, blockIndex) {
+  const label = getExerciseBlockLabel(step.exerciseIndex);
+  const totalExerciseSets = Number(step.exercise.sets || 1);
+  const setTarget = getSetTargetValue(step.exercise, step.setNumber);
+  const compactTarget = setTarget
+    ? `${setTarget.value}${step.exercise.is_unilateral ? " each side" : ""}`
+    : "Complete";
+
+  return `
+    <article class="session-step-card active session-block-tone-${blockIndex % 5}" data-session-step="${index}">
+      <div class="session-current-context">
+        <span class="round-exercise-label">${label}</span>
+        <div class="session-current-summary">
+          <p class="eyebrow">EXERCISE ${exerciseIndex + 1} OF ${exerciseCount} · SET ${step.setNumber} OF ${totalExerciseSets}</p>
+          <h4>${window.RipCityUI.text(step.exercise.name)}</h4>
+          <p>${window.RipCityUI.text(step.exercise.description, "No description added.")}</p>
+        </div>
+        <div class="session-current-target">
+          <span>Coach Target</span>
+          <strong>${window.RipCityUI.text(compactTarget)}</strong>
+        </div>
+      </div>
+
+      <div class="round-exercise-item session-current-exercise">
+        ${renderExerciseSetLogger(step.exercise, step.setNumber, index, { compactSummary: true })}
+      </div>
+    </article>
+  `;
+}
+
+function renderBlockRounds(exercises) {
+  if (!exercises.length) {
+    return `<div class="empty-state">No exercises in this block.</div>`;
+  }
+
+  const maxSets = Math.max(
+    ...exercises.map(exercise => Number(exercise.sets || 1))
+  );
+
+  let roundHtml = "";
+
+  for (let roundNumber = 1; roundNumber <= maxSets; roundNumber++) {
+    const exercisesForRound = exercises.filter(exercise => {
+      const totalSets = Number(exercise.sets || 1);
+      return roundNumber <= totalSets;
+    });
+
+    roundHtml += `
+      <article class="session-round-card">
+        <div class="session-round-heading">
+          <div>
+            <p class="eyebrow">ROUND ${roundNumber}</p>
+            <h4>Set ${roundNumber}</h4>
+          </div>
+          <span>${exercisesForRound.length} exercise${exercisesForRound.length === 1 ? "" : "s"}</span>
+        </div>
+
+        <div class="session-round-exercises">
+          ${exercisesForRound.map((exercise, exerciseIndex) => {
+            const label = getExerciseBlockLabel(exerciseIndex);
+
+            return `
+              <div class="round-exercise-item">
+                <div class="round-exercise-label">${label}</div>
+                ${renderExerciseSetLogger(exercise, roundNumber)}
+              </div>
+            `;
+          }).join("")}
+        </div>
+      </article>
+    `;
+  }
+
+  return roundHtml;
+}
+
+function renderExerciseSetLogger(exercise, setNumber, stepIndex = null, options = {}) {
+  const compactSummary = options.compactSummary === true;
+  const supportingDetails = [
+    exercise.tempo ? `<span><strong>Tempo</strong>${window.RipCityUI.text(exercise.tempo)}</span>` : "",
+    exercise.rest_time ? `<span><strong>Rest</strong>${window.RipCityUI.text(exercise.rest_time)}</span>` : "",
+    exercise.percentage ? `<span><strong>Load</strong>${window.RipCityUI.text(exercise.percentage)}</span>` : ""
+  ].filter(Boolean).join("");
+
+  return `
+    <article class="session-exercise-card ${compactSummary ? "session-exercise-card-focused" : ""}">
+      ${compactSummary ? "" : `<div class="session-exercise-header">
+        <div>
+          <h4>${window.RipCityUI.text(exercise.name)}</h4>
+          <p>${window.RipCityUI.text(exercise.description, "No description added.")}</p>
+        </div>
+      </div>`}
+
+      ${compactSummary ? "" : `<div class="session-prescription">
+        <div class="session-primary-target">
+          <span>Coach Target</span>
+          <strong>${window.RipCityUI.text(getSetTargetText(exercise, setNumber))}</strong>
+        </div>
+
+        ${supportingDetails ? `<div class="session-exercise-tags">${supportingDetails}</div>` : ""}
+      </div>`}
+
+      ${compactSummary && supportingDetails ? `<div class="session-exercise-tags session-focused-details">${supportingDetails}</div>` : ""}
+
+      ${exercise.coach_note ? `
+        <div class="session-coach-note">
+          <strong>Coach Note</strong>
+          <p>${window.RipCityUI.text(exercise.coach_note)}</p>
+        </div>
+      ` : ""}
+
+      <div class="set-log-list">
+        ${renderSetLogger(exercise, setNumber, stepIndex)}
+      </div>
+    </article>
+  `;
+}
+
+function renderSetLogger(exercise, setNumber, stepIndex = null) {
+  const existing = findExistingLog(exercise.id, setNumber);
+  const completed = existing?.completed || false;
+  const showNoteInput = exercise.input_type !== "custom";
+  const showCompletedInput = exercise.input_type === "completion";
+  const hasStepperActions = Number.isInteger(stepIndex);
+  const totalSteps = hasStepperActions
+    ? getWorkoutSessionSteps(workoutAssignment.workout).length
+    : 0;
+  const isFirstStep = hasStepperActions && stepIndex === 0;
+  const isLastStep = hasStepperActions && stepIndex === totalSteps - 1;
+  const hasOptionalFeedback = Boolean(
+    existing?.difficulty_rating || (showNoteInput && existing?.athlete_note)
+  );
+
+  return `
+    <div
+      class="set-log-row ${completed ? "set-complete" : ""}"
+      data-exercise-id="${window.RipCityUI.attr(exercise.id)}"
+      data-set-number="${window.RipCityUI.attr(setNumber)}"
+    >
+      <div class="set-log-title">
+        <div>
+          <span>Set ${setNumber}</span>
+          <strong>Your Result</strong>
+        </div>
+        <em>${completed ? "Saved" : "Not saved"}</em>
+      </div>
+
+      <div class="set-log-required-fields">
+        ${renderInputsForExerciseType(exercise, existing, setNumber)}
+
+        ${showCompletedInput ? `
+          <label class="set-complete-check">
+            <input
+              type="checkbox"
+              class="set-completed-input"
+              ${completed ? "checked" : ""}
+            />
+            Completed
+          </label>
+        ` : ""}
+      </div>
+
+      <details class="set-log-optional" ${hasOptionalFeedback ? "open" : ""}>
+        <summary>Add difficulty or a note <span>Optional</span></summary>
+        <div class="set-log-fields">
+          <label>
+            Difficulty
+            <select class="set-difficulty-input">
+              <option value="">Not selected</option>
+              ${[1,2,3,4,5,6,7,8,9,10].map(num => `
+                <option value="${num}" ${Number(existing?.difficulty_rating) === num ? "selected" : ""}>
+                  ${num}/10
+                </option>
+              `).join("")}
+            </select>
+          </label>
+
+          ${showNoteInput ? `
+            <label class="set-note-label">
+              Note
+              <input
+                type="text"
+                class="set-note-input"
+                value="${window.RipCityUI.attr(existing?.athlete_note || "")}"
+                placeholder="Optional note"
+              />
+            </label>
+          ` : ""}
+        </div>
+      </details>
+
+      <div class="set-log-actions">
+        ${hasStepperActions && !isFirstStep ? `
+          <button
+            class="outline-btn session-previous-step-btn"
+            type="button"
+            data-previous-step-index="${stepIndex - 1}"
+          >
+            Previous
+          </button>
+        ` : ""}
+
+        ${hasStepperActions && !isLastStep ? `
+          <button
+            class="primary-btn session-next-step-btn"
+            type="button"
+            data-next-step-index="${stepIndex + 1}"
+          >
+            Save & Next
+          </button>
+        ` : `
+          <button
+            class="primary-btn save-set-btn"
+            type="button"
+            data-exercise-id="${window.RipCityUI.attr(exercise.id)}"
+            data-set-number="${window.RipCityUI.attr(setNumber)}"
+          >
+            ${hasStepperActions ? "Save Final Set" : "Save Set"}
+          </button>
+        `}
+      </div>
+    </div>
+  `;
+}
+
+function renderInputsForExerciseType(exercise, existing, setNumber) {
+  const setTarget = getSetTargetValue(exercise, setNumber)?.value || exercise.reps || "";
+
+  if (exercise.input_type === "weight_reps") {
+    const previousWeight = findPreviousWeightForExercise(exercise.id, setNumber);
+    const previousReps = findPreviousRepsForExercise(exercise.id, setNumber);
+
+    const weightValue = existing?.weight ?? previousWeight;
+    const repsValue = existing?.reps_completed ?? previousReps;
+
+    return `
+      <div class="set-input-grid">
+        <label>
+          Actual Weight
+          <input
+            type="number"
+            class="set-weight-input"
+            value="${window.RipCityUI.attr(weightValue)}"
+            placeholder="ex: 185"
+          />
+        </label>
+
+        <label>
+          Actual Reps${exercise.is_unilateral ? " (Each Side)" : ""}
+          <input
+            type="number"
+            class="set-reps-input"
+            value="${window.RipCityUI.attr(repsValue || "")}"
+            placeholder="${window.RipCityUI.attr(setTarget || "reps")}"
+          />
+        </label>
+      </div>
+    `;
+  }
+
+  if (exercise.input_type === "band_color") {
+    const previousReps = findPreviousRepsForExercise(exercise.id, setNumber);
+    const repsValue = existing?.reps_completed ?? previousReps;
+
+    return `
+      <div class="set-input-grid">
+        <label>
+          Band Color (Optional)
+          <input
+            type="text"
+            class="set-band-input"
+            value="${window.RipCityUI.attr(existing?.band_color || "")}"
+            placeholder="Only if useful"
+          />
+        </label>
+
+        <label>
+          Actual Reps${exercise.is_unilateral ? " (Each Side)" : ""}
+          <input
+            type="number"
+            class="set-reps-input"
+            value="${window.RipCityUI.attr(repsValue || "")}"
+            placeholder="${window.RipCityUI.attr(setTarget || "reps")}"
+          />
+        </label>
+      </div>
+    `;
+  }
+
+  if (exercise.input_type === "time") {
+    return `
+      <label>
+        Actual Time
+        <input
+          type="text"
+          class="set-time-input"
+          value="${window.RipCityUI.attr(existing?.time_value || "")}"
+          placeholder="${window.RipCityUI.attr(setTarget || "ex: 10.4 sec")}"
+        />
+      </label>
+    `;
+  }
+
+  if (exercise.input_type === "distance") {
+    return `
+      <label>
+        Actual Distance
+        <input
+          type="text"
+          class="set-distance-input"
+          value="${window.RipCityUI.attr(existing?.distance_value || "")}"
+          placeholder="${window.RipCityUI.attr(setTarget || "ex: 20 yards")}"
+        />
+        <small class="set-input-help">Enter 0 if you completed it but did not measure the distance.</small>
+      </label>
+    `;
+  }
+
+  if (exercise.input_type === "custom") {
+    return `
+      <label>
+        Actual Result
+        <input
+          type="text"
+          class="set-note-input"
+          value="${window.RipCityUI.attr(existing?.athlete_note || "")}"
+          placeholder="Enter result"
+        />
+      </label>
+    `;
+  }
+
+  return `
+    <p class="completion-only-text">
+      Mark this set as completed when finished.
+    </p>
+  `;
+}

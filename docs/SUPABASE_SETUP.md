@@ -1,6 +1,6 @@
 # Supabase Setup And Audit Guide
 
-Rip City is already connected to Supabase through `js/supabaseClient.js`. This
+Rip City is already connected to Supabase through `js/shared/supabaseClient.js`. This
 guide is for rebuilding, auditing, or safely applying proposed database changes.
 
 ## Current Rule
@@ -11,38 +11,161 @@ it manually in Supabase SQL Editor, and test with real member and coach accounts
 The frontend must use the publishable anon key only. Never place the service
 role key in browser JavaScript.
 
+## Environment Projects
+
+| Environment | Project | Reference | Branch/data rule |
+| --- | --- | --- | --- |
+| Production | RipCity Project | `fdzmfohcuratbuitkwoy` | `main`; live Rip City data |
+| Staging | Rip City Staging | `xjgmjliqqkhfnqphigbk` | `v2-development`; fake data only |
+
+`js/shared/supabaseClient.js` on `v2-development` intentionally points to staging.
+The deployed production app remains on `main` and must continue pointing to the
+production project. Before any future V2 production release, verify the target
+project as an explicit release-checklist item.
+
+Staging was created on 2026-08-16 with automatic RLS enabled. It started as an
+empty project and has not received production data. Do not store a database
+password, secret key, or `service_role` key in this repository.
+
+The repository-generated staging baseline and its read-only verification suite
+both passed on 2026-08-16. Staging contains required Rip City configuration but
+no production users or activity data. Nine entirely fake Auth identities across
+the two staging facilities were added and verified on 2026-08-28.
+
+Staging migration status:
+
+- `20261023180000_add_workout_attribution_rpc.sql` was applied to staging on
+  2026-10-23. It exposes only creator/assigner display names for workout
+  assignments the authenticated caller is already authorized to read. The
+  focused athlete-habit and workout-attribution staging checks all passed.
+  Production has not received this migration.
+
+- `20261019190000_restrict_member_lifecycle_to_facility_admins.sql` was applied
+  to staging on 2026-10-23. The expanded 25-check account-lifecycle suite passed
+  and proves ordinary coaches cannot approve or deactivate members.
+- `20261023120000_add_group_creator_permissions.sql` was applied to staging on
+  2026-10-23. All 15 group-ownership checks passed: coaches can remove only
+  coach-owned groups/memberships, admins retain full management, and
+  cross-facility access remains blocked. Production has received neither
+  permissions-hardening migration.
+- `20261018100000_add_targeted_coach_announcements.sql` was applied to staging
+  on 2026-10-18. The first RLS test exposed that its invoker creation RPC could
+  not pass the table insert policy; no test announcements were left behind.
+- `20261018103000_fix_targeted_announcement_creation.sql` was applied to
+  staging on 2026-10-18. It makes the RPC explicitly facility-scoped and keeps
+  creation in a validated server-side transaction. All 16 facility, group,
+  individual-recipient, importance, write-denial, isolation, and admin-delete
+  checks then passed, and the test announcements were cleaned up.
+- The obsolete Test Facility Alpha membership for `rccoach@example.com` was
+  removed with the staging-only `04_remove_cross_facility_coach_fixture.sql`.
+  Each V2 login fixture now belongs to one facility. Production has not
+  received any announcement migration.
+- `20261018110000_add_announcement_audiences_and_dismissals.sql` was applied
+  to staging on 2026-10-18. It adds the all-athletes audience and private daily
+  member dismissal records. All 24 expanded targeted-announcement checks,
+  including reversible dismissal restoration, passed afterward, and the
+  temporary test records were cleaned up.
+- `20261018113000_add_h2k_announcement_audience.sql` was applied to staging on
+  2026-10-18. It adds a one-click all-H2K audience. All 26 expanded
+  targeted-announcement checks passed afterward, and the fixtures were cleaned
+  up.
+
+- `20261016120000_add_secure_coach_invites.sql` was applied to staging and all
+  12 coach-invite/RLS checks passed on 2026-10-16. The applied migration is now
+  immutable; any correction must use a new timestamped migration.
+- `20261016200000_harden_secure_coach_invites.sql` was applied to staging on
+  2026-10-16. It moves invite generation and expiration to database server
+  time, makes a consumed invite irreversible, and keeps interrupted account
+  creation recoverable with a fresh link. The expanded 14-check coach-invite
+  suite passed after it was applied.
+- `20261016201500_lock_down_coach_invite_writes.sql` was applied to staging on
+  2026-10-16. It prevents two-step reopening of a consumed invite and blocks
+  direct client inserts/updates of coach-invite metadata so creation remains
+  server-controlled. The expanded 16-check suite passed afterward.
+- The staging browser flow was also verified on 2026-10-16: an admin created a
+  coach link, the invitee reached pending access, reuse was blocked, and admin
+  approval granted the expected coach experience.
+- Production has not received any coach-invite migration. All three must be
+  applied in timestamp order before the eventual V2 frontend release.
+
+- `20260914140000_add_unilateral_exercise_flags.sql` was applied and verified
+  on 2026-09-14. Both `exercise_templates.is_unilateral` and
+  `workout_exercises.is_unilateral` are non-null booleans defaulting to `false`.
+- Production has not received this migration. Preserve it in the eventual V2
+  production migration sequence rather than manually recreating the columns.
+- The `20260914140000_add_unilateral_exercise_flags.sql` migration must be
+  applied and verified in production before deploying any V2 frontend assets.
+  V2 queries and inserts intentionally rely on both columns; never deploy the
+  frontend first or merge `v2-development` directly into the live site.
+- `20260914220000_correct_jump_and_med_ball_exercise_defaults.sql` was applied
+  successfully to staging on 2026-09-14 after Derek and the Rip City coach
+  approved the catalog corrections. It added Vertical Jump as a measured-
+  distance exercise and changed the three medicine-ball defaults to weight and
+  reps. Med Ball Shot Put defaults to `Each Side`.
+- Production has not received the catalog-correction migration.
+- `20260914223000_apply_approved_exercise_input_audit.sql` was applied and
+  verified successfully in staging on 2026-09-14. It contains the remaining
+  coach-approved prescribed-distance and `Each Side` defaults. Production
+  remains unchanged.
+
+Staging Auth was configured on 2026-08-28:
+Staging Auth was first configured for localhost on 2026-08-28 and updated for
+the shared Netlify staging deployment on 2026-09-11:
+
+- Site URL: `https://ripcitystaging.netlify.app`
+- Redirect URLs:
+  - `https://ripcitystaging.netlify.app/**`
+  - `https://**--ripcitystaging.netlify.app/**`
+  - `http://localhost:3000/**`
+- Email provider and new-user signups enabled.
+- Email confirmation disabled for the current signup/approval flow.
+- Anonymous sign-ins and manual linking disabled.
+
 ## Fresh Database Setup
 
-For a new Supabase project:
+For the empty staging project, follow `docs/STAGING_DATABASE_SETUP.md`. That
+runbook generates one transaction from the reviewed source files and provides
+read-only verification queries. Do not substitute the historical file order in
+`sql/README.md`.
 
-1. Create the Supabase project.
-2. In SQL Editor, run `sql/supabase_schema.sql`.
-3. Run `sql/seed_rip_city.sql`.
-4. Run `sql/profile_fields_v1.sql`.
-5. Create the first coach/admin auth user in Supabase Auth.
-6. Connect that auth user to `profiles` and `facility_members`.
-7. Confirm login, signup, coach approval, member dashboard, and workout logging.
+After the baseline passes verification:
 
-Optional/current migrations:
+1. Configure staging Auth URLs and email/password behavior. Completed 2026-08-28.
+2. Create fake Auth users only.
+3. Connect those users to fake application profiles and memberships.
+4. Test signup, approval, member dashboards, and workout logging.
+5. Add V2 changes through new ordered migrations rather than editing the
+   already-verified baseline without review.
 
-- `sql/platform_owner_role_v1.sql` when platform-owner tooling is ready.
-- `sql/exercise_library_v1.sql` when saved exercise templates should be live.
-- `sql/rls_policies_v1.sql` has been applied to the live project and should be
-  kept as the current RLS source of truth.
+The archived `sql/archive/proposals/platform_owner_role_v1.sql` is not part of
+the current-production baseline. It remains a historical proposal. The
+platform-owner role, facility switching, and support-mode RLS design are V3
+scope and require a new reviewed migration rather than reuse of that proposal.
 
 ## Existing Live Database Audit
 
-Before applying any migration to the current project, run the read-only audit
-queries in `sql/README.md` and compare the output to this repo.
+Before applying any migration to the current project, use the relevant read-only
+files in `sql/diagnostics/` and compare the output with the active migration
+history and dated audit.
 
-Known current drift from the repo base schema:
+The repository currently contains a browser publishable key but no linked
+Supabase CLI project configuration. The publishable key is appropriate for app
+testing but cannot provide a complete, authoritative inventory of internal
+schema objects and policies. A full audit therefore requires read-only catalog
+queries run through the production Supabase SQL Editor or another explicitly
+approved authenticated database connection. The audit must not modify
+production.
 
-- The live project appears to already include profile UI fields such as
-  `profiles.username`, `profiles.bio`, `profiles.birthday`,
-  `profiles.profile_picture_url`, `member_profiles.height`,
-  `member_profiles.training_focus`, and `member_profiles.favorite_lift`.
-- The live project does not appear to have the proposed exercise library tables
-  or `workout_exercises.exercise_template_id` yet.
+The audit should capture tables/columns, constraints, indexes, functions,
+triggers, views, enums, extensions, grants, RLS policies, storage buckets, and
+storage policies. Compare those results with active migrations, archived source
+history, and all app queries before classifying or removing anything.
+
+The 2026-08-08 live audit verified that production includes the profile fields,
+both exercise-library tables,
+`workout_exercises.exercise_template_id`, 93 exercise templates, H2K band
+support, gender support, username login, and the profile-picture bucket. See
+`docs/SUPABASE_AUDIT_2026-08-08.md` before planning any new database work.
 
 ## RLS Status
 
@@ -51,18 +174,28 @@ project. The rollout was verified with:
 
 - Coach/admin login and dashboard access.
 - Existing H2K member login, habits, workout dashboard, and session access.
-- Existing athlete login with H2K UI hidden.
+- Existing athlete login with shared Rip City habit access.
 - New signup, pending approval, coach approval, and approved member login.
-- `anon` table grants reduced to only `facilities SELECT`.
+- `anon` access intentionally includes `facilities SELECT` and `groups SELECT`
+  for the current signup flow.
 - `authenticated` grants reduced to normal app CRUD, with row access filtered
   by RLS policies.
 
-Signup currently depends on public Rip City signup:
+The later-created exercise-library tables inherited broader default grants than
+this original RLS rollout intended. RLS still blocks anonymous exercise rows,
+but grant cleanup is required in staging; see the dated audit.
+
+Reusable member signup currently depends on public Rip City signup:
 
 1. `anon` reads the `rip-city` facility.
 2. Supabase Auth creates the user.
 3. The authenticated session inserts `profiles`, `facility_members`, and
    `member_profiles`.
+
+The V2 coach flow instead validates a short-lived code through
+`lookup_coach_invite`, creates the Auth/profile identity, then atomically claims
+the code through `claim_coach_invite`. The claim creates a pending coach
+membership only; same-facility admin approval remains required.
 
 If Supabase email confirmation is enabled later and no session is returned from
 `auth.signUp`, move app-row creation into a secure server-side signup handler or
@@ -77,26 +210,47 @@ After any RLS or signup change:
 2. Confirm pending members can only see their own pending state.
 3. Confirm approved members can see only their facility, profile, assignments,
    workouts, and logs they are authorized for.
-4. Confirm athletes do not see H2K-only modules.
+4. Confirm Rip City athletes and H2K members can use shared habits while
+   facility isolation remains intact.
 5. Confirm coaches/admins can manage only their facility.
-6. Confirm platform-owner access is not acting as an accidental cross-facility
-   data bypass.
+6. Confirm no current role has an accidental cross-facility data bypass. The
+   future platform-owner/support-mode design is V3 scope.
 7. Confirm parents have no app data access unless a secure parent policy is
    intentionally introduced.
 
+## Recovery Scope
+
+Repository-controlled SQL should be sufficient to create a clean application
+schema, RLS policies, database functions/triggers, required storage setup, and
+required seed configuration in a new Supabase project.
+
+Treat production recovery separately. SQL migrations do not themselves restore
+Supabase Auth identities, uploaded Storage objects, secrets, redirect URLs, or
+all project-level settings. Maintain and verify backup/recovery instructions for
+those resources before V2 production release.
+
+The production project currently uses the Supabase Free plan, and the dashboard
+reports that scheduled backups are not included. A paid plan is not required to
+continue planning V2, but do not begin risky production migrations without a
+tested manual backup/recovery procedure. All destructive testing belongs in the
+fake-data staging project.
+
 ## Manual App Smoke Test
+
+The maintained shared-deployment workflow and release-safety checks are in
+`docs/STAGING_RELEASE_CHECKLIST.md`.
 
 From the repo root:
 
 ```bash
-python3 -m http.server 8000
+python3 -m http.server 3000
 ```
 
-Open `http://localhost:8000/login.html`, then test:
+Open `http://localhost:3000/login.html`, then test:
 
 - Coach login and approval page.
 - Coach workout builder assignment to member, group, and facility.
 - H2K member dashboard habits and today workout.
-- Athlete dashboard without H2K habits.
+- Athlete dashboard with the same Rip City habits and athlete workout access.
 - Workout session Save Set and Save All Sets.
 - Refresh workout session and confirm saved logs reload.

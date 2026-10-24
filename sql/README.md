@@ -1,100 +1,36 @@
-# Rip City SQL Files
+# SQL Reference And Diagnostics
 
-These files are source-controlled database references and migration proposals.
-Run SQL manually in Supabase SQL Editor only after reviewing it. Codex should
-not execute live database SQL unless Derek explicitly asks.
+Start with `docs/STAGING_DATABASE_SETUP.md` for database setup. Active database
+migrations do not live in this folder; they live in `supabase/migrations/`.
 
-## Current Base Files
+## Directory Rules
 
-- `supabase_schema.sql` - current base schema reference for a clean Rip City
-  database. This should stay aligned with live schema over time.
-- `seed_rip_city.sql` - starter Rip City facility, groups, and default H2K
-  habit data.
+- `diagnostics/` contains read-only audit, export, comparison, and verification
+  tools. Review the target project before running a query.
+- `archive/applied/` preserves the component SQL files that were consolidated
+  into the verified initial migration. Do not rerun them.
+- `archive/proposals/` preserves ideas that were never approved migrations.
+  Rework an approved idea into a new timestamped migration.
+- `archive/one_time/` preserves staging fixes or troubleshooting SQL that has
+  already served its purpose. Do not rerun it.
+- `archive/experiments/` contains obsolete prototypes. Never run these files on
+  staging or production.
 
-## Current Migration Proposals
+## Current Source Of Truth
 
-- `profile_fields_v1.sql` - non-destructive profile columns used by the profile
-  page. The current live database appears to already have these fields, but a
-  clean rebuild needs this migration unless the base schema is updated.
-- `profile_picture_storage_v1.sql` - Supabase Storage bucket and policies for
-  member profile picture uploads.
-- `platform_owner_role_v1.sql` - proposed platform-owner role support. This is
-  needed before Derek-only platform administration/support tooling can be made
-  explicit and safe.
-- `exercise_library_v1.sql` - proposed exercise library and substitution base.
-  The app currently falls back gracefully if this migration has not been run.
-- `exercise_library_seed_rip_city_v1.sql` - starter Rip City exercise list.
-  Run only after `exercise_library_v1.sql`.
-- `h2k_band_color_v1.sql` - H2K training band color column and trigger guard.
-- `h2k_band_color_v2_levels.sql` - corrected H2K band levels:
-  no band, White, Grey, Green, Blue, Black, Red.
-- `rls_policies_v1.sql` - proposed Row Level Security policies. Review and test
-  carefully before enabling in production.
-- `signup_group_selection_v1.sql` - live patch after RLS that lets athlete
-  signups choose an initial Rip City training group and save it to
-  `group_members`.
+`supabase/migrations/20260816221135_initial_verified_baseline.sql` is the
+verified fresh-project baseline. It successfully recreated the audited V1
+structure in Rip City Staging on 2026-08-16 and passed every check in
+`sql/diagnostics/verify_staging_baseline.sql`.
 
-## Historical Files
+Future schema changes must be new timestamped files in `supabase/migrations/`.
+Do not edit the verified baseline to represent an upgrade to an existing
+database.
 
-- `old/starter_schema_v1.sql` - early prototype schema. Keep for history only.
-  Do not run it against the current Rip City Supabase project.
+## Safety
 
-## Safe Migration Order For A Fresh Database
-
-1. Run `supabase_schema.sql`.
-2. Run `seed_rip_city.sql`.
-3. Run `profile_fields_v1.sql`.
-4. Run `profile_picture_storage_v1.sql` before enabling profile picture uploads.
-5. Optional: run `platform_owner_role_v1.sql` when platform-owner support is
-   ready.
-6. Optional: run `exercise_library_v1.sql` when the exercise library should be
-   live.
-7. Optional: run `exercise_library_seed_rip_city_v1.sql` after the exercise
-   library base migration.
-8. Optional: run `h2k_band_color_v1.sql`, then `h2k_band_color_v2_levels.sql`
-   if H2K bands should be live.
-9. Review, stage-test, then run `rls_policies_v1.sql`.
-10. Run `signup_group_selection_v1.sql` if athlete signup should require a
-   starting training group.
-
-## Live Database Audit Queries
-
-Use these read-only queries in the Supabase SQL Editor when checking drift.
-
-```sql
-select
-  table_schema,
-  table_name,
-  column_name,
-  data_type,
-  is_nullable,
-  column_default
-from information_schema.columns
-where table_schema = 'public'
-order by table_name, ordinal_position;
-```
-
-```sql
-select
-  schemaname,
-  tablename,
-  rowsecurity
-from pg_tables
-where schemaname = 'public'
-order by tablename;
-```
-
-```sql
-select
-  schemaname,
-  tablename,
-  policyname,
-  permissive,
-  roles,
-  cmd,
-  qual,
-  with_check
-from pg_policies
-where schemaname = 'public'
-order by tablename, policyname;
-```
+- Staging receives migrations before production.
+- Staging contains only fake people and activity data.
+- Production SQL requires an explicit migration, backup/recovery check, and
+  release checklist.
+- Database passwords, secret keys, and `service_role` keys never belong in Git.

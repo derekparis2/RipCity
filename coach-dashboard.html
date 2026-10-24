@@ -9,10 +9,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/styles.css?v=coach-invites-1" />
+  <link rel="stylesheet" href="css/styles.css?v=ui-polish-4" />
 </head>
 
-<body class="auth-body">
+<body class="auth-body coach-dashboard-page">
   <main class="coach-page">
     <header class="h2k-header">
       <div class="auth-brand">
@@ -23,10 +23,8 @@
         </div>
       </div>
 
-      <div class="h2k-header-actions">
-        <a class="outline-link" href="coach-roster.html">Roster</a>
-        <a class="outline-link" href="coach-workouts.html">Workout Builder</a>
-        <a class="outline-link" href="coach-approvals.html">Approvals</a>
+      <div class="h2k-header-actions coach-header-actions">
+        <nav class="coach-nav" data-coach-nav="dashboard" aria-label="Coach navigation"></nav>
         <button class="outline-btn" id="coach-logout-btn">Log Out</button>
       </div>
     </header>
@@ -42,8 +40,8 @@
       </div>
     </section>
 
-    <section class="dashboard-grid h2k-dashboard-grid">
-      <article class="panel feedback-panel coach-feedback-panel">
+    <section class="dashboard-grid h2k-dashboard-grid coach-dashboard-intro-grid">
+      <article class="panel feedback-panel coach-feedback-panel dashboard-feedback-panel">
         <div>
           <p class="eyebrow">BETA FEEDBACK</p>
           <h3>Tell us what to improve.</h3>
@@ -53,156 +51,156 @@
         <a class="primary-link" href="#" target="_blank" rel="noopener" data-feedback-link>Open Feedback Form</a>
       </article>
 
-      <article class="panel coach-signup-link-panel">
-        <div>
-          <p class="eyebrow">MEMBER SIGNUP</p>
-          <h3>Send members the right signup link.</h3>
-          <p>
-            New accounts still require coach approval before members can access the app.
-          </p>
-          <p id="coach-signup-link-message" class="auth-message"></p>
-        </div>
-
-        <div class="coach-signup-link-actions">
-          <button class="outline-btn" type="button" data-copy-signup-link="athlete">Copy Athlete Link</button>
-          <button class="outline-btn" type="button" data-copy-signup-link="h2k">Copy H2K Link</button>
-          <button class="primary-btn" type="button" data-copy-signup-link="general">Copy General Link</button>
-        </div>
-      </article>
     </section>
+
+    <details class="panel coach-announcements-panel" id="coach-announcements-panel">
+      <summary class="coach-announcement-summary">
+        <div>
+          <p class="eyebrow">COMMUNICATION</p>
+          <h3>Announcements</h3>
+          <p>Send an update to the facility, athletes, groups, or selected members.</p>
+        </div>
+        <span class="coach-announcement-summary-action" aria-hidden="true"></span>
+      </summary>
+
+      <div class="coach-announcements-layout coach-announcement-content">
+        <form class="coach-announcement-form" id="coach-announcement-form">
+          <label>Title
+            <input id="coach-announcement-title" type="text" maxlength="120" required />
+          </label>
+          <label>Message
+            <textarea id="coach-announcement-body" rows="4" maxlength="2000" required></textarea>
+          </label>
+          <label>Audience
+            <select id="coach-announcement-audience">
+              <option value="facility">Entire facility</option>
+              <option value="athletes">All athletes</option>
+              <option value="h2k">All H2K members</option>
+              <option value="targeted">Custom selection</option>
+            </select>
+          </label>
+          <label>Importance
+            <select id="coach-announcement-importance">
+              <option value="standard">Standard</option>
+              <option value="important">Important</option>
+            </select>
+          </label>
+          <label>Expires <span class="optional-label">Optional</span>
+            <input id="coach-announcement-expires" type="datetime-local" />
+          </label>
+          <div class="announcement-targets hidden" id="coach-announcement-targets">
+            <div class="announcement-recipient-heading">
+              <div>
+                <strong>Recipients</strong>
+                <span id="coach-announcement-recipient-summary">No recipients selected</span>
+              </div>
+              <button class="text-button" id="coach-announcement-clear-recipients" type="button">Clear all</button>
+            </div>
+            <div class="announcement-recipient-tabs" role="tablist" aria-label="Recipient type">
+              <button class="is-active" type="button" role="tab" aria-selected="true" data-recipient-tab="groups">
+                Groups <span id="coach-announcement-group-tab-count">0</span>
+              </button>
+              <button type="button" role="tab" aria-selected="false" data-recipient-tab="members">
+                Members <span id="coach-announcement-member-tab-count">0</span>
+              </button>
+            </div>
+            <div class="announcement-recipient-pane" data-recipient-pane="groups">
+              <div class="announcement-checkbox-list" id="coach-announcement-groups"></div>
+            </div>
+            <div class="announcement-recipient-pane hidden" data-recipient-pane="members">
+              <div class="announcement-member-tools">
+                <input id="coach-announcement-member-search" type="search" aria-label="Find a member" placeholder="Search members..." autocomplete="off" />
+                <button class="outline-btn" id="coach-announcement-select-visible" type="button">Select shown</button>
+              </div>
+              <p class="announcement-selection-count" id="coach-announcement-member-count">0 shown</p>
+              <div class="announcement-checkbox-list" id="coach-announcement-members"></div>
+            </div>
+          </div>
+          <button class="primary-btn" id="coach-announcement-submit" type="submit">Publish Announcement</button>
+          <p class="auth-message" id="coach-announcement-message" aria-live="polite"></p>
+        </form>
+
+        <div class="coach-announcement-history">
+          <div class="coach-announcement-history-heading">
+            <h4>Published Announcements</h4>
+          </div>
+          <div class="coach-announcement-list" id="coach-announcement-list">
+            <div class="empty-state">Loading announcements...</div>
+          </div>
+        </div>
+      </div>
+    </details>
 
     <section class="stats-grid">
       <article class="stat-card">
-        <span>H2K Members</span>
+        <span>Approved Members</span>
         <strong id="coach-total-members">0</strong>
+        <small>Athletes and H2K members</small>
+      </article>
+
+      <article class="stat-card">
+        <span>H2K Members</span>
+        <strong id="coach-total-h2k-members">0</strong>
         <small>Approved H2K members</small>
       </article>
 
       <article class="stat-card">
-        <span>Logged Today</span>
-        <strong id="coach-logged-today">0</strong>
-        <small>Members with at least 1 habit</small>
-      </article>
-
-      <article class="stat-card">
-        <span>Perfect Today</span>
-        <strong id="coach-perfect-today">0</strong>
-        <small>Completed all 6 habits</small>
+        <span>Athletes</span>
+        <strong id="coach-total-athletes">0</strong>
+        <small>Approved athletes</small>
       </article>
 
       <article class="stat-card">
         <span>Needs Attention</span>
         <strong id="coach-needs-attention">0</strong>
-        <small>No habits logged today</small>
+        <small>Habit or exercise follow-up</small>
       </article>
     </section>
 
-    <section class="dashboard-grid h2k-dashboard-grid">
-      <article class="panel coach-weekly-history-panel">
-        <div class="panel-heading">
+    <section class="coach-attention-section">
+      <details class="panel coach-attention-panel" id="coach-attention-panel">
+        <summary class="coach-attention-summary">
           <div>
-            <p class="eyebrow">MEMBER PROGRESS</p>
-            <h3>Weekly Member History</h3>
+            <p class="eyebrow">COACH FOLLOW-UP</p>
+            <h3>Needs Attention</h3>
+            <p><strong id="coach-attention-summary-count">0</strong> members currently need follow-up.</p>
+          </div>
+          <span class="coach-attention-summary-action" aria-hidden="true"></span>
+        </summary>
+
+        <div class="coach-attention-content">
+          <p class="coach-attention-rule-copy">Three missed habit days or two missed assigned-workout days.</p>
+
+          <div class="coach-attention-tools">
+            <label>
+              Find a member
+              <input id="coach-attention-search" type="search" placeholder="Search by name..." autocomplete="off" />
+            </label>
+            <label>
+              Program
+              <select id="coach-attention-type-filter">
+                <option value="all">All members</option>
+                <option value="athlete">Athletes</option>
+                <option value="h2k">H2K members</option>
+              </select>
+            </label>
+            <button class="outline-btn" id="refresh-coach-dashboard-btn" type="button">Refresh</button>
           </div>
 
-          <button class="outline-btn" id="refresh-coach-weekly-history-btn" type="button">Refresh</button>
+          <p id="coach-attention-results-count" class="coach-attention-results-count"></p>
+          <p id="coach-dashboard-message" class="auth-message"></p>
+
+          <div id="coach-attention-list" class="coach-attention-list"></div>
         </div>
-
-        <p id="coach-weekly-history-message" class="auth-message"></p>
-
-        <div class="coach-weekly-history-layout">
-          <div class="coach-member-search-panel">
-            <label for="coach-weekly-member-type-filter">Member Type</label>
-            <select id="coach-weekly-member-type-filter">
-              <option value="all">All members</option>
-              <option value="athlete">Athletes</option>
-              <option value="h2k">H2K members</option>
-            </select>
-
-            <label for="coach-weekly-member-search">Search Member</label>
-            <input
-              type="search"
-              id="coach-weekly-member-search"
-              placeholder="Type a member name..."
-              autocomplete="off"
-            />
-
-            <div id="coach-weekly-member-results" class="coach-weekly-member-results">
-              <div class="empty-state">Loading members...</div>
-            </div>
-          </div>
-
-          <div class="coach-member-score-history">
-            <div class="coach-weekly-selected-member" id="coach-weekly-selected-member">
-              Select a member to view weekly scores.
-            </div>
-
-            <div class="weekly-history-stepper" id="coach-weekly-history-stepper">
-              <button class="icon-btn" id="coach-weekly-prev-week" type="button" aria-label="Previous week">‹</button>
-              <div>
-                <span class="eyebrow" id="coach-weekly-week-context">CURRENT WEEK</span>
-                <strong id="coach-weekly-week-label">This Week</strong>
-              </div>
-              <button class="icon-btn" id="coach-weekly-next-week" type="button" aria-label="Next week">›</button>
-            </div>
-
-            <div id="coach-weekly-history-list" class="weekly-score-list">
-              <div class="empty-state">Select a member to view weekly scores.</div>
-            </div>
-          </div>
-        </div>
-      </article>
+      </details>
     </section>
 
-    <section class="dashboard-grid member-dashboard-grid">
-      <article class="panel coach-members-panel">
-        <div class="panel-heading">
-          <div>
-            <p class="eyebrow">H2K ACCOUNTABILITY</p>
-            <h3>Member Habit Scores</h3>
-          </div>
-
-          <button class="outline-btn" id="refresh-coach-dashboard-btn">Refresh</button>
-        </div>
-
-        <p id="coach-dashboard-message" class="auth-message"></p>
-
-        <div id="coach-member-list" class="coach-member-list"></div>
-      </article>
-
-      <article class="panel">
-        <p class="eyebrow">BETA RUN LIST</p>
-        <h3>Coach Testing Checklist</h3>
-
-        <p>
-          Use this page during beta to spot who logged habits, review workout
-          completion, and decide who needs a follow-up.
-        </p>
-
-        <div class="note-item">
-          <strong>Before Members Test</strong>
-          <p>
-            Approve new accounts, confirm each member has the right program type,
-            add athletes to groups, and set H2K band colors when needed.
-          </p>
-        </div>
-
-        <div class="note-item">
-          <strong>Daily Coach Review</strong>
-          <p>
-            Check habit scores, open workout completion, and send feedback for
-            anything that feels confusing before more members are added.
-          </p>
-        </div>
-      </article>
-    </section>
-
-    <section class="dashboard-grid h2k-dashboard-grid">
+    <section class="dashboard-grid h2k-dashboard-grid coach-workout-review-section">
       <article class="panel coach-workout-review-panel">
         <div class="panel-heading">
           <div>
             <p class="eyebrow">WORKOUT REVIEW</p>
-            <h3>Member Completion</h3>
+            <h3>Workout Completion</h3>
           </div>
 
           <button class="outline-btn" id="refresh-workout-review-btn">Refresh</button>
@@ -210,66 +208,37 @@
 
         <p id="coach-workout-review-message" class="auth-message"></p>
 
-        <div class="coach-review-filter-grid">
-          <label>
-            Member Type
-            <select id="coach-review-member-type-filter">
-              <option value="all">All members</option>
-              <option value="athlete">Athletes</option>
-              <option value="h2k">H2K</option>
-            </select>
+        <div class="coach-review-workout-picker">
+          <label class="coach-review-workout-search">
+            Find Assigned Workout
+            <input type="search" id="coach-review-workout-search" placeholder="Type a workout, group, or date..." autocomplete="off" />
           </label>
 
           <label>
-            Date
-            <input type="date" id="coach-review-date-filter" />
-          </label>
-
-          <label>
-            Assignment
-            <select id="coach-review-target-filter">
-              <option value="all">All assignments</option>
-            </select>
-          </label>
-
-          <label>
-            Status
-            <select id="coach-review-status-filter">
-              <option value="all">All statuses</option>
-              <option value="complete">Complete</option>
-              <option value="in_progress">In Progress</option>
-              <option value="not_started">Not Started</option>
+            Workout Assignment
+            <select id="coach-review-workout-picker">
+              <option value="">Loading assigned workouts...</option>
             </select>
           </label>
         </div>
 
-        <div class="coach-review-section">
-          <div class="coach-review-subheading">
-            <div>
-              <p class="eyebrow">TODAY</p>
-              <h4 id="coach-review-selected-date-heading">Today's Workout Completion</h4>
-            </div>
-            <span id="coach-review-today-count">0 assignments</span>
-          </div>
+        <div class="coach-review-member-tools">
+          <label>
+            View Group
+            <select id="coach-review-group-filter" disabled>
+              <option value="all">All assigned members</option>
+            </select>
+          </label>
 
-          <div id="coach-workout-review-list" class="coach-workout-review-list">
-            <div class="empty-state">Loading today's workout completion...</div>
-          </div>
+          <label>
+            Find Member
+            <input type="search" id="coach-review-member-search" placeholder="Search this workout's members..." autocomplete="off" />
+          </label>
         </div>
 
-        <details class="coach-review-previous">
-          <summary>
-            <span>
-              <span class="eyebrow">HISTORY</span>
-              <strong>Previous Workouts</strong>
-            </span>
-            <span id="coach-review-previous-count">Click to view</span>
-          </summary>
-
-          <div id="coach-workout-previous-list" class="coach-workout-review-list">
-            <div class="empty-state">Loading previous workout completion...</div>
-          </div>
-        </details>
+        <div id="coach-workout-review-list" class="coach-workout-review-list">
+          <div class="empty-state">Loading assigned workouts...</div>
+        </div>
 
         <div id="coach-workout-detail" class="coach-workout-detail hidden"></div>
       </article>
@@ -277,10 +246,13 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabaseClient.js"></script>
-  <script src="js/ui-utils.js"></script>
-  <script src="js/access-control.js"></script>
-  <script src="js/workout-data.js"></script>
-  <script src="js/coach-dashboard.js?v=member-history-1"></script>
+  <script src="js/shared/supabaseClient.js"></script>
+  <script src="js/shared/ui-utils.js"></script>
+  <script src="js/coach/coach-nav.js?v=ui-polish-1"></script>
+  <script src="js/shared/access-control.js?v=single-row-fix-1"></script>
+  <script src="js/shared/workout-data.js?v=workout-attribution-1"></script>
+  <script src="js/shared/attention-rules.js?v=coach-attention-1"></script>
+  <script src="js/coach/coach-dashboard.js?v=workout-attribution-1"></script>
+  <script src="js/coach/coach-announcements.js?v=targeted-announcements-4"></script>
 </body>
 </html>

@@ -21,9 +21,14 @@ Shared modules:
 - Schedule later
 - Payments later
 
-Program-specific modules:
-- H2K: habit tracking / 42-point weekly score
-- Athlete: baseball-specific data later, arm care later, throwing program later, player card later
+Rip City shared member module:
+- Athletes and H2K members use the same habit tracking and 42-point weekly
+  score in V2.
+
+Program-specific fields and future modules:
+- H2K retains band information; athletes retain sport, age-group, and position
+  information.
+- Athlete-specific baseball expansion is tracked in `VERSION_3_PLAN.md`.
 
 Core rule:
 If a feature can be used by other facilities, build it into the shared platform.
@@ -42,13 +47,14 @@ If a feature is only for Rip City baseball, build it as an optional program-spec
 - Login flow
 - Coach approval before access
 - Coach/admin approval page
+- Distinct pending, rejected, inactive, and unconnected account states
+- Facility-admin coach invite, approval, deactivation, and reactivation
 - Coach dashboard
 - Member dashboard
 - Editable profile page
-- H2K habit tracking
-- H2K daily score
-- H2K weekly score
-- Coach view of H2K scores
+- Shared athlete/H2K habit tracking
+- Shared daily and weekly habit scores
+- Coach view of member habit scores
 - Coach workout builder
 - Workout blocks: Warmup, A Block, B Block, Finisher, etc.
 - Group/date workout assignment
@@ -85,7 +91,7 @@ Status: mostly complete.
 - View roster
 - Filter by Athlete or H2K
 - Filter athletes by sport and age group
-- See H2K habit scores
+- See shared athlete/H2K habit scores
 - See workout completion
 - See who missed habit tracking 3 days in a row
 - See who missed exercise data 2 days in a row
@@ -109,18 +115,14 @@ Shared dashboard modules:
 - Coach notes
 - Community/streaks/badges later
 
-H2K-specific:
+Rip City athlete and H2K shared module:
 - Six-habit tracking system
 - 42-point weekly score
 - Rolling 4-week average
 - Training habit should eventually auto-complete when workout is completed
 
-Athlete-specific later:
-- Baseball metrics
-- Arm care
-- Throwing program
-- Player card
-- Recruiting/showcase data
+Future facility-level habit-module configuration is tracked in
+`VERSION_3_PLAN.md`.
 
 ---
 
@@ -141,6 +143,8 @@ Coach side:
   - Custom
 - Coach assigns workout to a date
 - Coach assigns workout to a group, individual member, or facility
+- Multiple coaches in the same facility can assign authorized workouts, and
+  member/coach views show both the workout creator and assigning coach
 
 Member side:
 - Member sees today’s scheduled workout
@@ -161,6 +165,19 @@ Future workout features:
 - Volume tracking
 - PR tracking
 - Coach completion dashboard
+
+Testing/progress direction:
+- Coach-created Testing Days with reusable or custom tests
+- Group/member participant selection
+- Roster-style result entry by coaches
+- Testing results connected to progress history and approved leaderboard metrics
+- Exact test, attempt, visibility, and ranking rules pending Rip City feedback
+
+Coach onboarding direction:
+- Platform owner creates the facility and first facility admin
+- Facility admins invite/create or approve additional coaches
+- Ordinary coaches cannot grant coach/admin access
+- Coach links or requests remain pending until facility-admin approval
 
 ---
 
@@ -187,8 +204,8 @@ Leaderboards should be shared across the whole platform and filterable by:
 - Specific metric
 
 Examples:
-- H2K weekly habit score
-- H2K rolling 4-week average
+- Athlete or H2K weekly habit score
+- Athlete or H2K rolling 4-week habit average
 - Workout completion
 - Goals completed
 - Strength/performance metrics later
