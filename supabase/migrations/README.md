@@ -45,6 +45,8 @@ staging application.
 - `20261023210000_admin_assign_signup_groups.sql` removes athlete group choice
   from signup permissions and adds facility-admin-only, atomic initial-group
   assignment plus athlete approval enforcement.
+- `20261024120000_admin_assign_all_member_signup_groups.sql` extends the same
+  matching-group approval requirement and atomic RPC to H2K members.
 - Future changes must use a later UTC timestamp and a descriptive name, such as
   `20260817090000_add_facility_timezone.sql`.
 

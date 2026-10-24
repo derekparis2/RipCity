@@ -8,6 +8,10 @@ const migration = await readFile(
   "supabase/migrations/20261023210000_admin_assign_signup_groups.sql",
   "utf8"
 );
+const memberGroupMigration = await readFile(
+  "supabase/migrations/20261024120000_admin_assign_all_member_signup_groups.sql",
+  "utf8"
+);
 
 assert.doesNotMatch(
   signupPage,
@@ -26,8 +30,13 @@ assert.match(
 );
 assert.match(
   approvals,
-  /db\.rpc\("approve_pending_athlete"/,
-  "athlete approvals use the transactional database operation"
+  /db\.rpc\("approve_pending_member"/,
+  "athlete and H2K approvals use the transactional database operation"
+);
+assert.match(
+  approvals,
+  /\["athlete", "h2k", "both"\]/,
+  "the approval page loads athlete, H2K, and shared groups"
 );
 assert.match(
   migration,
@@ -35,20 +44,19 @@ assert.match(
   "pending athletes lose self-assignment permission"
 );
 assert.match(
-  migration,
+  memberGroupMigration,
   /app_private\.is_facility_admin\(target_membership\.facility_id\)/,
-  "the athlete approval operation requires a facility admin"
+  "the member approval operation requires a facility admin"
 );
 assert.match(
-  migration,
+  memberGroupMigration,
   /insert into public\.group_members[\s\S]*update public\.facility_members/,
-  "the database operation assigns the group before approving the athlete"
+  "the database operation assigns the group before approving the member"
 );
 assert.match(
-  migration,
-  /create trigger require_athlete_group_before_approval/,
-  "the database blocks athlete approval without a training group"
+  memberGroupMigration,
+  /create trigger require_member_group_before_approval/,
+  "the database blocks athlete and H2K approval without a matching group"
 );
 
 console.log("Admin-assigned signup group tests passed");
-

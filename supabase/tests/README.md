@@ -138,19 +138,20 @@ Rip City Staging on 2026-10-23, and the temporary habit log was cleaned up.
 
 ## Admin-Assigned Signup Group Checks
 
-After applying `20261023210000_admin_assign_signup_groups.sql`, run:
+After applying `20261023210000_admin_assign_signup_groups.sql` and
+`20261024120000_admin_assign_all_member_signup_groups.sql` in order, run:
 
 ```bash
 node supabase/tests/staging_signup_group_approval_checks.mjs
 ```
 
-The test uses the pending Rip City athlete fixture and a temporary athlete
-group. It proves pending athletes cannot self-assign, ordinary coaches cannot
-approve, cross-facility groups are rejected, direct group-less approval is
-blocked, and a facility admin can atomically assign the initial group and
-approve the athlete. Cleanup restores the pending fixture's original status
-and group memberships and removes the temporary group.
+The test uses the pending Rip City athlete and approved H2K fixtures plus
+temporary matching groups. It proves pending members cannot self-assign,
+ordinary coaches cannot approve, wrong-program and cross-facility groups are
+rejected, direct group-less approval is blocked, and a facility admin can
+atomically assign the correct initial group and approve either member type.
+Cleanup restores both fixtures and removes the temporary groups.
 
-Status: all 12 admin-assigned signup-group checks passed against Rip City
-Staging on 2026-10-24. The pending athlete fixture was restored and the
-temporary group was removed.
+Status: all 19 expanded athlete/H2K signup-group checks passed against Rip City
+Staging on 2026-10-24. Both fixture accounts were restored and both temporary
+groups were removed.

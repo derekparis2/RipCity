@@ -140,6 +140,11 @@ Current signup-link decision:
   group-less approval is blocked, and a facility admin atomically assigns the
   initial group and approves the athlete. The test restored the pending fixture
   and removed its temporary group. Production has not received this migration.
+- `20261024120000_admin_assign_all_member_signup_groups.sql` extends that
+  workflow to H2K members with matching H2K/shared-group validation. It was
+  applied to staging on 2026-10-24, and all 19 expanded athlete/H2K checks
+  passed with both fixtures restored and temporary groups removed. Production
+  has not received it.
 
 Production Supabase audit status:
 

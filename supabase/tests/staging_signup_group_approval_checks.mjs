@@ -55,10 +55,11 @@ const password = await prompt.question("Shared staging test password (input is n
 prompt.close();
 if (!password) throw new Error("A staging test password is required.");
 
-const [ripAdmin, ripCoach, pendingAthlete, alphaAdmin] = await Promise.all([
+const [ripAdmin, ripCoach, pendingAthlete, ripH2k, alphaAdmin] = await Promise.all([
   signIn("rcadmin@example.com", password),
   signIn("rccoach@example.com", password),
   signIn("rcpending@example.com", password),
+  signIn("rch2k@example.com", password),
   signIn("alphaadmin@example.com", password)
 ]);
 
@@ -102,8 +103,32 @@ const { body: alphaGroups } = await request(
 const alphaGroupId = alphaGroups[0]?.id;
 assert(Boolean(alphaGroupId), "another-facility athlete group is available");
 
+const { body: h2kMemberships } = await request(
+  `facility_members?select=id,role,status,approved_by,approved_at&profile_id=eq.${ripH2k.userId}&facility_id=eq.${ripCity.id}`,
+  ripAdmin.token
+);
+const h2kMembership = h2kMemberships[0];
+assert(
+  h2kMembership?.role === "h2k_member" && h2kMembership?.status === "approved",
+  "approved H2K fixture is ready for approval testing"
+);
+
+const { body: h2kProfiles } = await request(
+  `member_profiles?select=id&facility_member_id=eq.${h2kMembership.id}`,
+  ripAdmin.token
+);
+const h2kProfileId = h2kProfiles[0]?.id;
+assert(Boolean(h2kProfileId), "H2K fixture has a member profile");
+
+const { body: originalH2kMemberships } = await request(
+  `group_members?select=id,group_id,member_profile_id,created_at&member_profile_id=eq.${h2kProfileId}`,
+  ripAdmin.token
+);
+assert(originalH2kMemberships.length > 0, "H2K fixture group memberships can be restored after testing");
+
 const suffix = `${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
 let testGroupId = null;
+let h2kTestGroupId = null;
 
 try {
   const createdGroup = await request("groups?select=id", ripAdmin.token, {
@@ -139,19 +164,19 @@ try {
   );
   assert(!directApproval.response.ok, "database rejects athlete approval without a training group");
 
-  const coachApproval = await rpc("approve_pending_athlete", ripCoach.token, {
+  const coachApproval = await rpc("approve_pending_member", ripCoach.token, {
     pending_facility_member_id: pendingMembership.id,
     initial_group_id: testGroupId
   });
   assert(!coachApproval.response.ok, "ordinary coach cannot approve and assign a pending athlete");
 
-  const crossFacilityApproval = await rpc("approve_pending_athlete", ripAdmin.token, {
+  const crossFacilityApproval = await rpc("approve_pending_member", ripAdmin.token, {
     pending_facility_member_id: pendingMembership.id,
     initial_group_id: alphaGroupId
   });
   assert(!crossFacilityApproval.response.ok, "facility admin cannot assign an athlete to another facility's group");
 
-  const adminApproval = await rpc("approve_pending_athlete", ripAdmin.token, {
+  const adminApproval = await rpc("approve_pending_member", ripAdmin.token, {
     pending_facility_member_id: pendingMembership.id,
     initial_group_id: testGroupId
   });
@@ -171,6 +196,47 @@ try {
   assert(
     approvedMemberships[0]?.status === "approved" && assignedGroups[0]?.group_id === testGroupId,
     "approved athlete and selected group are both persisted"
+  );
+
+  const createdH2kGroup = await request("groups?select=id", ripAdmin.token, {
+    method: "POST",
+    body: JSON.stringify({
+      facility_id: ripCity.id,
+      name: `H2K Signup Approval QA ${suffix}`,
+      group_type: "h2k",
+      member_type: "h2k",
+      created_by: ripAdmin.userId
+    })
+  });
+  h2kTestGroupId = createdH2kGroup.body[0]?.id;
+  assert(createdH2kGroup.response.ok && Boolean(h2kTestGroupId), "facility admin can create the temporary H2K group");
+
+  const pendingH2k = await request(
+    `facility_members?id=eq.${h2kMembership.id}&select=id,status`,
+    ripAdmin.token,
+    { method: "PATCH", body: JSON.stringify({ status: "pending", approved_by: null, approved_at: null }) }
+  );
+  assert(pendingH2k.body[0]?.status === "pending", "H2K fixture can be placed into pending state for the approval check");
+
+  await request(
+    `group_members?member_profile_id=eq.${h2kProfileId}`,
+    ripAdmin.token,
+    { method: "DELETE" }
+  );
+
+  const wrongTypeApproval = await rpc("approve_pending_member", ripAdmin.token, {
+    pending_facility_member_id: h2kMembership.id,
+    initial_group_id: testGroupId
+  });
+  assert(!wrongTypeApproval.response.ok, "facility admin cannot assign an H2K member to an athlete-only group");
+
+  const h2kApproval = await rpc("approve_pending_member", ripAdmin.token, {
+    pending_facility_member_id: h2kMembership.id,
+    initial_group_id: h2kTestGroupId
+  });
+  assert(
+    h2kApproval.response.ok && h2kApproval.body[0]?.status === "approved",
+    `facility admin atomically assigns the initial group and approves the H2K member (${h2kApproval.response.status}: ${JSON.stringify(h2kApproval.body)})`
   );
 } finally {
   if (pendingMembership?.id) {
@@ -203,9 +269,43 @@ try {
     }
   }
 
+  if (h2kProfileId) {
+    await request(
+      `group_members?member_profile_id=eq.${h2kProfileId}`,
+      ripAdmin.token,
+      { method: "DELETE" }
+    );
+
+    if (originalH2kMemberships.length) {
+      await request("group_members", ripAdmin.token, {
+        method: "POST",
+        body: JSON.stringify(originalH2kMemberships)
+      });
+    }
+  }
+
+  if (h2kMembership?.id) {
+    await request(
+      `facility_members?id=eq.${h2kMembership.id}`,
+      ripAdmin.token,
+      {
+        method: "PATCH",
+        body: JSON.stringify({
+          status: h2kMembership.status,
+          approved_by: h2kMembership.approved_by,
+          approved_at: h2kMembership.approved_at
+        })
+      }
+    );
+  }
+
   if (testGroupId) {
     await request(`groups?id=eq.${testGroupId}`, ripAdmin.token, { method: "DELETE" });
   }
+
+  if (h2kTestGroupId) {
+    await request(`groups?id=eq.${h2kTestGroupId}`, ripAdmin.token, { method: "DELETE" });
+  }
 }
 
-console.log("Admin-assigned signup group staging checks passed and fixture state was restored.");
+console.log("Admin-assigned athlete/H2K signup group staging checks passed and fixture state was restored.");

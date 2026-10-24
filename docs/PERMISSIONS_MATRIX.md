@@ -42,7 +42,7 @@ historical relationships. It must not create a disconnected replacement user.
 | --- | --- | --- | --- |
 | Facilities | View own facility; configuration UI is deferred to V3; cannot create/archive facilities | View basic own-facility information | View only information required for own experience |
 | Branding, modules, and time zone | No V2 settings UI; future management is defined in V3 | No V2 management access | Consume the current Rip City experience only |
-| Memberships | View and manage all own-facility memberships and roles; select an athlete's initial group during approval | View own-facility members; cannot approve, reject, deactivate, reactivate, or change account roles | View own membership only; cannot select a signup group |
+| Memberships | View and manage all own-facility memberships and roles; select an athlete/H2K member's initial matching group during approval | View own-facility members; cannot approve, reject, deactivate, reactivate, or change account roles | View own membership only; cannot select a signup group |
 | Coach/admin roles | Create, update, or deactivate own-facility coach/admin memberships | Cannot create or promote coach/admin memberships | No access |
 | Coach invitations | Create seven-day, single-use coach links for own facility | Cannot create coach links | May claim a valid link, which creates pending access only |
 | Member profiles | View and manage profiles in own facility | View and coach-manage profiles in own facility | View/edit allowed fields on own profile only |
@@ -79,10 +79,10 @@ membership.
 - Coaches delete groups and remove existing group members only from groups they
   created. Facility admins retain full own-facility group management. Seeded or
   legacy groups without a creator are admin-managed.
-- Athlete signup creates a pending membership and member profile without a
-  group. A facility admin selects a same-facility athlete group during approval,
-  and the database performs both actions atomically. Pending athletes cannot
-  self-assign a group or be approved without one.
+- Athlete and H2K signup creates a pending membership and member profile without
+  a group. A facility admin selects a matching same-facility group during
+  approval, and the database performs both actions atomically. Pending members
+  cannot self-assign a group or be approved without one.
 - Universal exercises are never deleted or edited by facility roles. A facility
   edit creates an override; a facility delete creates a facility-only hide.
 

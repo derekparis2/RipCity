@@ -2374,6 +2374,25 @@ td {
 
 .pending-user-group-control select {
   width: 100%;
+  min-height: 48px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--text);
+  padding: 11px 14px;
+  font: inherit;
+  font-weight: 700;
+  color-scheme: dark;
+  outline: none;
+}
+
+.pending-user-group-control select:hover {
+  border-color: rgba(157, 204, 255, 0.55);
+}
+
+.pending-user-group-control select:focus-visible {
+  border-color: #5eb8ff;
+  box-shadow: 0 0 0 3px rgba(94, 184, 255, 0.16);
 }
 
 .approve-btn:disabled {
