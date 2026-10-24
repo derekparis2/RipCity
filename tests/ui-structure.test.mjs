@@ -49,6 +49,10 @@ assert.match(coachMemberDetail, /profile\.bio/, "coach member detail shows the m
 const memberHistory = await readFile("member-history.html", "utf8");
 assert.match(memberHistory, /id="member-history-hero-description"/, "member history copy can be specialized by member type");
 assert.doesNotMatch(memberHistory, /Review recent H2K scores or assigned-workout completion/, "athletes never receive the old mixed H2K description");
+const memberHabits = await readFile("member-habits.html", "utf8");
+assert.match(memberHabits, /id="member-weekly-history-list"/, "weekly history is available inside Habits");
+const memberLeaderboards = await readFile("member-leaderboards.html", "utf8");
+assert.match(memberLeaderboards, /data-member-nav="leaderboards"/, "member leaderboard activates the shared Leaderboards tab");
 
 const activePages = [
   ...Object.keys(coachPages),
@@ -60,6 +64,7 @@ const activePages = [
   "member-training.html",
   "member-habits.html",
   "member-history.html",
+  "member-leaderboards.html",
   "member-goals.html",
   "profile.html",
   "workout-session.html",

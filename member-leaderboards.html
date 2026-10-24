@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Member Leaderboards</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css?v=ui-polish-4" />
+  <link rel="stylesheet" href="css/member-leaderboards.css?v=member-leaderboards-1" />
+</head>
+<body class="auth-body member-dashboard-body member-feature-page member-leaderboards-page" data-member-page="leaderboards">
+  <aside class="sidebar member-sidebar">
+    <div class="brand"><div class="brand-mark"><img src="assets/rip-city-logo.png" alt="Rip City logo"></div><div><h1>RIP CITY</h1><p class="member-role-pending" id="member-brand-subtitle">Member</p></div></div>
+    <div class="mode-card"><span>Current View</span><strong class="member-role-pending" id="member-program-label">Member</strong><a class="outline-link small-btn" href="profile.html">View Profile</a></div>
+    <nav class="member-shell-nav" data-member-nav="leaderboards" aria-label="Member navigation"></nav>
+    <div class="user-card"><div class="avatar" id="member-avatar">RC</div><div><strong id="member-sidebar-name">Member</strong><span class="h2k-band-badge hidden" id="member-band-color">No Band</span><span class="member-role-pending" id="member-sidebar-role">Approved</span></div></div>
+  </aside>
+
+  <main class="main-content member-main-content member-feature-main">
+    <header class="topbar"><div><p class="eyebrow" id="member-dashboard-date">CONSISTENCY</p><h2>Leaderboards</h2></div><div class="topbar-actions"><button class="outline-btn" id="member-leaderboard-refresh" type="button">Refresh</button><button class="outline-btn" id="h2k-logout-btn">Log Out</button></div></header>
+
+    <section class="hero-card h2k-hero member-feature-hero member-leaderboard-hero">
+      <div><p class="eyebrow" id="member-leaderboard-program-eyebrow">YOUR PROGRAM</p><h3 id="member-leaderboard-title">Top 5</h3><p>See how your consistency compares while keeping the full member roster private.</p></div>
+    </section>
+
+    <section class="panel member-page-panel member-leaderboard-panel">
+      <div class="member-leaderboard-controls">
+        <label>Rank By<select id="member-leaderboard-metric"></select></label>
+        <label>Leaderboard<select id="member-leaderboard-scope"><option value="">All members in my program</option></select></label>
+      </div>
+
+      <div class="member-leaderboard-context">
+        <p id="member-leaderboard-explanation">A streak day requires at least four completed habits.</p>
+        <span class="member-leaderboard-privacy">Top 5 + your rank</span>
+      </div>
+      <p class="auth-message" id="member-leaderboard-message" aria-live="polite"></p>
+
+      <div class="member-top-five" id="member-leaderboard-list">
+        <div class="empty-state">Loading leaderboard...</div>
+      </div>
+
+      <article class="member-own-rank hidden" id="member-own-rank" aria-labelledby="member-own-rank-heading">
+        <div><p class="eyebrow">YOUR POSITION</p><h3 id="member-own-rank-heading">Your Rank</h3></div>
+        <div class="member-own-rank-content" id="member-own-rank-content"></div>
+      </article>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/shared/supabaseClient.js"></script>
+  <script src="js/shared/ui-utils.js"></script>
+  <script src="js/shared/access-control.js?v=single-row-fix-1"></script>
+  <script src="js/shared/workout-data.js?v=workout-attribution-1"></script>
+  <script src="js/shared/leaderboard-metrics.js?v=member-leaderboards-1"></script>
+  <script src="js/member/member-nav.js?v=member-leaderboards-1"></script>
+  <script src="js/member/member-leaderboards.js?v=member-leaderboards-1"></script>
+  <script src="js/member/member-dashboard.js?v=member-leaderboards-1"></script>
+</body>
+</html>

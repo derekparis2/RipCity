@@ -47,6 +47,9 @@ staging application.
   assignment plus athlete approval enforcement.
 - `20261024120000_admin_assign_all_member_signup_groups.sql` extends the same
   matching-group approval requirement and atomic RPC to H2K members.
+- `20261024150000_add_member_habit_leaderboards.sql` adds a privacy-safe member
+  leaderboard RPC that exposes only the caller's program top-five positions
+  plus their own position, with optional caller-owned group scope.
 - Future changes must use a later UTC timestamp and a descriptive name, such as
   `20260817090000_add_facility_timezone.sql`.
 

@@ -234,15 +234,25 @@ were verified on the pull-request preview.
 
 ## 7B. Member-Facing Leaderboards
 
-- **Status:** Planned post-launch
-- **Suggested branch:** `<name>/member-leaderboards`
+- **Status:** In review
+- **Branch:** `derek/member-leaderboards`
 - **Plan detail:** [Leaderboards](VERSION_2_PLAN.md#3-leaderboards)
 
 This package adds the member leaderboard page using the shared calculations
 from Package 7. It shows only the member's relevant H2K or athlete board, the
-approved facility/group top five, tied competition ranks, profile identity,
+approved program/group top five, tied competition ranks, profile identity,
 and the member's own rank or "No score yet" state. It must not expose the full
 coach list, the other member type, or unapproved metrics.
+
+The main member History tab becomes Leaderboards. Weekly habit history moves
+into the Habits page, while workout history remains in Training and future
+testing history belongs under Training's Testing area.
+
+**Verification:** All local tests pass, and all 25 focused staging checks
+passed on 2026-10-24. The checks prove program separation, facility isolation,
+Top 5 plus self-only disclosure, email privacy, own-group scoping, coach denial,
+and rejection of unapproved metrics. Phone and desktop deploy-preview review
+remain before this package is marked complete.
 
 **Complete when:** H2K and athlete members see only their approved top-five and
 own-rank views, calculations match the coach boards, both facilities remain

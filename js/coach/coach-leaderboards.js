@@ -103,54 +103,11 @@ function getMemberGroupNames(memberProfileId) {
   return names.length ? names.join(", ") : "No group";
 }
 
-function formatDayCount(value, label = "day") {
-  return `${value} ${label}${value === 1 ? "" : "s"}`;
-}
-
 // This registry is the extension point for future lift, testing, and sport
 // leaderboards. A future metric supplies one score function and one display
 // function without changing the ranking or filtering system.
 function getLeaderboardMetricDefinitions() {
-  return [
-      {
-        key: "fourWeekAverage",
-        label: "4-Week Average",
-        score: row => row.metrics.hasScore ? row.metrics.fourWeekAverage : null,
-        display: row => ({
-          primary: row.metrics.fourWeekAverage === null
-            ? "No score"
-            : `${row.metrics.fourWeekAverage} / ${row.metrics.fourWeekMax}`,
-          secondary: "Previous 4 weeks"
-        })
-      },
-      {
-        key: "currentWeekScore",
-        label: "Current Week",
-        score: row => row.metrics.currentWeekScore,
-        display: row => ({
-          primary: `${row.metrics.currentWeekScore} / ${row.metrics.currentWeekMax}`,
-          secondary: `${row.metrics.currentWeekQualifiedDays} qualified days`
-        })
-      },
-      {
-        key: "currentStreak",
-        label: "Current Streak",
-        score: row => row.metrics.currentStreak,
-        display: row => ({
-          primary: formatDayCount(row.metrics.currentStreak),
-          secondary: "Current streak"
-        })
-      },
-      {
-        key: "longestStreak",
-        label: "Longest Streak",
-        score: row => row.metrics.longestStreak,
-        display: row => ({
-          primary: formatDayCount(row.metrics.longestStreak),
-          secondary: "Longest streak"
-        })
-      }
-  ];
+  return window.RipCityMetrics.getHabitLeaderboardMetricDefinitions();
 }
 
 function getSelectedMetricDefinition() {
