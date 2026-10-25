@@ -8,16 +8,16 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css?v=ui-polish-4" />
-  <link rel="stylesheet" href="css/coach-testing.css?v=testing-days-1" />
+  <link rel="stylesheet" href="css/coach-testing.css?v=testing-days-5" />
 </head>
 
 <body class="auth-body coach-testing-page">
-  <main class="coach-page">
+  <main class="coach-page coach-workouts-page">
     <header class="h2k-header">
-      <a class="auth-brand" href="coach-dashboard.html" aria-label="Coach dashboard">
+      <div class="auth-brand">
         <img src="assets/rip-city-logo.png" alt="Rip City logo">
-        <div><h1>RIP CITY</h1><p>Testing Days</p></div>
-      </a>
+        <div><h1>RIP CITY</h1><p>Coach Dashboard</p></div>
+      </div>
       <div class="h2k-header-actions coach-header-actions">
         <nav class="coach-nav" data-coach-nav="testing" aria-label="Coach navigation"></nav>
         <button class="outline-btn" id="testing-logout-btn" type="button">Log Out</button>
@@ -26,72 +26,134 @@
 
     <section class="hero-card h2k-hero testing-hero">
       <div>
-        <p class="eyebrow">PERFORMANCE TESTING</p>
-        <h3>Create one day. Build one roster. Keep every test organized.</h3>
-        <p>Schedule groups and individual members together, then preserve the exact participant and test list for that day.</p>
+        <p class="eyebrow">TESTING DAY BUILDER</p>
+        <h3>Build the test battery, choose the roster, and schedule the day.</h3>
+        <p>Create the Testing Day first, review the full plan, then save it as a draft or place it on the facility schedule.</p>
       </div>
-      <button class="primary-btn" id="new-testing-day-btn" type="button">Create Testing Day</button>
     </section>
 
     <p class="auth-message" id="testing-day-message" aria-live="polite"></p>
 
     <section class="testing-workspace">
-      <article class="panel testing-editor hidden" id="testing-editor">
+      <div class="dashboard-grid member-dashboard-grid coach-workouts-builder-grid testing-builder-grid">
+      <article class="panel coach-workout-builder-panel testing-editor" id="testing-editor">
         <div class="panel-heading testing-editor-heading">
-          <div><p class="eyebrow">BUILD TESTING DAY</p><h3 id="testing-editor-title">New Testing Day</h3></div>
-          <button class="outline-btn small-inline-btn" id="close-testing-editor-btn" type="button">Close</button>
+          <div><p class="eyebrow">CREATE TESTING DAY</p><h3 id="testing-editor-title">Testing Day Details</h3></div>
+          <button class="outline-btn small-inline-btn" id="new-testing-day-btn" type="button">Start New</button>
         </div>
 
-        <form id="testing-day-form">
+        <form id="testing-day-form" class="profile-form">
           <input id="testing-day-id" type="hidden" />
 
-          <section class="testing-builder-step" aria-labelledby="testing-details-title">
-            <div class="testing-step-heading"><span>1</span><div><p class="eyebrow">DETAILS</p><h4 id="testing-details-title">Name and schedule the day</h4></div></div>
-            <div class="form-row">
-              <label>Testing Day Name<input id="testing-day-name" type="text" placeholder="Winter Baseline Testing" required /></label>
-              <label>Testing Date<input id="testing-day-date" type="date" required /></label>
+          <section class="workout-builder-step testing-builder-step" data-testing-step="details" aria-labelledby="testing-details-title">
+            <div class="workout-builder-step-heading testing-step-heading"><span>1</span><div><p class="eyebrow">TESTING DAY DETAILS</p><h3 id="testing-details-title">Name the testing day</h3></div><button class="outline-btn small-inline-btn" data-testing-step-toggle type="button">Collapse</button></div>
+            <div class="workout-builder-step-content">
+              <div class="form-row">
+                <label>Testing Day Name<input id="testing-day-name" type="text" placeholder="Winter Baseline Testing" required /></label>
+              </div>
+              <label>Description<textarea id="testing-day-description" rows="3" placeholder="Optional instructions or focus for the staff..."></textarea></label>
+              <div class="testing-step-actions"><button class="primary-btn small-inline-btn" data-testing-step-next="tests" type="button">Build Tests</button></div>
             </div>
-            <label>Description<textarea id="testing-day-description" rows="2" placeholder="Optional instructions or focus for the staff..."></textarea></label>
           </section>
 
-          <section class="testing-builder-step" aria-labelledby="testing-roster-title">
-            <div class="testing-step-heading"><span>2</span><div><p class="eyebrow">PARTICIPANTS</p><h4 id="testing-roster-title">Choose groups and individuals</h4></div><strong id="testing-participant-count">0 selected</strong></div>
-            <p class="field-help">Overlapping groups and individual selections are combined into one deduplicated roster.</p>
-            <div class="testing-recipient-grid">
-              <fieldset class="testing-picker-card"><legend>Groups</legend><div id="testing-group-list" class="testing-choice-list"><div class="muted-small">Loading groups...</div></div></fieldset>
-              <fieldset class="testing-picker-card">
-                <legend>Individual Members</legend>
-                <label class="testing-search-label">Search<input id="testing-member-search" type="search" placeholder="Search by name, program, or group..." autocomplete="off" /></label>
-                <div id="testing-member-list" class="testing-choice-list testing-member-list"><div class="muted-small">Loading members...</div></div>
-              </fieldset>
+          <section class="workout-builder-step testing-builder-step testing-tests-step" data-testing-step="tests" aria-labelledby="testing-tests-title">
+            <div class="workout-builder-step-heading testing-step-heading"><span>2</span><div><p class="eyebrow">TEST BATTERY</p><h3 id="testing-tests-title">Build and order tests</h3></div><button class="outline-btn small-inline-btn" data-testing-step-toggle type="button">Edit Tests</button></div>
+            <div class="workout-builder-step-content">
+              <div class="testing-step-toolbar"><p class="field-help">Drag tests into the order athletes will complete them. Each definition is saved for reuse.</p><button class="outline-btn" id="add-testing-test-btn" type="button">Add Test</button></div>
+              <datalist id="testing-test-suggestions"></datalist>
+              <div id="testing-test-list" class="testing-test-list"></div>
+              <div class="testing-step-actions"><button class="primary-btn small-inline-btn" data-testing-step-next="assign" type="button">Assign &amp; Schedule</button></div>
             </div>
-            <div class="testing-selected-roster" id="testing-selected-roster" aria-live="polite"></div>
           </section>
 
-          <section class="testing-builder-step" aria-labelledby="testing-tests-title">
-            <div class="testing-step-heading"><span>3</span><div><p class="eyebrow">TEST BATTERY</p><h4 id="testing-tests-title">Add and order tests</h4></div><button class="outline-btn" id="add-testing-test-btn" type="button">Add Test</button></div>
-            <p class="field-help">Each definition is saved for reuse while this Testing Day keeps its own historical snapshot.</p>
-            <datalist id="testing-test-suggestions"></datalist>
-            <div id="testing-test-list" class="testing-test-list"></div>
-          </section>
+          <section class="workout-builder-step testing-builder-step testing-roster-step" data-testing-step="assign" aria-labelledby="testing-roster-title">
+            <div class="workout-builder-step-heading testing-step-heading"><span>3</span><div><p class="eyebrow">ASSIGN &amp; SCHEDULE</p><h3 id="testing-roster-title">Choose groups and individuals</h3></div><button class="outline-btn small-inline-btn" data-testing-step-toggle type="button">Edit Assignment</button></div>
+            <div class="workout-builder-step-content">
+              <div class="workout-builder-review" id="testing-builder-review" aria-live="polite"></div>
 
-          <div class="testing-form-actions">
-            <button class="outline-btn" type="submit" name="testing-save-mode" value="draft">Save Draft</button>
-            <button class="primary-btn" type="submit" name="testing-save-mode" value="scheduled">Schedule Testing Day</button>
-          </div>
+              <div class="workout-assignment-fields">
+                <p class="field-help">These fields are only required when you choose Schedule Testing Day.</p>
+
+                <div class="form-row">
+                  <label>
+                    Assign To
+                    <select id="testing-target-type">
+                      <option value="groups">Groups</option>
+                      <option value="members">Individual Members</option>
+                      <option value="both">Groups &amp; Individual Members</option>
+                    </select>
+                  </label>
+                  <label>Testing Date<input id="testing-day-date" type="date" required /></label>
+                </div>
+
+                <div id="testing-group-field" class="form-field">
+                  <span class="field-label">Groups</span>
+                  <div id="testing-group-list" class="assignment-checkbox-list"><div class="muted-small">Loading groups...</div></div>
+                  <small class="field-help">Select one or more groups.</small>
+                </div>
+
+                <div id="testing-member-field" class="form-field hidden">
+                  <label class="testing-search-label">Find Member<input id="testing-member-search" type="search" placeholder="Search by name, program, or group..." autocomplete="off" /></label>
+                  <div id="testing-member-list" class="assignment-checkbox-list testing-member-list"><div class="muted-small">Loading members...</div></div>
+                  <small class="field-help">Select one or more individual members.</small>
+                </div>
+                <div class="testing-selected-roster hidden" id="testing-selected-roster" aria-live="polite"></div>
+                <span class="hidden" id="testing-participant-count">0 selected</span>
+              </div>
+
+              <div class="workout-save-actions testing-form-actions">
+                <button class="outline-btn" type="submit" name="testing-save-mode" value="draft">Save Draft</button>
+                <button class="primary-btn" type="submit" name="testing-save-mode" value="scheduled">Schedule Testing Day</button>
+              </div>
+              <p class="field-help workout-save-help">Drafts stay in Testing Days and can be scheduled later.</p>
+            </div>
+          </section>
         </form>
       </article>
 
-      <section class="panel testing-days-panel">
+      <aside class="panel coach-workout-side-panel testing-outline-panel">
+        <div class="panel-heading">
+          <div><p class="eyebrow">TESTING DAY OUTLINE</p><h3>Your Plan</h3></div>
+        </div>
+        <p class="workout-outline-help">Your selected roster and ordered tests update while you build.</p>
+        <div class="testing-outline-section">
+          <strong>Participants</strong>
+          <div id="testing-outline-roster" class="testing-outline-list"><span class="muted-small">No participants selected.</span></div>
+        </div>
+        <div class="testing-outline-section">
+          <strong>Tests</strong>
+          <div id="testing-outline-tests" class="testing-outline-list"><span class="muted-small">No tests added.</span></div>
+        </div>
+      </aside>
+      </div>
+
+      <section class="panel testing-days-panel recent-workouts-panel">
         <div class="panel-heading">
           <div><p class="eyebrow">TESTING SCHEDULE</p><h3>Testing Days</h3></div>
           <button class="outline-btn" id="refresh-testing-days-btn" type="button">Refresh</button>
         </div>
         <div class="testing-list-toolbar">
-          <label>Search<input id="testing-day-search" type="search" placeholder="Search Testing Days..." autocomplete="off" /></label>
+          <label>Search<input id="testing-day-search" type="search" placeholder="Search by day, date, group, person, or test..." autocomplete="off" /></label>
           <label>Status<select id="testing-status-filter"><option value="all">All statuses</option><option value="scheduled">Scheduled</option><option value="draft">Drafts</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option></select></label>
         </div>
         <div id="testing-day-list" class="testing-day-list"><div class="empty-state">Loading Testing Days...</div></div>
+      </section>
+
+      <section class="panel testing-results-panel hidden" id="testing-results-panel" aria-labelledby="testing-results-title">
+        <div class="panel-heading">
+          <div><p class="eyebrow">OFFICIAL RESULTS</p><h3 id="testing-results-title">Enter Testing Results</h3><p id="testing-results-subtitle" class="field-help"></p></div>
+          <div class="testing-results-heading-actions">
+            <button class="outline-btn small-inline-btn hidden" id="edit-testing-results-btn" type="button">Edit Results</button>
+            <button class="outline-btn small-inline-btn" id="close-testing-results-btn" type="button">Close</button>
+          </div>
+        </div>
+        <div class="testing-result-mode" role="group" aria-label="Result entry order">
+          <button class="outline-btn is-active" data-result-mode="athlete" type="button">By Athlete</button>
+          <button class="outline-btn" data-result-mode="test" type="button">By Test</button>
+        </div>
+        <div class="testing-result-focus"><label><span id="testing-result-focus-label">Athlete</span><select id="testing-result-focus-select"></select></label><span id="testing-result-progress"></span><button class="outline-btn small-inline-btn hidden" id="testing-participant-status-btn" type="button">Mark Did Not Participate</button></div>
+        <div id="testing-result-grid" class="testing-result-grid"></div>
+        <div class="testing-form-actions" id="testing-results-save-actions"><button class="primary-btn" id="save-testing-results-btn" type="button">Save Results</button></div>
       </section>
     </section>
   </main>
@@ -101,6 +163,6 @@
   <script src="js/shared/ui-utils.js"></script>
   <script src="js/shared/access-control.js?v=single-row-fix-1"></script>
   <script src="js/coach/coach-nav.js?v=testing-days-1"></script>
-  <script src="js/coach/coach-testing.js?v=testing-days-1"></script>
+  <script src="js/coach/coach-testing.js?v=testing-days-12"></script>
 </body>
 </html>

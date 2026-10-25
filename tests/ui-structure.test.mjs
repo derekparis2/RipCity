@@ -45,6 +45,7 @@ assert.match(profileScript, /if \(!profileAccess\.isCoach\)/, "coach profiles sa
 const coachMemberDetail = await readFile("js/coach/coach-member-detail.js", "utf8");
 assert.match(coachMemberDetail, /training_focus, favorite_lift/, "coach member detail loads training profile fields");
 assert.match(coachMemberDetail, /profile\.bio/, "coach member detail shows the member bio");
+assert.match(coachMemberDetail, /if \(editor\) editor\.open = false;/, "coach goal creation starts collapsed on every screen size");
 
 const memberHistory = await readFile("member-history.html", "utf8");
 assert.match(memberHistory, /id="member-history-hero-description"/, "member history copy can be specialized by member type");
@@ -70,9 +71,21 @@ const activePages = [
   "workout-session.html",
 ];
 
+const memberNavPages = new Set([
+  "member-dashboard.html",
+  "member-training.html",
+  "member-habits.html",
+  "member-history.html",
+  "member-leaderboards.html",
+  "member-goals.html",
+  "profile.html",
+  "workout-session.html",
+]);
+
 for (const file of activePages) {
   const html = await readFile(file, "utf8");
-  assert.match(html, /css\/styles\.css\?v=ui-polish-4/, `${file} loads the current shared stylesheet release`);
+  const sharedStylesVersion = memberNavPages.has(file) ? "member-nav-fixed-1" : "ui-polish-4";
+  assert.match(html, new RegExp(`css/styles\\.css\\?v=${sharedStylesVersion}`), `${file} loads the current shared stylesheet release`);
 }
 
 console.log("UI structure tests passed");

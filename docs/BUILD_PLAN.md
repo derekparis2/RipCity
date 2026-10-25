@@ -172,9 +172,14 @@ Testing/progress direction:
 - Coach/admin-created Testing Days with reusable or custom ordered tests
 - Multi-group and individual participant selection with a deduplicated roster snapshot
 - Assigned Testing Day schedules on member Training
-- Roster-style result entry after the official-entry role is approved
+- Coach/admin roster-style result entry by athlete or by test
+- Explicit absent/not-tested outcomes, guarded completion, and member-own result visibility
+- Searchable, collapsible staff archives with completed-result review, correction,
+  and per-test ranking when a ranking direction is defined
+- Date-ordered, searchable member history below a Training calendar that marks
+  assigned Testing Days
 - Testing results connected to progress history and approved leaderboard metrics
-- Exact test, attempt, visibility, and ranking rules pending Rip City feedback
+- Exact recurring tests, multiple-attempt behavior, and ranking rules pending Rip City feedback
 
 Coach onboarding direction:
 - Platform owner creates the facility and first facility admin

@@ -35,11 +35,18 @@ the two staging facilities were added and verified on 2026-08-28.
 Staging migration status:
 
 - `20261024170000_add_testing_days_foundation.sql` was applied to staging on
-  2026-10-24. Result writes remain intentionally denied until the official
-  entry role is approved. Production has not received this migration.
+  2026-10-24. It initially denies result writes; the later staff-result
+  migration deliberately supersedes that temporary restriction. Production
+  has not received this migration.
 - `20261024173000_fix_testing_day_save_column_resolution.sql` is the required
   staging follow-up for the ambiguous save-RPC column reference discovered by
   the focused RLS test. Apply it before rerunning the Testing Day checks.
+- `20261024200000_enable_staff_testing_result_entry.sql` adds coach/admin-only
+  official result entry. Apply it after both Testing Day migrations above;
+  production has not received it.
+- `20261024203000_complete_testing_day_workflow.sql` adds member-own result
+  visibility, absence and Not Tested states, and guarded Testing Day completion.
+  Apply it after the staff-result migration; production has not received it.
 
 - `20261023180000_add_workout_attribution_rpc.sql` was applied to staging on
   2026-10-23. It exposes only creator/assigner display names for workout

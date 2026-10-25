@@ -336,24 +336,36 @@ tests. The database snapshots and deduplicates the participant roster so later
 group changes do not rewrite the historical day. Assigned members can see the
 schedule and test battery from Training.
 
-The result table and test metadata are included, but every authenticated result
-write remains blocked until Rip City decides who enters official results.
+Coaches and facility admins can enter one official result per participant/test
+pair from either an athlete-first or test-first workflow, mark an athlete absent
+or a test Not Tested, and finish only after every outcome is accounted for.
+Direct table writes remain blocked. Members cannot enter results and can read
+only their own official outcomes.
+
+Completed days become a searchable, collapsible archive. Staff can find days by
+name, date, group, participant, or test; review by athlete or ranked test; and
+return to edit mode to correct the canonical result. Member Training highlights
+Testing Days on the calendar and lists them below it newest-first with search and
+collapsible details. A coach or admin can also review a member's newest-first
+Testing Day history from that member's profile and open the canonical Testing
+Day result workflow already focused on that member.
 
 **Complete when:** The migration is applied to staging; coach/admin creation,
 editing, scheduling, cancellation, roster deduplication, member schedule
-visibility, two-facility isolation, and the intentional result-write denial all
-pass review and focused tests.
+visibility, own-result privacy, two-facility isolation, staff-only transactional
+result entry, explicit missing-result states, guarded completion, completed-day
+review/correction, member-profile result history, searchable archives, calendar highlighting, and
+member/direct-write denial all pass review and focused tests.
 
 ## 9B. Testing Results And Progress Integration
 
-- **Status:** Waiting on product decision
+- **Status:** Partially included in Package 9A
 - **Suggested branch:** `<name>/testing-results`
 
-This follow-up begins after Rip City decides who may enter results, whether a
-test stores one result or multiple attempts, which results members may see, and
-which testing metrics may appear on leaderboards. It owns roster-style result
-entry, result correction rules, comparisons over time, and approved progress or
-leaderboard integration.
+Package 9A now owns staff result entry and correction for one canonical result,
+plus member visibility of only that member's own results. This follow-up retains
+multiple-attempt/best-result rules, member result entry, comparisons over time,
+and approved progress or leaderboard integration.
 
 ---
 

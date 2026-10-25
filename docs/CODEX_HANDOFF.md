@@ -84,9 +84,10 @@ current post-launch order is:
 
 1. Review and merge the privacy-safe member leaderboard from
    `derek/member-leaderboards`.
-2. Finish the Testing Day scheduling foundation on `derek/testing-days`.
-3. Confirm who enters official Testing Day results before building any result
-   form or granting result-write permission.
+2. Finish the Testing Day scheduling and staff-result workflow on
+   `derek/testing-days`.
+3. Confirm later whether members may submit Testing Day results for coach
+   verification.
 4. Start broader V3 work after these post-launch features are settled.
 
 New feature branches start from current `main`. The V2 production release and
@@ -298,9 +299,17 @@ Testing Days:
 - `derek/testing-days` adds the separate coach/admin scheduler, ordered test
   battery, reusable definitions, deduplicated group/individual roster snapshot,
   and assigned member Training schedule.
-- The migration creates result-ready storage but intentionally grants no result
-  writes. Who enters results, attempt/best-result behavior, member result
-  visibility, and leaderboard eligibility remain pending.
+- Coaches and admins enter one official result per participant/test pair through
+  a transactional RPC and may work athlete-first or test-first. They may mark
+  an athlete absent or a test Not Tested, and cannot finish the day while any
+  outcome is unexplained. Members can read only their own official outcomes;
+  direct writes and member entry remain denied. Multiple attempts and
+  leaderboard eligibility remain pending.
+- Completed days remain searchable by day, date, group, participant, or test.
+  Staff can review results by athlete or ranked test and reopen result entry to
+  correct the canonical result. Member Training highlights assigned Testing
+  Days on the calendar and keeps a newest-first, searchable, collapsible history
+  below it.
 
 Coach notes / announcements:
 

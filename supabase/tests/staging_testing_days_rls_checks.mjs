@@ -148,7 +148,7 @@ try {
   assert(coachEdit.response.ok, "same-facility coach can edit and reschedule the Testing Day");
 
   const { body: participants } = await request(
-    `testing_day_participants?select=id,member_profile_id,selected_individually&testing_day_id=eq.${testingDayId}`,
+    `testing_day_participants?select=id,member_profile_id,selected_individually,participation_status&testing_day_id=eq.${testingDayId}`,
     ripCoach.token
   );
   assert(new Set(participants.map(row => row.member_profile_id)).size === participants.length, "overlapping groups and individuals create one participant per member");
@@ -183,8 +183,99 @@ try {
       headers: { Prefer: "return=representation" },
       body: JSON.stringify(resultPayload)
     });
-    assert(!write.response.ok, `${label} cannot write official results before the role decision`);
+    assert(!write.response.ok, `${label} cannot bypass the staff result RPC with a direct table write`);
   }
+
+  const memberResultSave = await request("rpc/save_testing_results", ripAthlete.token, {
+    method: "POST",
+    body: JSON.stringify({ p_testing_day_id: testingDayId, p_results: [resultPayload] })
+  });
+  assert(!memberResultSave.response.ok, "member cannot enter official Testing Day results");
+
+  const coachResultSave = await request("rpc/save_testing_results", ripCoach.token, {
+    method: "POST",
+    body: JSON.stringify({ p_testing_day_id: testingDayId, p_results: [resultPayload] })
+  });
+  assert(coachResultSave.response.ok, "same-facility coach can enter official Testing Day results");
+
+  const adminResultUpdate = await request("rpc/save_testing_results", ripAdmin.token, {
+    method: "POST",
+    body: JSON.stringify({ p_testing_day_id: testingDayId, p_results: [{ ...resultPayload, numeric_value: 1.25, notes: "Admin verified" }] })
+  });
+  assert(adminResultUpdate.response.ok, "facility admin can update the same official result");
+
+  const { body: savedResults } = await request(
+    `testing_results?select=id,numeric_value,notes,entered_by&testing_day_test_id=eq.${resultPayload.testing_day_test_id}&testing_day_participant_id=eq.${resultPayload.testing_day_participant_id}`,
+    ripCoach.token
+  );
+  assert(savedResults.length === 1 && Number(savedResults[0].numeric_value) === 1.25, "athlete-first and test-first entry share one canonical result row");
+
+  const athleteOwnResult = await request(
+    `testing_results?select=id,numeric_value,result_status&testing_day_participant_id=eq.${athleteParticipant.id}`,
+    ripAthlete.token
+  );
+  assert(athleteOwnResult.response.ok && athleteOwnResult.body.length === 1, "assigned member can read only their own official Testing Day result");
+
+  const h2kOtherResults = await request(
+    `testing_results?select=id&testing_day_test_id=eq.${resultPayload.testing_day_test_id}`,
+    ripH2k.token
+  );
+  assert(h2kOtherResults.response.ok && h2kOtherResults.body.length === 0, "another member cannot read an athlete's Testing Day result");
+
+  const prematureFinish = await request("rpc/finish_testing_day", ripCoach.token, {
+    method: "POST",
+    body: JSON.stringify({ p_testing_day_id: testingDayId })
+  });
+  assert(!prematureFinish.response.ok, "Testing Day cannot finish while roster outcomes are unexplained");
+
+  const notTestedSave = await request("rpc/save_testing_results", ripCoach.token, {
+    method: "POST",
+    body: JSON.stringify({
+      p_testing_day_id: testingDayId,
+      p_results: [{
+        testing_day_test_id: tests[1]?.id,
+        testing_day_participant_id: athleteParticipant.id,
+        result_status: "not_tested",
+        notes: "Did not complete second test"
+      }]
+    })
+  });
+  assert(notTestedSave.response.ok, "coach can explicitly mark one participant test Not Tested");
+
+  for (const participant of participants.filter(row => row.id !== athleteParticipant.id)) {
+    const absence = await request("rpc/set_testing_participant_status", ripCoach.token, {
+      method: "POST",
+      body: JSON.stringify({ p_testing_day_participant_id: participant.id, p_status: "did_not_participate" })
+    });
+    assert(absence.response.ok, "coach can explicitly mark a rostered athlete as not participating");
+  }
+
+  const memberAbsenceAttempt = await request("rpc/set_testing_participant_status", ripAthlete.token, {
+    method: "POST",
+    body: JSON.stringify({ p_testing_day_participant_id: athleteParticipant.id, p_status: "did_not_participate" })
+  });
+  assert(!memberAbsenceAttempt.response.ok, "member cannot change Testing Day participation status");
+
+  const finish = await request("rpc/finish_testing_day", ripAdmin.token, {
+    method: "POST",
+    body: JSON.stringify({ p_testing_day_id: testingDayId })
+  });
+  assert(finish.response.ok && finish.body?.status === "completed", "facility admin can finish a fully accounted Testing Day");
+
+  const clearResult = await request("rpc/save_testing_results", ripAdmin.token, {
+    method: "POST",
+    body: JSON.stringify({
+      p_testing_day_id: testingDayId,
+      p_results: tests.map(test => ({
+        testing_day_test_id: test.id,
+        testing_day_participant_id: athleteParticipant.id,
+        result_status: "recorded",
+        numeric_value: null,
+        text_value: null
+      }))
+    })
+  });
+  assert(clearResult.response.ok, "facility admin can clear official results through the RPC");
 } finally {
   if (testingDayId) {
     await request("rpc/set_testing_day_status", ripAdmin.token, {

@@ -566,10 +566,11 @@ metrics deserve a dedicated module.
 
 ### Testing Day Direction
 
-Rip City approved a coach-run Testing Day workflow. The first delivery lets
-coaches and facility admins define a set of tests and select any combination of
-groups and individual participants. Who may enter official results is still an
-open decision, so result writes remain disabled in this first delivery.
+Rip City approved a coach-run Testing Day workflow. Coaches and facility admins
+define an ordered set of tests, select any combination of groups and individual
+participants, and enter official results either athlete-first or test-first.
+Members can view only their own official results but cannot enter results until
+that separate decision is approved.
 
 Testing Day should not be modeled as an ordinary workout. A durable design is
 expected to include:
@@ -578,12 +579,15 @@ expected to include:
   snapshotted participant roster built from selected groups/members.
 - Ordered test definitions with a name, unit, input type, and whether a higher
   or lower result ranks better.
-- A result-ready table that can record the entering account, optional notes,
-  and approved values once entry permissions are decided.
-- A future roster-style entry screen so an entire testing group can be entered
-  efficiently without opening every member separately.
+- A result table that records the entering account, optional notes, and one
+  canonical value for each participant/test pair.
+- A roster-style entry screen that switches between one athlete across every
+  test and one test across every athlete without duplicating results.
 - A clear connection to member progress history and the existing selectable
   leaderboard metric registry once visibility and ranking rules are approved.
+- A searchable, collapsible completed-day archive that supports review by
+  athlete or by ranked test and permits staff corrections to the canonical
+  result.
 - Facility-scoped RLS and two-facility tests so coaches can never enter or read
   another facility's testing data.
 
@@ -591,14 +595,20 @@ Already decided:
 
 - Group and individual selection are both supported and are deduplicated into
   one snapshotted roster.
+- Staff can mark a participant absent or a specific test Not Tested. A scheduled
+  day cannot be finished until every participant/test outcome is explicit.
+- Members can view only their own official result, Not Tested, or absence state.
+- Member Training highlights assigned Testing Days on the calendar and lists a
+  newest-first, searchable, collapsible Testing Day history below the calendar.
+- Coach/admin member profiles show the selected member's newest-first Testing
+  Day history and link to the canonical result editor focused on that member.
 
-Decisions still required before result entry:
+Decisions still required after the first result-entry release:
 
 - Which tests are used regularly?
 - Does each test store one result, multiple attempts, or only the best result?
-- Are results entered only by coaches, or can members submit results for coach
-  verification?
-- Which results should members see, and which may appear on leaderboards?
+- Can members submit results for coach verification later?
+- Which Testing Day results may appear on leaderboards?
 - Do previous testing days need side-by-side comparison or charts in the first
   release?
 

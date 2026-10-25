@@ -58,9 +58,13 @@ Use this as the quick orientation guide before editing.
   metric registry used to rank by rolling results or streaks. Future lift and
   testing leaderboards should extend that registry rather than add a separate
   ranking implementation.
-- `js/coach/coach-testing.js` powers Testing Day creation, multi-group and
-  individual roster selection, ordered test batteries, scheduling, and
-  cancellation. Result entry is intentionally absent pending the approved role.
+- `js/coach/coach-testing.js` powers Testing Day creation, draggable ordered
+  tests, multi-group and individual assignment, scheduling, and coach/admin
+  result entry by athlete or by test, including absence/not-tested outcomes and
+  guarded day completion.
+- `js/coach/coach-member-detail.js` renders each member's newest-first Testing
+  Day history and links staff back to the canonical result editor focused on
+  that member.
 - `js/coach/workouts/` powers workout creation, assignment, recent workout reuse,
   and the exercise library. `page.js` is the page controller, with the form UI
   in `builder.js`, assignment behavior in `assignments.js`, saved-workout
@@ -73,9 +77,10 @@ Use this as the quick orientation guide before editing.
   today’s workout, workout history, and feedback link display.
 - `js/member/member-announcements.js` renders the active facility, group, and
   individual announcements permitted to the signed-in member by RLS.
-- `js/member/member-testing-days.js` renders assigned scheduled Testing Days and
-  their ordered test batteries on the member Training page without loading or
-  writing results.
+- `js/member/member-testing-days.js` renders assigned scheduled Testing Days,
+  their ordered test batteries, and only the signed-in member's official
+  outcomes on Training. Its searchable cards are compact and collapsed by
+  default after the first load. It never writes results.
 - `js/member/member-leaderboards.js` renders the program-separated member Top
   5 and own-rank view. It reads only the privacy-safe leaderboard RPC rather
   than loading facility rosters or other members' raw habit logs.

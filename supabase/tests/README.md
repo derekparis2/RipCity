@@ -174,13 +174,15 @@ City Staging on 2026-10-24.
 
 ## Testing Day Scheduling And RLS Checks
 
-After applying `20261024170000_add_testing_days_foundation.sql`, run:
+After applying the Testing Day foundation, save-fix, staff-result, and completed-workflow migrations, run:
 
 ```bash
 node supabase/tests/staging_testing_days_rls_checks.mjs
 ```
 
 The staging-only test creates and cleans up one scheduled Testing Day. It
-verifies coach/admin scheduling, overlapping group/member deduplication,
-assigned-member schedule visibility, another-facility denial, and the
-intentional denial of direct result writes for admins, coaches, and members.
+verifies coach/admin scheduling and result entry, overlapping group/member
+deduplication, assigned-member schedule visibility, another-facility denial,
+one canonical result per participant/test, member-own result visibility,
+absence/Not Tested states, guarded completion, and denial of direct writes and
+member result entry.

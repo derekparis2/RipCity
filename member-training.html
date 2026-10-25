@@ -7,8 +7,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=ui-polish-4" />
-  <link rel="stylesheet" href="css/member-testing.css?v=testing-days-1" />
+  <link rel="stylesheet" href="css/styles.css?v=member-nav-fixed-1" />
+  <link rel="stylesheet" href="css/member-testing.css?v=testing-days-5" />
 </head>
 <body class="auth-body member-dashboard-body member-feature-page" data-member-page="training">
   <aside class="sidebar member-sidebar">
@@ -22,23 +22,24 @@
     <header class="topbar"><div><p class="eyebrow" id="member-dashboard-date">TRAINING</p><h2>Training Calendar</h2></div><div class="topbar-actions"><button class="outline-btn" id="h2k-logout-btn">Log Out</button></div></header>
     <section class="hero-card h2k-hero member-feature-hero"><div><p class="eyebrow">YOUR SCHEDULE</p><h3>Every assigned workout, organized by day.</h3><p>Select a date to open, preview, or review a workout.</p></div></section>
 
+    <section class="panel training-calendar-panel future-workouts-panel member-page-panel" id="training-calendar-panel">
+      <div class="panel-heading"><div><p class="eyebrow">SCHEDULE</p><h3>Training Calendar</h3></div><p id="workout-history-message" class="auth-message" aria-live="polite"></p></div>
+      <div class="training-calendar-layout">
+        <div id="future-workout-list" class="future-calendar training-calendar"><div class="empty-state">Loading assigned workouts...</div></div>
+        <div class="training-calendar-day"><div class="training-calendar-day-heading"><span class="eyebrow">SELECTED DAY</span><strong id="training-calendar-selected-date">Today</strong></div><div id="workout-history-list" class="workout-history-list compact-workout-list"><div class="empty-state">Select a date to view workouts.</div></div></div>
+      </div>
+    </section>
+
     <section class="panel member-testing-panel member-page-panel" id="member-testing-panel">
       <div class="panel-heading">
         <div><p class="eyebrow">PERFORMANCE TESTING</p><h3>Testing Days</h3></div>
         <span class="member-testing-count" id="member-testing-count">0 assigned</span>
       </div>
       <p class="member-testing-intro">See each date and test battery your coaches assigned to you.</p>
+      <label class="member-testing-search">Find a Testing Day<input id="member-testing-search" type="search" placeholder="Search by date, name, or test..." autocomplete="off" /></label>
       <p class="auth-message" id="member-testing-message" aria-live="polite"></p>
       <div class="member-testing-list" id="member-testing-list">
         <div class="empty-state">Loading assigned Testing Days...</div>
-      </div>
-    </section>
-
-    <section class="panel training-calendar-panel future-workouts-panel member-page-panel" id="training-calendar-panel">
-      <div class="panel-heading"><div><p class="eyebrow">SCHEDULE</p><h3>Training Calendar</h3></div><p id="workout-history-message" class="auth-message" aria-live="polite"></p></div>
-      <div class="training-calendar-layout">
-        <div id="future-workout-list" class="future-calendar training-calendar"><div class="empty-state">Loading assigned workouts...</div></div>
-        <div class="training-calendar-day"><div class="training-calendar-day-heading"><span class="eyebrow">SELECTED DAY</span><strong id="training-calendar-selected-date">Today</strong></div><div id="workout-history-list" class="workout-history-list compact-workout-list"><div class="empty-state">Select a date to view workouts.</div></div></div>
       </div>
     </section>
   </main>
@@ -50,7 +51,7 @@
   <script src="js/shared/workout-data.js?v=workout-attribution-1"></script>
   <script src="js/shared/leaderboard-metrics.js?v=member-leaderboards-1"></script>
   <script src="js/member/member-nav.js?v=member-leaderboards-1"></script>
-  <script src="js/member/member-dashboard.js?v=member-leaderboards-1"></script>
-  <script src="js/member/member-testing-days.js?v=testing-days-1"></script>
+  <script src="js/member/member-dashboard.js?v=testing-days-3"></script>
+  <script src="js/member/member-testing-days.js?v=testing-days-5"></script>
 </body>
 </html>
