@@ -11,9 +11,11 @@ Project folder on Derek's Mac:
 Git branches:
 
 - `main` = live production branch deployed by Netlify.
-- `v2-development` = next-version work branch.
-- Derek and Sam work from feature branches such as `derek/facility-config` or
-  `sam/goals-v2`, then open pull requests into `v2-development`.
+- V2 is complete. `pre-v3-release` is the integration branch for the final
+  member-leaderboard and Testing Day promotion into `main`.
+- After that release, Derek and Sam should create new V3 feature branches from
+  the latest `main` and merge reviewed work through the agreed V3 integration
+  branch.
 - Follow `CONTRIBUTING.md` for the shared branch, review, migration, and merge
   workflow.
 
@@ -76,19 +78,16 @@ Core direction:
 - V2 uses one active facility membership per account. Future platform and
   baseball-development work is defined in `docs/VERSION_3_PLAN.md`.
 
-## Current V2 Priorities
+## Current Release State
 
 See `docs/VERSION_2_PLAN.md` for detailed product requirements and
 `docs/V2_BACKLOG.md` for the maintained implementation order and status. The
-current post-launch order is:
+V2 is complete. The last release step is promoting the reviewed Testing Day
+branch through `pre-v3-release` and then into `main`. All unfinished feature
+ideas were moved to `docs/VERSION_3_PLAN.md`.
 
-1. Review and merge the privacy-safe member leaderboard from
-   `derek/member-leaderboards`.
-2. Finish the Testing Day scheduling and staff-result workflow on
-   `derek/testing-days`.
-3. Confirm later whether members may submit Testing Day results for coach
-   verification.
-4. Start broader V3 work after these post-launch features are settled.
+Testing Day results remain staff-entered. Members may view only their own
+official outcomes and cannot submit or edit Testing Day results.
 
 New feature branches start from current `main`. The V2 production release and
 its ordered production migration sequence are complete.
@@ -103,16 +102,14 @@ Current signup-link decision:
   admin must approve it. `facility_invites` powers only this secure coach flow.
 - The coach-invite implementation is on `derek/facility-access`. Its migration
   was applied to staging and all 12 coach-invite/RLS checks passed on
-  2026-10-16. The staging browser flow also passed that day. Production remains
-  unchanged.
+  2026-10-16. The staging browser flow also passed that day.
 - Copilot review produced a follow-up hardening migration,
   `20261016200000_harden_secure_coach_invites.sql`. It was applied to staging
   on 2026-10-16, and the expanded 14-check coach-invite suite passed. The
-  updated UI uses its server-side invite RPC. Production remains unchanged.
+  updated UI uses its server-side invite RPC.
 - A second Copilot hardening pass produced
   `20261016201500_lock_down_coach_invite_writes.sql`. It was applied to staging
-  on 2026-10-16, and the expanded 16-check suite passed. Production remains
-  unchanged.
+  on 2026-10-16, and the expanded 16-check suite passed.
 - The same branch adds status-specific blocked-account messaging and admin-only
   coach deactivation/reactivation. These updates reuse existing membership rows
   so account, member-profile, group, and historical relationships remain intact.
@@ -135,12 +132,13 @@ Current signup-link decision:
   ordinary coaches cannot approve, cross-facility groups are rejected, direct
   group-less approval is blocked, and a facility admin atomically assigns the
   initial group and approves the athlete. The test restored the pending fixture
-  and removed its temporary group. Production has not received this migration.
+  and removed its temporary group. The migration was promoted after staging
+  verification.
 - `20261024120000_admin_assign_all_member_signup_groups.sql` extends that
   workflow to H2K members with matching H2K/shared-group validation. It was
   applied to staging on 2026-10-24, and all 19 expanded athlete/H2K checks
-  passed with both fixtures restored and temporary groups removed. Production
-  has not received it.
+  passed with both fixtures restored and temporary groups removed. The
+  migration was promoted after staging verification.
 
 Production Supabase audit status:
 
@@ -150,8 +148,8 @@ Production Supabase audit status:
   full staging verification suite on 2026-08-16.
 - Production has no recorded Supabase migrations and the Free plan provides no
   scheduled dashboard backups.
-- Staging now has narrower exercise-library grants and short canonical policy
-  names. Production remains unchanged until a separate release is approved.
+- Production received the reviewed V2 migration sequence after the staging
+  checks, backup, and restore rehearsal passed.
 
 ## V2 Cleanup Track
 
@@ -208,17 +206,17 @@ Current status:
 - Manual role smoke tests passed, followed by all 45 automated read-only RLS
   checks. The shared pending/inactive message is being replaced by distinct
   lifecycle states on `derek/facility-access`; facility selection is V3 scope.
-- The unilateral-exercise migration was applied to staging on 2026-09-14. It
-  adds non-null `is_unilateral` flags to exercise templates and workout
-  exercise snapshots; production remains unchanged.
+- The unilateral-exercise migration was applied to staging on 2026-09-14 and
+  later included in the verified V2 production release. It adds non-null
+  `is_unilateral` flags to exercise templates and workout exercise snapshots.
 - The approved Vertical Jump and medicine-ball catalog migration
   (`20260914220000_correct_jump_and_med_ball_exercise_defaults.sql`) was applied
   successfully to staging on 2026-09-14. Staging now has 88 Rip City starter
-  exercises; production remains unchanged.
+  exercises; the correction was later promoted in the verified V2 release.
 - The follow-up approved exercise-input audit migration
   (`20260914223000_apply_approved_exercise_input_audit.sql`) was applied and
   verified successfully in staging on 2026-09-14. It does not rewrite existing
-  workout snapshots, and production remains unchanged.
+  workout snapshots and was later promoted in the verified V2 release.
 
 Goal:
 

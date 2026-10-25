@@ -303,11 +303,5 @@ Payments:
 
 ## Near-Term Priorities
 
-1. Test and clean workout session UI
-2. Fix coach workout builder startup if needed
-3. Auto-complete Training habit when workout is fully logged
-4. Add workout history
-5. Add exercise library
-6. Improve coach dashboard workout visibility
-7. Add roster/filtering
-8. Clean docs and README before coach walkthrough
+V2 is complete. Use `docs/VERSION_3_PLAN.md` for new feature sequencing and
+keep production fixes small, reviewed, and based on the latest `main`.

@@ -1,5 +1,9 @@
 # Rip City Version 2 Plan
 
+**Status: Complete.** This document is the final V2 product and implementation
+record. New feature work belongs in `docs/VERSION_3_PLAN.md`; changes here
+should only clarify shipped V2 behavior.
+
 For the ordered implementation queue and current work status, see
 `docs/V2_BACKLOG.md`. This document remains the source of truth for detailed
 product decisions and feature requirements.
@@ -506,10 +510,9 @@ platform into something negative or overly competitive.
   one shared calculation module.
 - The coach dashboard is an action queue rather than a second leaderboard.
   Either member type needs habit attention after three consecutive completed
-  calendar days without habit tracking. Athletes additionally need workout
-  attention when their last two completed assigned-workout days both contain
-  no exercise data. The current day does not count as missed while it is still
-  in progress.
+  calendar days without habit tracking. The current day does not count as
+  missed while it is still in progress. Coaches can search this queue and
+  narrow it by member program or training group.
 - Individual 12-week habit history belongs on the coach member-detail page,
   while assignment completion belongs in coach workout review.
 - Future lift, speed, jump, and sport-testing results should extend the same
@@ -569,8 +572,8 @@ metrics deserve a dedicated module.
 Rip City approved a coach-run Testing Day workflow. Coaches and facility admins
 define an ordered set of tests, select any combination of groups and individual
 participants, and enter official results either athlete-first or test-first.
-Members can view only their own official results but cannot enter results until
-that separate decision is approved.
+Members can view only their own official results and cannot submit or edit
+Testing Day results.
 
 Testing Day should not be modeled as an ordinary workout. A durable design is
 expected to include:
@@ -603,11 +606,10 @@ Already decided:
 - Coach/admin member profiles show the selected member's newest-first Testing
   Day history and link to the canonical result editor focused on that member.
 
-Decisions still required after the first result-entry release:
+Deferred V3 decisions:
 
 - Which tests are used regularly?
 - Does each test store one result, multiple attempts, or only the best result?
-- Can members submit results for coach verification later?
 - Which Testing Day results may appear on leaderboards?
 - Do previous testing days need side-by-side comparison or charts in the first
   release?

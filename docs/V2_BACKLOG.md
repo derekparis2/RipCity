@@ -1,30 +1,15 @@
 # Version 2 Work Backlog
 
-This is the short, ordered list Derek and Sam use to decide what to work on
-next. Detailed product behavior stays in
+V2 is complete. This file is now the historical record of the packages Derek
+and Sam delivered. New work belongs in `docs/VERSION_3_PLAN.md` unless it is a
+small production fix. Detailed V2 product behavior stays in
 [`VERSION_2_PLAN.md`](VERSION_2_PLAN.md); each work package below links to its
 relevant plan sections.
 
-Do not create or assign branches ahead of time. When someone picks up the next
-package, they create its branch from the latest `v2-development` and replace
-`<name>` in the suggested branch name with their own name.
+## Final Status
 
-## How To Use This List
-
-1. Finish and merge the package currently in review.
-2. Pick the highest package marked **Ready** that does not conflict with active
-   work.
-3. Add the owner, actual branch, and pull-request link when work begins.
-4. Change the status to **In review** while implementation or testing is still
-   receiving feedback.
-5. After implementation and required staging tests pass, mark the package
-   **Complete** in that same feature branch before requesting final approval.
-   Squash-merging the pull request then brings the completed status into
-   `v2-development` with the work it describes.
-
-Only one branch that changes the staging database schema should be active at a
-time. A documentation, deployment, or frontend-only package may run alongside
-it when the contributors confirm their files and behavior do not overlap.
+All agreed V2 packages are complete. Items intentionally not delivered in V2
+are labeled as moved to V3 below and are tracked in `VERSION_3_PLAN.md`.
 
 ---
 
@@ -234,7 +219,7 @@ were verified on the pull-request preview.
 
 ## 7B. Member-Facing Leaderboards
 
-- **Status:** In review
+- **Status:** Complete
 - **Branch:** `derek/member-leaderboards`
 - **Plan detail:** [Leaderboards](VERSION_2_PLAN.md#3-leaderboards)
 
@@ -248,15 +233,12 @@ The main member History tab becomes Leaderboards. Weekly habit history moves
 into the Habits page, while workout history remains in Training and future
 testing history belongs under Training's Testing area.
 
-**Verification:** All local tests pass, and all 25 focused staging checks
+**Completed:** All local tests pass, and all 25 focused staging checks
 passed on 2026-10-24. The checks prove program separation, facility isolation,
 Top 5 plus self-only disclosure, email privacy, own-group scoping, coach denial,
-and rejection of unapproved metrics. Phone and desktop deploy-preview review
-remain before this package is marked complete.
-
-**Complete when:** H2K and athlete members see only their approved top-five and
-own-rank views, calculations match the coach boards, both facilities remain
-isolated, and phone/desktop staging checks pass.
+and rejection of unapproved metrics. H2K and athlete members see only their
+approved top-five and own-rank views, and the package was merged into
+`pre-v3-release`.
 
 ---
 
@@ -325,7 +307,7 @@ into `v2-development`.
 
 ## 9A. Testing Day Scheduling Foundation
 
-- **Status:** In progress
+- **Status:** Complete
 - **Branch:** `derek/testing-days`
 - **Plan detail:** [Progress tracking](VERSION_2_PLAN.md#4-progress-tracking) · [Profile and community](VERSION_2_PLAN.md#6-profile-and-community)
 
@@ -350,22 +332,23 @@ collapsible details. A coach or admin can also review a member's newest-first
 Testing Day history from that member's profile and open the canonical Testing
 Day result workflow already focused on that member.
 
-**Complete when:** The migration is applied to staging; coach/admin creation,
-editing, scheduling, cancellation, roster deduplication, member schedule
-visibility, own-result privacy, two-facility isolation, staff-only transactional
-result entry, explicit missing-result states, guarded completion, completed-day
-review/correction, member-profile result history, searchable archives, calendar highlighting, and
-member/direct-write denial all pass review and focused tests.
+**Completed:** The migrations were applied to staging and the focused tests
+passed. Coach/admin creation, editing, scheduling, cancellation, roster
+deduplication, staff-only result entry, explicit missing-result states, guarded
+completion, completed-day correction, member-profile history, searchable
+archives, calendar highlighting, own-result privacy, two-facility isolation,
+and member/direct-write denial are implemented. This is the final V2 feature
+package promoted through `pre-v3-release` to `main`.
 
-## 9B. Testing Results And Progress Integration
+## Package 9B Moved To V3
 
-- **Status:** Partially included in Package 9A
-- **Suggested branch:** `<name>/testing-results`
+- **Status:** Moved to V3
 
-Package 9A now owns staff result entry and correction for one canonical result,
-plus member visibility of only that member's own results. This follow-up retains
-multiple-attempt/best-result rules, member result entry, comparisons over time,
-and approved progress or leaderboard integration.
+Package 9A owns staff result entry and correction for one canonical result,
+plus member visibility of only that member's own results. Multiple attempts,
+best-result rules, comparisons over time, and approved testing-result
+leaderboard/progress integration belong to V3. Member result entry is not
+planned; official Testing Day results remain staff-entered.
 
 ---
 
@@ -394,9 +377,9 @@ assignments, and 38 completed assignments. The package was merged into
 
 ---
 
-## 10B. Workout Versioning, Archive, And Duplicate Hardening
+## Package 10B Moved To V3
 
-- **Status:** Planned post-launch hardening
+- **Status:** Moved to V3
 - **Suggested branch:** `<name>/workout-data-safety`
 - **Plan detail:** [Workout editing and version history](VERSION_2_PLAN.md#workout-builder-editing-and-version-history)
 
@@ -425,9 +408,9 @@ effective workouts for the same member and date.
 
 ---
 
-## 11. Stylesheet And UI Structure Cleanup
+## Package 11 Moved To V3
 
-- **Status:** Planned post-launch
+- **Status:** Moved to V3
 - **Suggested branch:** `<name>/stylesheet-cleanup`
 - **Plan detail:** [Codebase cleanup and maintainability](VERSION_2_PLAN.md#9-codebase-cleanup-and-maintainability)
 
@@ -445,7 +428,7 @@ checks pass, and the old combined stylesheet can be removed safely.
 
 ## 12. Final V2 Release Hardening
 
-- **Status:** In progress
+- **Status:** Complete
 - **Branch:** `derek/v2-release-hardening`
 - **Plan detail:** [Version boundary](VERSION_2_PLAN.md#version-boundary) · [Release rule](VERSION_2_PLAN.md#release-rule) · [V2 regression and release checklist](VERSION_2_PLAN.md#v2-regression-and-release-checklist)
 
@@ -454,9 +437,11 @@ mobile/desktop regression results, migration rehearsal, recovery verification,
 and production release preparation. It should not become a place for adding new
 unplanned features.
 
-**Complete when:** The agreed V2 scope passes the full staging checklist, both
-contributors approve the release, and the production migration/deployment and
-rollback steps are documented and rehearsed.
+**Completed:** The agreed V2 scope passed the staging checklist, production was
+backed up and restore-tested, the ordered V2 migrations were verified in
+production, and the release and rollback process was documented. The final
+member leaderboard and Testing Day extensions followed the same staged release
+process.
 
 ---
 

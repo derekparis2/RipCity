@@ -3219,7 +3219,7 @@ td {
 
   .coach-attention-tools {
     display: grid;
-    grid-template-columns: minmax(220px, 1fr) minmax(170px, 0.45fr) auto;
+    grid-template-columns: minmax(220px, 1fr) repeat(2, minmax(160px, 0.45fr)) auto;
     align-items: end;
     gap: 12px;
     margin-top: 16px;

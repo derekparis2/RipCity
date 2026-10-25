@@ -19,6 +19,7 @@ for (const [file, activePage] of Object.entries(coachPages)) {
 }
 
 const dashboard = await readFile("coach-dashboard.html", "utf8");
+const dashboardScript = await readFile("js/coach/coach-dashboard.js", "utf8");
 const roster = await readFile("coach-roster.html", "utf8");
 const leaderboardStyles = await readFile("css/coach-leaderboards.css", "utf8");
 const profile = await readFile("profile.html", "utf8");
@@ -32,6 +33,10 @@ assert.doesNotMatch(dashboard, /id="coach-review-status-filter"/, "member status
 assert.match(dashboard, /<details class="panel coach-attention-panel"/, "needs-attention follow-up is collapsible");
 assert.match(dashboard, /id="coach-attention-search"/, "needs-attention follow-up is searchable");
 assert.match(dashboard, /id="coach-attention-type-filter"/, "needs-attention follow-up can be filtered by program");
+assert.match(dashboard, /id="coach-attention-group-filter"/, "needs-attention follow-up can be filtered by group");
+assert.doesNotMatch(dashboard, /two missed assigned-workout days/, "needs-attention uses the shared habit rule for both member programs");
+assert.doesNotMatch(dashboardScript, /calculateWorkoutAttention\(/, "athletes are no longer added to needs-attention for missed workout entry");
+assert.match(dashboardScript, /row\.groupIds\.includes\(groupId\)/, "needs-attention rows can be narrowed to a training group");
 assert.match(roster, /data-copy-signup-link="athlete"/, "roster offers the athlete signup link");
 assert.match(roster, /data-copy-signup-link="h2k"/, "roster offers the H2K signup link");
 assert.doesNotMatch(roster, /data-copy-signup-link="general"/, "roster does not offer the unused general signup link");
@@ -84,7 +89,9 @@ const memberNavPages = new Set([
 
 for (const file of activePages) {
   const html = await readFile(file, "utf8");
-  const sharedStylesVersion = memberNavPages.has(file) ? "member-nav-fixed-1" : "ui-polish-4";
+  const sharedStylesVersion = memberNavPages.has(file)
+    ? "member-nav-fixed-1"
+    : file === "coach-dashboard.html" ? "attention-habits-1" : "ui-polish-4";
   assert.match(html, new RegExp(`css/styles\\.css\\?v=${sharedStylesVersion}`), `${file} loads the current shared stylesheet release`);
 }
 
