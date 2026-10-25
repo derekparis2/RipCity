@@ -2,6 +2,96 @@ let detailAccess = null;
 let detailMember = null;
 let detailGoals = [];
 let detailCheckinsByGoalId = {};
+let detailTestingParticipations = [];
+
+function normalizeDetailRelation(value) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function formatDetailTestingDate(dateKey) {
+  if (!dateKey) return "Unknown date";
+  return new Date(`${dateKey}T12:00:00`).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric"
+  });
+}
+
+function formatDetailTestingResult(test, result, absent) {
+  if (absent) return "Did not participate";
+  if (!result) return "Pending";
+  if (result.result_status === "not_tested") return "Did not complete";
+  const value = test.input_type === "text" ? result.text_value : result.numeric_value;
+  return `${value ?? "Pending"}${value != null && test.unit ? ` ${test.unit}` : ""}`;
+}
+
+function renderDetailTestingDays() {
+  const list = document.getElementById("coach-member-testing-list");
+  const count = document.getElementById("coach-member-testing-count");
+  if (!list) return;
+
+  const rows = detailTestingParticipations
+    .map(participation => ({ participation, day: normalizeDetailRelation(participation.testing_day) }))
+    .filter(({ day }) => day && ["scheduled", "completed"].includes(day.status))
+    .sort((a, b) => b.day.testing_date.localeCompare(a.day.testing_date));
+  if (count) count.textContent = `${rows.length} ${rows.length === 1 ? "day" : "days"}`;
+
+  if (!rows.length) {
+    list.innerHTML = `<div class="empty-state">No Testing Days are assigned to this member yet.</div>`;
+    return;
+  }
+
+  list.innerHTML = rows.map(({ participation, day }) => {
+    const tests = [...(day.testing_day_tests || [])].sort((a, b) => a.test_order - b.test_order);
+    const absent = participation.participation_status === "did_not_participate";
+    const recorded = tests.filter(test => (test.testing_results || []).some(result => result.testing_day_participant_id === participation.id)).length;
+    const detailUrl = `coach-testing.html?testingDay=${encodeURIComponent(day.id)}&member=${encodeURIComponent(participation.member_profile_id)}`;
+    return `
+      <details class="coach-member-testing-card">
+        <summary>
+          <div>
+            <span class="eyebrow">${window.RipCityUI.text(day.status === "completed" ? "FINAL RESULTS" : "TESTING DAY")}</span>
+            <h3>${window.RipCityUI.text(day.name)}</h3>
+            <p>${window.RipCityUI.text(formatDetailTestingDate(day.testing_date))}</p>
+          </div>
+          <div class="coach-member-testing-summary-meta">
+            <strong>${absent ? "Did not participate" : `${recorded}/${tests.length} recorded`}</strong>
+            <span aria-hidden="true" class="coach-member-testing-toggle"></span>
+          </div>
+        </summary>
+        <div class="coach-member-testing-details">
+          ${day.description ? `<p>${window.RipCityUI.text(day.description)}</p>` : ""}
+          <div class="coach-member-testing-results">
+            ${tests.map((test, index) => {
+              const result = (test.testing_results || []).find(item => item.testing_day_participant_id === participation.id);
+              const state = absent ? "absent" : !result ? "pending" : result.result_status === "not_tested" ? "not-tested" : "recorded";
+              return `<div class="coach-member-testing-result result-${state}"><span>${index + 1}. ${window.RipCityUI.text(test.name)}</span><strong>${window.RipCityUI.text(formatDetailTestingResult(test, result, absent))}</strong></div>`;
+            }).join("") || `<div class="empty-state">No tests were added to this Testing Day.</div>`}
+          </div>
+          <a class="outline-link coach-member-testing-edit" href="${window.RipCityUI.attr(detailUrl)}">${day.status === "completed" ? "View / Edit Results" : "Open Testing Day"}</a>
+        </div>
+      </details>`;
+  }).join("");
+}
+
+async function loadDetailTestingDays() {
+  const memberProfile = normalizeDetailRelation(detailMember.member_profile);
+  const { data, error } = await db.from("testing_day_participants")
+    .select(`
+      id,member_profile_id,participation_status,
+      testing_day:testing_days(
+        id,name,description,testing_date,status,
+        testing_day_tests(
+          id,name,unit,input_type,test_order,
+          testing_results(id,testing_day_participant_id,result_status,numeric_value,text_value,notes)
+        )
+      )
+    `)
+    .eq("member_profile_id", memberProfile.id);
+  if (error) throw error;
+  detailTestingParticipations = data || [];
+  renderDetailTestingDays();
+}
 
 function normalizeGoalNumber(value) {
   return value === "" ? null : Number(value);
@@ -95,13 +185,18 @@ function renderDetailMember() {
     ["Favorite lift", profile.favorite_lift]
   ].filter(([, value]) => value !== null && value !== undefined && value !== "");
   document.getElementById("coach-member-detail-summary").innerHTML = `
-    <div class="coach-member-detail-heading">
-      ${window.RipCityUI.avatarMarkup(detailMember.profile?.full_name, safeProfilePictureUrl, "roster-avatar")}
-      <div><p class="eyebrow">${window.RipCityUI.text(profile.member_type === "h2k" ? "H2K MEMBER" : "ATHLETE")}</p><h2>${window.RipCityUI.text(detailMember.profile?.full_name, "Unnamed Member")}</h2><p>${window.RipCityUI.text(detailMember.profile?.email)}</p></div>
+    <div class="coach-member-profile-overview">
+      <div class="coach-member-detail-heading">
+        ${window.RipCityUI.avatarMarkup(detailMember.profile?.full_name, safeProfilePictureUrl, "roster-avatar")}
+        <div><p class="eyebrow">${window.RipCityUI.text(profile.member_type === "h2k" ? "H2K MEMBER" : "ATHLETE")}</p><h2>${window.RipCityUI.text(detailMember.profile?.full_name, "Unnamed Member")}</h2><p>${window.RipCityUI.text(detailMember.profile?.email)}</p></div>
+      </div>
+      <div class="member-goal-meta"><span>${window.RipCityUI.text(groups.join(", ") || "No groups")}</span>${profile.h2k_band_color ? `<span>${window.RipCityUI.text(`${profile.h2k_band_color} Band`)}</span>` : ""}</div>
+      ${detailMember.profile?.bio ? `<p class="coach-member-profile-bio">${window.RipCityUI.text(detailMember.profile.bio)}</p>` : ""}
     </div>
-    <div class="member-goal-meta"><span>${window.RipCityUI.text(groups.join(", ") || "No groups")}</span>${profile.h2k_band_color ? `<span>${window.RipCityUI.text(`${profile.h2k_band_color} Band`)}</span>` : ""}</div>
-    ${detailMember.profile?.bio ? `<p>${window.RipCityUI.text(detailMember.profile.bio)}</p>` : ""}
-    ${profileDetails.length ? `<p class="eyebrow">PROFILE DETAILS</p><div class="profile-detail-list">${profileDetails.map(([label, value]) => `<div><span>${window.RipCityUI.text(label)}</span><strong>${window.RipCityUI.text(value)}</strong></div>`).join("")}</div>` : `<p class="empty-state">This member has not added profile details yet.</p>`}`;
+    <div class="coach-member-profile-details">
+      ${profileDetails.length ? `<p class="eyebrow">PROFILE DETAILS</p><div class="profile-detail-list">${profileDetails.map(([label, value]) => `<div><span>${window.RipCityUI.text(label)}</span><strong>${window.RipCityUI.text(value)}</strong></div>`).join("")}</div>` : `<p class="empty-state">This member has not added profile details yet.</p>`}
+    </div>
+  `;
 }
 
 function renderDetailGoals() {
@@ -201,7 +296,7 @@ function resetCoachGoalForm() {
   document.getElementById("coach-goal-submit").textContent = "Assign Goal";
   document.getElementById("coach-goal-cancel").classList.add("hidden");
   const editor = document.getElementById("coach-goal-editor");
-  if (editor) editor.open = !window.matchMedia("(max-width: 700px)").matches;
+  if (editor) editor.open = false;
 }
 
 function startCoachGoalEdit(goalId) {
@@ -338,6 +433,7 @@ async function loadMember() {
   renderDetailMember();
   await Promise.all([
     loadDetailGoals(),
+    loadDetailTestingDays(),
     window.RipCityCoachMemberHistory.init({
       access: detailAccess,
       member: detailMember

@@ -1,0 +1,518 @@
+.coach-testing-page { --testing-accent: #6fb8ff; }
+
+.testing-hero {
+  align-items: center;
+}
+
+.testing-workspace { display: grid; gap: clamp(1rem, 2vw, 1.5rem); }
+
+.testing-builder-grid { align-items: start; }
+
+.testing-editor.hidden {
+  display: none;
+}
+
+.testing-editor-heading,
+.testing-step-heading {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.testing-builder-step {
+  margin-top: 0;
+}
+
+.testing-builder-step + .testing-builder-step {
+  margin-top: 6px;
+}
+
+.testing-builder-step.is-collapsed .workout-builder-step-content { display: none; }
+.testing-builder-step.is-collapsed { padding-bottom: 1rem; }
+.testing-builder-step.is-active {
+  border-color: rgba(111, 184, 255, 0.34);
+  box-shadow: inset 3px 0 0 rgba(111, 184, 255, 0.72);
+}
+.testing-step-heading button:focus:not(:focus-visible) { box-shadow: none; outline: none; }
+
+.testing-step-heading > div {
+  flex: 1;
+}
+
+.testing-step-toolbar,
+.testing-assignment-summary,
+.testing-result-focus,
+.testing-result-mode {
+  align-items: center;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
+}
+
+.testing-step-actions { display: flex; justify-content: flex-end; margin-top: 1rem; }
+.testing-assignment-summary { margin: 0.25rem 0 0.75rem; }
+.testing-assignment-summary span { color: var(--muted); }
+
+.testing-recipient-picker {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  margin-top: 1rem;
+  padding: 1rem;
+}
+
+.testing-recipient-tabs {
+  display: flex;
+  gap: 0.55rem;
+  margin-bottom: 0.85rem;
+}
+
+.testing-recipient-tabs .is-active {
+  background: rgba(111, 184, 255, 0.12);
+  border-color: var(--testing-accent);
+  color: #b9ddff;
+}
+
+.testing-recipient-panel.hidden { display: none; }
+
+.testing-search-label {
+  margin-bottom: 0.75rem;
+}
+
+.testing-choice-list {
+  display: grid;
+  gap: 0.45rem;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  max-height: 15rem;
+  overflow: auto;
+  padding-right: 0.25rem;
+}
+
+.testing-choice {
+  align-items: center;
+  background: var(--surface-soft, #202227);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
+  min-height: 48px;
+  padding: 0.6rem 0.75rem;
+}
+
+.testing-choice:hover,
+.testing-choice:focus-within {
+  border-color: rgba(111, 184, 255, 0.62);
+}
+
+.testing-choice span {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.testing-choice small {
+  color: var(--muted, #aaa);
+}
+
+.testing-choice input {
+  accent-color: var(--testing-accent);
+  flex: 0 0 auto;
+  height: 22px;
+  width: 22px;
+}
+
+.testing-selected-roster {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+}
+
+.testing-roster-chip {
+  background: rgba(111, 184, 255, 0.1);
+  border: 1px solid rgba(111, 184, 255, 0.3);
+  border-radius: 999px;
+  color: #d8efff;
+  font-size: 0.82rem;
+  padding: 0.35rem 0.65rem;
+}
+
+.testing-test-list {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.testing-test-row {
+  align-items: end;
+  background: var(--surface-soft, #202227);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: auto auto minmax(11rem, 1.5fr) minmax(7rem, 0.7fr) minmax(8rem, 0.8fr) minmax(9rem, 0.9fr) auto;
+  padding: 0.85rem;
+}
+
+.testing-test-row.is-dragging { opacity: 0.42; }
+.testing-test-row.drop-before { box-shadow: 0 -3px 0 #56adff; }
+.testing-test-row.drop-after { box-shadow: 0 3px 0 #56adff; }
+.testing-test-drag-handle { align-self: center; cursor: grab; }
+.testing-test-drag-handle:active { cursor: grabbing; }
+
+.testing-test-order {
+  align-items: center;
+  align-self: center;
+  background: var(--text);
+  border: 1px solid var(--text);
+  border-radius: 10px;
+  color: #101011;
+  display: inline-flex;
+  font-weight: 800;
+  height: 42px;
+  justify-content: center;
+  width: 42px;
+}
+
+.testing-test-actions {
+  align-self: center;
+  display: flex;
+  gap: 0.35rem;
+}
+
+.testing-icon-btn {
+  align-items: center;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 9px;
+  color: #fff;
+  display: inline-flex;
+  height: 40px;
+  justify-content: center;
+  min-width: 40px;
+}
+
+.testing-icon-btn.danger {
+  color: #ff7b82;
+}
+
+.testing-form-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  margin-top: 1.25rem;
+}
+
+.testing-form-actions.workout-save-actions {
+  display: grid;
+  grid-template-columns: minmax(150px, 0.4fr) minmax(220px, 1fr);
+  width: 100%;
+}
+
+.testing-days-panel {
+  min-width: 0;
+}
+
+.testing-outline-panel {
+  display: grid;
+  gap: 1rem;
+  max-height: calc(100vh - 2rem);
+  overflow: auto;
+  position: sticky;
+  top: 1rem;
+}
+
+.testing-outline-section {
+  display: grid;
+  gap: 0.65rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.testing-outline-list {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.testing-outline-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.025);
+  font-size: 0.85rem;
+}
+
+.testing-outline-item span:last-child {
+  color: var(--muted);
+}
+
+.testing-list-toolbar {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: 1fr minmax(12rem, 0.35fr);
+  margin: 1rem 0;
+}
+
+.testing-list-toolbar input,
+.testing-list-toolbar select,
+.testing-result-focus select,
+.testing-result-row input,
+.testing-result-row textarea {
+  background: #202227;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: #fff;
+  min-height: 48px;
+  padding: 0.75rem;
+  width: 100%;
+}
+
+.testing-day-list {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.testing-day-card {
+  background: var(--surface-soft, #202227);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: clamp(1rem, 2vw, 1.4rem);
+}
+
+.testing-day-card-header,
+.testing-day-card-actions,
+.testing-day-meta,
+.testing-day-test-chips {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.testing-day-card-header {
+  justify-content: space-between;
+}
+
+.testing-day-card-header-actions,
+.testing-results-heading-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.testing-day-card-details {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.testing-day-card-details.hidden { display: none; }
+
+.testing-day-card h4 {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  margin: 0.2rem 0;
+  text-transform: uppercase;
+}
+
+.testing-status {
+  border: 1px solid rgba(111, 184, 255, 0.45);
+  border-radius: 999px;
+  color: #9ed5ff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 0.35rem 0.6rem;
+  text-transform: uppercase;
+}
+
+.testing-status.status-draft { border-color: rgba(255, 255, 255, 0.2); color: #bbb; }
+.testing-status.status-cancelled { border-color: rgba(255, 123, 130, 0.4); color: #ff9ca1; }
+.testing-status.status-completed { border-color: rgba(102, 220, 139, 0.4); color: #8beaab; }
+
+.testing-day-meta {
+  color: var(--muted, #aaa);
+  margin: 0.7rem 0 0.9rem;
+}
+
+.testing-completion-summary {
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-weight: 700;
+  margin: 0.9rem 0 0;
+  padding-top: 0.9rem;
+}
+
+.testing-day-test-chips { margin-top: 0.85rem; }
+
+.testing-day-card-actions {
+  border-top: 1px solid var(--border);
+  margin-top: 1rem;
+  padding-top: 1rem;
+}
+
+.testing-day-card-feedback {
+  background: rgba(255, 107, 107, 0.08);
+  border: 1px solid rgba(255, 107, 107, 0.32);
+  border-radius: 10px;
+  color: #ff8e8e;
+  margin: 0.85rem 0 0;
+  padding: 0.75rem 0.85rem;
+}
+
+.testing-day-card-feedback.hidden { display: none; }
+
+.testing-finish-btn {
+  background: rgba(112, 216, 130, 0.12);
+  border-color: rgba(112, 216, 130, 0.55);
+  color: #9cedaa;
+}
+
+.testing-day-test-chips span {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 999px;
+  color: #ddd;
+  font-size: 0.8rem;
+  padding: 0.35rem 0.6rem;
+}
+
+.testing-results-panel { min-width: 0; }
+.testing-results-panel.hidden { display: none; }
+#testing-results-save-actions.hidden { display: none; }
+.testing-result-mode { justify-content: flex-start; margin: 1rem 0; }
+.testing-result-mode .is-active { border-color: var(--testing-accent); color: #9ed5ff; }
+.testing-result-focus { margin-bottom: 1rem; }
+.testing-result-focus label { flex: 1; max-width: 32rem; }
+.testing-result-focus span { color: var(--muted); font-weight: 700; }
+.testing-result-grid { display: grid; gap: 0.7rem; }
+.testing-result-row {
+  align-items: end;
+  background: var(--surface-soft, #202227);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: minmax(12rem, 1.1fr) minmax(9rem, 0.65fr) minmax(12rem, 0.9fr) auto;
+  padding: 0.85rem;
+}
+.testing-result-row h4 { margin: 0; }
+.testing-result-row p { color: var(--muted); margin: 0.2rem 0 0; }
+.testing-result-row.is-not-tested { border-color: rgba(255, 183, 77, 0.42); }
+.testing-result-row.is-absent { opacity: 0.62; }
+.testing-not-tested-toggle {
+  align-items: center;
+  background: rgba(255, 183, 77, 0.08);
+  border: 1px solid rgba(255, 183, 77, 0.24);
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  gap: 0.6rem;
+  justify-self: end;
+  min-height: 2.5rem;
+  padding: 0.5rem 0.65rem;
+}
+.testing-not-tested-toggle input { flex: 0 0 auto; height: 1.15rem; width: 1.15rem; }
+.testing-not-tested-toggle span { font-size: 0.78rem; font-weight: 700; line-height: 1.2; white-space: nowrap; }
+.testing-result-value.is-disabled { opacity: 0.5; }
+.testing-result-review-row {
+  align-items: center;
+  background: var(--surface-soft, #202227);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: auto minmax(12rem, 1fr) auto;
+  padding: 0.9rem 1rem;
+}
+.testing-result-review-row h4 { margin: 0; }
+.testing-result-review-row p { color: var(--muted); margin: 0.2rem 0 0; }
+.testing-result-review-row > strong { color: #8beaab; font-size: 1rem; }
+.testing-result-review-row.is-not-tested > strong { color: #ffc36d; }
+.testing-result-review-row.is-absent > strong { color: #ff9ca1; }
+.testing-result-rank {
+  color: #9fd2ff;
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 1.45rem;
+  font-weight: 800;
+  min-width: 2.25rem;
+}
+.testing-result-review-note {
+  color: var(--muted);
+  font-size: 0.82rem;
+  grid-column: 2 / -1;
+}
+@media (max-width: 900px) {
+  .testing-list-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .testing-test-row {
+    grid-template-columns: auto auto 1fr 1fr;
+  }
+
+  .testing-test-row label:first-of-type {
+    grid-column: 3 / -1;
+  }
+
+  .testing-test-actions {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+  }
+
+  .testing-outline-panel { position: static; max-height: none; }
+  .testing-result-row { grid-template-columns: 1fr 1fr; }
+  .testing-result-row > div:first-child { grid-column: 1 / -1; }
+  .testing-not-tested-toggle { justify-self: stretch; }
+  .testing-result-review-row { grid-template-columns: auto 1fr; }
+  .testing-result-review-row > strong { grid-column: 2; }
+  .testing-result-review-note { grid-column: 2; }
+}
+
+@media (max-width: 600px) {
+  .testing-hero,
+  .testing-editor-heading,
+  .testing-step-heading,
+  .testing-day-card-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .testing-step-toolbar,
+  .testing-assignment-summary,
+  .testing-result-focus { align-items: stretch; flex-direction: column; }
+
+  .testing-recipient-tabs { display: grid; grid-template-columns: 1fr; }
+  .testing-choice-list { grid-template-columns: 1fr; }
+
+  .testing-test-row {
+    grid-template-columns: 1fr;
+  }
+
+  .testing-test-row label:first-of-type,
+  .testing-test-actions {
+    grid-column: auto;
+  }
+
+  .testing-test-order {
+    height: 34px;
+    width: 34px;
+  }
+
+  .testing-test-drag-handle { justify-self: start; }
+
+  .testing-result-row { grid-template-columns: 1fr; }
+  .testing-result-row > div:first-child { grid-column: auto; }
+  .testing-day-card-header-actions,
+  .testing-results-heading-actions { align-items: stretch; }
+
+  .testing-form-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .testing-form-actions.workout-save-actions { grid-template-columns: 1fr; }
+}

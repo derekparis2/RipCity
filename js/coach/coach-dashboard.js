@@ -14,6 +14,7 @@ let selectedCoachWeeklyWeekIndex = 0;
 let coachWorkoutReviewRows = [];
 let coachReviewMembers = [];
 let coachReviewGroups = [];
+let coachReviewGroupMemberships = [];
 let coachAttentionRows = [];
 let selectedCoachReviewRowIndex = null;
 
@@ -641,6 +642,7 @@ async function loadApprovedFacilityMembers(facilityId) {
     .from("facility_members")
     .select(`
       id,
+      created_at,
       role,
       status,
       profile:profiles!facility_members_profile_id_fkey (
@@ -953,6 +955,7 @@ async function refreshCoachWorkoutReview() {
 
     coachReviewMembers = members;
     coachReviewGroups = groups;
+    coachReviewGroupMemberships = groupMemberships;
     coachWorkoutReviewRows = buildCoachWorkoutReviewRows(
       assignments,
       members,
@@ -1323,6 +1326,16 @@ async function loadHabitLogsForAttention(memberProfileIds, todayKey) {
 }
 
 function buildCoachAttentionRows(members, habitLogs, todayKey) {
+  const groupById = new Map(coachReviewGroups.map(group => [group.id, group]));
+  const groupIdsByMemberId = new Map();
+
+  coachReviewGroupMemberships.forEach(membership => {
+    if (!groupIdsByMemberId.has(membership.member_profile_id)) {
+      groupIdsByMemberId.set(membership.member_profile_id, []);
+    }
+    groupIdsByMemberId.get(membership.member_profile_id).push(membership.group_id);
+  });
+
   return members.map(member => {
     const habitAttention = window.RipCityAttentionRules.calculateHabitAttention({
       logs: habitLogs.filter(log => log.member_profile_id === member.memberProfileId),
@@ -1330,39 +1343,39 @@ function buildCoachAttentionRows(members, habitLogs, todayKey) {
       trackingStartDate: member.trackingStartDate
     });
 
-    if (member.memberType === "h2k") {
-      return habitAttention.needsAttention ? {
-        ...member,
-        reason: "No habit tracking for 3 consecutive days",
-        detail: "Habit follow-up"
-      } : null;
-    }
+    const groupIds = groupIdsByMemberId.get(member.memberProfileId) || [];
+    const groupNames = groupIds
+      .map(groupId => groupById.get(groupId)?.name)
+      .filter(Boolean)
+      .sort((a, b) => a.localeCompare(b));
 
-    const activity = coachWorkoutReviewRows.flatMap(row => {
-      return row.assignedMembers
-        .filter(assignedMember => assignedMember.memberProfileId === member.memberProfileId)
-        .map(assignedMember => ({
-          assigned_date: row.assignment.assigned_date,
-          hasExerciseData: assignedMember.logs.length > 0
-        }));
-    });
-    const attention = window.RipCityAttentionRules.calculateWorkoutAttention({
-      activity,
-      todayKey
-    });
-
-    const reasons = [];
-    if (habitAttention.needsAttention) reasons.push("No habit tracking for 3 consecutive days");
-    if (attention.needsAttention) reasons.push("No exercise data for 2 consecutive assigned-workout days");
-
-    return reasons.length ? {
+    return habitAttention.needsAttention ? {
       ...member,
-      reason: reasons.join(" · "),
-      detail: reasons.length > 1 ? "Athlete habit + workout follow-up" : "Athlete follow-up"
+      groupIds,
+      groupNames,
+      reason: "No habit tracking for 3 consecutive days",
+      detail: `${formatMemberTypeLabel(member.memberType)} habit follow-up`
     } : null;
   }).filter(Boolean).sort((a, b) => {
     return a.memberType.localeCompare(b.memberType) || a.name.localeCompare(b.name);
   });
+}
+
+function populateCoachAttentionGroupFilter() {
+  const select = document.getElementById("coach-attention-group-filter");
+  if (!select) return;
+
+  const selectedValue = select.value || "all";
+  select.innerHTML = `
+    <option value="all">All groups</option>
+    ${coachReviewGroups.map(group => `
+      <option value="${window.RipCityUI.attr(group.id)}">${window.RipCityUI.text(group.name)}</option>
+    `).join("")}
+    <option value="ungrouped">Ungrouped</option>
+  `;
+  select.value = [...select.options].some(option => option.value === selectedValue)
+    ? selectedValue
+    : "all";
 }
 
 function updateCoachAttentionStats(members, attentionRows) {
@@ -1382,10 +1395,17 @@ function renderCoachAttentionList() {
 
   const search = document.getElementById("coach-attention-search")?.value.trim().toLowerCase() || "";
   const memberType = document.getElementById("coach-attention-type-filter")?.value || "all";
+  const groupId = document.getElementById("coach-attention-group-filter")?.value || "all";
   const rows = coachAttentionRows.filter(row => {
-    const matchesSearch = !search || row.name.toLowerCase().includes(search);
+    const searchableText = [row.name, row.email, ...(row.groupNames || [])]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    const matchesSearch = !search || searchableText.includes(search);
     const matchesType = memberType === "all" || row.memberType === memberType;
-    return matchesSearch && matchesType;
+    const matchesGroup = groupId === "all" ||
+      (groupId === "ungrouped" ? !row.groupIds.length : row.groupIds.includes(groupId));
+    return matchesSearch && matchesType && matchesGroup;
   });
   const resultsCount = document.getElementById("coach-attention-results-count");
 
@@ -1407,7 +1427,7 @@ function renderCoachAttentionList() {
   if (!rows.length) {
     list.innerHTML = `
       <div class="empty-state">
-        No members match this search and program filter.
+        No members match these search, program, and group filters.
       </div>
     `;
     return;
@@ -1421,6 +1441,7 @@ function renderCoachAttentionList() {
           <p class="eyebrow">${window.RipCityUI.text(row.detail)}</p>
           <h4>${window.RipCityUI.text(row.name)}</h4>
           <p>${window.RipCityUI.text(row.reason)}</p>
+          <p>${window.RipCityUI.text(row.groupNames.length ? row.groupNames.join(" · ") : "Ungrouped")}</p>
         </div>
       </div>
       <a class="outline-link small-inline-btn" href="coach-member-detail.html?membership=${window.RipCityUI.attr(row.facilityMemberId)}">
@@ -1444,6 +1465,7 @@ async function refreshCoachDashboard() {
     );
 
     await refreshCoachWorkoutReview();
+    populateCoachAttentionGroupFilter();
     const attentionRows = buildCoachAttentionRows(members, habitLogs, todayKey);
 
     coachAttentionRows = attentionRows;
@@ -1490,7 +1512,7 @@ document.addEventListener("DOMContentLoaded", () => {
     .getElementById("refresh-workout-review-btn")
     ?.addEventListener("click", refreshCoachWorkoutReview);
 
-  ["coach-attention-search", "coach-attention-type-filter"].forEach(id => {
+  ["coach-attention-search", "coach-attention-type-filter", "coach-attention-group-filter"].forEach(id => {
     document
       .getElementById(id)
       ?.addEventListener("input", renderCoachAttentionList);

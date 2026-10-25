@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/styles.css?v=ui-polish-4" />
+  <link rel="stylesheet" href="css/styles.css?v=attention-habits-1" />
 </head>
 
 <body class="auth-body coach-dashboard-page">
@@ -153,7 +153,7 @@
       <article class="stat-card">
         <span>Needs Attention</span>
         <strong id="coach-needs-attention">0</strong>
-        <small>Habit or exercise follow-up</small>
+        <small>Habit follow-up</small>
       </article>
     </section>
 
@@ -169,12 +169,12 @@
         </summary>
 
         <div class="coach-attention-content">
-          <p class="coach-attention-rule-copy">Three missed habit days or two missed assigned-workout days.</p>
+          <p class="coach-attention-rule-copy">Members appear after three consecutive completed days without habit tracking.</p>
 
           <div class="coach-attention-tools">
             <label>
               Find a member
-              <input id="coach-attention-search" type="search" placeholder="Search by name..." autocomplete="off" />
+              <input id="coach-attention-search" type="search" placeholder="Search by name or group..." autocomplete="off" />
             </label>
             <label>
               Program
@@ -182,6 +182,12 @@
                 <option value="all">All members</option>
                 <option value="athlete">Athletes</option>
                 <option value="h2k">H2K members</option>
+              </select>
+            </label>
+            <label>
+              Group
+              <select id="coach-attention-group-filter">
+                <option value="all">All groups</option>
               </select>
             </label>
             <button class="outline-btn" id="refresh-coach-dashboard-btn" type="button">Refresh</button>
@@ -252,7 +258,7 @@
   <script src="js/shared/access-control.js?v=single-row-fix-1"></script>
   <script src="js/shared/workout-data.js?v=workout-attribution-1"></script>
   <script src="js/shared/attention-rules.js?v=coach-attention-1"></script>
-  <script src="js/coach/coach-dashboard.js?v=workout-attribution-1"></script>
+  <script src="js/coach/coach-dashboard.js?v=attention-habits-1"></script>
   <script src="js/coach/coach-announcements.js?v=targeted-announcements-4"></script>
 </body>
 </html>

@@ -22,11 +22,11 @@
       icon: '<path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm-1.3 13.4-4-4 1.4-1.4 2.6 2.6 5.2-5.2 1.4 1.4z"></path>'
     },
     {
-      key: "history",
-      href: "member-history.html",
-      desktop: "Member History",
-      mobile: "History",
-      icon: '<path d="M5 3h14v3H5zM5 8h9v3H5zM5 13h14v3H5zM5 18h9v3H5z"></path>'
+      key: "leaderboards",
+      href: "member-leaderboards.html",
+      desktop: "Leaderboards",
+      mobile: "Leaders",
+      icon: '<path d="M7 3h10v3h3v3c0 2.8-2.2 5-5 5h-.1A5 5 0 0 1 13 16.6V19h4v2H7v-2h4v-2.4A5 5 0 0 1 9.1 14H9c-2.8 0-5-2.2-5-5V6h3V3Zm0 5H6v1c0 1.5 1 2.7 2.4 3A7 7 0 0 1 7 8Zm10 0a7 7 0 0 1-1.4 4A3 3 0 0 0 18 9V8h-1Z"></path>'
     },
     {
       key: "goals",

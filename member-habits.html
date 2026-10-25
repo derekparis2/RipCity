@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=ui-polish-4" />
+  <link rel="stylesheet" href="css/styles.css?v=member-nav-fixed-1" />
 </head>
 <body class="auth-body member-dashboard-body member-feature-page" data-member-page="habits">
   <aside class="sidebar member-sidebar">
@@ -26,10 +26,16 @@
       <p id="h2k-message" class="auth-message" aria-live="polite"></p>
       <div id="h2k-habit-list" class="h2k-habit-list"><div class="empty-state">Loading habits...</div></div>
     </section>
+
+    <section class="panel member-page-panel weekly-history-panel" id="member-history-section">
+      <div class="panel-heading"><div><p class="eyebrow" id="member-history-eyebrow">PROGRESS</p><h3>Weekly Habit History</h3><p class="muted-small">Review previous habit scores without leaving your daily check-in.</p></div><p id="member-weekly-history-message" class="auth-message" aria-live="polite"></p></div>
+      <div class="weekly-history-stepper" id="member-history-stepper"><button class="icon-btn" id="member-history-prev-week" type="button" aria-label="Previous week">‹</button><div><span class="eyebrow" id="member-history-week-context">CURRENT WEEK</span><strong id="member-history-week-label">This Week</strong></div><button class="icon-btn" id="member-history-next-week" type="button" aria-label="Next week">›</button></div>
+      <div id="member-weekly-history-list" class="weekly-score-list"><div class="empty-state">Loading habit history...</div></div>
+    </section>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/shared/supabaseClient.js"></script><script src="js/shared/ui-utils.js"></script><script src="js/shared/access-control.js?v=single-row-fix-1"></script><script src="js/shared/workout-data.js?v=workout-attribution-1"></script><script src="js/shared/leaderboard-metrics.js?v=coach-leaderboards-2"></script>
-  <script src="js/member/member-nav.js?v=shared-habits-1"></script><script src="js/member/member-dashboard.js?v=shared-habits-1"></script>
+  <script src="js/shared/supabaseClient.js"></script><script src="js/shared/ui-utils.js"></script><script src="js/shared/access-control.js?v=single-row-fix-1"></script><script src="js/shared/workout-data.js?v=workout-attribution-1"></script><script src="js/shared/leaderboard-metrics.js?v=member-leaderboards-1"></script>
+  <script src="js/member/member-nav.js?v=member-leaderboards-1"></script><script src="js/member/member-dashboard.js?v=member-leaderboards-1"></script>
 </body>
 </html>

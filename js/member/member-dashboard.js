@@ -1418,6 +1418,9 @@ function renderWorkoutCalendarMonth() {
       && date.getMonth() === workoutCalendarMonth.getMonth();
   });
   const month = buildCalendarMonth(workoutCalendarMonth, visibleAssignments);
+  const monthPrefix = `${workoutCalendarMonth.getFullYear()}-${String(workoutCalendarMonth.getMonth() + 1).padStart(2, "0")}-`;
+  const hasTestingDayThisMonth = [...(window.RipCityTestingDateKeys || [])]
+    .some(dateKey => dateKey.startsWith(monthPrefix));
 
   calendar.innerHTML = `
     <section class="future-calendar-month">
@@ -1441,14 +1444,15 @@ function renderWorkoutCalendarMonth() {
           const dateKey = formatLocalDate(cell.date);
           const isSelected = dateKey === selectedWorkoutDate;
           const isToday = dateKey === getTodayString();
+          const hasTestingDay = window.RipCityTestingDateKeys?.has(dateKey) || false;
           const firstWorkoutTitle = cell.assignments[0]?.workout?.title;
 
           return `
             <button
-              class="future-calendar-cell ${cell.assignments.length ? "has-workout" : ""} ${isSelected ? "is-selected" : ""} ${isToday ? "is-today" : ""}"
+              class="future-calendar-cell ${cell.assignments.length ? "has-workout" : ""} ${hasTestingDay ? "has-testing-day" : ""} ${isSelected ? "is-selected" : ""} ${isToday ? "is-today" : ""}"
               type="button"
               data-workout-calendar-date="${window.RipCityUI.attr(dateKey)}"
-              aria-label="${window.RipCityUI.attr(formatCalendarAriaLabel(dateKey, cell.assignments.length))}"
+              aria-label="${window.RipCityUI.attr(`${formatCalendarAriaLabel(dateKey, cell.assignments.length)}${hasTestingDay ? ", Testing Day" : ""}`)}"
             >
               <span class="future-calendar-date">${cell.day}</span>
               ${cell.assignments.length ? `
@@ -1456,12 +1460,13 @@ function renderWorkoutCalendarMonth() {
                   ${window.RipCityUI.text(firstWorkoutTitle, "Workout")}
                 </span>
               ` : ""}
+              ${hasTestingDay ? `<span class="future-calendar-testing"><span class="testing-label-full">Testing Day</span><span class="testing-label-short">Test Day</span></span>` : ""}
             </button>
           `;
         }).join("")}
       </div>
 
-      ${visibleAssignments.length ? "" : `<p class="future-calendar-empty">No assigned workouts this month.</p>`}
+      ${visibleAssignments.length || hasTestingDayThisMonth ? "" : `<p class="future-calendar-empty">No workouts or Testing Days scheduled this month.</p>`}
     </section>
   `;
 
@@ -1479,6 +1484,10 @@ function renderWorkoutCalendarMonth() {
     });
   });
 }
+
+window.addEventListener("ripcity:testing-days-loaded", () => {
+  if (document.getElementById("future-workout-list")) renderWorkoutCalendarMonth();
+});
 
 function renderWorkoutCalendarDay() {
   const list = document.getElementById("workout-history-list");
@@ -1648,8 +1657,15 @@ async function initMemberPage() {
     }
 
     if (needsWorkoutHistory) await loadWorkoutHistory();
-    if (page === "history") await loadMemberWeeklyHistory();
+    if (["habits", "history"].includes(page)) await loadMemberWeeklyHistory();
     if (page === "goals") await loadMemberGoals();
+    if (page === "leaderboards") {
+      await window.RipCityMemberLeaderboards.initialize({
+        access: currentAccess,
+        profile: currentMemberProfile,
+        groupIds: currentMemberGroupIds
+      });
+    }
 
     if (["dashboard", "habits"].includes(page)) {
       await refreshH2KDashboard();

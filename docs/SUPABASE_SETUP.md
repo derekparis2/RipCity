@@ -32,13 +32,30 @@ both passed on 2026-08-16. Staging contains required Rip City configuration but
 no production users or activity data. Nine entirely fake Auth identities across
 the two staging facilities were added and verified on 2026-08-28.
 
-Staging migration status:
+Staging migration verification history follows. The completed V2 production
+release record in `docs/V2_PRODUCTION_RELEASE.md` is authoritative for older
+migrations; only the member-leaderboard and Testing Day migrations listed as
+part of the final promotion remain to be applied before their frontend reaches
+`main`.
+
+- `20261024170000_add_testing_days_foundation.sql` was applied to staging on
+  2026-10-24. It initially denies result writes; the later staff-result
+  migration deliberately supersedes that temporary restriction. Apply it in
+  the final production promotion after the member-leaderboard migration.
+- `20261024173000_fix_testing_day_save_column_resolution.sql` is the required
+  staging follow-up for the ambiguous save-RPC column reference discovered by
+  the focused RLS test. Apply it before rerunning the Testing Day checks.
+- `20261024200000_enable_staff_testing_result_entry.sql` adds coach/admin-only
+  official result entry. Apply it after both Testing Day migrations above.
+- `20261024203000_complete_testing_day_workflow.sql` adds member-own result
+  visibility, absence and Not Tested states, and guarded Testing Day completion.
+  Apply it after the staff-result migration.
 
 - `20261023180000_add_workout_attribution_rpc.sql` was applied to staging on
   2026-10-23. It exposes only creator/assigner display names for workout
   assignments the authenticated caller is already authorized to read. The
-  focused athlete-habit and workout-attribution staging checks all passed.
-  Production has not received this migration.
+  focused athlete-habit and workout-attribution staging checks all passed. It
+  was included in the verified V2 production release.
 
 - `20261019190000_restrict_member_lifecycle_to_facility_admins.sql` was applied
   to staging on 2026-10-23. The expanded 25-check account-lifecycle suite passed
@@ -46,8 +63,8 @@ Staging migration status:
 - `20261023120000_add_group_creator_permissions.sql` was applied to staging on
   2026-10-23. All 15 group-ownership checks passed: coaches can remove only
   coach-owned groups/memberships, admins retain full management, and
-  cross-facility access remains blocked. Production has received neither
-  permissions-hardening migration.
+  cross-facility access remains blocked. Both permissions-hardening migrations
+  were promoted after staging verification.
 - `20261018100000_add_targeted_coach_announcements.sql` was applied to staging
   on 2026-10-18. The first RLS test exposed that its invoker creation RPC could
   not pass the table insert policy; no test announcements were left behind.
@@ -58,8 +75,9 @@ Staging migration status:
   checks then passed, and the test announcements were cleaned up.
 - The obsolete Test Facility Alpha membership for `rccoach@example.com` was
   removed with the staging-only `04_remove_cross_facility_coach_fixture.sql`.
-  Each V2 login fixture now belongs to one facility. Production has not
-  received any announcement migration.
+  Each V2 login fixture now belongs to one facility. The staging-only fixture
+  cleanup was never run in production; the announcement migrations were
+  included in the verified V2 production release.
 - `20261018110000_add_announcement_audiences_and_dismissals.sql` was applied
   to staging on 2026-10-18. It adds the all-athletes audience and private daily
   member dismissal records. All 24 expanded targeted-announcement checks,
@@ -85,28 +103,25 @@ Staging migration status:
 - The staging browser flow was also verified on 2026-10-16: an admin created a
   coach link, the invitee reached pending access, reuse was blocked, and admin
   approval granted the expected coach experience.
-- Production has not received any coach-invite migration. All three must be
-  applied in timestamp order before the eventual V2 frontend release.
+- All three coach-invite migrations were applied in timestamp order during the
+  verified V2 production release.
 
 - `20260914140000_add_unilateral_exercise_flags.sql` was applied and verified
   on 2026-09-14. Both `exercise_templates.is_unilateral` and
   `workout_exercises.is_unilateral` are non-null booleans defaulting to `false`.
-- Production has not received this migration. Preserve it in the eventual V2
-  production migration sequence rather than manually recreating the columns.
-- The `20260914140000_add_unilateral_exercise_flags.sql` migration must be
-  applied and verified in production before deploying any V2 frontend assets.
-  V2 queries and inserts intentionally rely on both columns; never deploy the
-  frontend first or merge `v2-development` directly into the live site.
+- The migration was applied and verified in production before the V2 frontend
+  release; V2 queries and inserts intentionally rely on both columns.
 - `20260914220000_correct_jump_and_med_ball_exercise_defaults.sql` was applied
   successfully to staging on 2026-09-14 after Derek and the Rip City coach
   approved the catalog corrections. It added Vertical Jump as a measured-
   distance exercise and changed the three medicine-ball defaults to weight and
   reps. Med Ball Shot Put defaults to `Each Side`.
-- Production has not received the catalog-correction migration.
+- The catalog-correction migration was included in the verified V2 production
+  release.
 - `20260914223000_apply_approved_exercise_input_audit.sql` was applied and
   verified successfully in staging on 2026-09-14. It contains the remaining
-  coach-approved prescribed-distance and `Each Side` defaults. Production
-  remains unchanged.
+  coach-approved prescribed-distance and `Each Side` defaults and was included
+  in the verified V2 production release.
 
 Staging Auth was configured on 2026-08-28:
 Staging Auth was first configured for localhost on 2026-08-28 and updated for

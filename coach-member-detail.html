@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css?v=ui-polish-4" />
+  <link rel="stylesheet" href="css/coach-member-testing.css?v=testing-days-2" />
 </head>
 <body class="auth-body member-goals-page coach-member-detail-page">
   <main class="coach-page">
@@ -47,6 +48,19 @@
       </div>
       <div class="weekly-score-list" id="coach-member-history-list">
         <div class="empty-state">Loading weekly history...</div>
+      </div>
+    </section>
+    <section class="panel coach-member-testing-panel" id="coach-member-testing-panel">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">PERFORMANCE TESTING</p>
+          <h2>Testing Results</h2>
+          <p>Review this member's Testing Days and official results.</p>
+        </div>
+        <span class="member-testing-count" id="coach-member-testing-count">0 days</span>
+      </div>
+      <div class="coach-member-testing-list" id="coach-member-testing-list">
+        <div class="empty-state">Loading Testing Day results...</div>
       </div>
     </section>
     <section class="panel member-goals-panel" id="coach-member-goals-panel">
@@ -112,6 +126,6 @@
   <script src="js/shared/workout-data.js"></script>
   <script src="js/shared/goal-progress.js?v=goal-values-1"></script>
   <script src="js/coach/member-history.js?v=shared-habits-1"></script>
-  <script src="js/coach/coach-member-detail.js?v=coach-goal-collapse-2"></script>
+  <script src="js/coach/coach-member-detail.js?v=testing-days-2"></script>
 </body>
 </html>

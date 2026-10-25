@@ -3219,7 +3219,7 @@ td {
 
   .coach-attention-tools {
     display: grid;
-    grid-template-columns: minmax(220px, 1fr) minmax(170px, 0.45fr) auto;
+    grid-template-columns: minmax(220px, 1fr) repeat(2, minmax(160px, 0.45fr)) auto;
     align-items: end;
     gap: 12px;
     margin-top: 16px;
@@ -6007,6 +6007,26 @@ td {
     background: rgba(126, 231, 135, 0.07);
   }
 
+  .future-calendar-cell.has-testing-day {
+    background: rgba(255, 183, 77, 0.12);
+    border-color: rgba(255, 183, 77, 0.72);
+    box-shadow: inset 0 0 0 1px rgba(255, 183, 77, 0.72);
+  }
+
+  .future-calendar-testing {
+    color: #ffc36d;
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-top: 3px;
+    text-transform: uppercase;
+  }
+
+  .future-calendar-testing .testing-label-short {
+    display: none;
+  }
+
   .future-calendar-cell.is-today {
     border-color: rgba(255, 255, 255, 0.32);
   }
@@ -6014,6 +6034,11 @@ td {
   .future-calendar-cell.is-selected {
     border-color: var(--text);
     background: rgba(255, 255, 255, 0.12);
+  }
+
+  .future-calendar-cell.has-testing-day.is-selected {
+    background: rgba(255, 183, 77, 0.2);
+    border-color: #ffc36d;
   }
 
   .future-calendar-cell:hover {
@@ -6358,6 +6383,20 @@ td {
       overflow: hidden;
       color: transparent;
       text-indent: -999px;
+    }
+
+    .future-calendar-testing {
+      font-size: 0.48rem;
+      letter-spacing: 0;
+      white-space: nowrap;
+    }
+
+    .future-calendar-testing .testing-label-full {
+      display: none;
+    }
+
+    .future-calendar-testing .testing-label-short {
+      display: inline;
     }
 
     .training-calendar-day {
@@ -7740,10 +7779,7 @@ body {
 
   .member-shell-nav {
     position: fixed !important;
-    top: auto !important;
-    right: 8px;
-    bottom: calc(8px + env(safe-area-inset-bottom));
-    left: 8px;
+    inset: auto 8px max(8px, env(safe-area-inset-bottom)) 8px !important;
     z-index: 100;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(58px, 1fr));
@@ -7753,14 +7789,15 @@ body {
     padding: 7px;
     border: 1px solid var(--border);
     border-radius: 16px;
-    background: rgba(18, 18, 20, 0.96);
+    background: #121214;
     box-shadow: 0 -14px 32px rgba(0, 0, 0, 0.35);
-    backdrop-filter: blur(12px);
-    transform: translateZ(0);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    transform: none;
   }
 
   /* Keep Dashboard central on phones, with Training immediately to its left. */
-  .member-shell-nav [data-member-nav-key="history"] {
+  .member-shell-nav [data-member-nav-key="leaderboards"] {
     order: 1;
   }
 

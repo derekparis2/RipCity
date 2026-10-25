@@ -47,6 +47,23 @@ staging application.
   assignment plus athlete approval enforcement.
 - `20261024120000_admin_assign_all_member_signup_groups.sql` extends the same
   matching-group approval requirement and atomic RPC to H2K members.
+- `20261024150000_add_member_habit_leaderboards.sql` adds a privacy-safe member
+  leaderboard RPC that exposes only the caller's program top-five positions
+  plus their own position, with optional caller-owned group scope.
+- `20261024170000_add_testing_days_foundation.sql` adds facility-scoped Testing
+  Days, ordered test snapshots, deduplicated group/individual participant
+  rosters, result-ready storage, and transactional scheduling RPCs. It starts
+  with result writes denied; the later staff-result migration grants only the
+  approved RPC path.
+- `20261024173000_fix_testing_day_save_column_resolution.sql` removes an
+  ambiguous `testing_day_id` PL/pgSQL reference that initially prevented the
+  transactional Testing Day save RPC from completing.
+- `20261024200000_enable_staff_testing_result_entry.sql` adds transactional
+  coach/admin result upserts and clearing while preserving direct-write and
+  member-entry denial.
+- `20261024203000_complete_testing_day_workflow.sql` adds explicit participant
+  absence and per-test Not Tested states, member-own result reads, and a guarded
+  completion RPC that rejects unexplained missing outcomes.
 - Future changes must use a later UTC timestamp and a descriptive name, such as
   `20260817090000_add_facility_timezone.sql`.
 
