@@ -1,0 +1,164 @@
+.coach-member-detail-summary {
+  align-items: start;
+  display: grid;
+  gap: 18px 28px;
+  grid-template-columns: minmax(230px, 0.7fr) minmax(0, 1.3fr);
+  padding: 18px 20px;
+}
+
+.coach-member-profile-overview,
+.coach-member-profile-details {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.coach-member-detail-heading {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+}
+
+.coach-member-detail-heading h2 {
+  font-size: clamp(1.7rem, 3vw, 2.15rem);
+  line-height: 1;
+  margin: 4px 0 5px;
+}
+
+.coach-member-detail-heading p,
+.coach-member-profile-bio,
+.coach-member-profile-details > .eyebrow {
+  margin: 0;
+}
+
+.coach-member-detail-summary .member-goal-meta {
+  gap: 6px;
+}
+
+.coach-member-detail-summary .member-goal-meta span {
+  font-size: 0.78rem;
+  padding: 5px 9px;
+}
+
+.coach-member-detail-summary .profile-detail-list {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  margin: 0;
+}
+
+.coach-member-detail-summary .profile-detail-list div {
+  border-radius: 10px;
+  min-width: 0;
+  padding: 9px 11px;
+}
+
+.coach-member-detail-summary .profile-detail-list span {
+  font-size: 0.68rem;
+  margin-bottom: 3px;
+}
+
+.coach-member-detail-summary .profile-detail-list strong {
+  display: block;
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+
+.coach-member-testing-panel,
+.coach-member-testing-list {
+  display: grid;
+  gap: 16px;
+}
+
+.coach-member-testing-card {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.coach-member-testing-card summary {
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+  list-style: none;
+  padding: 16px 18px;
+}
+
+.coach-member-testing-card summary::-webkit-details-marker { display: none; }
+
+.coach-member-testing-card h3 {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: clamp(1.45rem, 2.5vw, 1.9rem);
+  line-height: 1;
+  margin: 4px 0;
+  text-transform: uppercase;
+}
+
+.coach-member-testing-card summary p,
+.coach-member-testing-details > p {
+  color: var(--muted);
+  margin: 0;
+}
+
+.coach-member-testing-summary-meta {
+  align-items: flex-end;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  text-align: right;
+}
+
+.coach-member-testing-summary-meta strong { color: #9fd2ff; }
+.coach-member-testing-toggle::after { color: var(--muted); content: "View +"; font-weight: 800; }
+.coach-member-testing-card[open] .coach-member-testing-toggle::after { content: "Hide −"; }
+
+.coach-member-testing-details {
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 14px;
+  padding: 16px 18px 18px;
+}
+
+.coach-member-testing-results {
+  display: grid;
+  gap: 7px;
+}
+
+.coach-member-testing-result {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.035);
+  border-radius: 10px;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  padding: 10px 12px;
+}
+
+.coach-member-testing-result span { font-weight: 700; }
+.coach-member-testing-result strong { color: var(--muted); text-align: right; }
+.coach-member-testing-result.result-recorded strong { color: #8beaab; }
+.coach-member-testing-result.result-not-tested strong { color: #ffc36d; }
+.coach-member-testing-result.result-absent strong { color: #ff9ca1; }
+.coach-member-testing-edit { justify-self: start; }
+
+@media (max-width: 700px) {
+  .coach-member-detail-summary {
+    gap: 16px;
+    grid-template-columns: 1fr;
+    padding: 15px;
+  }
+
+  .coach-member-detail-summary .profile-detail-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .coach-member-testing-card summary { align-items: flex-start; padding: 14px; }
+  .coach-member-testing-card h3 { font-size: 1.35rem; }
+  .coach-member-testing-summary-meta { font-size: 0.78rem; }
+  .coach-member-testing-details { padding: 14px; }
+  .coach-member-testing-result { align-items: flex-start; flex-direction: column; gap: 3px; }
+  .coach-member-testing-result strong { text-align: left; }
+}

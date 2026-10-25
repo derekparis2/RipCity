@@ -153,6 +153,15 @@ custom tests. The exact first list requires Rip City coach approval.
   are approved.
 - Add audit history for sensitive admin, support, evaluation, and verified-test
   actions.
+- Add Testing Day multiple-attempt and best-result rules, comparisons over
+  time, richer charts, and approved testing-result leaderboard integration.
+  Official Testing Day entry remains coach/admin-only unless a later product
+  decision explicitly replaces that rule.
+- Add workout versioning and archive behavior, workout-to-habit automation,
+  and database-level deduplication for overlapping assignment targets.
+- Split the large shared stylesheet into ordered shared, component,
+  authentication, coach, and member stylesheets without changing the shipped
+  appearance.
 
 ---
 
@@ -174,7 +183,6 @@ custom tests. The exact first list requires Rip City coach approval.
 ## 5. Open Product Decisions
 
 - Which baseball tests launch first?
-- Can athletes enter any official testing results, or only coaches?
 - Who can correct a verified result and how is the old value retained?
 - Which testing and lift metrics can members see on leaderboards?
 - What evaluation content is private to coaches versus visible to athletes?

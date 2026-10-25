@@ -102,15 +102,28 @@ they are intentionally revisited.
 
 ## Testing Days
 
-- A proposed Testing Day workflow would let a coach create a testing session,
-  select a group or members, define ordered tests, and enter the roster's
-  results from one screen.
-- Testing sessions should be separate from ordinary workouts and should connect
-  approved results to progress history and the existing leaderboard metric
-  selector.
-- Test definitions, attempts/best-result rules, member visibility, and
-  leaderboard eligibility remain pending the Rip City coach discussion on
-  2026-10-18.
+- Testing Days are separate from ordinary workouts and appear within Training.
+- Coaches and facility admins can create drafts or scheduled days, choose any
+  combination of groups and individuals, and define ordered reusable or custom
+  tests.
+- The selected roster is snapshotted and deduplicated. A member selected through
+  two groups or through both a group and direct selection appears only once.
+- Assigned members can see the scheduled day, test battery, and only their own
+  official saved/not-tested results. They cannot enter results.
+- Coaches and facility admins enter official results. The entry screen supports
+  completing every test for one athlete or one test for every athlete; both
+  views update the same single result per participant/test pair.
+- Staff can mark a participant absent or a specific test Not Tested. Finishing
+  a day requires an explicit outcome for every participant/test pair.
+- Completed Testing Days remain searchable and collapsible. Staff can review
+  results by athlete or by test, see rankings when the test defines higher- or
+  lower-is-better, and edit the canonical result after completion.
+- Individual coach member profiles show that member's newest-first Testing Day
+  history. Editing still opens the original Testing Day result workflow so
+  there is only one canonical result editor.
+- Member Training highlights assigned Testing Days on the calendar and shows a
+  newest-first searchable, collapsible history below the calendar.
+- Multiple attempts, comparisons, and leaderboard eligibility remain pending.
 
 ## H2K
 

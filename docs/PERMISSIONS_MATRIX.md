@@ -54,6 +54,7 @@ historical relationships. It must not create a disconnected replacement user.
 | Goal deletion | Delete any own-facility member goal after confirmation | Delete any own-facility member goal after confirmation | Delete only self-created goals after confirmation |
 | Progress | Reserved until V2 progress rules are approved | Reserved until rules are approved | Reserved until rules are approved |
 | Leaderboards | View full own-facility leaderboards | View full own-facility leaderboards | View permitted top five plus own rank; only relevant member-type boards |
+| Testing Days | Create/manage own-facility days, tests, snapshotted rosters, official results, absence/not-tested outcomes, and guarded completion | Same scheduling, result, and completion access as admin | View assigned scheduled/completed days, test batteries, and only own official outcomes; cannot enter results |
 | Coach notes | Read and manage all own-facility notes | Read all own-facility notes; create notes; edit/delete only own notes | No access |
 | Announcements | Manage all own-facility announcements | Create announcements and edit/delete only own announcements | View targeted announcements and manage own dismissal state |
 | In-app notifications | View/manage facility delivery behavior | Create only through authorized facility actions | View and mark only own notifications as read |
@@ -107,7 +108,7 @@ These are implementation gaps, not undecided product rules:
 
 1. Several archive lifecycle fields and workflows do not exist yet.
 2. Announcements and per-user notifications do not have their V2 tables yet.
-3. Progress write permissions remain intentionally undecided.
+3. Broader progress write permissions remain intentionally undecided. Testing Day result writes are staff-only through reviewed RPCs; direct table writes remain denied.
 
 The secure coach-invite migration was applied to staging and passed all 12
 coach-invite/RLS checks on 2026-10-16. Production remains unchanged.

@@ -1,5 +1,9 @@
 # Rip City Version 2 Plan
 
+**Status: Complete.** This document is the final V2 product and implementation
+record. New feature work belongs in `docs/VERSION_3_PLAN.md`; changes here
+should only clarify shipped V2 behavior.
+
 For the ordered implementation queue and current work status, see
 `docs/V2_BACKLOG.md`. This document remains the source of truth for detailed
 product decisions and feature requirements.
@@ -506,10 +510,9 @@ platform into something negative or overly competitive.
   one shared calculation module.
 - The coach dashboard is an action queue rather than a second leaderboard.
   Either member type needs habit attention after three consecutive completed
-  calendar days without habit tracking. Athletes additionally need workout
-  attention when their last two completed assigned-workout days both contain
-  no exercise data. The current day does not count as missed while it is still
-  in progress.
+  calendar days without habit tracking. The current day does not count as
+  missed while it is still in progress. Coaches can search this queue and
+  narrow it by member program or training group.
 - Individual 12-week habit history belongs on the coach member-detail page,
   while assignment completion belongs in coach workout review.
 - Future lift, speed, jump, and sport-testing results should extend the same
@@ -555,9 +558,9 @@ eventually connect workouts, goals, profile metrics, and sport-specific data.
 
 ### V2 Status
 
-Progress tracking is intentionally on hold for now because it is too broad to
-build well without more product decisions. Testing Days remain a V2 candidate
-until the Rip City coach discussion on 2026-10-18.
+Broad progress tracking remains on hold because it is too large to build well
+without more product decisions. The Testing Day scheduling foundation is now
+in progress as a separate post-release feature.
 
 Goals define what a member is trying to reach. Progress is the history and
 numbers that show whether the member is moving toward those goals. In V2, use
@@ -566,36 +569,48 @@ metrics deserve a dedicated module.
 
 ### Testing Day Direction
 
-Rip City may need a coach-run Testing Day workflow where coaches define a set
-of tests, select a group or individual participants, and enter results for many
-members from one roster-style screen. This is a candidate for V2 if Rip City
-considers it necessary for winter training; otherwise V2 should preserve the
-foundation and schedule the full workflow for V3.
+Rip City approved a coach-run Testing Day workflow. Coaches and facility admins
+define an ordered set of tests, select any combination of groups and individual
+participants, and enter official results either athlete-first or test-first.
+Members can view only their own official results and cannot submit or edit
+Testing Day results.
 
 Testing Day should not be modeled as an ordinary workout. A durable design is
 expected to include:
 
-- A facility-scoped testing session with name, date, status, creator, and
-  selected group/members.
+- A facility-scoped testing session with name, date, status, creator, and a
+  snapshotted participant roster built from selected groups/members.
 - Ordered test definitions with a name, unit, input type, and whether a higher
   or lower result ranks better.
-- Per-member results that record the entering coach, optional notes, and any
-  approved attempt/best-result behavior.
-- A roster-style coach entry screen so an entire testing group can be entered
-  efficiently without opening every member separately.
+- A result table that records the entering account, optional notes, and one
+  canonical value for each participant/test pair.
+- A roster-style entry screen that switches between one athlete across every
+  test and one test across every athlete without duplicating results.
 - A clear connection to member progress history and the existing selectable
   leaderboard metric registry once visibility and ranking rules are approved.
+- A searchable, collapsible completed-day archive that supports review by
+  athlete or by ranked test and permits staff corrections to the canonical
+  result.
 - Facility-scoped RLS and two-facility tests so coaches can never enter or read
   another facility's testing data.
 
-Questions for the Rip City coach on 2026-10-18:
+Already decided:
+
+- Group and individual selection are both supported and are deduplicated into
+  one snapshotted roster.
+- Staff can mark a participant absent or a specific test Not Tested. A scheduled
+  day cannot be finished until every participant/test outcome is explicit.
+- Members can view only their own official result, Not Tested, or absence state.
+- Member Training highlights assigned Testing Days on the calendar and lists a
+  newest-first, searchable, collapsible Testing Day history below the calendar.
+- Coach/admin member profiles show the selected member's newest-first Testing
+  Day history and link to the canonical result editor focused on that member.
+
+Deferred V3 decisions:
 
 - Which tests are used regularly?
 - Does each test store one result, multiple attempts, or only the best result?
-- Are results entered only by coaches, or can members submit results for coach
-  verification?
-- Is testing normally run for a full group, selected members, or both?
-- Which results should members see, and which may appear on leaderboards?
+- Which Testing Day results may appear on leaderboards?
 - Do previous testing days need side-by-side comparison or charts in the first
   release?
 

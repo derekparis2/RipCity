@@ -169,11 +169,17 @@ Future workout features:
 - Coach completion dashboard
 
 Testing/progress direction:
-- Coach-created Testing Days with reusable or custom tests
-- Group/member participant selection
-- Roster-style result entry by coaches
+- Coach/admin-created Testing Days with reusable or custom ordered tests
+- Multi-group and individual participant selection with a deduplicated roster snapshot
+- Assigned Testing Day schedules on member Training
+- Coach/admin roster-style result entry by athlete or by test
+- Explicit absent/not-tested outcomes, guarded completion, and member-own result visibility
+- Searchable, collapsible staff archives with completed-result review, correction,
+  and per-test ranking when a ranking direction is defined
+- Date-ordered, searchable member history below a Training calendar that marks
+  assigned Testing Days
 - Testing results connected to progress history and approved leaderboard metrics
-- Exact test, attempt, visibility, and ranking rules pending Rip City feedback
+- Exact recurring tests, multiple-attempt behavior, and ranking rules pending Rip City feedback
 
 Coach onboarding direction:
 - Platform owner creates the facility and first facility admin
@@ -297,11 +303,5 @@ Payments:
 
 ## Near-Term Priorities
 
-1. Test and clean workout session UI
-2. Fix coach workout builder startup if needed
-3. Auto-complete Training habit when workout is fully logged
-4. Add workout history
-5. Add exercise library
-6. Improve coach dashboard workout visibility
-7. Add roster/filtering
-8. Clean docs and README before coach walkthrough
+V2 is complete. Use `docs/VERSION_3_PLAN.md` for new feature sequencing and
+keep production fixes small, reviewed, and based on the latest `main`.
