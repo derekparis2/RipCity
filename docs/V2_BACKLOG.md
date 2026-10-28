@@ -1,8 +1,9 @@
 # Version 2 Work Backlog
 
 V2 is complete. This file is now the historical record of the packages Derek
-and Sam delivered. New work belongs in `docs/VERSION_3_PLAN.md` unless it is a
-small production fix. Detailed V2 product behavior stays in
+and Sam delivered. New work belongs in [VERSION_3_PLAN.md](VERSION_3_PLAN.md)
+and the ordered [V3_BACKLOG.md](V3_BACKLOG.md) unless it is a small production
+fix. Detailed V2 product behavior stays in
 [`VERSION_2_PLAN.md`](VERSION_2_PLAN.md); each work package below links to its
 relevant plan sections.
 
@@ -377,34 +378,15 @@ assignments, and 38 completed assignments. The package was merged into
 
 ---
 
-## Package 10B Moved To V3
+## Package 10B Not Carried Into Approved V3 Scope
 
-- **Status:** Moved to V3
-- **Suggested branch:** `<name>/workout-data-safety`
-- **Plan detail:** [Workout editing and version history](VERSION_2_PLAN.md#workout-builder-editing-and-version-history)
+- **Status:** Not planned
 
-This follow-up owns safe editing/versioning for workouts with past or started
-assignments, archive behavior for historical workouts, the approved
-workout-completion connection to daily habits, and database-safe duplicate
-prevention. Assignment creator/assigner visibility is completed in Package 10A.
-This package must preserve production history and add two-facility write and
-isolation tests.
-
-The member UI already collapses duplicate assignment rows by workout and date,
-but the database can still store overlapping group/facility/member assignments.
-The final implementation must resolve those overlaps to one effective member
-assignment so the workout appears once, is counted once in attendance and
-leaderboards, and has one unambiguous set-log history even when a member belongs
-to multiple selected groups.
-
-The true multi-facility universal catalog with facility overrides/hides is V3
-scope. V2 keeps the current Rip City exercise library behavior.
-
-**Complete when:** Coaches can correct future workouts without changing past assignments or logs,
-historical workouts are archived instead of destructively deleted, and the
-approved workout-to-habit automation is verified in staging, while
-overlapping-target or concurrent duplicate assignments cannot produce multiple
-effective workouts for the same member and date.
+The completed V2 workout builder, member logging flow, and exercise library are
+the stable foundation for V3. General workout/exercise hardening is not a V3
+feature package. A confirmed production defect may still receive a focused fix,
+but broader lifecycle redesign requires a new product decision before it enters
+the active backlog.
 
 ---
 
@@ -457,9 +439,8 @@ process.
   zones → V3 facility configuration.
 - Universal exercise overrides/hides are not implemented → V3 facility
   configuration.
-- Workout archive/version and database duplicate rules remain incomplete →
-  Package 10B; they are post-launch hardening, not part of the final pre-main
-  feature branch.
+- Broader workout archive/version redesign is not an approved V3 package and
+  should be reconsidered only after a confirmed facility need.
 - Group archive/delete rules remain incomplete → final release scope review or
   V3 facility operations.
 - Targeted announcements and their facility-scoped RLS were completed in

@@ -8,34 +8,34 @@ safety boundaries.
 ## Branches And Environments
 
 - `main` is the deployed production branch used by Rip City.
-- `v2-development` is the shared integration branch for Version 2.
-- Create a feature branch from the latest `v2-development` for every unit of
-  work, such as `derek/contributor-foundation` or `sam/goals-v2`.
-- Do not commit V2 work directly to `main` or `v2-development`.
+- `v3-development` is the shared integration branch for Version 3.
+- Create a feature branch from the latest `v3-development` for every unit of
+  work, such as `derek/facility-creation` or `sam/hitting-data-contract`.
+- Do not commit feature work directly to `main` or `v3-development`.
 - Production hotfixes are the only normal reason to branch from `main`. Merge
-  an approved production hotfix back into `v2-development` afterward.
+  an approved production hotfix back into `v3-development` afterward.
 
-Production uses the live Supabase project. Version 2 uses **Rip City Staging**
-and entirely fake data until a production release is explicitly approved.
+Production uses the live Supabase project. Version 3 development uses **Rip
+City Staging** and entirely fake data until a production release is explicitly
+approved.
 
-The stable V2 site is `https://ripcitystaging.netlify.app`. A PR into
-`v2-development` receives a Netlify URL shaped like
-`https://deploy-preview-<PR>--ripcitystaging.netlify.app`. Follow
-`docs/STAGING_RELEASE_CHECKLIST.md`; every preview shares the same staging
-database even though its frontend code is isolated.
+Continue using the fake-data staging Supabase project for V3. Confirm the
+current Netlify deploy-branch settings before relying on a stable integration
+URL. Pull-request previews may use isolated frontend code while still sharing
+the same staging database. Follow `docs/STAGING_RELEASE_CHECKLIST.md`.
 
 ## Starting A Feature
 
 ```bash
-git switch v2-development
-git pull origin v2-development
+git switch v3-development
+git pull origin v3-development
 git switch -c your-name/short-feature-name
 git push -u origin your-name/short-feature-name
 ```
 
 After the first commit is pushed, open a draft pull request with:
 
-- Base: `v2-development`
+- Base: `v3-development`
 - Compare: the feature branch
 - A short description of the product behavior and affected pages/data
 
@@ -59,7 +59,7 @@ integration branch:
 
 ```bash
 git fetch origin
-git merge origin/v2-development
+git merge origin/v3-development
 git push
 ```
 
@@ -75,12 +75,12 @@ history with a rebase.
 4. The contributor who did not author the change reviews the code and tests the
    important workflow.
 5. Resolve every review conversation and merge conflict.
-6. Squash-merge the pull request into `v2-development`.
+6. Squash-merge the pull request into `v3-development`.
 7. Delete the feature branch after the merge.
-8. Both contributors pull the updated `v2-development` before starting new
+8. Both contributors pull the updated `v3-development` before starting new
    branches.
 
-Neither contributor merges V2 into `main` without an agreed production release,
+Neither contributor merges V3 into `main` without an agreed production release,
 staging verification, and the release checklist.
 
 ## Supabase And Migration Safety
@@ -125,7 +125,7 @@ http://127.0.0.1:3000/set-password.html
 
 ## Minimum Review Checks
 
-- Confirm the feature branch targets `v2-development`, not `main`.
+- Confirm the feature branch targets `v3-development`, not `main`.
 - Review the changed files and any migration line by line.
 - Test the primary successful workflow.
 - Test loading, empty, validation, permission-denied, and error behavior when
@@ -139,10 +139,9 @@ http://127.0.0.1:3000/set-password.html
 
 ## Product Scope
 
-Version 2 finalizes facility isolation, one-active-facility account lifecycle,
-the core workout experience, and shared modules such as goals, leaderboards,
-notes, notifications, and profiles.
+Version 2 is complete. Version 3 covers platform-owner facility creation,
+real second-facility isolation/configuration, and deeper baseball development
+beginning with hitting and HitTrax/TrackMan data.
 
-Work intentionally deferred beyond V2 is defined in
-`docs/VERSION_3_PLAN.md`. Do not pull it into a V2 branch unless Derek and Sam
-intentionally change the version boundary.
+Use `docs/VERSION_3_PLAN.md` for product rules and `docs/V3_BACKLOG.md` for the
+ordered branch queue.

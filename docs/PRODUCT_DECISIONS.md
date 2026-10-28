@@ -36,6 +36,15 @@ they are intentionally revisited.
   of approval; group assignment and approval succeed or fail together.
 - Deactivation preserves history; reactivation restores the existing historical
   relationships.
+- V3 platform-wide operations are limited to Derek and Sam. They are the only
+  accounts planned to create or manage multiple facilities at the platform
+  level.
+- Facility admins, coaches, and members remain scoped to one facility for V3.
+  Ordinary cross-facility staff accounts and a facility selector are not part
+  of the approved V3 scope.
+- Creating a facility must not grant a silent cross-facility private-data
+  bypass. Any future support access by Derek or Sam must be explicit and
+  auditable.
 
 ## Signup Links
 

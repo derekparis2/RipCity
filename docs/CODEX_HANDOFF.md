@@ -11,42 +11,43 @@ Project folder on Derek's Mac:
 Git branches:
 
 - `main` = live production branch deployed by Netlify.
-- V2 is complete. `pre-v3-release` is the integration branch for the final
-  member-leaderboard and Testing Day promotion into `main`.
-- After that release, Derek and Sam should create new V3 feature branches from
-  the latest `main` and merge reviewed work through the agreed V3 integration
-  branch.
+- V2 is complete and deployed.
+- `v3-development` = shared integration branch for Version 3.
+- Derek and Sam create focused feature branches from the latest
+  `v3-development` and merge reviewed work back into it.
+- Production hotfixes branch from `main` and are merged back into
+  `v3-development` after release.
 - Follow `CONTRIBUTING.md` for the shared branch, review, migration, and merge
   workflow.
 
 Netlify:
 
 - Production deploy should point at `main`.
-- The separate V2 staging site is `https://ripcitystaging.netlify.app` and
-  deploys `v2-development`.
-- Pull requests into `v2-development` receive public Netlify Deploy Previews
-  after Netlify sees a push to the PR branch.
+- The separate staging site is `https://ripcitystaging.netlify.app`; verify its
+  current deploy-branch setting before relying on the stable integration URL.
+- Pull requests may receive Netlify Deploy Previews after Netlify sees a push
+  to the PR branch. Preview frontends share the fake staging database.
 - Follow `docs/STAGING_RELEASE_CHECKLIST.md` for preview, migration, recovery,
   and post-deploy checks.
 - `codex-ui-polish` was the old production branch name and has been retired/deleted after `main` was updated.
-- `codex/beta-next` was renamed/deleted in favor of `v2-development`.
 
 Before production changes:
 
-1. Make small fixes on `main` only when they are needed for the live beta.
-2. Put larger product work on `v2-development`.
-3. Merge `main` into `v2-development` after hotfixes so V2 does not fall behind production.
+1. Make small production fixes on branches from `main` only when needed.
+2. Put V3 product work on feature branches from `v3-development`.
+3. Merge approved `main` changes back into `v3-development` so V3 stays current.
 
 ## Files To Read First
 
 Before making product/code changes, read:
 
 - `docs/BUILD_PLAN.md`
-- `docs/VERSION_2_PLAN.md`
+- `docs/VERSION_3_PLAN.md`
+- `docs/V3_BACKLOG.md`
 - this file
 
-Read `docs/VERSION_3_PLAN.md` only when planning work beyond the active V2
-scope or deciding where a newly proposed feature belongs.
+Read `docs/VERSION_2_PLAN.md` only when checking shipped V2 decisions or
+protecting existing behavior.
 
 For database/RLS work, also inspect:
 
@@ -56,9 +57,7 @@ For database/RLS work, also inspect:
 - `supabase/migrations/`
 - `sql/README.md` and `sql/diagnostics/`
 
-For current implementation order and work status, read:
-
-- `docs/V2_BACKLOG.md`
+For historical V2 package status, read `docs/V2_BACKLOG.md`.
 
 ## Big Product Direction
 
@@ -80,17 +79,16 @@ Core direction:
 
 ## Current Release State
 
-See `docs/VERSION_2_PLAN.md` for detailed product requirements and
-`docs/V2_BACKLOG.md` for the maintained implementation order and status. The
-V2 is complete. The last release step is promoting the reviewed Testing Day
-branch through `pre-v3-release` and then into `main`. All unfinished feature
-ideas were moved to `docs/VERSION_3_PLAN.md`.
+V2 is complete and deployed to `main`. Its detailed record remains in
+`docs/VERSION_2_PLAN.md` and `docs/V2_BACKLOG.md`. Active product direction is
+in `docs/VERSION_3_PLAN.md`, and the maintained implementation order is
+`docs/V3_BACKLOG.md`.
 
 Testing Day results remain staff-entered. Members may view only their own
 official outcomes and cannot submit or edit Testing Day results.
 
-New feature branches start from current `main`. The V2 production release and
-its ordered production migration sequence are complete.
+New V3 feature branches start from current `v3-development`. The V2 production
+release and its ordered production migration sequence are complete.
 
 Current signup-link decision:
 
@@ -151,7 +149,7 @@ Production Supabase audit status:
 - Production received the reviewed V2 migration sequence after the staging
   checks, backup, and restore rehearsal passed.
 
-## V2 Cleanup Track
+## Completed V2 Cleanup Track
 
 Derek wants a cleanup pass before the app grows too much.
 
@@ -170,14 +168,16 @@ Important cleanup goals:
 
 ## Staging Supabase Direction
 
-V2 should create a second Supabase project before risky schema/product changes.
+Continue using the separate Supabase staging project before risky V3 schema or
+product changes.
 
 Current status:
 
 - The staging project was created on 2026-08-16 as **Rip City Staging**.
 - Staging project reference: `xjgmjliqqkhfnqphigbk`.
 - Automatic RLS is enabled.
-- `v2-development` points to staging through `js/shared/supabaseClient.js`.
+- Staging previews and local staging tests use the staging configuration in
+  `js/shared/supabaseClient.js`; `main` remains connected to production.
 - The repository-generated baseline was installed and fully verified on
   2026-08-16: 21 public tables, 194 columns, 55 indexes, 93 public-table RLS
   policies, 18 private helpers, required Storage setup, and all expected grants
@@ -221,7 +221,9 @@ Current status:
 Goal:
 
 - Production Supabase remains connected to the live V1 beta.
-- Staging Supabase is used for V2 schema changes, RLS testing, fake users, fake facilities, fake workouts, and destructive cleanup tests.
+- Staging Supabase is used for V3 schema changes, RLS testing, fake users, fake
+  facilities, fake workouts, vendor-import fixtures, and destructive cleanup
+  tests.
 
 Database change flow:
 
@@ -240,7 +242,8 @@ Be careful with production:
 - Do not run destructive SQL against production.
 - Do not change production schema without an explicit migration and checklist.
 - Do not break signup, login, approval, workout builder, member dashboard, workout session, habit logging, profile, or RLS.
-- Small live fixes can go to `main`; larger work belongs on `v2-development`.
+- Small reviewed live fixes can go through `main`; V3 features belong on
+  branches from `v3-development`.
 
 ## Known Product Decisions
 
@@ -326,13 +329,13 @@ together and may both work across frontend code, migrations, RLS, and staging.
 Neither contributor is limited to one technical area.
 
 - Use a separate feature branch for each focused unit of work.
-- Open a draft pull request into `v2-development` after the first commit.
+- Open a draft pull request into `v3-development` after the first commit.
 - Communicate before applying staging migrations or changing shared Supabase
   behavior.
 - Keep one active staging schema migration in flight at a time.
 - Have the other contributor review and test before squash-merging.
 - Keep `main` as production and merge approved production hotfixes back into
-  `v2-development`.
+  `v3-development`.
 - Follow `CONTRIBUTING.md` as the maintained source of truth.
 
 ## Local Dev Notes
@@ -345,4 +348,4 @@ Common local testing:
 
 - VS Code Live Server often runs on port `5500`.
 - The shared local server runs on port `3000`; stop it when not needed.
-- Use `git switch v2-development` for V2 work.
+- Use `git switch v3-development` before starting V3 feature branches.
