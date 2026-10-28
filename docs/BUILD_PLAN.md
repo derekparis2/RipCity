@@ -44,6 +44,7 @@ If a feature is only for Rip City baseball, build it as an optional program-spec
 - Default groups added
 - Default H2K habits added
 - Signup flow
+- Versioned Terms and Privacy acceptance with an existing-account reacceptance gate
 - Login flow
 - Coach approval before access
 - Coach/admin approval page

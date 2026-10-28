@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Review Updated Terms | Rip City</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css?v=signup-legal-2" />
+</head>
+<body class="auth-body legal-consent-body">
+  <main class="auth-page legal-consent-page">
+    <section class="auth-card legal-consent-card">
+      <div class="auth-brand">
+        <img src="assets/rip-city-logo.png" alt="Rip City logo">
+        <div><h1>RIP CITY</h1><span>Account Review</span></div>
+      </div>
+
+      <div class="auth-heading">
+        <p class="eyebrow">ACTION REQUIRED</p>
+        <h2>Review Updated Terms</h2>
+        <p>The Terms or Privacy Policy are new or have changed. Review the current versions and confirm below.</p>
+        <p class="legal-version-detail" id="legal-version-detail">Loading current versions...</p>
+      </div>
+
+      <form id="legal-consent-form" class="auth-form">
+        <fieldset class="signup-acknowledgments">
+          <legend>Age confirmation</legend>
+          <div class="signup-acknowledgment-heading">
+            <p>Choose the one option that applies to you.</p>
+            <button type="button" class="signup-clear-age" data-clear-age-choice="legal-age-bracket">Clear choice</button>
+          </div>
+          <div class="signup-age-options" role="radiogroup" aria-label="Age confirmation">
+            <label class="signup-acknowledgment">
+              <input name="legal-age-bracket" type="radio" value="18_or_older" required />
+              <span>I am 18 years old or older.</span>
+            </label>
+            <label class="signup-acknowledgment">
+              <input name="legal-age-bracket" type="radio" value="13_to_17" required />
+              <span>I am 13–17 years old and have permission from my parent or legal guardian.</span>
+            </label>
+          </div>
+        </fieldset>
+
+        <div class="signup-legal-agreement legal-current-confirmation">
+          <p class="signup-legal-agreement-title">Terms and privacy</p>
+          <label class="signup-acknowledgment">
+            <input id="legal-current-documents-confirmation" type="checkbox" required />
+            <span>
+              I agree to the current <a id="legal-terms-link" href="terms.html" target="_blank" rel="noopener">Terms of Service</a>
+              and acknowledge the current <a id="legal-privacy-link" href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.
+            </span>
+          </label>
+        </div>
+
+        <button id="legal-consent-submit" type="submit" class="primary-btn full-btn">Accept and Continue</button>
+        <button id="legal-consent-logout" type="button" class="text-button legal-consent-logout">Log out and use a different account</button>
+        <p id="legal-consent-message" class="auth-message" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/shared/supabaseClient.js"></script>
+  <script src="js/auth/auth.js?v=signup-legal-3"></script>
+</body>
+</html>
