@@ -64,8 +64,29 @@ staging application.
 - `20261024203000_complete_testing_day_workflow.sql` adds explicit participant
   absence and per-test Not Tested states, member-own result reads, and a guarded
   completion RPC that rejects unexplained missing outcomes.
+- `20261025120000_add_versioned_legal_acceptances.sql` adds the current Terms and
+  Privacy catalog, append-only per-user acceptance evidence, mutually exclusive
+  adult/minor age categories, and guarded status/acceptance RPCs. Apply this
+  migration before deploying frontend assets that call either RPC.
 - Future changes must use a later UTC timestamp and a descriptive name, such as
   `20260817090000_add_facility_timezone.sql`.
 
 Do not rerun the initial baseline over an existing application schema. Do not
 edit it to perform an upgrade; add a new migration instead.
+
+## Publishing A New Legal Version
+
+Never edit an already-applied document row or acceptance row. To update either
+document:
+
+1. Add a later migration that marks the old row for that document type as not
+   current and inserts a new current row with a new version and effective date.
+2. Update the matching HTML policy content and its `data-legal-version` value.
+3. Apply the migration to staging before deploying the frontend, run the legal
+   acceptance staging checks, and verify signup plus an existing account.
+4. Apply the same migration to production before the matching `main` frontend
+   deploy.
+
+Because an acceptance references the exact current Terms/Privacy pair, changing
+either current document automatically requires every account to accept again.
+Historical acceptances remain intact.

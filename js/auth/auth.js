@@ -1,4 +1,5 @@
 const RIP_CITY_SLUG = "rip-city";
+const LEGAL_ACKNOWLEDGMENT_VERSION = "2026-10-25";
 let signupFacility = null;
 let signupCoachInviteCode = "";
 let signupCoachInvite = null;
@@ -65,7 +66,29 @@ async function getCurrentUserProfile(userId) {
   return data;
 }
 
-async function redirectByProfile(userId) {
+async function getCurrentLegalAcceptance() {
+  const { data, error } = await db.rpc("get_current_legal_acceptance");
+  if (error) throw error;
+  if (!data?.length) throw new Error("Current legal documents are not configured.");
+  return data[0];
+}
+
+function getLegalConsentUrl(nextPage = "") {
+  const safeNext = String(nextPage || "").replace(/^\/+/, "");
+  return safeNext
+    ? `legal-consent.html?next=${encodeURIComponent(safeNext)}`
+    : "legal-consent.html";
+}
+
+async function redirectByProfile(userId, options = {}) {
+  if (!options.skipLegalCheck) {
+    const legalStatus = await getCurrentLegalAcceptance();
+    if (!legalStatus.accepted) {
+      window.location.href = getLegalConsentUrl();
+      return;
+    }
+  }
+
   const profile = await getCurrentUserProfile(userId);
   const memberships = profile.facility_members ||
     profile["facility_members!facility_members_profile_id_fkey"] || [];
@@ -131,7 +154,7 @@ async function resolveLoginEmail(identifier) {
   return data;
 }
 
-async function getSignupUser({ email, password, fullName, allowExistingAccount }) {
+async function getSignupUser({ email, password, fullName, allowExistingAccount, legalAcknowledgment }) {
   if (allowExistingAccount) {
     const { data: sessionData, error: sessionError } = await db.auth.getSession();
     if (sessionError) throw sessionError;
@@ -141,7 +164,12 @@ async function getSignupUser({ email, password, fullName, allowExistingAccount }
       if (normalizeEmail(sessionUser.email || "") !== normalizeEmail(email)) {
         throw new Error("Log out of the current account before using this coach invite.");
       }
-      return sessionUser;
+
+      const { data: updatedUserData, error: updateUserError } = await db.auth.updateUser({
+        data: legalAcknowledgment
+      });
+      if (updateUserError) throw updateUserError;
+      return updatedUserData.user || sessionUser;
     }
   }
 
@@ -150,7 +178,8 @@ async function getSignupUser({ email, password, fullName, allowExistingAccount }
     password,
     options: {
       data: {
-        full_name: fullName
+        full_name: fullName,
+        ...legalAcknowledgment
       }
     }
   });
@@ -173,7 +202,13 @@ async function getSignupUser({ email, password, fullName, allowExistingAccount }
     });
 
     if (loginError && existingAccountError) throw loginError;
-    if (!loginError && loginData.user) return loginData.user;
+    if (!loginError && loginData.user) {
+      const { data: updatedUserData, error: updateUserError } = await db.auth.updateUser({
+        data: legalAcknowledgment
+      });
+      if (updateUserError) throw updateUserError;
+      return updatedUserData.user || loginData.user;
+    }
   }
 
   return null;
@@ -231,9 +266,25 @@ async function handleSignup(event) {
   const school = document.getElementById("signup-school").value.trim();
   const graduationYear = document.getElementById("signup-grad-year").value;
   const bodyWeight = document.getElementById("signup-body-weight").value;
+  const ageBracket = document.querySelector("input[name='signup-age-bracket']:checked")?.value || "";
+  const guardianPermissionConfirmed = ageBracket === "13_to_17";
+  const legalTermsConfirmed = document.getElementById("signup-legal-confirmation").checked;
+  const legalAcknowledgment = {
+    age_bracket: ageBracket,
+    age_13_or_older_confirmed: Boolean(ageBracket),
+    guardian_permission_confirmed: guardianPermissionConfirmed,
+    legal_terms_confirmed: legalTermsConfirmed,
+    legal_acknowledgment_version: LEGAL_ACKNOWLEDGMENT_VERSION,
+    legal_acknowledged_at: new Date().toISOString()
+  };
   let coachProfileReady = false;
 
   try {
+    if (!ageBracket || !legalTermsConfirmed) {
+      showMessage("signup-message", "Choose your age confirmation and accept the Terms and Privacy Policy.", true);
+      return;
+    }
+
     if (password !== confirmPassword) {
       showMessage("signup-message", "Passwords must match.", true);
       return;
@@ -266,7 +317,8 @@ async function handleSignup(event) {
       email,
       password,
       fullName,
-      allowExistingAccount: isCoachSignup
+      allowExistingAccount: isCoachSignup,
+      legalAcknowledgment
     });
 
     if (!user) {
@@ -277,6 +329,13 @@ async function handleSignup(event) {
       );
       return;
     }
+
+    const { error: legalAcceptanceError } = await db.rpc("record_current_legal_acceptance", {
+      p_age_bracket: ageBracket,
+      p_guardian_permission_confirmed: guardianPermissionConfirmed,
+      p_legal_terms_confirmed: legalTermsConfirmed
+    });
+    if (legalAcceptanceError) throw legalAcceptanceError;
 
     await ensureSignupProfile({ user, email, fullName, username });
     coachProfileReady = isCoachSignup;
@@ -469,6 +528,123 @@ function handleSignupMemberTypeChange() {
   updateSignupMemberTypeFields();
 }
 
+function setupAgeChoiceReset() {
+  document.querySelectorAll("[data-clear-age-choice]").forEach(button => {
+    button.addEventListener("click", () => {
+      const groupName = button.dataset.clearAgeChoice;
+      document.querySelectorAll(`input[name='${groupName}']`).forEach(input => {
+        input.checked = false;
+      });
+    });
+  });
+}
+
+function getSafeLegalNextPage() {
+  const value = new URLSearchParams(window.location.search).get("next") || "";
+  const normalized = value.replace(/^\/+/, "");
+  if (!/^[a-z0-9-]+\.html(?:[?#].*)?$/i.test(normalized)) return "";
+  if (normalized.toLowerCase().startsWith("legal-consent.html")) return "";
+  return normalized;
+}
+
+async function continueAfterLegalAcceptance(userId) {
+  const nextPage = getSafeLegalNextPage();
+  if (nextPage) {
+    window.location.href = nextPage;
+    return;
+  }
+  await redirectByProfile(userId, { skipLegalCheck: true });
+}
+
+async function handleLegalConsent(event) {
+  event.preventDefault();
+
+  const ageBracket = document.querySelector("input[name='legal-age-bracket']:checked")?.value || "";
+  const legalTermsConfirmed = document.getElementById("legal-current-documents-confirmation").checked;
+
+  if (!ageBracket || !legalTermsConfirmed) {
+    showMessage("legal-consent-message", "Choose your age confirmation and accept the current Terms and Privacy Policy.", true);
+    return;
+  }
+
+  const submitButton = document.getElementById("legal-consent-submit");
+  submitButton.disabled = true;
+  submitButton.textContent = "Saving...";
+  showMessage("legal-consent-message", "Saving your acceptance...");
+
+  try {
+    const { data: sessionData, error: sessionError } = await db.auth.getSession();
+    if (sessionError) throw sessionError;
+    if (!sessionData.session?.user) {
+      window.location.href = "login.html";
+      return;
+    }
+
+    const guardianPermissionConfirmed = ageBracket === "13_to_17";
+    const { data, error } = await db.rpc("record_current_legal_acceptance", {
+      p_age_bracket: ageBracket,
+      p_guardian_permission_confirmed: guardianPermissionConfirmed,
+      p_legal_terms_confirmed: legalTermsConfirmed
+    });
+    if (error) throw error;
+
+    const acceptance = data?.[0];
+    const { error: metadataError } = await db.auth.updateUser({
+      data: {
+        age_bracket: ageBracket,
+        age_13_or_older_confirmed: true,
+        guardian_permission_confirmed: guardianPermissionConfirmed,
+        legal_terms_confirmed: true,
+        legal_acknowledgment_version: `${acceptance?.terms_version || "current"}/${acceptance?.privacy_version || "current"}`,
+        legal_acknowledged_at: acceptance?.accepted_at || new Date().toISOString()
+      }
+    });
+    if (metadataError) console.warn("Legal acceptance was saved, but Auth metadata was not refreshed.", metadataError);
+
+    showMessage("legal-consent-message", "Acceptance saved. Returning to Rip City...");
+    await continueAfterLegalAcceptance(sessionData.session.user.id);
+  } catch (error) {
+    console.error(error);
+    showMessage("legal-consent-message", error.message || "Could not save your acceptance.", true);
+    submitButton.disabled = false;
+    submitButton.textContent = "Accept and Continue";
+  }
+}
+
+async function setupLegalConsentPage() {
+  setupAgeChoiceReset();
+  document.getElementById("legal-consent-logout").addEventListener("click", async () => {
+    await db.auth.signOut();
+    window.location.href = "login.html";
+  });
+
+  try {
+    const { data: sessionData, error: sessionError } = await db.auth.getSession();
+    if (sessionError) throw sessionError;
+    if (!sessionData.session?.user) {
+      window.location.href = "login.html";
+      return;
+    }
+
+    const legalStatus = await getCurrentLegalAcceptance();
+    document.getElementById("legal-terms-link").href = legalStatus.terms_path;
+    document.getElementById("legal-privacy-link").href = legalStatus.privacy_path;
+    document.getElementById("legal-version-detail").textContent =
+      `Terms ${legalStatus.terms_version} · Privacy ${legalStatus.privacy_version}`;
+
+    if (legalStatus.accepted) {
+      await continueAfterLegalAcceptance(sessionData.session.user.id);
+      return;
+    }
+
+    document.getElementById("legal-consent-form").addEventListener("submit", handleLegalConsent);
+  } catch (error) {
+    console.error(error);
+    showMessage("legal-consent-message", error.message || "Could not load the current legal documents.", true);
+    document.getElementById("legal-consent-submit").disabled = true;
+  }
+}
+
 function setupMemberTypeToggle() {
   const memberTypeInputs = document.querySelectorAll("input[name='member-type']");
 
@@ -546,6 +722,7 @@ async function setupCoachSignupPage() {
 }
 
 async function setupSignupPage() {
+  setupAgeChoiceReset();
   signupCoachInviteCode = getCoachInviteCodeFromUrl();
 
   if (signupCoachInviteCode) {
@@ -573,6 +750,12 @@ async function setupPendingPage() {
     const { data } = await db.auth.getSession();
     if (!data.session?.user) {
       window.location.href = "login.html";
+      return;
+    }
+
+    const legalStatus = await getCurrentLegalAcceptance();
+    if (!legalStatus.accepted) {
+      window.location.href = getLegalConsentUrl("pending.html");
       return;
     }
 
@@ -648,5 +831,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (currentPage === "pending") {
     setupPendingPage();
+  }
+
+  if (currentPage === "legal-consent") {
+    setupLegalConsentPage();
   }
 });

@@ -49,6 +49,18 @@ they are intentionally revisited.
 - Coach links do not need to be email-bound in V2, but should be sent only to
   the intended coach.
 - A signup link never bypasses pending approval.
+- Public signup requires one age-category choice: either `18 or older`, or
+  `13–17 with parent/legal-guardian permission`. Date of birth is not collected.
+- Every account must also agree to the current Terms of Service and acknowledge
+  the current Privacy Policy. The initial beta document version is `2026-10-25`.
+- Supabase stores the official server-timestamped acceptance row, exact Terms
+  and Privacy document IDs, and age category. Auth user metadata is only a
+  convenience copy and is not the legal system of record.
+- Publishing either document as a new current version makes the current pair
+  unaccepted for every account. Existing members, coaches, and admins are sent
+  to the required in-app review screen the next time they sign in or open a
+  protected page. A separate Supabase agreement checkbox is not required;
+  Supabase and Netlify are disclosed as service providers in the Privacy Policy.
 
 ## Facility Time
 

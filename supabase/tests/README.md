@@ -186,3 +186,31 @@ deduplication, assigned-member schedule visibility, another-facility denial,
 one canonical result per participant/test, member-own result visibility,
 absence/Not Tested states, guarded completion, and denial of direct writes and
 member result entry.
+
+## Versioned Legal Acceptance Checks
+
+After applying `20261025120000_add_versioned_legal_acceptances.sql`, run:
+
+```bash
+node supabase/tests/staging_legal_acceptance_checks.mjs
+```
+
+The staging test verifies the current document versions, guardian permission
+for a 13–17 user, direct-write denial, RPC idempotency, and private acceptance
+visibility. It records the initial beta acceptance for all nine standard fake
+staging accounts so normal staging QA can continue through the new gate. Those
+accounts will therefore skip the required-review screen after this test passes.
+
+To manually verify the existing-account screen again, delete the chosen fake
+account's acceptance row in the **staging SQL editor only**, then sign in or
+refresh a protected page. For example:
+
+```sql
+delete from public.legal_acceptances
+where user_id = (
+  select id from auth.users where email = 'rcathlete@example.com'
+);
+```
+
+Never use that reset query in production; production acceptance history is
+append-only evidence and must be retained.

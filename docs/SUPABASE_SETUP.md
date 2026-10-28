@@ -38,6 +38,12 @@ migrations; only the member-leaderboard and Testing Day migrations listed as
 part of the final promotion remain to be applied before their frontend reaches
 `main`.
 
+- `20261025120000_add_versioned_legal_acceptances.sql` is the post-V2 beta
+  safety migration for versioned Terms and Privacy acceptance. Apply it to
+  staging and run `staging_legal_acceptance_checks.mjs` before production. In
+  production, apply it before deploying the matching legal-consent frontend;
+  otherwise the frontend RPC calls will fail and accounts cannot enter the app.
+
 - `20261024170000_add_testing_days_foundation.sql` was applied to staging on
   2026-10-24. It initially denies result writes; the later staff-result
   migration deliberately supersedes that temporary restriction. Apply it in

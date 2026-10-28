@@ -66,6 +66,7 @@ const activePages = [
   "signup.html",
   "set-password.html",
   "pending.html",
+  "legal-consent.html",
   "member-dashboard.html",
   "member-training.html",
   "member-habits.html",
@@ -91,7 +92,9 @@ for (const file of activePages) {
   const html = await readFile(file, "utf8");
   const sharedStylesVersion = memberNavPages.has(file)
     ? "member-nav-fixed-1"
-    : file === "coach-dashboard.html" ? "attention-habits-1" : "ui-polish-4";
+    : file === "coach-dashboard.html" ? "attention-habits-1"
+      : ["signup.html", "legal-consent.html"].includes(file) ? "signup-legal-2"
+        : "ui-polish-4";
   assert.match(html, new RegExp(`css/styles\\.css\\?v=${sharedStylesVersion}`), `${file} loads the current shared stylesheet release`);
 }
 

@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=ui-polish-4" />
+  <link rel="stylesheet" href="css/styles.css?v=signup-legal-2" />
 </head>
 <body class="auth-body">
   <main class="auth-page">
@@ -105,6 +105,39 @@
           </div>
         </div>
 
+        <fieldset class="signup-acknowledgments">
+          <legend>Age confirmation</legend>
+
+          <div class="signup-acknowledgment-heading">
+            <p>Choose the one option that applies to you.</p>
+            <button type="button" class="signup-clear-age" data-clear-age-choice="signup-age-bracket">Clear choice</button>
+          </div>
+
+          <div class="signup-age-options" role="radiogroup" aria-label="Age confirmation">
+            <label class="signup-acknowledgment">
+              <input id="signup-age-adult" name="signup-age-bracket" type="radio" value="18_or_older" required />
+              <span>I am 18 years old or older.</span>
+            </label>
+
+            <label class="signup-acknowledgment">
+              <input id="signup-age-minor" name="signup-age-bracket" type="radio" value="13_to_17" required />
+              <span>I am 13–17 years old and have permission from my parent or legal guardian.</span>
+            </label>
+          </div>
+
+        </fieldset>
+
+        <div class="signup-legal-agreement">
+          <p class="signup-legal-agreement-title">Terms and privacy</p>
+          <label class="signup-acknowledgment">
+            <input id="signup-legal-confirmation" type="checkbox" required />
+            <span>
+              I agree to the <a href="terms.html" target="_blank" rel="noopener">Terms of Service</a>
+              and acknowledge the <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.
+            </span>
+          </label>
+        </div>
+
         <button type="submit" class="primary-btn full-btn">Create Account</button>
       </form>
 
@@ -118,6 +151,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/shared/supabaseClient.js"></script>
-  <script src="js/auth/auth.js?v=admin-assigned-groups-1"></script>
+  <script src="js/auth/auth.js?v=signup-legal-3"></script>
 </body>
 </html>

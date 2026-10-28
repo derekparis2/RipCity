@@ -6,6 +6,8 @@ Use this as the quick orientation guide before editing.
 
 - `index.html` redirects to `login.html`.
 - `login.html`, `signup.html`, and `pending.html` handle account entry.
+  `terms.html` and `privacy.html` contain the public beta legal disclosures
+  linked from the required signup acknowledgments.
 - `member-dashboard.html` is the concise shared member home for athletes and H2K members.
 - `member-training.html`, `member-habits.html`, `member-leaderboards.html`, and
   `member-goals.html` are the dedicated member feature pages. Weekly habit
@@ -39,7 +41,8 @@ Use this as the quick orientation guide before editing.
 
 - `js/auth/auth.js` controls reusable member signup, single-use coach-invite
   signup, username/email login, status-specific blocked-account messaging,
-  pending logout, and post-login routing.
+  required age/guardian/legal acknowledgments, pending logout, and post-login
+  routing.
 - `js/coach/coach-approvals.js` lets coaches/admins approve or reject ordinary
   pending members. Facility admins can also create coach links and decide
   pending coach requests, then deactivate or reactivate existing coach
@@ -88,6 +91,11 @@ Use this as the quick orientation guide before editing.
 - `js/member/workout-session-core.js`, `js/member/workout-session-render.js`, and
   `js/member/workout-session.js` split workout logging into state/loaders,
   rendering, and save actions.
+- `terms.html` and `privacy.html` are the published beta legal documents.
+  `legal-consent.html`, `js/auth/auth.js`, and `js/shared/access-control.js`
+  require every authenticated account to accept the exact current database
+  versions before entering pending or protected pages. `legal_documents` is the
+  version catalog and `legal_acceptances` is the server-timestamped evidence.
 
 ## Archived Reference
 

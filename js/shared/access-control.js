@@ -28,6 +28,18 @@
     return data.session;
   }
 
+  async function getCurrentLegalAcceptance() {
+    const { data, error } = await db.rpc("get_current_legal_acceptance");
+    if (error) throw error;
+    if (!data?.length) throw new Error("Current legal documents are not configured.");
+    return data[0];
+  }
+
+  function getLegalConsentUrl() {
+    const page = `${window.location.pathname.split("/").pop() || ""}${window.location.search || ""}`;
+    return `legal-consent.html?next=${encodeURIComponent(page)}`;
+  }
+
   async function getProfileWithMemberships(userId, extraProfileColumns = "") {
     const profileColumns = [
       "id",
@@ -80,6 +92,12 @@
       return null;
     }
 
+    const legalStatus = await getCurrentLegalAcceptance();
+    if (!legalStatus.accepted) {
+      window.location.href = getLegalConsentUrl();
+      return null;
+    }
+
     const profile = await getProfileWithMemberships(session.user.id, options.extraProfileColumns || "");
     const membership = choosePrimaryMembership(profile);
 
@@ -127,6 +145,7 @@
   window.RipCityAccess = {
     choosePrimaryMembership,
     getMemberProfileForMembership,
+    getCurrentLegalAcceptance,
     getProfileWithMemberships,
     getSession,
     isAdminRole,
