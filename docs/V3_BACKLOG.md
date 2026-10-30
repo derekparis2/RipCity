@@ -19,11 +19,30 @@ migration to the shared staging project.
 
 ---
 
-## 1. Platform Ownership And Isolation Contract
+## 1. Strength Maxes And Percentage-Based Programming
+
+- **Status:** Highest-priority V3 product package; needs max-formula decisions
+- **Suggested branch:** `<name>/strength-max-programming`
+- **Plan detail:** [Strength maxes and percentage programming](VERSION_3_PLAN.md#strength-maxes-and-percentage-based-programming)
+
+Add coach-managed verified, estimated, and training-max history. Let coaches
+calculate an estimated max from weight and reps, review the source and formula,
+and prescribe workout loads as percentages without rebuilding the workout
+builder. Complete this workout-side value package before starting the hitting
+implementation packages.
+
+**Complete when:** Coaches can safely review each member's resolved load before
+assignment, missing maxes cannot silently become zero-weight prescriptions,
+rounding follows facility rules, and every assigned percentage target preserves
+the exact max and calculated load used at that time.
+
+---
+
+## 2. Platform Ownership And Isolation Contract
 
 - **Status:** Ready
 - **Suggested branch:** `<name>/platform-owner-isolation`
-- **Plan detail:** [Platform owners](VERSION_3_PLAN.md#platform-owners) · [Required safety rules](VERSION_3_PLAN.md#4-required-safety-rules)
+- **Plan detail:** [Platform owners](VERSION_3_PLAN.md#platform-owners) · [Required safety rules](VERSION_3_PLAN.md#5-required-safety-rules)
 
 Add the stored platform-owner authorization for Derek and Sam, trusted
 facility-creation functions, explicit support-access boundaries, audit events,
@@ -37,9 +56,9 @@ and focused two-facility allowed/denied tests pass in staging.
 
 ---
 
-## 2. Facility Creation And Configuration
+## 3. Facility Creation And Configuration
 
-- **Status:** Depends on Package 1
+- **Status:** Depends on Package 2
 - **Suggested branch:** `<name>/facility-creation`
 - **Plan detail:** [Facility creation and isolation](VERSION_3_PLAN.md#facility-creation-and-isolation) · [Facility configuration](VERSION_3_PLAN.md#facility-configuration-and-module-visibility)
 
@@ -55,9 +74,9 @@ data.
 
 ---
 
-## 3. Second-Facility Launch Rehearsal
+## 4. Second-Facility Launch Rehearsal
 
-- **Status:** Depends on Package 2
+- **Status:** Depends on Package 3
 - **Suggested branch:** `<name>/second-facility-rehearsal`
 - **Plan detail:** [Facility creation and isolation](VERSION_3_PLAN.md#facility-creation-and-isolation) · [Facility time and date rules](VERSION_3_PLAN.md#facility-time-and-date-rules)
 
@@ -72,9 +91,9 @@ passes.
 
 ---
 
-## 4. Hitting Data Discovery And Metric Contract
+## 5. Hitting Data Discovery And Metric Contract
 
-- **Status:** Ready for research; implementation needs sample data
+- **Status:** Starts after Package 1; research also needs sample data
 - **Suggested branch:** `<name>/hitting-data-contract`
 - **Plan detail:** [Hitting data foundation](VERSION_3_PLAN.md#hitting-data-foundation)
 
@@ -89,9 +108,9 @@ criteria are documented and approved for implementation.
 
 ---
 
-## 5. Hitting Import And Verified Results
+## 6. Hitting Import And Verified Results
 
-- **Status:** Depends on Package 4
+- **Status:** Depends on Package 5
 - **Suggested branch:** `<name>/hitting-imports`
 - **Plan detail:** [Hitting data foundation](VERSION_3_PLAN.md#hitting-data-foundation)
 
@@ -106,9 +125,9 @@ cannot leak across facilities.
 
 ---
 
-## 6. Hitting Development Experience
+## 7. Hitting Development Experience
 
-- **Status:** Depends on Package 5
+- **Status:** Depends on Package 6
 - **Suggested branch:** `<name>/hitting-progress`
 - **Plan detail:** [Hitting development experience](VERSION_3_PLAN.md#hitting-development-experience) · [Player development profile](VERSION_3_PLAN.md#player-development-profile)
 
@@ -122,7 +141,7 @@ pass.
 
 ---
 
-## 7. Advanced Testing And Performance Trends
+## 8. Advanced Testing And Performance Trends
 
 - **Status:** Ready after the first V3 migration package is coordinated
 - **Suggested branch:** `<name>/testing-progress`
@@ -139,7 +158,7 @@ enter coach/member leaderboards.
 
 ---
 
-## 8. Player Development Profiles And Evaluations
+## 9. Player Development Profiles And Evaluations
 
 - **Status:** Needs visibility decisions
 - **Suggested branch:** `<name>/player-development-profiles`
@@ -154,7 +173,7 @@ facilities do not receive irrelevant UI.
 
 ---
 
-## 9. Throwing And Arm Care
+## 10. Throwing And Arm Care
 
 - **Status:** Later; hitting comes first and privacy review is required
 - **Suggested branch:** `<name>/throwing-arm-care`
@@ -169,11 +188,11 @@ controls.
 
 ---
 
-## 10. Notifications, Private Notes, And Audit History
+## 11. Notifications, Private Notes, And Audit History
 
 - **Status:** Later
 - **Suggested branch:** `<name>/notifications-notes-audit`
-- **Plan detail:** [Shared V3 extensions](VERSION_3_PLAN.md#3-shared-v3-extensions)
+- **Plan detail:** [Shared V3 extensions](VERSION_3_PLAN.md#4-shared-v3-extensions)
 
 Build the private coach-note UI, generalized in-app notification/read state,
 and audit history for sensitive owner, facility, import, evaluation, and result
@@ -181,7 +200,7 @@ actions. Email and push remain follow-ups.
 
 ---
 
-## 11. Recruiting And Shareable Profiles
+## 12. Recruiting And Shareable Profiles
 
 - **Status:** Later; requires explicit privacy and authorization rules
 - **Suggested branch:** `<name>/recruiting-profiles`
@@ -199,7 +218,7 @@ revocation rules are approved.
 
 - **Status:** Ready only when it will not conflict with active UI branches
 - **Suggested branch:** `<name>/stylesheet-organization`
-- **Plan detail:** [Shared V3 extensions](VERSION_3_PLAN.md#3-shared-v3-extensions)
+- **Plan detail:** [Shared V3 extensions](VERSION_3_PLAN.md#4-shared-v3-extensions)
 
 Mechanically split the large stylesheet into ordered shared, component,
 authentication, coach, and member files with no intended visual changes. This

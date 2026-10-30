@@ -7,21 +7,67 @@ fixes remain separate branches from `main`.
 For the ordered work queue, dependencies, and suggested branch boundaries, see
 [`V3_BACKLOG.md`](V3_BACKLOG.md).
 
-V3 has two primary goals:
+V3 has three primary goals, in this product order:
 
-1. Turn the proven Rip City application into a safely configurable platform
+1. Strengthen the sellable workout and performance product with max tracking,
+   percentage-based programming, and targeted improvements that directly help
+   facilities program and review training.
+2. Turn the proven Rip City application into a safely configurable platform
    where Derek and Sam can create a second real facility without exposing or
    mixing Rip City data.
-2. Add a deeper baseball-development system, beginning with hitting and
+3. Add a deeper baseball-development system, beginning with hitting and
    HitTrax/TrackMan data before throwing and arm-care work.
 
 The shipped V2 workout builder, exercise library, assignment, logging, and
-history workflows are stable foundations. V3 should fix confirmed defects but
-does not include a general workout/exercise hardening rebuild.
+history workflows are stable foundations. V3 does not include a general
+workout/exercise rebuild, but targeted workout enhancements that increase the
+product's immediate value to facilities come before hitting-specific work.
 
 ---
 
-## 1. Multi-Facility Platform Operations
+## 1. Workout And Performance Enhancements
+
+### Strength Maxes And Percentage-Based Programming
+
+Extend the stable workout builder and Testing Day system instead of creating a
+separate lifting workflow.
+
+- Store a member's max by exercise, date, unit, source, and verification state.
+- Keep directly tested or coach-entered maxes distinct from calculated
+  estimates and from a coach-selected training max.
+- Let coaches calculate an estimated max from a completed weight-and-reps set,
+  while recording the formula and original inputs used for the estimate.
+- Let coaches prescribe an exercise using a fixed load or a percentage of the
+  member's selected verified, estimated, or training max.
+- Show the resolved load for each member before assignment, flag members who
+  do not have the required max, and allow an explicit coach override.
+- Support facility-approved rounding rules so calculated loads match the
+  equipment available to the facility.
+- Snapshot the max, percentage, formula, and resolved load when a workout is
+  assigned. Later max changes must not rewrite historical prescriptions.
+- Allow approved Testing Day strength results to update max history and feed
+  progress charts or leaderboards only when a coach confirms them.
+
+Before implementation, decide which estimation formulas are supported, how a
+training max is defined, which max source is the default for programming, and
+which rounding increments each facility may use.
+
+### Advanced Testing And Performance History
+
+V2 already ships staff-created Testing Days, staff-only official result entry,
+member-own result visibility, calendar markers, correction, and ranked review.
+V3 extends that stable feature instead of rebuilding it.
+
+- Add approved multiple-attempt and best-result rules.
+- Add comparisons over time, personal records, richer charts, and consistent
+  correction/audit history.
+- Promote only coach-approved tests and lifts to leaderboards.
+- Reuse the shared metric catalog so Testing Day and hitting data do not become
+  unrelated reporting systems.
+
+---
+
+## 2. Multi-Facility Platform Operations
 
 ### Platform Owners
 
@@ -81,7 +127,7 @@ does not include a general workout/exercise hardening rebuild.
 
 ---
 
-## 2. Baseball Development System
+## 3. Baseball Development System
 
 ### Hitting Data Foundation
 
@@ -112,19 +158,6 @@ care.
 - Connect approved hitting metrics to goals, progress charts, Testing Day
   history, and later leaderboards through the shared metric registry.
 - Keep coach-entered, imported, and member-entered data visibly distinct.
-
-### Advanced Testing And Performance History
-
-V2 already ships staff-created Testing Days, staff-only official result entry,
-member-own result visibility, calendar markers, correction, and ranked review.
-V3 extends that stable feature instead of rebuilding it.
-
-- Add approved multiple-attempt and best-result rules.
-- Add comparisons over time, personal records, richer charts, and consistent
-  correction/audit history.
-- Promote only coach-approved tests and lifts to leaderboards.
-- Reuse the shared metric catalog so Testing Day and hitting data do not become
-  unrelated reporting systems.
 
 ### Player Development Profile
 
@@ -164,7 +197,7 @@ This work follows the hitting foundation.
 
 ---
 
-## 3. Shared V3 Extensions
+## 4. Shared V3 Extensions
 
 - Add private coach-note UI and a generalized in-app notification/read-state
   system on top of V2 announcements.
@@ -183,7 +216,7 @@ This work follows the hitting foundation.
 
 ---
 
-## 4. Required Safety Rules
+## 5. Required Safety Rules
 
 - Every schema change starts as a timestamped repository migration, runs on
   staging first, and receives focused allowed/denied tests.
@@ -200,7 +233,7 @@ This work follows the hitting foundation.
 
 ---
 
-## 5. Open Product Decisions
+## 6. Open Product Decisions
 
 - Which HitTrax and TrackMan exports or APIs can Rip City provide and use?
 - Which hitting metrics should launch first and which may appear to members?
@@ -214,7 +247,7 @@ This work follows the hitting foundation.
 
 ---
 
-## 6. V3 Done Direction
+## 7. V3 Done Direction
 
 V3 is successful when Derek or Sam can create and launch a second real facility
 without custom rebuilding or cross-facility data leakage, and Rip City can use
