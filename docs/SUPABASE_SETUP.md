@@ -206,12 +206,16 @@ The later-created exercise-library tables inherited broader default grants than
 this original RLS rollout intended. RLS still blocks anonymous exercise rows,
 but grant cleanup is required in staging; see the dated audit.
 
-Reusable member signup currently depends on public Rip City signup:
+Reusable member signup uses a retry-safe two-part flow:
 
-1. `anon` reads the `rip-city` facility.
-2. Supabase Auth creates the user.
-3. The authenticated session inserts `profiles`, `facility_members`, and
-   `member_profiles`.
+1. Supabase Auth creates the user or verifies the same email/password when an
+   interrupted signup is retried.
+2. The authenticated session calls `complete_member_signup`, which atomically
+   creates or resumes `profiles`, `facility_members`, and `member_profiles`.
+
+If a phone disconnects after Auth succeeds, the member should retry with the
+same email, username, and password. The database operation preserves existing
+rows and cannot create duplicate facility/member relationships.
 
 The V2 coach flow instead validates a short-lived code through
 `lookup_coach_invite`, creates the Auth/profile identity, then atomically claims
@@ -219,8 +223,8 @@ the code through `claim_coach_invite`. The claim creates a pending coach
 membership only; same-facility admin approval remains required.
 
 If Supabase email confirmation is enabled later and no session is returned from
-`auth.signUp`, move app-row creation into a secure server-side signup handler or
-database trigger.
+`auth.signUp`, app-row completion waits until the member confirms and logs in.
+Do not restore client-side direct inserts as a workaround.
 
 ## RLS Regression Checklist
 

@@ -6,6 +6,22 @@
 // should be added separately with an explicit migration.
 
 (function () {
+  const DEFAULT_REQUEST_TIMEOUT_MS = 15000;
+
+  function withTimeout(request, message = "Rip City took too long to respond.", timeoutMs = DEFAULT_REQUEST_TIMEOUT_MS) {
+    let timeoutId;
+    const timeout = new Promise((resolve, reject) => {
+      timeoutId = window.setTimeout(() => {
+        const error = new Error(message);
+        error.code = "request_timeout";
+        reject(error);
+      }, timeoutMs);
+    });
+
+    return Promise.race([Promise.resolve(request), timeout])
+      .finally(() => window.clearTimeout(timeoutId));
+  }
+
   function getJoinedMemberships(profile) {
     return profile?.facility_members ||
       profile?.["facility_members!facility_members_profile_id_fkey"] ||
@@ -21,7 +37,10 @@
   }
 
   async function getSession() {
-    const { data, error } = await db.auth.getSession();
+    const { data, error } = await withTimeout(
+      db.auth.getSession(),
+      "Checking your session took too long. Check your connection and try again."
+    );
 
     if (error) throw error;
 
@@ -29,7 +48,10 @@
   }
 
   async function getCurrentLegalAcceptance() {
-    const { data, error } = await db.rpc("get_current_legal_acceptance");
+    const { data, error } = await withTimeout(
+      db.rpc("get_current_legal_acceptance"),
+      "Checking the current terms took too long. Check your connection and try again."
+    );
     if (error) throw error;
     if (!data?.length) throw new Error("Current legal documents are not configured.");
     return data[0];
@@ -49,19 +71,22 @@
       extraProfileColumns
     ].filter(Boolean).join(",");
 
-    const { data, error } = await db
-      .from("profiles")
-      .select(`
-        ${profileColumns},
-        facility_members:facility_members!facility_members_profile_id_fkey (
-          id,
-          role,
-          status,
-          facility_id
-        )
-      `)
-      .eq("id", userId)
-      .limit(1);
+    const { data, error } = await withTimeout(
+      db
+        .from("profiles")
+        .select(`
+          ${profileColumns},
+          facility_members:facility_members!facility_members_profile_id_fkey (
+            id,
+            role,
+            status,
+            facility_id
+          )
+        `)
+        .eq("id", userId)
+        .limit(1),
+      "Loading your account took too long. Check your connection and try again."
+    );
 
     if (error) throw error;
     if (!data?.length) throw new Error("Account profile could not be found.");
@@ -151,6 +176,7 @@
     isAdminRole,
     isCoachRole,
     requireApprovedAccess,
-    requireCoachAccess
+    requireCoachAccess,
+    withTimeout
   };
 })();
