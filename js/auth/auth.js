@@ -33,6 +33,18 @@ function setAuthStage(stage) {
 }
 
 function getAuthReference(error) {
+  const message = String(error?.message || "");
+  const code = String(error?.code || "");
+  const status = Number(error?.status || 0);
+  const isExpectedAuthError = (
+    code === "invalid_credentials"
+    || code === "user_already_exists"
+    || code === "over_email_send_rate_limit"
+    || status === 429
+    || /invalid login credentials|already (registered|exists)|rate limit|too many requests|email.*limit/i.test(message)
+  );
+  if (isExpectedAuthError) return "";
+
   const attempt = currentAuthAttempt;
   if (!attempt) return "";
   const stage = error?.authStage || attempt.stage || "unknown";

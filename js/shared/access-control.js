@@ -102,13 +102,21 @@
     return role === "admin";
   }
 
+  function isMemberRole(role) {
+    return role === "athlete" || role === "h2k_member";
+  }
+
+  function getHomeUrlForRole(role) {
+    return isCoachRole(role) ? "coach-dashboard.html" : "member-dashboard.html";
+  }
+
   async function requireApprovedAccess(options = {}) {
     const {
       allowRoles = null,
       onDeniedMessage = null,
       pendingUrl = "pending.html",
       loginUrl = "login.html",
-      deniedUrl = "member-dashboard.html"
+      deniedUrl = null
     } = options;
 
     const session = await getSession();
@@ -134,9 +142,9 @@
 
     if (allowRoles && !allowRoles.includes(membership.role)) {
       if (onDeniedMessage) onDeniedMessage("You do not have permission to view this page.", true);
-      // RLS already prevents the data read, but a direct URL should not leave a
-      // member looking at an empty coach shell. Send them back to their own app.
-      window.location.replace(deniedUrl);
+      // RLS already prevents unauthorized data reads, but direct URL entry
+      // should never leave someone looking at the wrong role's empty shell.
+      window.location.replace(deniedUrl || getHomeUrlForRole(membership.role));
       return null;
     }
 
@@ -155,6 +163,13 @@
     return requireApprovedAccess({
       ...options,
       allowRoles: ["coach", "admin"]
+    });
+  }
+
+  async function requireMemberAccess(options = {}) {
+    return requireApprovedAccess({
+      ...options,
+      allowRoles: ["athlete", "h2k_member"]
     });
   }
 
@@ -179,8 +194,10 @@
     getSession,
     isAdminRole,
     isCoachRole,
+    isMemberRole,
     requireApprovedAccess,
     requireCoachAccess,
+    requireMemberAccess,
     withTimeout
   };
 })();

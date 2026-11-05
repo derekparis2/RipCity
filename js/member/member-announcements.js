@@ -217,7 +217,7 @@
     });
 
     try {
-      const access = await window.RipCityAccess.requireApprovedAccess();
+      const access = await window.RipCityAccess.requireMemberAccess();
       if (!access) return;
       memberProfile = await window.RipCityAccess.getMemberProfileForMembership(access.membership.id);
 

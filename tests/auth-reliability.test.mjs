@@ -11,6 +11,10 @@ const migration = await readFile(
 const signupPage = await readFile("signup.html", "utf8");
 const loginPage = await readFile("login.html", "utf8");
 const approvalsPage = await readFile("coach-approvals.html", "utf8");
+const memberDashboard = await readFile("js/member/member-dashboard.js", "utf8");
+const memberAnnouncements = await readFile("js/member/member-announcements.js", "utf8");
+const memberTestingDays = await readFile("js/member/member-testing-days.js", "utf8");
+const workoutSessionCore = await readFile("js/member/workout-session-core.js", "utf8");
 
 assert.match(migration, /create or replace function public\.complete_member_signup/);
 assert.match(migration, /security definer/);
@@ -29,15 +33,22 @@ assert.match(auth, /function createAuthAttempt\(/);
 assert.match(auth, /async function recoverAuthenticatedUser\(/);
 assert.match(auth, /Too many account emails were requested/);
 assert.match(access, /DEFAULT_REQUEST_TIMEOUT_MS = 15000/);
-assert.match(access, /deniedUrl = "member-dashboard\.html"/);
-assert.match(access, /window\.location\.replace\(deniedUrl\)/);
+assert.match(access, /function getHomeUrlForRole\(role\)/);
+assert.match(access, /async function requireMemberAccess\(options = \{\}\)/);
+assert.match(access, /allowRoles: \["athlete", "h2k_member"\]/);
+assert.match(access, /window\.location\.replace\(deniedUrl \|\| getHomeUrlForRole\(membership\.role\)\)/);
+assert.match(auth, /if \(isExpectedAuthError\) return ""/);
+assert.match(memberDashboard, /RipCityAccess\.requireMemberAccess/);
+assert.match(memberAnnouncements, /RipCityAccess\.requireMemberAccess/);
+assert.match(memberTestingDays, /RipCityAccess\.requireMemberAccess/);
+assert.match(workoutSessionCore, /RipCityAccess\.requireMemberAccess/);
 assert.match(approvals, /approvalLoadInProgress/);
 assert.match(approvals, /Loading approvals took too long/);
 
 for (const page of [signupPage, loginPage]) {
-  assert.match(page, /auth\.js\?v=auth-reliability-2/);
+  assert.match(page, /auth\.js\?v=auth-reliability-3/);
 }
-assert.match(approvalsPage, /access-control\.js\?v=auth-reliability-2/);
+assert.match(approvalsPage, /access-control\.js\?v=auth-reliability-3/);
 assert.match(approvalsPage, /coach-approvals\.js\?v=auth-reliability-1/);
 
 console.log("Auth reliability tests passed");
