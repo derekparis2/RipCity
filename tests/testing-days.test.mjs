@@ -84,7 +84,14 @@ assert.match(coachScript, /row\.numeric !== previousValue/, "equal Testing Day r
 
 assert.match(memberPage, /id="member-testing-panel"/, "member Training includes an assigned Testing Days section");
 assert.ok(memberPage.indexOf('id="member-testing-panel"') > memberPage.indexOf('id="training-calendar-panel"'), "member Testing Days appear below the Training calendar");
+assert.match(memberPage, /data-training-view="schedule"/, "member Training has a focused Schedule view");
+assert.match(memberPage, /data-training-view="performance"/, "member Training has a focused Performance view");
+assert.match(memberPage, /data-training-view-panel="schedule"[\s\S]*id="training-calendar-panel"[\s\S]*id="member-testing-upcoming-list"/, "Schedule keeps the calendar and upcoming Testing Days together");
+assert.match(memberPage, /data-training-view-panel="performance"[\s\S]*id="member-testing-comparison-list"[\s\S]*id="member-testing-list"/, "Performance keeps comparisons and completed Testing Day history together");
 assert.match(memberPage, /id="member-testing-search"/, "members can search a longer Testing Day history");
+assert.match(memberScript, /function setMemberTrainingView/, "member Training switches between Schedule and Performance without leaving the page");
+assert.match(memberScript, /day\.status === "scheduled"/, "only scheduled Testing Days stay in Schedule");
+assert.match(memberScript, /day\.status === "completed"/, "completed Testing Days stay in Performance history");
 assert.match(memberScript, /testing_day_participants/, "member schedule loads through the snapshotted participant roster");
 assert.match(memberScript, /testing_results/, "member schedule renders the signed-in member's official results");
 assert.match(memberPage, /testing-comparisons\.js/, "member Training loads the shared Testing Day comparison engine");

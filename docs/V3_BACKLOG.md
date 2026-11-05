@@ -93,7 +93,10 @@ official result as the baseline, the immediately previous official result as
 the prior result, and the best official result as the PR. Improvement is
 direction-aware, so a lower sprint time and a higher jump both display as
 positive progress. `Not Tested`, absent, scheduled, text, and unranked outcomes
-do not enter comparisons.
+do not enter comparisons. Member Training now separates Schedule from
+Performance: the calendar and upcoming Testing Days remain together, while
+comparisons and searchable completed Testing Day history live in the focused
+Performance view.
 
 Remaining Package 3 work includes approved multiple-attempt rules, correction
 audit history, roster-wide comparison tools, and explicitly approved testing

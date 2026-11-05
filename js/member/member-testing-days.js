@@ -6,6 +6,45 @@
 
 let memberTestingParticipations = [];
 const expandedMemberTestingDayIds = new Set();
+let activeMemberTrainingView = "schedule";
+
+const memberTrainingViewCopy = {
+  schedule: {
+    pageTitle: "Training Calendar",
+    eyebrow: "YOUR SCHEDULE",
+    title: "Every assigned workout, organized by day.",
+    description: "Select a date to open, preview, or review a workout."
+  },
+  performance: {
+    pageTitle: "Performance",
+    eyebrow: "YOUR PROGRESS",
+    title: "See what is improving over time.",
+    description: "Compare official Testing Day results, baselines, and personal records."
+  }
+};
+
+function setMemberTrainingView(view) {
+  const nextView = memberTrainingViewCopy[view] ? view : "schedule";
+  activeMemberTrainingView = nextView;
+  document.querySelectorAll("[data-training-view-panel]").forEach(panel => {
+    panel.classList.toggle("hidden", panel.dataset.trainingViewPanel !== nextView);
+  });
+  document.querySelectorAll("[data-training-view]").forEach(button => {
+    const selected = button.dataset.trainingView === nextView;
+    button.classList.toggle("is-active", selected);
+    button.setAttribute("aria-selected", String(selected));
+  });
+
+  const copy = memberTrainingViewCopy[nextView];
+  const pageTitle = document.getElementById("member-training-page-title");
+  const eyebrow = document.getElementById("member-training-hero-eyebrow");
+  const title = document.getElementById("member-training-hero-title");
+  const description = document.getElementById("member-training-hero-description");
+  if (pageTitle) pageTitle.textContent = copy.pageTitle;
+  if (eyebrow) eyebrow.textContent = copy.eyebrow;
+  if (title) title.textContent = copy.title;
+  if (description) description.textContent = copy.description;
+}
 
 function showMemberTestingMessage(message, isError = false) {
   const element = document.getElementById("member-testing-message");
@@ -84,66 +123,82 @@ function renderMemberTestingComparisons() {
   list.innerHTML = comparisons.map(renderTestingComparisonCard).join("");
 }
 
-function renderMemberTestingDays(participations = memberTestingParticipations) {
-  const list = document.getElementById("member-testing-list");
-  const count = document.getElementById("member-testing-count");
-  if (!list) return;
-
-  const search = document.getElementById("member-testing-search")?.value.trim().toLowerCase() || "";
-  const allDays = participations
+function getMemberTestingDays(participations = memberTestingParticipations) {
+  return participations
     .map(participation => ({ participation, day: Array.isArray(participation.testing_day) ? participation.testing_day[0] : participation.testing_day }))
-    .filter(item => item.day)
+    .filter(item => item.day);
+}
+
+function renderMemberTestingDayCard({ participation, day }) {
+  const tests = [...(day.testing_day_tests || [])].sort((a, b) => a.test_order - b.test_order);
+  const absent = participation.participation_status === "did_not_participate";
+  const expanded = expandedMemberTestingDayIds.has(day.id);
+  return `
+    <article class="member-testing-card ${expanded ? "" : "is-collapsed"}" data-member-testing-day="${window.RipCityUI.attr(day.id)}">
+      <div class="member-testing-card-header">
+        <div><p class="eyebrow">${window.RipCityUI.text(day.status === "completed" ? "FINAL RESULTS" : "UPCOMING TESTING DAY")}</p><h4>${window.RipCityUI.text(day.name)}</h4></div>
+        <div class="member-testing-card-actions"><span class="member-testing-date">${window.RipCityUI.text(formatMemberTestingDate(day.testing_date))}</span><button class="outline-btn small-inline-btn" type="button" data-member-testing-toggle="${window.RipCityUI.attr(day.id)}" aria-expanded="${expanded}">${expanded ? "Hide −" : "View +"}</button></div>
+      </div>
+      <div class="member-testing-card-details ${expanded ? "" : "hidden"}">
+        ${day.description ? `<p class="member-testing-description">${window.RipCityUI.text(day.description)}</p>` : ""}
+        <div class="member-testing-tests">
+        ${tests.map((test, index) => `
+          ${(() => {
+            const result = (test.testing_results || []).find(item => item.testing_day_participant_id === participation.id);
+            const state = absent ? "absent" : !result ? "pending" : result.result_status === "not_tested" ? "not-tested" : "recorded";
+            return `<div class="member-testing-test result-${state}">
+            <span>${index + 1}. ${window.RipCityUI.text(test.name)}</span>
+            <span>${window.RipCityUI.text(absent ? "Did not participate" : formatMemberTestingResult(test, result))}</span>
+          </div>`;
+          })()}
+        `).join("")}
+        </div>
+        ${absent ? `<p class="member-testing-footnote">Your coach marked you as not participating in this Testing Day.</p>` : ""}
+      </div>
+    </article>`;
+}
+
+function renderMemberTestingDays(participations = memberTestingParticipations) {
+  const upcomingList = document.getElementById("member-testing-upcoming-list");
+  const upcomingCount = document.getElementById("member-testing-upcoming-count");
+  const historyList = document.getElementById("member-testing-list");
+  const historyCount = document.getElementById("member-testing-count");
+  if (!upcomingList || !historyList) return;
+
+  const allDays = getMemberTestingDays(participations);
+  const upcomingDays = allDays
+    .filter(({ day }) => day.status === "scheduled")
+    .sort((a, b) => a.day.testing_date.localeCompare(b.day.testing_date));
+  const completedDays = allDays
+    .filter(({ day }) => day.status === "completed")
     .sort((a, b) => b.day.testing_date.localeCompare(a.day.testing_date));
-  const days = allDays.filter(({ day }) => {
+  const search = document.getElementById("member-testing-search")?.value.trim().toLowerCase() || "";
+  const filteredCompletedDays = completedDays.filter(({ day }) => {
     const tests = (day.testing_day_tests || []).map(test => test.name).join(" ");
     return !search || `${day.name} ${day.description || ""} ${day.testing_date} ${formatMemberTestingDate(day.testing_date)} ${tests}`.toLowerCase().includes(search);
   });
 
-  if (count) count.textContent = `${allDays.length} assigned`;
+  if (upcomingCount) upcomingCount.textContent = `${upcomingDays.length} upcoming`;
+  if (historyCount) historyCount.textContent = `${completedDays.length} completed`;
+  upcomingList.innerHTML = upcomingDays.length
+    ? upcomingDays.map(renderMemberTestingDayCard).join("")
+    : `<div class="empty-state">No upcoming Testing Days are scheduled.</div>`;
 
-  if (!allDays.length) {
-    list.innerHTML = `<div class="empty-state">No Testing Days are assigned to you yet.</div>`;
+  if (!completedDays.length) {
+    historyList.innerHTML = `<div class="empty-state">Completed Testing Days and official results will appear here.</div>`;
     return;
   }
-  if (!days.length) {
-    list.innerHTML = `<div class="empty-state">No Testing Days match that search.</div>`;
+  if (!filteredCompletedDays.length) {
+    historyList.innerHTML = `<div class="empty-state">No completed Testing Days match that search.</div>`;
     return;
   }
-
-  list.innerHTML = days.map(({ participation, day }) => {
-    const tests = [...(day.testing_day_tests || [])].sort((a, b) => a.test_order - b.test_order);
-    const absent = participation.participation_status === "did_not_participate";
-    const expanded = expandedMemberTestingDayIds.has(day.id);
-    return `
-      <article class="member-testing-card ${expanded ? "" : "is-collapsed"}" data-member-testing-day="${window.RipCityUI.attr(day.id)}">
-        <div class="member-testing-card-header">
-          <div><p class="eyebrow">${window.RipCityUI.text(day.status === "completed" ? "FINAL RESULTS" : "UPCOMING TESTING DAY")}</p><h4>${window.RipCityUI.text(day.name)}</h4></div>
-          <div class="member-testing-card-actions"><span class="member-testing-date">${window.RipCityUI.text(formatMemberTestingDate(day.testing_date))}</span><button class="outline-btn small-inline-btn" type="button" data-member-testing-toggle="${window.RipCityUI.attr(day.id)}" aria-expanded="${expanded}">${expanded ? "Hide −" : "View +"}</button></div>
-        </div>
-        <div class="member-testing-card-details ${expanded ? "" : "hidden"}">
-          ${day.description ? `<p class="member-testing-description">${window.RipCityUI.text(day.description)}</p>` : ""}
-          <div class="member-testing-tests">
-          ${tests.map((test, index) => `
-            ${(() => {
-              const result = (test.testing_results || []).find(item => item.testing_day_participant_id === participation.id);
-              const state = absent ? "absent" : !result ? "pending" : result.result_status === "not_tested" ? "not-tested" : "recorded";
-              return `<div class="member-testing-test result-${state}">
-              <span>${index + 1}. ${window.RipCityUI.text(test.name)}</span>
-              <span>${window.RipCityUI.text(absent ? "Did not participate" : formatMemberTestingResult(test, result))}</span>
-            </div>`;
-            })()}
-          `).join("")}
-          </div>
-          ${absent ? `<p class="member-testing-footnote">Your coach marked you as not participating in this Testing Day.</p>` : ""}
-        </div>
-      </article>
-    `;
-  }).join("");
+  historyList.innerHTML = filteredCompletedDays.map(renderMemberTestingDayCard).join("");
 }
 
 async function initializeMemberTestingDays() {
   const panel = document.getElementById("member-testing-panel");
-  if (!panel) return;
+  const schedulePanel = document.getElementById("member-testing-schedule-panel");
+  if (!panel || !schedulePanel) return;
 
   try {
     const access = await window.RipCityAccess.requireMemberAccess();
@@ -170,7 +225,6 @@ async function initializeMemberTestingDays() {
       .map(item => Array.isArray(item.testing_day) ? item.testing_day[0] : item.testing_day)
       .filter(Boolean)
       .sort((a, b) => b.testing_date.localeCompare(a.testing_date));
-    if (orderedDays[0]) expandedMemberTestingDayIds.add(orderedDays[0].id);
     window.RipCityTestingDateKeys = new Set(orderedDays
       .filter(day => ["scheduled", "completed"].includes(day.status))
       .map(day => day.testing_date));
@@ -182,6 +236,7 @@ async function initializeMemberTestingDays() {
     const migrationMissing = error.code === "42P01" || /testing_day/i.test(error.message || "");
     if (migrationMissing) {
       panel.classList.add("hidden");
+      schedulePanel.classList.add("hidden");
       return;
     }
     showMemberTestingMessage(error.message || "Could not load Testing Days.", true);
@@ -189,14 +244,20 @@ async function initializeMemberTestingDays() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll("[data-training-view]").forEach(button => {
+    button.addEventListener("click", () => setMemberTrainingView(button.dataset.trainingView));
+  });
+  setMemberTrainingView(activeMemberTrainingView);
   document.getElementById("member-testing-search")?.addEventListener("input", () => renderMemberTestingDays());
-  document.getElementById("member-testing-list")?.addEventListener("click", event => {
-    const button = event.target.closest("[data-member-testing-toggle]");
-    if (!button) return;
-    const dayId = button.dataset.memberTestingToggle;
-    if (expandedMemberTestingDayIds.has(dayId)) expandedMemberTestingDayIds.delete(dayId);
-    else expandedMemberTestingDayIds.add(dayId);
-    renderMemberTestingDays();
+  ["member-testing-list", "member-testing-upcoming-list"].forEach(listId => {
+    document.getElementById(listId)?.addEventListener("click", event => {
+      const button = event.target.closest("[data-member-testing-toggle]");
+      if (!button) return;
+      const dayId = button.dataset.memberTestingToggle;
+      if (expandedMemberTestingDayIds.has(dayId)) expandedMemberTestingDayIds.delete(dayId);
+      else expandedMemberTestingDayIds.add(dayId);
+      renderMemberTestingDays();
+    });
   });
   initializeMemberTestingDays();
 });

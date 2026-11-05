@@ -91,6 +91,9 @@ V3 extends that stable feature instead of rebuilding it.
   records, richer charts, and consistent correction/audit history.
 - Give members a clear current-versus-previous result view while coaches can
   compare an athlete across dates and review a test across the assigned roster.
+- Keep the member Training experience focused with two in-page views: Schedule
+  contains the workout calendar and upcoming Testing Days, while Performance
+  contains comparisons, records, and completed Testing Day history.
 - For the initial comparison view, define the earliest completed official
   result as the baseline, the immediately preceding completed official result
   as the prior result, and the best completed official result as the personal

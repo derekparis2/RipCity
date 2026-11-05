@@ -86,9 +86,10 @@ Use this as the quick orientation guide before editing.
   individual announcements permitted to the signed-in member by RLS.
 - `js/member/member-testing-days.js` renders assigned scheduled Testing Days,
   their ordered test batteries, direction-aware progress comparisons, and only
-  the signed-in member's official outcomes on Training. Its searchable history
-  cards are compact and collapsed by default after the first load. It never
-  writes results.
+  the signed-in member's official outcomes on Training. It switches the page
+  between a Schedule view (calendar plus upcoming Testing Days) and a
+  Performance view (comparisons plus searchable completed history). History
+  cards are compact and collapsed by default. It never writes results.
 - `js/member/member-leaderboards.js` renders the program-separated member Top
   5 and own-rank view. It reads only the privacy-safe leaderboard RPC rather
   than loading facility rosters or other members' raw habit logs.

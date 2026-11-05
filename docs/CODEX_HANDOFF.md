@@ -94,6 +94,11 @@ without saved outcomes.
 Testing Day results remain staff-entered. Members may view only their own
 official outcomes and cannot submit or edit Testing Day results.
 
+Member Training separates Schedule from Performance without adding another
+bottom-navigation destination. Schedule contains the workout calendar and
+upcoming Testing Days; Performance contains comparison cards and searchable
+completed Testing Day history.
+
 New V3 feature branches start from current `v3-development`. The V2 production
 release and its ordered production migration sequence are complete.
 

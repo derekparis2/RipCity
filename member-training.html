@@ -8,8 +8,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css?v=member-nav-fixed-1" />
-  <link rel="stylesheet" href="css/member-testing.css?v=testing-days-5" />
-  <link rel="stylesheet" href="css/testing-comparisons.css?v=testing-progress-1" />
+  <link rel="stylesheet" href="css/member-testing.css?v=training-views-1" />
+  <link rel="stylesheet" href="css/testing-comparisons.css?v=training-views-1" />
 </head>
 <body class="auth-body member-dashboard-body member-feature-page" data-member-page="training">
   <aside class="sidebar member-sidebar">
@@ -20,26 +20,44 @@
   </aside>
 
   <main class="main-content member-main-content member-feature-main">
-    <header class="topbar"><div><p class="eyebrow" id="member-dashboard-date">TRAINING</p><h2>Training Calendar</h2></div><div class="topbar-actions"><button class="outline-btn" id="h2k-logout-btn">Log Out</button></div></header>
-    <section class="hero-card h2k-hero member-feature-hero"><div><p class="eyebrow">YOUR SCHEDULE</p><h3>Every assigned workout, organized by day.</h3><p>Select a date to open, preview, or review a workout.</p></div></section>
+    <header class="topbar"><div><p class="eyebrow" id="member-dashboard-date">TRAINING</p><h2 id="member-training-page-title">Training Calendar</h2></div><div class="topbar-actions"><button class="outline-btn" id="h2k-logout-btn">Log Out</button></div></header>
+    <section class="hero-card h2k-hero member-feature-hero"><div><p class="eyebrow" id="member-training-hero-eyebrow">YOUR SCHEDULE</p><h3 id="member-training-hero-title">Every assigned workout, organized by day.</h3><p id="member-training-hero-description">Select a date to open, preview, or review a workout.</p></div></section>
 
-    <section class="panel training-calendar-panel future-workouts-panel member-page-panel" id="training-calendar-panel">
-      <div class="panel-heading"><div><p class="eyebrow">SCHEDULE</p><h3>Training Calendar</h3></div><p id="workout-history-message" class="auth-message" aria-live="polite"></p></div>
-      <div class="training-calendar-layout">
-        <div id="future-workout-list" class="future-calendar training-calendar"><div class="empty-state">Loading assigned workouts...</div></div>
-        <div class="training-calendar-day"><div class="training-calendar-day-heading"><span class="eyebrow">SELECTED DAY</span><strong id="training-calendar-selected-date">Today</strong></div><div id="workout-history-list" class="workout-history-list compact-workout-list"><div class="empty-state">Select a date to view workouts.</div></div></div>
-      </div>
-    </section>
+    <nav class="training-view-switch" aria-label="Training views">
+      <button type="button" class="training-view-button is-active" data-training-view="schedule" aria-selected="true">Schedule</button>
+      <button type="button" class="training-view-button" data-training-view="performance" aria-selected="false">Performance</button>
+    </nav>
 
-    <section class="panel member-testing-panel member-page-panel" id="member-testing-panel">
-      <div class="panel-heading">
-        <div><p class="eyebrow">PERFORMANCE TESTING</p><h3>Testing Days</h3></div>
-        <span class="member-testing-count" id="member-testing-count">0 assigned</span>
-      </div>
-      <p class="member-testing-intro">See each date and test battery your coaches assigned to you.</p>
-      <label class="member-testing-search">Find a Testing Day<input id="member-testing-search" type="search" placeholder="Search by date, name, or test..." autocomplete="off" /></label>
-      <p class="auth-message" id="member-testing-message" aria-live="polite"></p>
-      <section class="testing-comparison-section" aria-labelledby="member-testing-progress-title">
+    <div class="training-view" data-training-view-panel="schedule">
+      <section class="panel training-calendar-panel future-workouts-panel member-page-panel" id="training-calendar-panel">
+        <div class="panel-heading"><div><p class="eyebrow">SCHEDULE</p><h3>Training Calendar</h3></div><p id="workout-history-message" class="auth-message" aria-live="polite"></p></div>
+        <div class="training-calendar-layout">
+          <div id="future-workout-list" class="future-calendar training-calendar"><div class="empty-state">Loading assigned workouts...</div></div>
+          <div class="training-calendar-day"><div class="training-calendar-day-heading"><span class="eyebrow">SELECTED DAY</span><strong id="training-calendar-selected-date">Today</strong></div><div id="workout-history-list" class="workout-history-list compact-workout-list"><div class="empty-state">Select a date to view workouts.</div></div></div>
+        </div>
+      </section>
+
+      <section class="panel member-testing-panel member-page-panel" id="member-testing-schedule-panel">
+        <div class="panel-heading">
+          <div><p class="eyebrow">PERFORMANCE TESTING</p><h3>Upcoming Testing Days</h3></div>
+          <span class="member-testing-count" id="member-testing-upcoming-count">0 upcoming</span>
+        </div>
+        <p class="member-testing-intro">Review the test battery your coaches scheduled for you.</p>
+        <div class="member-testing-list" id="member-testing-upcoming-list">
+          <div class="empty-state">Loading upcoming Testing Days...</div>
+        </div>
+      </section>
+    </div>
+
+    <div class="training-view hidden" data-training-view-panel="performance">
+      <section class="panel member-testing-panel member-page-panel" id="member-testing-panel">
+        <div class="panel-heading">
+          <div><p class="eyebrow">PERFORMANCE HISTORY</p><h3>Testing Progress</h3></div>
+          <span class="member-testing-count" id="member-testing-count">0 completed</span>
+        </div>
+        <p class="member-testing-intro">Track official results, improvement, and personal records over time.</p>
+        <p class="auth-message" id="member-testing-message" aria-live="polite"></p>
+        <section class="testing-comparison-section" aria-labelledby="member-testing-progress-title">
         <div class="testing-comparison-heading">
           <div><p class="eyebrow">IMPROVEMENT OVER TIME</p><h4 id="member-testing-progress-title">Performance Progress</h4></div>
           <span class="testing-comparison-count" id="member-testing-comparison-count">0 tracked tests</span>
@@ -47,11 +65,16 @@
         <div class="testing-comparison-grid" id="member-testing-comparison-list">
           <div class="empty-state">Loading performance comparisons...</div>
         </div>
+        </section>
+        <div class="member-testing-history-heading">
+          <div><p class="eyebrow">OFFICIAL HISTORY</p><h4>Completed Testing Days</h4></div>
+          <label class="member-testing-search">Find a Testing Day<input id="member-testing-search" type="search" placeholder="Search by date, name, or test..." autocomplete="off" /></label>
+        </div>
+        <div class="member-testing-list" id="member-testing-list">
+          <div class="empty-state">Loading completed Testing Days...</div>
+        </div>
       </section>
-      <div class="member-testing-list" id="member-testing-list">
-        <div class="empty-state">Loading assigned Testing Days...</div>
-      </div>
-    </section>
+    </div>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -60,9 +83,9 @@
   <script src="js/shared/access-control.js?v=auth-reliability-3"></script>
   <script src="js/shared/workout-data.js?v=workout-attribution-1"></script>
   <script src="js/shared/leaderboard-metrics.js?v=member-leaderboards-1"></script>
-  <script src="js/shared/testing-comparisons.js?v=testing-progress-1"></script>
+  <script src="js/shared/testing-comparisons.js?v=training-views-1"></script>
   <script src="js/member/member-nav.js?v=member-leaderboards-1"></script>
   <script src="js/member/member-dashboard.js?v=member-role-guard-1"></script>
-  <script src="js/member/member-testing-days.js?v=testing-progress-1"></script>
+  <script src="js/member/member-testing-days.js?v=training-views-1"></script>
 </body>
 </html>

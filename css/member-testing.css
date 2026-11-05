@@ -1,3 +1,45 @@
+.training-view-switch {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding: 7px;
+}
+
+.training-view-button {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 13px;
+  color: var(--muted);
+  cursor: pointer;
+  font: 800 1rem "Inter", sans-serif;
+  min-height: 50px;
+  padding: 11px 16px;
+}
+
+.training-view-button:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+}
+
+.training-view-button.is-active {
+  background: rgba(105, 185, 255, 0.13);
+  border-color: rgba(105, 185, 255, 0.55);
+  box-shadow: inset 0 -2px 0 #69b9ff;
+  color: #baddff;
+}
+
+.training-view {
+  display: grid;
+  gap: 18px;
+}
+
+.training-view.hidden {
+  display: none;
+}
+
 .member-testing-panel {
   display: grid;
   gap: 18px;
@@ -19,6 +61,23 @@
 .member-testing-intro {
   color: var(--muted);
   margin: -8px 0 0;
+}
+
+.member-testing-history-heading {
+  align-items: end;
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 34rem);
+  padding-top: 22px;
+}
+
+.member-testing-history-heading h4 {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: clamp(1.7rem, 3vw, 2.35rem);
+  line-height: 1;
+  margin: 5px 0 0;
+  text-transform: uppercase;
 }
 
 .member-testing-search {
@@ -167,6 +226,22 @@
 }
 
 @media (max-width: 700px) {
+  .training-view-switch {
+    border-radius: 16px;
+    padding: 5px;
+  }
+
+  .training-view-button {
+    font-size: 0.9rem;
+    min-height: 44px;
+    padding: 9px 10px;
+  }
+
+  .member-testing-history-heading {
+    align-items: stretch;
+    grid-template-columns: 1fr;
+  }
+
   .member-testing-card {
     padding: 16px;
   }
