@@ -92,7 +92,7 @@ async function initializeMemberTestingDays() {
   if (!panel) return;
 
   try {
-    const access = await window.RipCityAccess.requireApprovedAccess();
+    const access = await window.RipCityAccess.requireMemberAccess();
     if (!access || !["athlete", "h2k_member"].includes(access.membership.role)) return;
     const memberProfile = await window.RipCityAccess.getMemberProfileForMembership(access.membership.id);
 

@@ -68,7 +68,7 @@ async function fetchRecentWorkoutRows(includeOptionalExerciseColumns = true) {
     .select(buildRecentWorkoutSelect(includeOptionalExerciseColumns))
     .eq("facility_id", workoutCoachAccess.membership.facility_id)
     .order("created_at", { ascending: false })
-    .limit(8);
+    .limit(50);
 }
 
 async function loadRecentWorkouts() {
@@ -91,14 +91,37 @@ async function loadRecentWorkouts() {
   }
 
   recentWorkoutRows = data || [];
+  renderRecentWorkoutAssignerOptions();
   renderRecentWorkouts();
+}
+
+function renderRecentWorkoutAssignerOptions() {
+  const select = document.getElementById("recent-workout-assigner-filter");
+  if (!select) return;
+
+  const selectedValue = select.value || "all";
+  const staff = new Map();
+  recentWorkoutRows.forEach(workout => {
+    (workout.workout_assignments || []).forEach(assignment => {
+      if (assignment.assigned_by) {
+        staff.set(assignment.assigned_by, window.RipCityWorkoutData.getProfileName(assignment.assigner));
+      }
+    });
+  });
+
+  select.innerHTML = `<option value="all">All staff</option>${[...staff.entries()]
+    .sort((a, b) => a[1].localeCompare(b[1]))
+    .map(([id, name]) => `<option value="${window.RipCityUI.attr(id)}">${window.RipCityUI.text(name)}</option>`)
+    .join("")}`;
+  select.value = staff.has(selectedValue) ? selectedValue : "all";
 }
 
 function getRecentWorkoutFilters() {
   return {
     search: getInputValue("recent-workout-search").toLowerCase(),
     assignedDate: getInputValue("recent-workout-date-filter"),
-    targetType: getInputValue("recent-workout-target-filter") || "all"
+    targetType: getInputValue("recent-workout-target-filter") || "all",
+    assignerId: getInputValue("recent-workout-assigner-filter") || "all"
   };
 }
 
@@ -127,6 +150,11 @@ function workoutMatchesRecentFilters(workout, filters) {
   }
 
   if (filters.targetType !== "all" && !assignments.some(row => row.target_type === filters.targetType)) {
+    return false;
+  }
+
+  if (filters.assignerId !== "all" &&
+      !assignments.some(row => row.assigned_by === filters.assignerId)) {
     return false;
   }
 
@@ -261,8 +289,14 @@ function renderRecentWorkouts() {
             </label>
 
             <label>
-              Assigned Date
-              <input type="date" value="${formatLocalDate(new Date())}" data-reuse-date="${window.RipCityUI.attr(workout.id)}" />
+              Assigned Dates
+              <span class="workout-date-input-row">
+                <input type="date" value="${formatLocalDate(new Date())}" data-reuse-date="${window.RipCityUI.attr(workout.id)}" />
+                <button class="outline-btn small-inline-btn" type="button" data-add-reuse-date="${window.RipCityUI.attr(workout.id)}">Add Date</button>
+              </span>
+              <span class="workout-selected-dates" data-reuse-selected-dates="${window.RipCityUI.attr(workout.id)}">
+                <span class="muted-small">One date selected unless you add more.</span>
+              </span>
             </label>
 
             <label data-reuse-group-field="${window.RipCityUI.attr(workout.id)}">
@@ -327,6 +361,10 @@ function renderRecentWorkouts() {
       const workout = recentWorkoutRows.find(row => row.id === button.dataset.assignExistingWorkout);
       assignExistingWorkout(workout);
     });
+  });
+
+  list.querySelectorAll("[data-add-reuse-date]").forEach(button => {
+    button.addEventListener("click", () => addExistingWorkoutDate(button.dataset.addReuseDate));
   });
 
   list.querySelectorAll("[data-toggle-reassign-workout]").forEach(button => {

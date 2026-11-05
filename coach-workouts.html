@@ -144,10 +144,15 @@
                   </select>
                 </label>
 
-                <label>
-                  Assigned Date
-                  <input type="date" id="workout-date" />
-                </label>
+                <div class="form-field workout-date-picker-field">
+                  <span class="field-label">Assigned Dates</span>
+                  <div class="workout-date-add-row">
+                    <input type="date" id="workout-date" aria-label="Assigned date" />
+                    <button class="outline-btn small-inline-btn" id="add-workout-date-btn" type="button">Add Date</button>
+                  </div>
+                  <div id="workout-selected-dates" class="workout-selected-dates" aria-live="polite"></div>
+                  <small class="field-help">Choose one date, or add several dates to repeat this workout.</small>
+                </div>
               </div>
 
               <div class="form-row">
@@ -241,6 +246,13 @@
               </select>
             </label>
 
+            <label>
+              Assigned By
+              <select id="recent-workout-assigner-filter">
+                <option value="all">All staff</option>
+              </select>
+            </label>
+
             <button class="outline-btn" id="refresh-workouts-btn" type="button">Refresh</button>
           </div>
 
@@ -256,14 +268,14 @@
   <script src="js/shared/supabaseClient.js"></script>
   <script src="js/shared/ui-utils.js"></script>
   <script src="js/coach/coach-nav.js?v=ui-polish-1"></script>
-  <script src="js/shared/access-control.js?v=legal-acceptance-2"></script>
+  <script src="js/shared/access-control.js?v=auth-reliability-3"></script>
   <script src="js/shared/workout-data.js?v=workout-attribution-1"></script>
   <script src="js/coach/workouts/core.js"></script>
   <script src="js/coach/workouts/data.js"></script>
   <script src="js/coach/workouts/exercise-library.js"></script>
-  <script src="js/coach/workouts/builder.js"></script>
-  <script src="js/coach/workouts/assignments.js"></script>
-  <script src="js/coach/workouts/history.js?v=workout-attribution-1"></script>
-  <script src="js/coach/workouts/page.js"></script>
+  <script src="js/coach/workouts/builder.js?v=workflow-hotfix-1"></script>
+  <script src="js/coach/workouts/assignments.js?v=workflow-hotfix-1"></script>
+  <script src="js/coach/workouts/history.js?v=workflow-hotfix-1"></script>
+  <script src="js/coach/workouts/page.js?v=workflow-hotfix-1"></script>
 </body>
 </html>

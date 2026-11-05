@@ -164,7 +164,7 @@ function showH2KMessage(message, isError = false) {
 
 // Gets the logged-in user and confirms they are approved for one facility.
 async function getApprovedUserAccess() {
-  return window.RipCityAccess.requireApprovedAccess({
+  return window.RipCityAccess.requireMemberAccess({
     extraProfileColumns: "profile_picture_url"
   });
 }

@@ -1,8 +1,10 @@
-const RIP_CITY_SLUG = "rip-city";
 const LEGAL_ACKNOWLEDGMENT_VERSION = "2026-10-25";
-let signupFacility = null;
 let signupCoachInviteCode = "";
 let signupCoachInvite = null;
+let signupInProgress = false;
+let loginInProgress = false;
+const AUTH_REQUEST_TIMEOUT_MS = 15000;
+let currentAuthAttempt = null;
 
 // This file is only for public auth pages:
 // signup.html, login.html, and pending.html.
@@ -13,6 +15,66 @@ function getCurrentPage() {
   return page.replace(/\.html$/, "");
 }
 
+function createAuthAttempt(type) {
+  const randomPart = window.crypto?.randomUUID?.().slice(0, 8)
+    || `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+  currentAuthAttempt = {
+    id: randomPart.toUpperCase(),
+    type,
+    stage: "started",
+    startedAt: new Date().toISOString()
+  };
+  window.__ripCityLastAuthAttempt = currentAuthAttempt;
+  return currentAuthAttempt;
+}
+
+function setAuthStage(stage) {
+  if (currentAuthAttempt) currentAuthAttempt.stage = stage;
+}
+
+function getAuthReference(error) {
+  const message = String(error?.message || "");
+  const code = String(error?.code || "");
+  const status = Number(error?.status || 0);
+  const isExpectedAuthError = (
+    code === "invalid_credentials"
+    || code === "user_already_exists"
+    || code === "over_email_send_rate_limit"
+    || status === 429
+    || /invalid login credentials|no account found for that username|already (registered|exists)|rate limit|too many requests|email.*limit/i.test(message)
+  );
+  if (isExpectedAuthError) return "";
+
+  const attempt = currentAuthAttempt;
+  if (!attempt) return "";
+  const stage = error?.authStage || attempt.stage || "unknown";
+  return ` Reference ${attempt.id} (${stage}).`;
+}
+
+async function runAuthStage(stage, operation) {
+  setAuthStage(stage);
+  try {
+    return await operation();
+  } catch (error) {
+    error.authStage ||= stage;
+    throw error;
+  }
+}
+
+async function recoverAuthenticatedUser(expectedEmail = "") {
+  // A timed-out fetch is not cancelled by Promise.race. Give the Supabase
+  // client a moment to receive a late successful response before telling the
+  // user to submit again.
+  await new Promise(resolve => window.setTimeout(resolve, 600));
+  const { data, error } = await db.auth.getSession();
+  if (error) return null;
+  const user = data.session?.user || null;
+  if (user && expectedEmail && normalizeEmail(user.email || "") !== normalizeEmail(expectedEmail)) {
+    return null;
+  }
+  return user;
+}
+
 function showMessage(elementId, message, isError = false) {
   const element = document.getElementById(elementId);
   if (!element) return;
@@ -21,53 +83,85 @@ function showMessage(elementId, message, isError = false) {
   element.classList.toggle("error-message", isError);
 }
 
-function createClientId() {
-  if (window.crypto?.randomUUID) {
-    return window.crypto.randomUUID();
-  }
+function withAuthTimeout(request, message, timeoutMs = AUTH_REQUEST_TIMEOUT_MS) {
+  let timeoutId;
+  const timeout = new Promise((resolve, reject) => {
+    timeoutId = window.setTimeout(() => {
+      const error = new Error(message || "Rip City took too long to respond.");
+      error.code = "request_timeout";
+      reject(error);
+    }, timeoutMs);
+  });
 
-  return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, char => (
-    Number(char) ^ window.crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> Number(char) / 4
-  ).toString(16));
+  return Promise.race([Promise.resolve(request), timeout])
+    .finally(() => window.clearTimeout(timeoutId));
 }
 
-async function getRipCityFacility() {
-  // Signup currently joins everyone to the seeded Rip City facility.
-  // Later this can be invite-code driven for other facilities.
-  const { data, error } = await db
-    .from("facilities")
-    .select("id, name, slug")
-    .eq("slug", RIP_CITY_SLUG)
-    .single();
+function getAuthErrorMessage(error, fallbackMessage) {
+  const message = String(error?.message || "");
+  const code = String(error?.code || "");
+  const status = Number(error?.status || 0);
 
-  if (error) throw error;
-  return data;
+  if (
+    status === 429
+    || code === "over_email_send_rate_limit"
+    || /rate limit|too many requests|email.*limit/i.test(message)
+  ) {
+    return "Too many account emails were requested. Wait about an hour, then try again. If you already created an account, use Log In instead.";
+  }
+
+  if (code === "request_timeout") {
+    return "Rip City took too long to respond. Check your connection, then try again. Your first request may still have finished.";
+  }
+
+  if (code === "invalid_credentials" || /invalid login credentials/i.test(message)) {
+    return "The email, username, or password is incorrect.";
+  }
+
+  if (code === "user_already_exists" || /already (registered|exists)/i.test(message)) {
+    return "An account already exists for that email. Use the same password to finish signup, or log in.";
+  }
+
+  return message || fallbackMessage;
+}
+
+function setFormSubmitState(formId, disabled, busyLabel, idleLabel) {
+  const button = document.querySelector(`#${formId} button[type='submit']`);
+  if (!button) return;
+  button.disabled = disabled;
+  button.textContent = disabled ? busyLabel : idleLabel;
 }
 
 async function getCurrentUserProfile(userId) {
-  const { data, error } = await db
-    .from("profiles")
-    .select(`
-      id,
-      email,
-      full_name,
-      global_role,
-      facility_members:facility_members!facility_members_profile_id_fkey (
+  const { data, error } = await withAuthTimeout(
+    db
+      .from("profiles")
+      .select(`
         id,
-        role,
-        status,
-        facility_id
-      )
-    `)
-    .eq("id", userId)
-    .single();
+        email,
+        full_name,
+        global_role,
+        facility_members:facility_members!facility_members_profile_id_fkey (
+          id,
+          role,
+          status,
+          facility_id
+        )
+      `)
+      .eq("id", userId)
+      .single(),
+    "Loading the account profile took too long."
+  );
 
   if (error) throw error;
   return data;
 }
 
 async function getCurrentLegalAcceptance() {
-  const { data, error } = await db.rpc("get_current_legal_acceptance");
+  const { data, error } = await withAuthTimeout(
+    db.rpc("get_current_legal_acceptance"),
+    "Checking the current terms took too long."
+  );
   if (error) throw error;
   if (!data?.length) throw new Error("Current legal documents are not configured.");
   return data[0];
@@ -144,9 +238,12 @@ async function resolveLoginEmail(identifier) {
     return normalizedIdentifier;
   }
 
-  const { data, error } = await db.rpc("resolve_login_identifier", {
-    login_identifier: normalizeUsername(normalizedIdentifier)
-  });
+  const { data, error } = await withAuthTimeout(
+    db.rpc("resolve_login_identifier", {
+      login_identifier: normalizeUsername(normalizedIdentifier)
+    }),
+    "Looking up that username took too long."
+  );
 
   if (error) throw error;
   if (!data) throw new Error("No account found for that username.");
@@ -156,7 +253,10 @@ async function resolveLoginEmail(identifier) {
 
 async function getSignupUser({ email, password, fullName, allowExistingAccount, legalAcknowledgment }) {
   if (allowExistingAccount) {
-    const { data: sessionData, error: sessionError } = await db.auth.getSession();
+    const { data: sessionData, error: sessionError } = await withAuthTimeout(
+      db.auth.getSession(),
+      "Checking the current account took too long."
+    );
     if (sessionError) throw sessionError;
 
     const sessionUser = sessionData.session?.user;
@@ -165,47 +265,57 @@ async function getSignupUser({ email, password, fullName, allowExistingAccount, 
         throw new Error("Log out of the current account before using this coach invite.");
       }
 
-      const { data: updatedUserData, error: updateUserError } = await db.auth.updateUser({
-        data: legalAcknowledgment
-      });
+      const { data: updatedUserData, error: updateUserError } = await withAuthTimeout(
+        db.auth.updateUser({ data: legalAcknowledgment }),
+        "Updating the current account took too long."
+      );
       if (updateUserError) throw updateUserError;
       return updatedUserData.user || sessionUser;
     }
   }
 
-  const { data: authData, error: authError } = await db.auth.signUp({
-    email,
-    password,
-    options: {
-      data: {
-        full_name: fullName,
-        ...legalAcknowledgment
+  const { data: authData, error: authError } = await withAuthTimeout(
+    db.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: fullName,
+          ...legalAcknowledgment
+        }
       }
-    }
-  });
-
-  const existingAccountError = allowExistingAccount && (
-    authError?.code === "user_already_exists"
-    || /already (registered|exists)/i.test(authError?.message || "")
+    }),
+    "Creating the account took too long."
   );
 
-  if (authError && !existingAccountError) throw authError;
+  const existingAccountResponse = allowExistingAccount && (
+    authError?.code === "user_already_exists"
+    || /already (registered|exists)/i.test(authError?.message || "")
+    || Boolean(
+      authData?.user
+      && Array.isArray(authData.user.identities)
+      && authData.user.identities.length === 0
+    )
+  );
+
+  if (authError && !existingAccountResponse) throw authError;
   if (authData?.session?.user) return authData.session.user;
 
   // Supabase intentionally returns no session when signUp is called for an
   // existing account. A coach whose first invite claim was interrupted can
   // prove ownership with the same password and resume using a fresh link.
-  if (allowExistingAccount) {
-    const { data: loginData, error: loginError } = await db.auth.signInWithPassword({
-      email,
-      password
-    });
+  if (existingAccountResponse) {
+    const { data: loginData, error: loginError } = await withAuthTimeout(
+      db.auth.signInWithPassword({ email, password }),
+      "Resuming the existing account took too long."
+    );
 
-    if (loginError && existingAccountError) throw loginError;
+    if (loginError) throw loginError;
     if (!loginError && loginData.user) {
-      const { data: updatedUserData, error: updateUserError } = await db.auth.updateUser({
-        data: legalAcknowledgment
-      });
+      const { data: updatedUserData, error: updateUserError } = await withAuthTimeout(
+        db.auth.updateUser({ data: legalAcknowledgment }),
+        "Updating the existing account took too long."
+      );
       if (updateUserError) throw updateUserError;
       return updatedUserData.user || loginData.user;
     }
@@ -248,6 +358,11 @@ async function ensureSignupProfile({ user, email, fullName, username }) {
 
 async function handleSignup(event) {
   event.preventDefault();
+
+  if (signupInProgress) return;
+  signupInProgress = true;
+  createAuthAttempt("signup");
+  setFormSubmitState("signup-form", true, "Creating Account...", "Create Account");
 
   showMessage("signup-message", "Creating your account...");
 
@@ -295,16 +410,20 @@ async function handleSignup(event) {
       return;
     }
 
-    const existingUsernameEmail = await resolveLoginEmail(username).catch(error => {
+    const existingUsernameEmail = await runAuthStage("username-check", () => resolveLoginEmail(username)).catch(error => {
       if (/No account found/i.test(error.message || "")) return null;
       throw error;
     });
 
     if (
       existingUsernameEmail
-      && (!isCoachSignup || normalizeEmail(existingUsernameEmail) !== normalizeEmail(email))
+      && normalizeEmail(existingUsernameEmail) !== normalizeEmail(email)
     ) {
-      showMessage("signup-message", "That username is already taken.", true);
+      showMessage(
+        "signup-message",
+        "That username belongs to an existing Rip City profile. Log in to that account or choose another username.",
+        true
+      );
       return;
     }
 
@@ -313,13 +432,20 @@ async function handleSignup(event) {
       return;
     }
 
-    const user = await getSignupUser({
-      email,
-      password,
-      fullName,
-      allowExistingAccount: isCoachSignup,
-      legalAcknowledgment
-    });
+    let user;
+    try {
+      user = await runAuthStage("create-auth-account", () => getSignupUser({
+        email,
+        password,
+        fullName,
+        allowExistingAccount: true,
+        legalAcknowledgment
+      }));
+    } catch (error) {
+      if (error.code !== "request_timeout") throw error;
+      user = await recoverAuthenticatedUser(email);
+      if (!user) throw error;
+    }
 
     if (!user) {
       showMessage(
@@ -330,20 +456,26 @@ async function handleSignup(event) {
       return;
     }
 
-    const { error: legalAcceptanceError } = await db.rpc("record_current_legal_acceptance", {
-      p_age_bracket: ageBracket,
-      p_guardian_permission_confirmed: guardianPermissionConfirmed,
-      p_legal_terms_confirmed: legalTermsConfirmed
-    });
+    const { error: legalAcceptanceError } = await runAuthStage("save-legal-acceptance", () => withAuthTimeout(
+      db.rpc("record_current_legal_acceptance", {
+        p_age_bracket: ageBracket,
+        p_guardian_permission_confirmed: guardianPermissionConfirmed,
+        p_legal_terms_confirmed: legalTermsConfirmed
+      }),
+      "Saving the legal acceptance took too long."
+    ));
     if (legalAcceptanceError) throw legalAcceptanceError;
 
-    await ensureSignupProfile({ user, email, fullName, username });
-    coachProfileReady = isCoachSignup;
-
     if (isCoachSignup) {
-      const { data: claimedInvite, error: claimError } = await db.rpc("claim_coach_invite", {
-        claim_invite_code: signupCoachInviteCode
-      });
+      await ensureSignupProfile({ user, email, fullName, username });
+      coachProfileReady = true;
+
+      const { data: claimedInvite, error: claimError } = await withAuthTimeout(
+        db.rpc("claim_coach_invite", {
+          claim_invite_code: signupCoachInviteCode
+        }),
+        "Claiming the coach invite took too long."
+      );
 
       if (claimError) throw claimError;
       if (!claimedInvite?.length) throw new Error("The coach invite could not be claimed.");
@@ -352,44 +484,29 @@ async function handleSignup(event) {
       return;
     }
 
-    const facility = signupFacility || await getRipCityFacility();
+    const { data: completedSignup, error: completionError } = await runAuthStage("complete-member-profile", () => withAuthTimeout(
+      db.rpc("complete_member_signup", {
+        p_full_name: fullName,
+        p_username: username,
+        p_member_type: memberType,
+        p_sport: sport || null,
+        p_position: position || null,
+        p_school: school || null,
+        p_graduation_year: graduationYear ? Number(graduationYear) : null,
+        p_body_weight: bodyWeight ? Number(bodyWeight) : null
+      }),
+      "Finishing the Rip City account took too long."
+    ));
 
-    const role = memberType === "athlete" ? "athlete" : "h2k_member";
+    if (completionError) throw completionError;
+    if (!completedSignup?.length) throw new Error("The Rip City account could not be completed.");
 
-    // facility_members controls approval/access for the facility.
-    const { data: facilityMember, error: memberError } = await db
-      .from("facility_members")
-      .insert({
-        facility_id: facility.id,
-        profile_id: user.id,
-        role,
-        status: "pending"
-      })
-      .select("id")
-      .single();
+    if (completedSignup[0].membership_status === "pending") {
+      window.location.href = "pending.html";
+      return;
+    }
 
-    if (memberError) throw memberError;
-
-    const memberProfileId = createClientId();
-
-    // member_profiles stores program-specific member details.
-    const { error: memberProfileError } = await db
-      .from("member_profiles")
-      .insert({
-        id: memberProfileId,
-        facility_member_id: facilityMember.id,
-        member_type: memberType,
-        sport: memberType === "athlete" ? sport || null : null,
-        age_group: null,
-        position: memberType === "athlete" ? position || null : null,
-        school: memberType === "athlete" ? school || null : null,
-        graduation_year: graduationYear ? Number(graduationYear) : null,
-        body_weight: bodyWeight ? Number(bodyWeight) : null
-      });
-
-    if (memberProfileError) throw memberProfileError;
-
-    window.location.href = "pending.html";
+    await redirectByProfile(user.id);
   } catch (error) {
     console.error(error);
     if (isCoachSignup && coachProfileReady) {
@@ -400,12 +517,24 @@ async function handleSignup(event) {
       );
       return;
     }
-    showMessage("signup-message", error.message || "Something went wrong while creating your account.", true);
+    showMessage(
+      "signup-message",
+      `${getAuthErrorMessage(error, "Something went wrong while creating your account.")}${getAuthReference(error)}`,
+      true
+    );
+  } finally {
+    signupInProgress = false;
+    setFormSubmitState("signup-form", false, "Creating Account...", "Create Account");
   }
 }
 
 async function handleLogin(event) {
   event.preventDefault();
+
+  if (loginInProgress) return;
+  loginInProgress = true;
+  createAuthAttempt("login");
+  setFormSubmitState("login-form", true, "Logging In...", "Log In");
 
   showMessage("login-message", "Logging in...");
 
@@ -413,19 +542,34 @@ async function handleLogin(event) {
   const password = document.getElementById("login-password").value;
 
   try {
-    const email = await resolveLoginEmail(identifier);
+    const email = await runAuthStage("resolve-login", () => resolveLoginEmail(identifier));
 
-    const { data, error } = await db.auth.signInWithPassword({
-      email,
-      password
-    });
+    let data;
+    try {
+      const response = await runAuthStage("password-login", () => withAuthTimeout(
+        db.auth.signInWithPassword({ email, password }),
+        "Login took too long."
+      ));
+      if (response.error) throw response.error;
+      data = response.data;
+    } catch (error) {
+      if (error.code !== "request_timeout") throw error;
+      const recoveredUser = await recoverAuthenticatedUser(email);
+      if (!recoveredUser) throw error;
+      data = { user: recoveredUser };
+    }
 
-    if (error) throw error;
-
-    await redirectByProfile(data.user.id);
+    await runAuthStage("load-destination", () => redirectByProfile(data.user.id));
   } catch (error) {
     console.error(error);
-    showMessage("login-message", error.message || "Login failed.", true);
+    showMessage(
+      "login-message",
+      `${getAuthErrorMessage(error, "Login failed.")}${getAuthReference(error)}`,
+      true
+    );
+  } finally {
+    loginInProgress = false;
+    setFormSubmitState("login-form", false, "Logging In...", "Log In");
   }
 }
 
@@ -733,11 +877,6 @@ async function setupSignupPage() {
   setupMemberTypeToggle();
   applySignupTypeFromUrl();
 
-  signupFacility = await getRipCityFacility().catch(error => {
-    console.error(error);
-    showMessage("signup-message", "Could not load the Rip City signup facility. Try again shortly.", true);
-    return null;
-  });
   updateSignupMemberTypeFields();
 
   document.getElementById("signup-form").addEventListener("submit", handleSignup);

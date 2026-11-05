@@ -135,6 +135,8 @@
         <div class="testing-list-toolbar">
           <label>Search<input id="testing-day-search" type="search" placeholder="Search by day, date, group, person, or test..." autocomplete="off" /></label>
           <label>Status<select id="testing-status-filter"><option value="all">All statuses</option><option value="scheduled">Scheduled</option><option value="draft">Drafts</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option></select></label>
+          <label>Group<select id="testing-group-filter"><option value="all">All groups</option></select></label>
+          <label>Created By<select id="testing-creator-filter"><option value="all">All staff</option></select></label>
         </div>
         <div id="testing-day-list" class="testing-day-list"><div class="empty-state">Loading Testing Days...</div></div>
       </section>
@@ -161,8 +163,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/shared/supabaseClient.js"></script>
   <script src="js/shared/ui-utils.js"></script>
-  <script src="js/shared/access-control.js?v=legal-acceptance-2"></script>
+  <script src="js/shared/access-control.js?v=auth-reliability-3"></script>
   <script src="js/coach/coach-nav.js?v=testing-days-1"></script>
-  <script src="js/coach/coach-testing.js?v=testing-days-12"></script>
+  <script src="js/coach/coach-testing.js?v=testing-days-13"></script>
 </body>
 </html>

@@ -117,7 +117,8 @@ async function saveWorkout(event) {
     const targetType = getInputValue("workout-target-type") || "group";
     const groupIds = getSelectedValues("workout-group");
     const memberProfileId = getInputValue("workout-member");
-    const assignedDate = getInputValue("workout-date");
+    const assignedDates = getWorkoutAssignedDates();
+    const assignedDate = assignedDates[0] || "";
 
     const validationError = getWorkoutValidationError({
       shouldAssign,
@@ -141,7 +142,7 @@ async function saveWorkout(event) {
       return;
     }
 
-    if (shouldAssign && !confirmWorkoutCreate({ title, targetType, groupIds, memberProfileId, assignedDate })) {
+    if (shouldAssign && !confirmWorkoutCreate({ title, targetType, groupIds, memberProfileId, assignedDate, assignedDates })) {
       showWorkoutMessage("Workout creation cancelled.");
       return;
     }
@@ -239,7 +240,7 @@ async function saveWorkout(event) {
         targetType,
         groupIds,
         memberProfileId,
-        assignedDate
+        assignedDates
       });
 
       const { error: assignmentError } = await db
@@ -253,7 +254,7 @@ async function saveWorkout(event) {
         targetType,
         groupIds,
         memberProfileId,
-        assignedDate
+        assignedDates
       }));
     } else {
       showWorkoutMessage(`Workout "${title}" saved as a draft.`);
@@ -304,6 +305,7 @@ function resetWorkoutForm() {
   document.getElementById("block-list").innerHTML = "";
   clearWorkoutValidationErrors();
   setTodayAsDefaultDate();
+  resetSelectedWorkoutDates();
   updateAssignmentControls();
 
   // Start with a common training block.
@@ -343,6 +345,7 @@ async function initCoachWorkoutsPage() {
     await refreshExerciseLibrary();
 
     setTodayAsDefaultDate();
+    renderSelectedWorkoutDates();
     addBlockCard();
     await loadRecentWorkouts();
 
@@ -361,6 +364,8 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("add-block-btn").addEventListener("click", addBlockCard);
   document.getElementById("recent-workout-search")?.addEventListener("input", renderRecentWorkouts);
   document.getElementById("recent-workout-date-filter")?.addEventListener("change", renderRecentWorkouts);
+  document.getElementById("recent-workout-assigner-filter")?.addEventListener("change", renderRecentWorkouts);
+  document.getElementById("add-workout-date-btn")?.addEventListener("click", addSelectedWorkoutDate);
   document.getElementById("recent-workout-target-filter")?.addEventListener("change", renderRecentWorkouts);
   document.getElementById("workout-target-type").addEventListener("change", updateAssignmentControls);
   document.getElementById("workout-form").addEventListener("submit", saveWorkout);

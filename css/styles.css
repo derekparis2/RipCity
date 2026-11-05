@@ -10516,3 +10516,46 @@ details[open] > .compact-panel-summary > span:last-child::after {
     padding-top: 7px;
   }
 }
+/* Multi-date workout assignment */
+.workout-date-add-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.65rem;
+  align-items: center;
+}
+
+.workout-selected-dates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.55rem;
+}
+
+.workout-date-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.65rem;
+  border: 1px solid rgba(103, 181, 255, 0.45);
+  border-radius: 999px;
+  background: rgba(103, 181, 255, 0.1);
+  color: #dceeff;
+  font-weight: 700;
+}
+
+.workout-date-chip button {
+  width: auto;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+@media (max-width: 640px) {
+  .workout-date-add-row {
+    grid-template-columns: 1fr;
+  }
+}

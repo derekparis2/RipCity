@@ -33,9 +33,9 @@ Netlify:
 
 Before production changes:
 
-1. Make small production fixes on branches from `main` only when needed.
-2. Put V3 product work on feature branches from `v3-development`.
-3. Merge approved `main` changes back into `v3-development` so V3 stays current.
+1. Make small fixes on `main` only when they are needed for the live beta.
+2. Put larger product work on `v3-development` feature branches.
+3. Merge `main` into `v3-development` after hotfixes so V3 does not fall behind production.
 
 ## Files To Read First
 
@@ -79,10 +79,17 @@ Core direction:
 
 ## Current Release State
 
-V2 is complete and deployed to `main`. Its detailed record remains in
-`docs/VERSION_2_PLAN.md` and `docs/V2_BACKLOG.md`. Active product direction is
-in `docs/VERSION_3_PLAN.md`, and the maintained implementation order is
-`docs/V3_BACKLOG.md`.
+See `docs/VERSION_2_PLAN.md` for detailed product requirements and
+`docs/V2_BACKLOG.md` for the maintained implementation order and status. The
+V2 is complete and live on `main`. All unfinished feature ideas were moved to
+`docs/VERSION_3_PLAN.md`.
+
+The current production workflow hotfix adds recoverable auth timeouts and
+reference IDs, blocks member navigation to coach-only shells, supports
+multi-date assignment for both new and existing workouts, filters created
+workouts by assigning staff member, preserves announcement author names, and
+adds scalable Testing Day group/creator filters plus guarded removal of days
+without saved outcomes.
 
 Testing Day results remain staff-entered. Members may view only their own
 official outcomes and cannot submit or edit Testing Day results.

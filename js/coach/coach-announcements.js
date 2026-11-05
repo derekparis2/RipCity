@@ -212,7 +212,7 @@
           </div>
           <p class="announcement-message-copy">${ui().text(announcement.body)}</p>
           <div class="announcement-card-meta">
-            <span>Posted by ${ui().text(creator?.full_name || "Coach")} · ${ui().text(formatAnnouncementDate(announcement.publish_at))}</span>
+            <span>Posted by ${ui().text(announcement.author_display_name || creator?.full_name || "Coach")} · ${ui().text(formatAnnouncementDate(announcement.publish_at))}</span>
             ${announcement.expires_at ? `<span>Expires ${ui().text(formatAnnouncementDate(announcement.expires_at))}</span>` : ""}
           </div>
           ${canDelete ? `<button class="text-button announcement-delete-button" type="button" data-delete-announcement="${ui().attr(announcement.id)}">Delete</button>` : ""}
@@ -309,6 +309,7 @@
         publish_at,
         expires_at,
         created_by,
+        author_display_name,
         creator:profiles!coach_announcements_created_by_fkey (full_name)
       `)
       .eq("facility_id", access.facilityId)

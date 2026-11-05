@@ -214,3 +214,17 @@ where user_id = (
 
 Never use that reset query in production; production acceptance history is
 append-only evidence and must be retained.
+
+## Atomic Member Signup Completion Checks
+
+After applying `20261102120000_add_atomic_member_signup_completion.sql`, run:
+
+```bash
+node supabase/tests/staging_atomic_signup_completion_checks.mjs
+```
+
+The staging test uses the pending Rip City member fixture and calls the signup
+completion operation twice. It verifies both retries preserve the existing
+membership and member-profile IDs, leave exactly one of each row, and reject a
+retry that attempts to replace the saved username. It does not send Auth email
+and does not change fixture status or relationships.
