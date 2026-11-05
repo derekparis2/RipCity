@@ -97,6 +97,15 @@ official outcomes and cannot submit or edit Testing Day results.
 New V3 feature branches start from current `v3-development`. The V2 production
 release and its ordered production migration sequence are complete.
 
+Immediate V3 release gate:
+
+- Strength maxes and percentage-based workout programming is Package 1 and the
+  only implementation priority until complete.
+- Finish and verify the entire package in staging, merge it into
+  `v3-development`, then release `v3-development` to `main` and smoke-test it.
+- Continue routines/checklists, Testing Day comparisons, multi-facility, and
+  hitting implementation only after that workout release is live.
+
 Current signup-link decision:
 
 - Preserve the V1 coach workflow that copies Athlete, H2K, or general signup links.

@@ -9,6 +9,18 @@ Do not create every branch in advance. Before starting a schema-changing
 package, confirm that the other contributor is not applying a different
 migration to the shared staging project.
 
+## Immediate Release Gate
+
+**Package 1 is the only implementation priority until it is complete.** Finish
+the complete strength-max and percentage-programming workflow, verify it in
+staging, merge its reviewed feature branch into `v3-development`, and then
+release `v3-development` to `main`. Only after that production merge should
+Derek and Sam continue with Packages 2 and later.
+
+Planning and approved sample-data research may happen while Package 1 is in
+progress, but later feature implementation must not delay or expand the first
+workout release.
+
 ## Status Key
 
 - **Ready:** Product direction is sufficient to begin the branch.
@@ -21,7 +33,7 @@ migration to the shared staging project.
 
 ## 1. Strength Maxes And Percentage-Based Programming
 
-- **Status:** Highest-priority V3 product package; needs max-formula decisions
+- **Status:** **NEXT — highest-priority V3 release gate**
 - **Suggested branch:** `<name>/strength-max-programming`
 - **Plan detail:** [Strength maxes and percentage programming](VERSION_3_PLAN.md#strength-maxes-and-percentage-based-programming)
 
@@ -31,14 +43,57 @@ and prescribe workout loads as percentages without rebuilding the workout
 builder. Complete this workout-side value package before starting the hitting
 implementation packages.
 
-**Complete when:** Coaches can safely review each member's resolved load before
-assignment, missing maxes cannot silently become zero-weight prescriptions,
-rounding follows facility rules, and every assigned percentage target preserves
-the exact max and calculated load used at that time.
+**Complete when:** Coaches can record verified, estimated, and training-max
+history; prescribe a percentage in the existing workout builder; review each
+member's resolved load before assignment; and members see the correct resolved
+target. Missing maxes cannot silently become zero-weight prescriptions,
+rounding follows facility rules, Testing Day strength results can be approved
+into max history, and every assignment preserves the exact max and calculated
+load used at that time. The migration, RLS checks, focused automated tests,
+responsive staging checks, and production release notes must all be complete.
+
+**Release action:** When every completion item above passes review, merge this
+package through `v3-development` into `main`. Confirm the production migration
+and smoke test, then continue to Package 2.
 
 ---
 
-## 2. Platform Ownership And Isolation Contract
+## 2. Daily Routines And Checklists
+
+- **Status:** Ready after Package 1 is live on `main`
+- **Suggested branch:** `<name>/daily-routines`
+- **Plan detail:** [Daily routines and checklists](VERSION_3_PLAN.md#daily-routines-and-checklists)
+
+Add facility-configured morning, afternoon, and night routines without
+duplicating the existing habit engine. Coaches define reusable checklist
+templates, assign them to groups or individuals, and review completion while
+members get a simple time-of-day experience.
+
+**Complete when:** Routine templates, assignments, member completion, history,
+streak behavior, coach review, time-zone rules, and facility isolation work in
+staging on phone and desktop.
+
+---
+
+## 3. Advanced Testing Comparisons And Performance History
+
+- **Status:** Ready after Package 1 is live on `main`
+- **Suggested branch:** `<name>/testing-progress`
+- **Plan detail:** [Advanced testing](VERSION_3_PLAN.md#advanced-testing-and-performance-history)
+
+Extend the shipped Testing Day feature with approved attempt/best-result rules,
+comparison history, improvement values, personal records, charts, correction
+audit, and selected leaderboard metrics. Reuse the shared metric contract
+rather than creating a second incompatible statistics system.
+
+**Complete when:** Members and coaches can clearly compare current and prior
+results, approved tests show historically correct improvements and records,
+corrections remain auditable, and only explicitly approved metrics enter
+leaderboards.
+
+---
+
+## 4. Platform Ownership And Isolation Contract
 
 - **Status:** Ready
 - **Suggested branch:** `<name>/platform-owner-isolation`
@@ -56,9 +111,9 @@ and focused two-facility allowed/denied tests pass in staging.
 
 ---
 
-## 3. Facility Creation And Configuration
+## 5. Facility Creation And Configuration
 
-- **Status:** Depends on Package 2
+- **Status:** Depends on Package 4
 - **Suggested branch:** `<name>/facility-creation`
 - **Plan detail:** [Facility creation and isolation](VERSION_3_PLAN.md#facility-creation-and-isolation) · [Facility configuration](VERSION_3_PLAN.md#facility-configuration-and-module-visibility)
 
@@ -74,9 +129,9 @@ data.
 
 ---
 
-## 4. Second-Facility Launch Rehearsal
+## 6. Second-Facility Launch Rehearsal
 
-- **Status:** Depends on Package 3
+- **Status:** Depends on Package 5
 - **Suggested branch:** `<name>/second-facility-rehearsal`
 - **Plan detail:** [Facility creation and isolation](VERSION_3_PLAN.md#facility-creation-and-isolation) · [Facility time and date rules](VERSION_3_PLAN.md#facility-time-and-date-rules)
 
@@ -91,9 +146,9 @@ passes.
 
 ---
 
-## 5. Hitting Data Discovery And Metric Contract
+## 7. Hitting Data Discovery And Metric Contract
 
-- **Status:** Starts after Package 1; research also needs sample data
+- **Status:** Starts after Package 1 is live; research needs approved sample data
 - **Suggested branch:** `<name>/hitting-data-contract`
 - **Plan detail:** [Hitting data foundation](VERSION_3_PLAN.md#hitting-data-foundation)
 
@@ -108,9 +163,9 @@ criteria are documented and approved for implementation.
 
 ---
 
-## 6. Hitting Import And Verified Results
+## 8. Hitting Import And Verified Results
 
-- **Status:** Depends on Package 5
+- **Status:** Depends on Package 7
 - **Suggested branch:** `<name>/hitting-imports`
 - **Plan detail:** [Hitting data foundation](VERSION_3_PLAN.md#hitting-data-foundation)
 
@@ -125,9 +180,9 @@ cannot leak across facilities.
 
 ---
 
-## 7. Hitting Development Experience
+## 9. Hitting Development Experience
 
-- **Status:** Depends on Package 6
+- **Status:** Depends on Package 8
 - **Suggested branch:** `<name>/hitting-progress`
 - **Plan detail:** [Hitting development experience](VERSION_3_PLAN.md#hitting-development-experience) · [Player development profile](VERSION_3_PLAN.md#player-development-profile)
 
@@ -141,24 +196,7 @@ pass.
 
 ---
 
-## 8. Advanced Testing And Performance Trends
-
-- **Status:** Ready after the first V3 migration package is coordinated
-- **Suggested branch:** `<name>/testing-progress`
-- **Plan detail:** [Advanced testing](VERSION_3_PLAN.md#advanced-testing-and-performance-history)
-
-Extend the shipped Testing Day feature with approved attempt/best-result rules,
-comparison history, personal records, charts, correction audit, and selected
-leaderboard metrics. Reuse the shared metric contract rather than creating a
-second incompatible statistics system.
-
-**Complete when:** Approved tests show historically correct comparisons and
-records, corrections remain auditable, and only explicitly approved metrics
-enter coach/member leaderboards.
-
----
-
-## 9. Player Development Profiles And Evaluations
+## 10. Player Development Profiles And Evaluations
 
 - **Status:** Needs visibility decisions
 - **Suggested branch:** `<name>/player-development-profiles`
@@ -173,7 +211,7 @@ facilities do not receive irrelevant UI.
 
 ---
 
-## 10. Throwing And Arm Care
+## 11. Throwing And Arm Care
 
 - **Status:** Later; hitting comes first and privacy review is required
 - **Suggested branch:** `<name>/throwing-arm-care`
@@ -188,7 +226,7 @@ controls.
 
 ---
 
-## 11. Notifications, Private Notes, And Audit History
+## 12. Notifications, Private Notes, And Audit History
 
 - **Status:** Later
 - **Suggested branch:** `<name>/notifications-notes-audit`
@@ -200,7 +238,7 @@ actions. Email and push remain follow-ups.
 
 ---
 
-## 12. Recruiting And Shareable Profiles
+## 13. Recruiting And Shareable Profiles
 
 - **Status:** Later; requires explicit privacy and authorization rules
 - **Suggested branch:** `<name>/recruiting-profiles`

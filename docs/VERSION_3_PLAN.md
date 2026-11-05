@@ -23,6 +23,15 @@ history workflows are stable foundations. V3 does not include a general
 workout/exercise rebuild, but targeted workout enhancements that increase the
 product's immediate value to facilities come before hitting-specific work.
 
+### V3 Release Sequence
+
+The first V3 production release is intentionally narrow: complete strength
+maxes and percentage-based workout programming, verify the full package in
+staging, and merge it through `v3-development` into `main`. Do not hold that
+release for routines, Testing Day comparisons, multi-facility tooling, or
+baseball features. Continue the remaining V3 backlog only after the workout
+package is live and smoke-tested in production.
+
 ---
 
 ## 1. Workout And Performance Enhancements
@@ -52,6 +61,25 @@ Before implementation, decide which estimation formulas are supported, how a
 training max is defined, which max source is the default for programming, and
 which rounding increments each facility may use.
 
+### Daily Routines And Checklists
+
+Add morning, afternoon, and night routines as a focused extension of the habit
+system after the first workout release reaches production.
+
+- Let authorized staff create reusable routine templates with ordered checklist
+  items and a morning, afternoon, night, or custom time window.
+- Assign routines to groups or individual members while deduplicating members
+  who belong to more than one selected group.
+- Keep the member flow fast on mobile and show only the routine periods and
+  checklist items assigned to that member.
+- Preserve completion history instead of overwriting prior days.
+- Calculate routine dates, availability windows, streaks, and summaries using
+  the facility time zone.
+- Reuse habit scoring and attention rules where the meaning matches, but keep
+  routine completion distinguishable from the six core daily habits.
+- Allow facilities to disable routines without leaving inaccessible navigation
+  or background queries.
+
 ### Advanced Testing And Performance History
 
 V2 already ships staff-created Testing Days, staff-only official result entry,
@@ -59,8 +87,10 @@ member-own result visibility, calendar markers, correction, and ranked review.
 V3 extends that stable feature instead of rebuilding it.
 
 - Add approved multiple-attempt and best-result rules.
-- Add comparisons over time, personal records, richer charts, and consistent
-  correction/audit history.
+- Add comparisons over time, absolute and percentage improvement, personal
+  records, richer charts, and consistent correction/audit history.
+- Give members a clear current-versus-previous result view while coaches can
+  compare an athlete across dates and review a test across the assigned roster.
 - Promote only coach-approved tests and lifts to leaderboards.
 - Reuse the shared metric catalog so Testing Day and hitting data do not become
   unrelated reporting systems.
@@ -249,7 +279,9 @@ This work follows the hitting foundation.
 
 ## 7. V3 Done Direction
 
-V3 is successful when Derek or Sam can create and launch a second real facility
-without custom rebuilding or cross-facility data leakage, and Rip City can use
-an approved hitting-development workflow with trustworthy HitTrax/TrackMan data
-while preserving privacy, source history, and corrections.
+V3 is successful when the sellable workout product supports safe max-based
+percentage programming; members can use assigned routines and understand their
+Testing Day improvement; Derek or Sam can create and launch a second real
+facility without custom rebuilding or cross-facility data leakage; and Rip City
+can use an approved hitting-development workflow with trustworthy
+HitTrax/TrackMan data while preserving privacy, source history, and corrections.
