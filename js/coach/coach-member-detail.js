@@ -3,6 +3,35 @@ let detailMember = null;
 let detailGoals = [];
 let detailCheckinsByGoalId = {};
 let detailTestingParticipations = [];
+const coachMemberViews = new Set(["overview", "goals", "performance"]);
+
+function setCoachMemberDetailView(requestedView, updateUrl = true) {
+  const view = coachMemberViews.has(requestedView) ? requestedView : "overview";
+
+  document.querySelectorAll("[data-coach-member-view]").forEach(button => {
+    const isActive = button.dataset.coachMemberView === view;
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-selected", String(isActive));
+  });
+
+  document.querySelectorAll("[data-coach-member-view-panel]").forEach(panel => {
+    panel.classList.toggle("hidden", panel.dataset.coachMemberViewPanel !== view);
+  });
+
+  if (updateUrl) {
+    const url = new URL(window.location.href);
+    url.hash = view === "overview" ? "" : view;
+    window.history.replaceState(null, "", url);
+  }
+}
+
+function initializeCoachMemberDetailViews() {
+  document.querySelectorAll("[data-coach-member-view]").forEach(button => {
+    button.addEventListener("click", () => setCoachMemberDetailView(button.dataset.coachMemberView));
+  });
+
+  setCoachMemberDetailView(window.location.hash.slice(1), false);
+}
 
 function normalizeDetailRelation(value) {
   return Array.isArray(value) ? value[0] : value;
@@ -503,6 +532,7 @@ async function init() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  initializeCoachMemberDetailViews();
   document.getElementById("coach-member-detail-logout").addEventListener("click", async () => { await db.auth.signOut(); window.location.href = "login.html"; });
   document.getElementById("coach-goal-form").addEventListener("submit", saveCoachGoal);
   document.getElementById("coach-goal-cancel").addEventListener("click", resetCoachGoalForm);

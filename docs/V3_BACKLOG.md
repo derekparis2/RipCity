@@ -97,6 +97,9 @@ do not enter comparisons. Member Training now separates Schedule from
 Performance: the calendar and upcoming Testing Days remain together, while
 comparisons and searchable completed Testing Day history live in the focused
 Performance view.
+The coach/admin member profile uses the same focused pattern: Overview keeps
+member identity and weekly history together, Goals contains goal management,
+and Performance contains Testing Day comparisons and official history.
 
 Remaining Package 3 work includes approved multiple-attempt rules, correction
 audit history, roster-wide comparison tools, and explicitly approved testing

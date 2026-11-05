@@ -69,9 +69,11 @@ Use this as the quick orientation guide before editing.
   tests, multi-group and individual assignment, scheduling, and coach/admin
   result entry by athlete or by test, including absence/not-tested outcomes and
   guarded day completion.
-- `js/coach/coach-member-detail.js` renders each member's Testing Day progress
-  comparisons and newest-first official history, then links staff back to the
-  canonical result editor focused on that member.
+- `js/coach/coach-member-detail.js` separates the staff member profile into
+  Overview, Goals, and Performance views without adding another page. Overview
+  contains identity and weekly history, Goals contains goal management, and
+  Performance contains Testing Day comparisons and newest-first official
+  history with links to the canonical result editor focused on that member.
 - `js/coach/workouts/` powers workout creation, assignment, recent workout reuse,
   and the exercise library. `page.js` is the page controller, with the form UI
   in `builder.js`, assignment behavior in `assignments.js`, saved-workout

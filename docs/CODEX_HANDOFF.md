@@ -99,6 +99,11 @@ bottom-navigation destination. Schedule contains the workout calendar and
 upcoming Testing Days; Performance contains comparison cards and searchable
 completed Testing Day history.
 
+The coach/admin member profile now separates Overview, Goals, and Performance
+without changing its URL or data access. Overview contains the compact member
+summary and weekly habit/workout history, Goals contains staff goal management,
+and Performance contains Testing Day comparisons and official result history.
+
 New V3 feature branches start from current `v3-development`. The V2 production
 release and its ordered production migration sequence are complete.
 

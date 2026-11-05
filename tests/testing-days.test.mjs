@@ -104,6 +104,13 @@ assert.match(memberScript, /sort\(\(a, b\) => b\.day\.testing_date\.localeCompar
 assert.match(memberScript, /data-member-testing-toggle/, "member Testing Day cards can be collapsed");
 assert.match(memberScript, /is-collapsed/, "collapsed member Testing Day cards use the compact presentation");
 assert.match(memberDetailPage, /id="coach-member-testing-panel"/, "coach member detail includes Testing Day results");
+assert.match(memberDetailPage, /data-coach-member-view="overview"/, "coach member detail has a focused Overview view");
+assert.match(memberDetailPage, /data-coach-member-view="goals"/, "coach member detail has a focused Goals view");
+assert.match(memberDetailPage, /data-coach-member-view="performance"/, "coach member detail has a focused Performance view");
+assert.match(memberDetailPage, /data-coach-member-view-panel="overview"[\s\S]*id="coach-member-detail-summary"[\s\S]*id="coach-member-history-panel"/, "coach Overview keeps identity and weekly history together");
+assert.match(memberDetailPage, /data-coach-member-view-panel="goals"[\s\S]*id="coach-member-goals-panel"/, "coach Goals keeps goal management in its own workspace");
+assert.match(memberDetailPage, /data-coach-member-view-panel="performance"[\s\S]*id="coach-member-testing-panel"/, "coach Performance keeps testing comparisons and history together");
+assert.match(memberDetailScript, /function setCoachMemberDetailView/, "coach member detail switches views without leaving the member page");
 assert.match(memberDetailScript, /testing_day_participants/, "coach member detail loads the member's Testing Day history");
 assert.match(memberDetailPage, /id="coach-testing-comparison-list"/, "coach member detail includes performance comparisons");
 assert.match(memberDetailPage, /testing-comparisons\.js/, "coach member detail uses the shared comparison engine");
