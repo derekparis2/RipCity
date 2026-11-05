@@ -41,7 +41,7 @@ function getAuthReference(error) {
     || code === "user_already_exists"
     || code === "over_email_send_rate_limit"
     || status === 429
-    || /invalid login credentials|already (registered|exists)|rate limit|too many requests|email.*limit/i.test(message)
+    || /invalid login credentials|no account found for that username|already (registered|exists)|rate limit|too many requests|email.*limit/i.test(message)
   );
   if (isExpectedAuthError) return "";
 

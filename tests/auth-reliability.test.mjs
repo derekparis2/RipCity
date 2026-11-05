@@ -38,6 +38,7 @@ assert.match(access, /async function requireMemberAccess\(options = \{\}\)/);
 assert.match(access, /allowRoles: \["athlete", "h2k_member"\]/);
 assert.match(access, /window\.location\.replace\(deniedUrl \|\| getHomeUrlForRole\(membership\.role\)\)/);
 assert.match(auth, /if \(isExpectedAuthError\) return ""/);
+assert.match(auth, /no account found for that username/);
 assert.match(memberDashboard, /RipCityAccess\.requireMemberAccess/);
 assert.match(memberAnnouncements, /RipCityAccess\.requireMemberAccess/);
 assert.match(memberTestingDays, /RipCityAccess\.requireMemberAccess/);
