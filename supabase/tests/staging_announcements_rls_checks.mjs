@@ -145,7 +145,7 @@ try {
   assert(Boolean(facilityAnnouncement.id), "coach can create a facility announcement");
 
   const facilityForAthlete = await request(
-    `coach_announcements?select=id&id=eq.${facilityAnnouncement.id}`,
+    `coach_announcements?select=id,author_display_name&id=eq.${facilityAnnouncement.id}`,
     ripAthlete.token
   );
   const facilityForH2k = await request(
@@ -157,6 +157,10 @@ try {
     alphaAthlete.token
   );
   assert(facilityForAthlete.body.length === 1, "facility announcement is visible to a Rip City athlete");
+  assert(
+    Boolean(facilityForAthlete.body[0]?.author_display_name),
+    "member-visible announcement preserves its staff author name"
+  );
   assert(facilityForH2k.body.length === 1, "facility announcement is visible to a Rip City H2K member");
   assert(facilityForAlpha.body.length === 0, "facility announcement is hidden from another facility");
 

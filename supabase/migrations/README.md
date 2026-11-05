@@ -73,6 +73,10 @@ staging application.
   transaction. It completes interrupted signups without duplicating membership
   or member-profile rows and must reach staging/production before the matching
   auth frontend is deployed.
+- `20261104120000_preserve_announcement_author_names.sql` snapshots the posting
+  coach/admin display name on announcements so members see reliable attribution
+  without receiving broad access to staff profiles. Apply it before deploying
+  frontend assets that select `author_display_name`.
 - Future changes must use a later UTC timestamp and a descriptive name, such as
   `20260817090000_add_facility_timezone.sql`.
 

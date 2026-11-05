@@ -11,11 +11,12 @@ Project folder on Derek's Mac:
 Git branches:
 
 - `main` = live production branch deployed by Netlify.
-- V2 is complete. `pre-v3-release` is the integration branch for the final
-  member-leaderboard and Testing Day promotion into `main`.
-- After that release, Derek and Sam should create new V3 feature branches from
-  the latest `main` and merge reviewed work through the agreed V3 integration
-  branch.
+- V2 is complete and deployed. `v3-development` is the integration branch for
+  planned V3 product work.
+- Production hotfix branches start from the latest `main`, are tested against
+  staging first, and merge back into `main` through review.
+- Derek and Sam should create V3 feature branches from the latest
+  `v3-development` and merge reviewed work back through that branch.
 - Follow `CONTRIBUTING.md` for the shared branch, review, migration, and merge
   workflow.
 
@@ -34,8 +35,8 @@ Netlify:
 Before production changes:
 
 1. Make small fixes on `main` only when they are needed for the live beta.
-2. Put larger product work on `v2-development`.
-3. Merge `main` into `v2-development` after hotfixes so V2 does not fall behind production.
+2. Put larger product work on `v3-development` feature branches.
+3. Merge `main` into `v3-development` after hotfixes so V3 does not fall behind production.
 
 ## Files To Read First
 
@@ -82,9 +83,15 @@ Core direction:
 
 See `docs/VERSION_2_PLAN.md` for detailed product requirements and
 `docs/V2_BACKLOG.md` for the maintained implementation order and status. The
-V2 is complete. The last release step is promoting the reviewed Testing Day
-branch through `pre-v3-release` and then into `main`. All unfinished feature
-ideas were moved to `docs/VERSION_3_PLAN.md`.
+V2 is complete and live on `main`. All unfinished feature ideas were moved to
+`docs/VERSION_3_PLAN.md`.
+
+The current production workflow hotfix adds recoverable auth timeouts and
+reference IDs, blocks member navigation to coach-only shells, supports
+multi-date assignment for both new and existing workouts, filters created
+workouts by assigning staff member, preserves announcement author names, and
+adds scalable Testing Day group/creator filters plus guarded removal of days
+without saved outcomes.
 
 Testing Day results remain staff-entered. Members may view only their own
 official outcomes and cannot submit or edit Testing Day results.

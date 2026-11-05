@@ -905,7 +905,8 @@ function getWorkoutBuilderReviewData() {
     title: getInputValue("workout-title") || "Untitled workout",
     focus: getInputValue("workout-focus") || "No focus added",
     minutes: getInputValue("workout-minutes"),
-    assignedDate: getInputValue("workout-date"),
+    assignedDate: getWorkoutAssignedDates()[0] || "",
+    assignedDates: getWorkoutAssignedDates(),
     targetLabel: getTargetLabelForDraft(targetType, groupIds, memberProfileId),
     blocks,
     exerciseCount
@@ -959,8 +960,8 @@ function updateWorkoutBuilderReview() {
   if (!review) return;
 
   const summary = getWorkoutBuilderReviewData();
-  const scheduleLabel = summary.assignedDate
-    ? `${summary.targetLabel} · ${formatDisplayDate(summary.assignedDate)}`
+  const scheduleLabel = summary.assignedDates?.length
+    ? `${summary.targetLabel} · ${summary.assignedDates.length === 1 ? formatDisplayDate(summary.assignedDates[0]) : `${summary.assignedDates.length} dates`}`
     : "No calendar date selected";
 
   review.innerHTML = `

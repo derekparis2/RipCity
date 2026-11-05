@@ -107,7 +107,8 @@
       allowRoles = null,
       onDeniedMessage = null,
       pendingUrl = "pending.html",
-      loginUrl = "login.html"
+      loginUrl = "login.html",
+      deniedUrl = "member-dashboard.html"
     } = options;
 
     const session = await getSession();
@@ -133,6 +134,9 @@
 
     if (allowRoles && !allowRoles.includes(membership.role)) {
       if (onDeniedMessage) onDeniedMessage("You do not have permission to view this page.", true);
+      // RLS already prevents the data read, but a direct URL should not leave a
+      // member looking at an empty coach shell. Send them back to their own app.
+      window.location.replace(deniedUrl);
       return null;
     }
 

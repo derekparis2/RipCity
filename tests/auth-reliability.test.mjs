@@ -25,15 +25,19 @@ assert.doesNotMatch(auth, /\.from\("member_profiles"\)\s*\.insert/);
 assert.match(auth, /signupInProgress/);
 assert.match(auth, /loginInProgress/);
 assert.match(auth, /AUTH_REQUEST_TIMEOUT_MS = 15000/);
+assert.match(auth, /function createAuthAttempt\(/);
+assert.match(auth, /async function recoverAuthenticatedUser\(/);
 assert.match(auth, /Too many account emails were requested/);
 assert.match(access, /DEFAULT_REQUEST_TIMEOUT_MS = 15000/);
+assert.match(access, /deniedUrl = "member-dashboard\.html"/);
+assert.match(access, /window\.location\.replace\(deniedUrl\)/);
 assert.match(approvals, /approvalLoadInProgress/);
 assert.match(approvals, /Loading approvals took too long/);
 
 for (const page of [signupPage, loginPage]) {
-  assert.match(page, /auth\.js\?v=auth-reliability-1/);
+  assert.match(page, /auth\.js\?v=auth-reliability-2/);
 }
-assert.match(approvalsPage, /access-control\.js\?v=auth-reliability-1/);
+assert.match(approvalsPage, /access-control\.js\?v=auth-reliability-2/);
 assert.match(approvalsPage, /coach-approvals\.js\?v=auth-reliability-1/);
 
 console.log("Auth reliability tests passed");
