@@ -64,40 +64,93 @@ function refreshAssignmentOptions() {
   updateAssignmentControls();
 }
 
-function buildAssignmentRows({ workoutId, targetType, groupIds = [], memberProfileId = "", assignedDate }) {
-  const baseRow = {
-    workout_id: workoutId,
-    assigned_by: workoutCoachAccess.profile.id,
-    assigned_date: assignedDate
-  };
+let selectedWorkoutDates = [];
 
-  if (targetType === "facility") {
-    return [{
+function getWorkoutAssignedDates() {
+  const pendingDate = getInputValue("workout-date");
+  return [...new Set([...selectedWorkoutDates, pendingDate].filter(Boolean))].sort();
+}
+
+function renderSelectedWorkoutDates() {
+  const container = document.getElementById("workout-selected-dates");
+  if (!container) return;
+
+  container.innerHTML = selectedWorkoutDates.length
+    ? selectedWorkoutDates.map(date => `
+        <span class="workout-date-chip">
+          ${window.RipCityUI.text(formatDisplayDate(date))}
+          <button type="button" aria-label="Remove ${window.RipCityUI.attr(formatDisplayDate(date))}" data-remove-workout-date="${window.RipCityUI.attr(date)}">&times;</button>
+        </span>
+      `).join("")
+    : `<span class="muted-small">One date selected unless you add more.</span>`;
+
+  container.querySelectorAll("[data-remove-workout-date]").forEach(button => {
+    button.addEventListener("click", () => {
+      selectedWorkoutDates = selectedWorkoutDates.filter(date => date !== button.dataset.removeWorkoutDate);
+      renderSelectedWorkoutDates();
+      updateWorkoutBuilderReview();
+    });
+  });
+}
+
+function addSelectedWorkoutDate() {
+  const date = getInputValue("workout-date");
+  if (!date) {
+    showWorkoutValidationError("Choose a date before adding it.", document.getElementById("workout-date"));
+    return;
+  }
+
+  if (!selectedWorkoutDates.includes(date)) selectedWorkoutDates.push(date);
+  selectedWorkoutDates.sort();
+  const input = document.getElementById("workout-date");
+  if (input) input.value = "";
+  renderSelectedWorkoutDates();
+  updateWorkoutBuilderReview();
+}
+
+function resetSelectedWorkoutDates() {
+  selectedWorkoutDates = [];
+  renderSelectedWorkoutDates();
+}
+
+function buildAssignmentRows({ workoutId, targetType, groupIds = [], memberProfileId = "", assignedDate, assignedDates = [] }) {
+  const dates = [...new Set([...(assignedDates || []), assignedDate].filter(Boolean))];
+
+  return dates.flatMap(date => {
+    const baseRow = {
+      workout_id: workoutId,
+      assigned_by: workoutCoachAccess.profile.id,
+      assigned_date: date
+    };
+
+    if (targetType === "facility") {
+      return [{
       ...baseRow,
       target_type: "facility",
       target_facility_id: workoutCoachAccess.membership.facility_id,
       target_group_id: null,
       target_member_profile_id: null
-    }];
-  }
+      }];
+    }
 
-  if (targetType === "member") {
-    return [{
+    if (targetType === "member") {
+      return [{
       ...baseRow,
       target_type: "member",
       target_facility_id: null,
       target_group_id: null,
       target_member_profile_id: memberProfileId
-    }];
-  }
+      }];
+    }
 
-  return groupIds.map(groupId => ({
-    ...baseRow,
-    target_type: "group",
-    target_facility_id: null,
-    target_group_id: groupId,
-    target_member_profile_id: null
-  }));
+    return groupIds.map(groupId => ({
+      ...baseRow,
+      target_type: "group",
+      target_facility_id: null,
+      target_group_id: groupId,
+      target_member_profile_id: null
+    }));
+  });
 }
 
 function getAssignmentKey(assignment) {
@@ -134,20 +187,23 @@ function getTargetLabelForDraft(targetType, groupIds = [], memberProfileId = "")
   return `${selectedGroups.length} groups`;
 }
 
-function getAssignmentSuccessMessage({ title, targetType, groupIds, memberProfileId, assignedDate }) {
+function getAssignmentSuccessMessage({ title, targetType, groupIds, memberProfileId, assignedDate, assignedDates = [] }) {
   const targetLabel = getTargetLabelForDraft(targetType, groupIds, memberProfileId);
-  return `Workout "${title}" created and assigned to ${targetLabel} for ${formatDisplayDate(assignedDate)}.`;
+  const dates = [...new Set([...(assignedDates || []), assignedDate].filter(Boolean))];
+  const dateLabel = dates.length === 1 ? formatDisplayDate(dates[0]) : `${dates.length} dates`;
+  return `Workout "${title}" created and assigned to ${targetLabel} for ${dateLabel}.`;
 }
 
-function confirmWorkoutCreate({ title, targetType, groupIds, memberProfileId, assignedDate }) {
+function confirmWorkoutCreate({ title, targetType, groupIds, memberProfileId, assignedDate, assignedDates = [] }) {
   const targetLabel = getTargetLabelForDraft(targetType, groupIds, memberProfileId);
+  const dates = [...new Set([...(assignedDates || []), assignedDate].filter(Boolean))];
 
   return window.confirm(
     [
       "Create and assign this workout?",
       "",
       `Title: ${title}`,
-      `Date: ${formatDisplayDate(assignedDate)}`,
+      `Date${dates.length === 1 ? "" : "s"}: ${dates.map(formatDisplayDate).join(", ")}`,
       `Assigned to: ${targetLabel}`
     ].join("\n")
   );
@@ -242,7 +298,8 @@ async function assignExistingWorkout(workout) {
 
   const workoutId = workout.id;
   const targetType = document.querySelector(`[data-reuse-target-type="${workoutId}"]`)?.value || "group";
-  const assignedDate = document.querySelector(`[data-reuse-date="${workoutId}"]`)?.value || "";
+  const assignedDates = getExistingWorkoutDates(workoutId);
+  const assignedDate = assignedDates[0] || "";
   const groupIds = Array.from(document.querySelector(`[data-reuse-groups="${workoutId}"]`)?.selectedOptions || [])
     .map(option => option.value)
     .filter(Boolean);
@@ -268,7 +325,8 @@ async function assignExistingWorkout(workout) {
     targetType,
     groupIds,
     memberProfileId,
-    assignedDate
+    assignedDate,
+    assignedDates
   });
   const rowsToInsert = filterDuplicateAssignmentRows(assignmentRows, workout.workout_assignments || []);
 
@@ -294,6 +352,37 @@ async function assignExistingWorkout(workout) {
   }
 }
 
+function getExistingWorkoutDates(workoutId) {
+  const pendingDate = document.querySelector(`[data-reuse-date="${workoutId}"]`)?.value || "";
+  const container = document.querySelector(`[data-reuse-selected-dates="${workoutId}"]`);
+  const addedDates = Array.from(container?.querySelectorAll("[data-reuse-date-value]") || [])
+    .map(element => element.dataset.reuseDateValue)
+    .filter(Boolean);
+  return [...new Set([...addedDates, pendingDate].filter(Boolean))].sort();
+}
+
+function addExistingWorkoutDate(workoutId) {
+  const input = document.querySelector(`[data-reuse-date="${workoutId}"]`);
+  const container = document.querySelector(`[data-reuse-selected-dates="${workoutId}"]`);
+  const date = input?.value || "";
+  if (!date || !container) {
+    showWorkoutMessage("Choose a date before adding it.", true);
+    return;
+  }
+
+  const existingDates = getExistingWorkoutDates(workoutId);
+  if (!existingDates.includes(date) || !container.querySelector(`[data-reuse-date-value="${date}"]`)) {
+    const chip = document.createElement("span");
+    chip.className = "workout-date-chip";
+    chip.dataset.reuseDateValue = date;
+    chip.innerHTML = `${window.RipCityUI.text(formatDisplayDate(date))}<button type="button" aria-label="Remove ${window.RipCityUI.attr(formatDisplayDate(date))}">&times;</button>`;
+    chip.querySelector("button")?.addEventListener("click", () => chip.remove());
+    if (container.querySelector(".muted-small")) container.innerHTML = "";
+    container.appendChild(chip);
+    if (input) input.value = "";
+  }
+}
+
 function getAssignmentTargetLabel(assignment) {
   if (!assignment) return "Unassigned";
 
@@ -316,4 +405,3 @@ function getAssignmentTargetLabel(assignment) {
 // ----------------------------
 // Logout / init
 // ----------------------------
-

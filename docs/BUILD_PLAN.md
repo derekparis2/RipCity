@@ -60,7 +60,7 @@ If a feature is only for Rip City baseball, build it as an optional program-spec
 - Separate coach Athlete and H2K habit leaderboards
 - Member Top 5 and own-rank leaderboard work in progress
 - Workout blocks: Warmup, A Block, B Block, Finisher, etc.
-- Group/date workout assignment
+- Group/member/facility workout assignment across one or multiple dates
 - Member can see today’s assigned workout
 - Member can open workout session
 - Workout blocks display by rounds/supersets

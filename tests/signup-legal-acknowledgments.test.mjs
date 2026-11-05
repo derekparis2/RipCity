@@ -44,7 +44,7 @@ assert.match(consent, /data-clear-age-choice="legal-age-bracket"/, "re-acceptanc
 assert.match(consent, /class="auth-body legal-consent-body"/, "existing users receive the modal-style required review screen");
 assert.match(auth, /function setupAgeChoiceReset\(\)/, "age choices share the reset behavior");
 assert.match(consent, /id="legal-consent-logout"/, "blocked users can log out and change accounts");
-assert.match(consent, /js\/auth\/auth\.js\?v=auth-reliability-1/, "required-review page loads the current legal-auth controller");
+assert.match(consent, /js\/auth\/auth\.js\?v=auth-reliability-3/, "required-review page loads the current legal-auth controller");
 assert.match(terms, /You must be at least 13 years old/, "Terms state the age requirement");
 assert.match(privacy, /not intended for children under 13/, "Privacy Policy describes the under-13 rule");
 assert.match(terms, /data-legal-document="terms" data-legal-version="2026-10-25"/, "Terms expose the published version");
@@ -57,7 +57,7 @@ assert.match(migration, /grant execute on function public\.record_current_legal_
 
 for (const file of protectedPages) {
   const html = await readFile(file, "utf8");
-  assert.match(html, /js\/shared\/access-control\.js\?v=auth-reliability-1/, `${file} loads the current acceptance-gated access controller`);
+  assert.match(html, /js\/shared\/access-control\.js\?v=auth-reliability-3/, `${file} loads the current acceptance-gated access controller`);
 }
 
 console.log("Signup legal acknowledgment tests passed");
