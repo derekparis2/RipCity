@@ -36,6 +36,10 @@ Use this as the quick orientation guide before editing.
   competition-ranking rules used by coach and member views.
 - `js/shared/attention-rules.js` contains the coach-approved consecutive missed
   habit and assigned-workout follow-up rules.
+- `js/shared/testing-comparisons.js` builds direction-aware Testing Day
+  baseline, prior, latest, and personal-record summaries from completed
+  official numeric results. `css/testing-comparisons.css` provides the shared
+  responsive comparison cards used on member Training and coach member detail.
 
 ## Feature JavaScript
 
@@ -65,9 +69,9 @@ Use this as the quick orientation guide before editing.
   tests, multi-group and individual assignment, scheduling, and coach/admin
   result entry by athlete or by test, including absence/not-tested outcomes and
   guarded day completion.
-- `js/coach/coach-member-detail.js` renders each member's newest-first Testing
-  Day history and links staff back to the canonical result editor focused on
-  that member.
+- `js/coach/coach-member-detail.js` renders each member's Testing Day progress
+  comparisons and newest-first official history, then links staff back to the
+  canonical result editor focused on that member.
 - `js/coach/workouts/` powers workout creation, assignment, recent workout reuse,
   and the exercise library. `page.js` is the page controller, with the form UI
   in `builder.js`, assignment behavior in `assignments.js`, saved-workout
@@ -81,9 +85,10 @@ Use this as the quick orientation guide before editing.
 - `js/member/member-announcements.js` renders the active facility, group, and
   individual announcements permitted to the signed-in member by RLS.
 - `js/member/member-testing-days.js` renders assigned scheduled Testing Days,
-  their ordered test batteries, and only the signed-in member's official
-  outcomes on Training. Its searchable cards are compact and collapsed by
-  default after the first load. It never writes results.
+  their ordered test batteries, direction-aware progress comparisons, and only
+  the signed-in member's official outcomes on Training. Its searchable history
+  cards are compact and collapsed by default after the first load. It never
+  writes results.
 - `js/member/member-leaderboards.js` renders the program-separated member Top
   5 and own-rank view. It reads only the privacy-safe leaderboard RPC rather
   than loading facility rosters or other members' raw habit logs.

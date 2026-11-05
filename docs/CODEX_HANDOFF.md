@@ -327,6 +327,14 @@ Testing Days:
   correct the canonical result. Member Training highlights assigned Testing
   Days on the calendar and keeps a newest-first, searchable, collapsible history
   below it.
+- `derek/testing-comparisons` is the in-progress first slice of V3 advanced
+  testing. It adds a shared migration-free comparison engine, member-own
+  progress cards on Training, and staff progress cards on member detail. The
+  comparison contract uses earliest official result as baseline, immediately
+  previous official result as prior, and best official result as PR while
+  respecting higher/lower ranking direction. Merge this branch only after the
+  Package 1 strength-max release reaches `main`; multiple attempts, correction
+  audit, roster comparisons, and testing leaderboards remain later work.
 
 Coach notes / announcements:
 

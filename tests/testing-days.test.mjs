@@ -25,6 +25,7 @@ const memberScript = await readFile("js/member/member-testing-days.js", "utf8");
 const memberDashboardScript = await readFile("js/member/member-dashboard.js", "utf8");
 const memberDetailPage = await readFile("coach-member-detail.html", "utf8");
 const memberDetailScript = await readFile("js/coach/coach-member-detail.js", "utf8");
+const comparisonScript = await readFile("js/shared/testing-comparisons.js", "utf8");
 
 for (const table of [
   "testing_test_templates",
@@ -86,6 +87,10 @@ assert.ok(memberPage.indexOf('id="member-testing-panel"') > memberPage.indexOf('
 assert.match(memberPage, /id="member-testing-search"/, "members can search a longer Testing Day history");
 assert.match(memberScript, /testing_day_participants/, "member schedule loads through the snapshotted participant roster");
 assert.match(memberScript, /testing_results/, "member schedule renders the signed-in member's official results");
+assert.match(memberPage, /testing-comparisons\.js/, "member Training loads the shared Testing Day comparison engine");
+assert.match(memberPage, /id="member-testing-comparison-list"/, "member Training includes performance comparisons");
+assert.match(memberScript, /ranking_direction/, "member comparisons load each test's improvement direction");
+assert.match(memberScript, /recorded_at/, "member comparisons retain stable result chronology");
 assert.match(memberScript, /FINAL RESULTS/, "completed member Testing Days are clearly labeled as final results");
 assert.doesNotMatch(memberScript, /Official results appear here as your coach saves them/, "completed result cards omit the redundant result footer");
 assert.match(memberScript, /sort\(\(a, b\) => b\.day\.testing_date\.localeCompare\(a\.day\.testing_date\)\)/, "member Testing Days default to newest date first");
@@ -93,10 +98,16 @@ assert.match(memberScript, /data-member-testing-toggle/, "member Testing Day car
 assert.match(memberScript, /is-collapsed/, "collapsed member Testing Day cards use the compact presentation");
 assert.match(memberDetailPage, /id="coach-member-testing-panel"/, "coach member detail includes Testing Day results");
 assert.match(memberDetailScript, /testing_day_participants/, "coach member detail loads the member's Testing Day history");
+assert.match(memberDetailPage, /id="coach-testing-comparison-list"/, "coach member detail includes performance comparisons");
+assert.match(memberDetailPage, /testing-comparisons\.js/, "coach member detail uses the shared comparison engine");
+assert.match(memberDetailScript, /RipCityTestingComparisons\.build/, "coach and member comparison rules stay shared");
 assert.match(memberDetailScript, /coach-testing\.html\?testingDay=/, "member Testing Day summaries link to canonical staff result editing");
 assert.match(coachScript, /memberProfileId: params\.get\("member"\)/, "Testing Day deep links focus the selected member");
 assert.match(memberDashboardScript, /has-testing-day/, "assigned Testing Days are highlighted on the Training calendar");
 assert.match(memberDashboardScript, /testing-label-short">Test Day/, "the mobile calendar uses a compact Testing Day label");
 assert.doesNotMatch(memberScript, /insert\(|update\(|upsert\(|save_testing_results/, "member Testing Day schedule has no result write flow");
+assert.match(comparisonScript, /day\.status !== "completed"/, "only completed Testing Days enter official comparisons");
+assert.match(comparisonScript, /result_status !== "recorded"/, "not-tested outcomes never affect comparisons");
+assert.match(comparisonScript, /direction === "lower"/, "comparison math supports lower-is-better tests");
 
 console.log("Testing Day foundation tests passed");

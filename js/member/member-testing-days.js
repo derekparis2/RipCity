@@ -30,6 +30,60 @@ function formatMemberTestingResult(test, result) {
   return `${value ?? "Pending"}${value != null && test.unit ? ` ${test.unit}` : ""}`;
 }
 
+function getTestingComparisonTone(value) {
+  if (!Number.isFinite(value) || value === 0) return "neutral";
+  return value > 0 ? "improved" : "declined";
+}
+
+function renderTestingComparisonCard(comparison, index) {
+  const metrics = window.RipCityTestingComparisons;
+  const latestTone = getTestingComparisonTone(comparison.improvementFromPrevious);
+  const baselineTone = getTestingComparisonTone(comparison.improvementFromBaseline);
+  const points = metrics.getSparklinePoints(comparison.observations);
+  const circles = points.split(" ").filter(Boolean).map((point, pointIndex) => {
+    const [cx, cy] = point.split(",");
+    const isLatest = pointIndex === comparison.observations.length - 1;
+    return `<circle cx="${cx}" cy="${cy}" r="${isLatest ? 4 : 3}" class="${isLatest ? "is-latest" : ""}"></circle>`;
+  }).join("");
+  const latestDate = formatMemberTestingDate(comparison.latest.date);
+  const previousDate = comparison.previous ? formatMemberTestingDate(comparison.previous.date) : "Needs another result";
+
+  return `
+    <details class="testing-comparison-card" ${index === 0 ? "open" : ""}>
+      <summary>
+        <div><span class="eyebrow">${window.RipCityUI.text(comparison.resultCount === 1 ? "BASELINE RECORDED" : `${comparison.resultCount} OFFICIAL RESULTS`)}</span><h5>${window.RipCityUI.text(comparison.testName)}</h5><p>${window.RipCityUI.text(latestDate)}</p></div>
+        <div class="testing-comparison-latest"><span>Latest</span><strong>${window.RipCityUI.text(metrics.formatValue(comparison.latest.value, comparison.unit))}</strong>${comparison.resultCount > 1 ? `<small class="comparison-${latestTone}">${window.RipCityUI.text(metrics.formatImprovement(comparison.improvementFromPrevious, comparison.unit))} vs prior</small>` : ""}</div>
+        <span class="testing-comparison-toggle" aria-hidden="true"></span>
+      </summary>
+      <div class="testing-comparison-details">
+        ${comparison.resultCount > 1 ? `
+          <div class="testing-comparison-chart">
+            <div class="testing-comparison-chart-heading"><span>Result history</span><small>${comparison.direction === "lower" ? "Lower is better" : "Higher is better"}</small></div>
+            <svg viewBox="0 0 260 72" role="img" aria-label="${window.RipCityUI.attr(`${comparison.testName} result history`)}" preserveAspectRatio="none"><polyline points="${points}"></polyline>${circles}</svg>
+          </div>` : `<p class="testing-comparison-hint">Complete this test on another finalized Testing Day to unlock improvement comparisons.</p>`}
+        <div class="testing-comparison-stats">
+          <div><span>Baseline</span><strong>${window.RipCityUI.text(metrics.formatValue(comparison.baseline.value, comparison.unit))}</strong><small>${window.RipCityUI.text(formatMemberTestingDate(comparison.baseline.date))}</small></div>
+          <div><span>Previous</span><strong>${window.RipCityUI.text(comparison.previous ? metrics.formatValue(comparison.previous.value, comparison.unit) : "—")}</strong><small>${window.RipCityUI.text(previousDate)}</small></div>
+          <div><span>Personal record</span><strong>${window.RipCityUI.text(metrics.formatValue(comparison.best.value, comparison.unit))}</strong><small>${comparison.isPersonalRecord && comparison.resultCount > 1 ? "Latest result is a PR" : window.RipCityUI.text(formatMemberTestingDate(comparison.best.date))}</small></div>
+        </div>
+        ${comparison.resultCount > 1 ? `<div class="testing-comparison-improvements"><div class="comparison-${latestTone}"><span>Since previous</span><strong>${window.RipCityUI.text(metrics.formatImprovement(comparison.improvementFromPrevious, comparison.unit))}</strong><small>${window.RipCityUI.text(metrics.formatPercent(comparison.percentFromPrevious))}</small></div><div class="comparison-${baselineTone}"><span>Since baseline</span><strong>${window.RipCityUI.text(metrics.formatImprovement(comparison.improvementFromBaseline, comparison.unit))}</strong><small>${window.RipCityUI.text(metrics.formatPercent(comparison.percentFromBaseline))}</small></div></div>` : ""}
+      </div>
+    </details>`;
+}
+
+function renderMemberTestingComparisons() {
+  const list = document.getElementById("member-testing-comparison-list");
+  const count = document.getElementById("member-testing-comparison-count");
+  if (!list || !window.RipCityTestingComparisons) return;
+  const comparisons = window.RipCityTestingComparisons.build(memberTestingParticipations);
+  if (count) count.textContent = `${comparisons.length} tracked ${comparisons.length === 1 ? "test" : "tests"}`;
+  if (!comparisons.length) {
+    list.innerHTML = `<div class="empty-state">Your completed ranked tests will show improvement comparisons here.</div>`;
+    return;
+  }
+  list.innerHTML = comparisons.map(renderTestingComparisonCard).join("");
+}
+
 function renderMemberTestingDays(participations = memberTestingParticipations) {
   const list = document.getElementById("member-testing-list");
   const count = document.getElementById("member-testing-count");
@@ -103,8 +157,8 @@ async function initializeMemberTestingDays() {
         testing_day:testing_days(
           id,name,description,testing_date,status,
           testing_day_tests(
-            id,name,unit,input_type,test_order,
-            testing_results(id,testing_day_participant_id,result_status,numeric_value,text_value,notes)
+            id,name,unit,input_type,ranking_direction,test_order,
+            testing_results(id,testing_day_participant_id,result_status,numeric_value,text_value,notes,recorded_at)
           )
         )
       `)
@@ -121,6 +175,7 @@ async function initializeMemberTestingDays() {
       .filter(day => ["scheduled", "completed"].includes(day.status))
       .map(day => day.testing_date));
     window.dispatchEvent(new CustomEvent("ripcity:testing-days-loaded"));
+    renderMemberTestingComparisons();
     renderMemberTestingDays();
   } catch (error) {
     console.error(error);

@@ -25,6 +25,54 @@ function formatDetailTestingResult(test, result, absent) {
   return `${value ?? "Pending"}${value != null && test.unit ? ` ${test.unit}` : ""}`;
 }
 
+function getDetailComparisonTone(value) {
+  if (!Number.isFinite(value) || value === 0) return "neutral";
+  return value > 0 ? "improved" : "declined";
+}
+
+function renderDetailTestingComparisonCard(comparison, index) {
+  const metrics = window.RipCityTestingComparisons;
+  const latestTone = getDetailComparisonTone(comparison.improvementFromPrevious);
+  const baselineTone = getDetailComparisonTone(comparison.improvementFromBaseline);
+  const points = metrics.getSparklinePoints(comparison.observations);
+  const circles = points.split(" ").filter(Boolean).map((point, pointIndex) => {
+    const [cx, cy] = point.split(",");
+    const isLatest = pointIndex === comparison.observations.length - 1;
+    return `<circle cx="${cx}" cy="${cy}" r="${isLatest ? 4 : 3}" class="${isLatest ? "is-latest" : ""}"></circle>`;
+  }).join("");
+
+  return `
+    <details class="testing-comparison-card" ${index === 0 ? "open" : ""}>
+      <summary>
+        <div><span class="eyebrow">${window.RipCityUI.text(comparison.resultCount === 1 ? "BASELINE RECORDED" : `${comparison.resultCount} OFFICIAL RESULTS`)}</span><h5>${window.RipCityUI.text(comparison.testName)}</h5><p>${window.RipCityUI.text(formatDetailTestingDate(comparison.latest.date))}</p></div>
+        <div class="testing-comparison-latest"><span>Latest</span><strong>${window.RipCityUI.text(metrics.formatValue(comparison.latest.value, comparison.unit))}</strong>${comparison.resultCount > 1 ? `<small class="comparison-${latestTone}">${window.RipCityUI.text(metrics.formatImprovement(comparison.improvementFromPrevious, comparison.unit))} vs prior</small>` : ""}</div>
+        <span class="testing-comparison-toggle" aria-hidden="true"></span>
+      </summary>
+      <div class="testing-comparison-details">
+        ${comparison.resultCount > 1 ? `<div class="testing-comparison-chart"><div class="testing-comparison-chart-heading"><span>Result history</span><small>${comparison.direction === "lower" ? "Lower is better" : "Higher is better"}</small></div><svg viewBox="0 0 260 72" role="img" aria-label="${window.RipCityUI.attr(`${comparison.testName} result history`)}" preserveAspectRatio="none"><polyline points="${points}"></polyline>${circles}</svg></div>` : `<p class="testing-comparison-hint">A second finalized result will unlock improvement comparisons.</p>`}
+        <div class="testing-comparison-stats">
+          <div><span>Baseline</span><strong>${window.RipCityUI.text(metrics.formatValue(comparison.baseline.value, comparison.unit))}</strong><small>${window.RipCityUI.text(formatDetailTestingDate(comparison.baseline.date))}</small></div>
+          <div><span>Previous</span><strong>${window.RipCityUI.text(comparison.previous ? metrics.formatValue(comparison.previous.value, comparison.unit) : "—")}</strong><small>${window.RipCityUI.text(comparison.previous ? formatDetailTestingDate(comparison.previous.date) : "Needs another result")}</small></div>
+          <div><span>Personal record</span><strong>${window.RipCityUI.text(metrics.formatValue(comparison.best.value, comparison.unit))}</strong><small>${comparison.isPersonalRecord && comparison.resultCount > 1 ? "Latest result is a PR" : window.RipCityUI.text(formatDetailTestingDate(comparison.best.date))}</small></div>
+        </div>
+        ${comparison.resultCount > 1 ? `<div class="testing-comparison-improvements"><div class="comparison-${latestTone}"><span>Since previous</span><strong>${window.RipCityUI.text(metrics.formatImprovement(comparison.improvementFromPrevious, comparison.unit))}</strong><small>${window.RipCityUI.text(metrics.formatPercent(comparison.percentFromPrevious))}</small></div><div class="comparison-${baselineTone}"><span>Since baseline</span><strong>${window.RipCityUI.text(metrics.formatImprovement(comparison.improvementFromBaseline, comparison.unit))}</strong><small>${window.RipCityUI.text(metrics.formatPercent(comparison.percentFromBaseline))}</small></div></div>` : ""}
+      </div>
+    </details>`;
+}
+
+function renderDetailTestingComparisons() {
+  const list = document.getElementById("coach-testing-comparison-list");
+  const count = document.getElementById("coach-testing-comparison-count");
+  if (!list || !window.RipCityTestingComparisons) return;
+  const comparisons = window.RipCityTestingComparisons.build(detailTestingParticipations);
+  if (count) count.textContent = `${comparisons.length} tracked ${comparisons.length === 1 ? "test" : "tests"}`;
+  if (!comparisons.length) {
+    list.innerHTML = `<div class="empty-state">Completed ranked tests will show this member's improvement here.</div>`;
+    return;
+  }
+  list.innerHTML = comparisons.map(renderDetailTestingComparisonCard).join("");
+}
+
 function renderDetailTestingDays() {
   const list = document.getElementById("coach-member-testing-list");
   const count = document.getElementById("coach-member-testing-count");
@@ -82,14 +130,15 @@ async function loadDetailTestingDays() {
       testing_day:testing_days(
         id,name,description,testing_date,status,
         testing_day_tests(
-          id,name,unit,input_type,test_order,
-          testing_results(id,testing_day_participant_id,result_status,numeric_value,text_value,notes)
+          id,name,unit,input_type,ranking_direction,test_order,
+          testing_results(id,testing_day_participant_id,result_status,numeric_value,text_value,notes,recorded_at)
         )
       )
     `)
     .eq("member_profile_id", memberProfile.id);
   if (error) throw error;
   detailTestingParticipations = data || [];
+  renderDetailTestingComparisons();
   renderDetailTestingDays();
 }
 

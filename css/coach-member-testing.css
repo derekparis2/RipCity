@@ -70,6 +70,19 @@
   gap: 16px;
 }
 
+.testing-history-heading {
+  display: grid;
+  gap: 4px;
+}
+
+.testing-history-heading h3 {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 1.65rem;
+  line-height: 1;
+  margin: 0;
+  text-transform: uppercase;
+}
+
 .coach-member-testing-card {
   background: rgba(255, 255, 255, 0.025);
   border: 1px solid var(--line);
