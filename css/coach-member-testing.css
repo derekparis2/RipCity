@@ -1,3 +1,44 @@
+.coach-member-view-switch {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  display: grid;
+  gap: 6px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 16px 0 20px;
+  padding: 6px;
+}
+
+.coach-member-view-button {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  color: var(--muted);
+  cursor: pointer;
+  font: 800 1rem/1 "Inter", sans-serif;
+  min-height: 48px;
+  padding: 12px 16px;
+}
+
+.coach-member-view-button:hover,
+.coach-member-view-button:focus-visible {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+}
+
+.coach-member-view-button.is-active {
+  background: rgba(85, 174, 255, 0.12);
+  border-color: rgba(85, 174, 255, 0.52);
+  color: #a8d7ff;
+}
+
+.coach-member-view {
+  display: grid;
+  gap: 18px;
+}
+
+.coach-member-view.hidden { display: none; }
+
 .coach-member-detail-summary {
   align-items: start;
   display: grid;
@@ -68,6 +109,19 @@
 .coach-member-testing-list {
   display: grid;
   gap: 16px;
+}
+
+.testing-history-heading {
+  display: grid;
+  gap: 4px;
+}
+
+.testing-history-heading h3 {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 1.65rem;
+  line-height: 1;
+  margin: 0;
+  text-transform: uppercase;
 }
 
 .coach-member-testing-card {
@@ -145,6 +199,18 @@
 .coach-member-testing-edit { justify-self: start; }
 
 @media (max-width: 700px) {
+  .coach-member-view-switch {
+    gap: 4px;
+    margin: 12px 0 16px;
+    padding: 4px;
+  }
+
+  .coach-member-view-button {
+    font-size: 0.82rem;
+    min-height: 44px;
+    padding: 10px 6px;
+  }
+
   .coach-member-detail-summary {
     gap: 16px;
     grid-template-columns: 1fr;
