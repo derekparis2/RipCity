@@ -107,4 +107,19 @@ assert.equal(zeroBaseline.percentFromBaseline, null, "zero baselines do not prod
 assert.equal(comparisons.formatImprovement(-5, "lb"), "−5 lb");
 assert.equal(comparisons.formatPercent(12.345), "+12.3%");
 
+const listOrder = comparisons.build([
+  participation({ id: "older", date: "2026-02-10", testName: "Bench Press", unit: "lb", direction: "higher", value: 120 }),
+  participation({ id: "newer", date: "2026-04-10", testName: "10-Yard Sprint", unit: "seconds", direction: "lower", value: 2.7 })
+]);
+assert.deepEqual(
+  Array.from(comparisons.filterAndSort(listOrder, "", "recent"), item => item.testName),
+  ["10-Yard Sprint", "Bench Press"],
+  "comparison lists default to the most recently updated test"
+);
+assert.deepEqual(
+  Array.from(comparisons.filterAndSort(listOrder, "bench", "name"), item => item.testName),
+  ["Bench Press"],
+  "comparison lists can search test names and sort alphabetically"
+);
+
 console.log("testing comparison tests passed");

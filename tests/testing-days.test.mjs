@@ -113,10 +113,15 @@ assert.match(memberDetailPage, /data-coach-member-view-panel="performance"[\s\S]
 assert.match(memberDetailScript, /function setCoachMemberDetailView/, "coach member detail switches views without leaving the member page");
 assert.match(memberDetailScript, /testing_day_participants/, "coach member detail loads the member's Testing Day history");
 assert.match(memberDetailPage, /id="coach-testing-comparison-list"/, "coach member detail includes performance comparisons");
+assert.match(memberDetailPage, /id="coach-testing-comparison-search"[\s\S]*id="coach-testing-comparison-sort"[\s\S]*id="coach-testing-comparison-more"/, "coach comparison history has scalable search, sorting, and pagination controls");
 assert.match(memberDetailPage, /testing-comparisons\.js/, "coach member detail uses the shared comparison engine");
 assert.match(memberDetailScript, /RipCityTestingComparisons\.build/, "coach and member comparison rules stay shared");
 assert.doesNotMatch(memberDetailScript, /testing-comparison-chart/, "coach comparison cards stay compact without a result graph");
 assert.doesNotMatch(memberScript, /testing-comparison-chart/, "member comparison cards stay compact without a result graph");
+assert.match(memberPage, /id="member-testing-comparison-search"[\s\S]*id="member-testing-comparison-sort"[\s\S]*id="member-testing-comparison-more"/, "member comparison history has scalable search, sorting, and pagination controls");
+assert.match(memberScript, /memberTestingComparisonPageSize = 6/, "member comparison history initially limits the number of visible tests");
+assert.match(memberDetailScript, /detailTestingComparisonPageSize = 6/, "coach comparison history initially limits the number of visible tests");
+assert.match(comparisonScript, /otherCard\.open = false/, "only one performance comparison expands at a time");
 assert.match(memberDetailScript, /coach-testing\.html\?testingDay=/, "member Testing Day summaries link to canonical staff result editing");
 assert.match(coachScript, /memberProfileId: params\.get\("member"\)/, "Testing Day deep links focus the selected member");
 assert.match(memberDashboardScript, /has-testing-day/, "assigned Testing Days are highlighted on the Training calendar");

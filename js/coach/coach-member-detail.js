@@ -3,6 +3,8 @@ let detailMember = null;
 let detailGoals = [];
 let detailCheckinsByGoalId = {};
 let detailTestingParticipations = [];
+const detailTestingComparisonPageSize = 6;
+let detailTestingComparisonLimit = detailTestingComparisonPageSize;
 const coachMemberViews = new Set(["overview", "goals", "performance"]);
 
 function setCoachMemberDetailView(requestedView, updateUrl = true) {
@@ -59,13 +61,13 @@ function getDetailComparisonTone(value) {
   return value > 0 ? "improved" : "declined";
 }
 
-function renderDetailTestingComparisonCard(comparison, index) {
+function renderDetailTestingComparisonCard(comparison) {
   const metrics = window.RipCityTestingComparisons;
   const latestTone = getDetailComparisonTone(comparison.improvementFromPrevious);
   const baselineTone = getDetailComparisonTone(comparison.improvementFromBaseline);
 
   return `
-    <details class="testing-comparison-card" ${index === 0 ? "open" : ""}>
+    <details class="testing-comparison-card">
       <summary>
         <div><span class="eyebrow">${window.RipCityUI.text(comparison.resultCount === 1 ? "BASELINE RECORDED" : `${comparison.resultCount} OFFICIAL RESULTS`)}</span><h5>${window.RipCityUI.text(comparison.testName)}</h5><p>${window.RipCityUI.text(formatDetailTestingDate(comparison.latest.date))}</p></div>
         <div class="testing-comparison-latest"><span>Latest</span><strong>${window.RipCityUI.text(metrics.formatValue(comparison.latest.value, comparison.unit))}</strong>${comparison.resultCount > 1 ? `<small class="comparison-${latestTone}">${window.RipCityUI.text(metrics.formatImprovement(comparison.improvementFromPrevious, comparison.unit))} vs prior</small>` : ""}</div>
@@ -86,14 +88,56 @@ function renderDetailTestingComparisonCard(comparison, index) {
 function renderDetailTestingComparisons() {
   const list = document.getElementById("coach-testing-comparison-list");
   const count = document.getElementById("coach-testing-comparison-count");
+  const moreButton = document.getElementById("coach-testing-comparison-more");
   if (!list || !window.RipCityTestingComparisons) return;
   const comparisons = window.RipCityTestingComparisons.build(detailTestingParticipations);
-  if (count) count.textContent = `${comparisons.length} tracked ${comparisons.length === 1 ? "test" : "tests"}`;
+  const query = document.getElementById("coach-testing-comparison-search")?.value || "";
+  const sort = document.getElementById("coach-testing-comparison-sort")?.value || "recent";
+  const filteredComparisons = window.RipCityTestingComparisons.filterAndSort(comparisons, query, sort);
+  const visibleComparisons = filteredComparisons.slice(0, detailTestingComparisonLimit);
+  if (count) {
+    count.textContent = filteredComparisons.length === comparisons.length
+      ? `${comparisons.length} tracked ${comparisons.length === 1 ? "test" : "tests"}`
+      : `${filteredComparisons.length} of ${comparisons.length} tests`;
+  }
   if (!comparisons.length) {
     list.innerHTML = `<div class="empty-state">Completed ranked tests will show this member's improvement here.</div>`;
+    if (moreButton) moreButton.hidden = true;
     return;
   }
-  list.innerHTML = comparisons.map(renderDetailTestingComparisonCard).join("");
+  if (!filteredComparisons.length) {
+    list.innerHTML = `<div class="empty-state">No tracked tests match that search.</div>`;
+    if (moreButton) moreButton.hidden = true;
+    return;
+  }
+  list.innerHTML = visibleComparisons.map(renderDetailTestingComparisonCard).join("");
+  window.RipCityTestingComparisons.enforceSingleOpen(list);
+  if (moreButton) {
+    const remaining = filteredComparisons.length - visibleComparisons.length;
+    moreButton.hidden = filteredComparisons.length <= detailTestingComparisonPageSize;
+    moreButton.textContent = remaining > 0
+      ? `Show ${Math.min(detailTestingComparisonPageSize, remaining)} more tests`
+      : "Show fewer tests";
+    moreButton.dataset.allVisible = String(remaining === 0);
+  }
+}
+
+function initializeDetailTestingComparisonControls() {
+  const search = document.getElementById("coach-testing-comparison-search");
+  const sort = document.getElementById("coach-testing-comparison-sort");
+  const moreButton = document.getElementById("coach-testing-comparison-more");
+  const resetAndRender = () => {
+    detailTestingComparisonLimit = detailTestingComparisonPageSize;
+    renderDetailTestingComparisons();
+  };
+  search?.addEventListener("input", resetAndRender);
+  sort?.addEventListener("change", resetAndRender);
+  moreButton?.addEventListener("click", () => {
+    detailTestingComparisonLimit = moreButton.dataset.allVisible === "true"
+      ? detailTestingComparisonPageSize
+      : detailTestingComparisonLimit + detailTestingComparisonPageSize;
+    renderDetailTestingComparisons();
+  });
 }
 
 function renderDetailTestingDays() {
@@ -527,6 +571,7 @@ async function init() {
 
 document.addEventListener("DOMContentLoaded", () => {
   initializeCoachMemberDetailViews();
+  initializeDetailTestingComparisonControls();
   document.getElementById("coach-member-detail-logout").addEventListener("click", async () => { await db.auth.signOut(); window.location.href = "login.html"; });
   document.getElementById("coach-goal-form").addEventListener("submit", saveCoachGoal);
   document.getElementById("coach-goal-cancel").addEventListener("click", resetCoachGoalForm);

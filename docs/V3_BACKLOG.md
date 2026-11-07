@@ -96,7 +96,9 @@ positive progress. `Not Tested`, absent, scheduled, text, and unranked outcomes
 do not enter comparisons. Member Training now separates Schedule from
 Performance: the calendar and upcoming Testing Days remain together, while
 comparisons and searchable completed Testing Day history live in the focused
-Performance view.
+Performance view. Both member and coach performance lists stay compact as the
+test catalog grows: tests start collapsed, only one opens at a time, search and
+recent/name sorting are available, and results load six at a time.
 The coach/admin member profile uses the same focused pattern: Overview keeps
 member identity and weekly history together, Goals contains goal management,
 and Performance contains Testing Day comparisons and official history.

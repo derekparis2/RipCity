@@ -120,6 +120,36 @@
     }).sort((a, b) => a.testName.localeCompare(b.testName));
   }
 
+  function filterAndSort(items, query = "", sort = "recent") {
+    const normalizedQuery = normalizeMetricPart(query);
+    const filtered = (items || []).filter(item => {
+      if (!normalizedQuery) return true;
+      return normalizeMetricPart([
+        item.testName,
+        item.unit,
+        item.latest?.dayName
+      ].join(" ")).includes(normalizedQuery);
+    });
+
+    return [...filtered].sort((a, b) => {
+      if (sort === "name") return a.testName.localeCompare(b.testName);
+      return b.latest.date.localeCompare(a.latest.date)
+        || b.latest.recordedAt.localeCompare(a.latest.recordedAt)
+        || a.testName.localeCompare(b.testName);
+    });
+  }
+
+  function enforceSingleOpen(container) {
+    container?.querySelectorAll(".testing-comparison-card").forEach(card => {
+      card.addEventListener("toggle", () => {
+        if (!card.open) return;
+        container.querySelectorAll(".testing-comparison-card[open]").forEach(otherCard => {
+          if (otherCard !== card) otherCard.open = false;
+        });
+      });
+    });
+  }
+
   function formatValue(value, unit = "") {
     if (!Number.isFinite(Number(value))) return "—";
     const number = Number(value);
@@ -143,6 +173,8 @@
 
   global.RipCityTestingComparisons = {
     build,
+    enforceSingleOpen,
+    filterAndSort,
     formatImprovement,
     formatPercent,
     formatValue,
