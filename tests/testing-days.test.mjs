@@ -115,6 +115,8 @@ assert.match(memberDetailScript, /testing_day_participants/, "coach member detai
 assert.match(memberDetailPage, /id="coach-testing-comparison-list"/, "coach member detail includes performance comparisons");
 assert.match(memberDetailPage, /testing-comparisons\.js/, "coach member detail uses the shared comparison engine");
 assert.match(memberDetailScript, /RipCityTestingComparisons\.build/, "coach and member comparison rules stay shared");
+assert.doesNotMatch(memberDetailScript, /testing-comparison-chart/, "coach comparison cards stay compact without a result graph");
+assert.doesNotMatch(memberScript, /testing-comparison-chart/, "member comparison cards stay compact without a result graph");
 assert.match(memberDetailScript, /coach-testing\.html\?testingDay=/, "member Testing Day summaries link to canonical staff result editing");
 assert.match(coachScript, /memberProfileId: params\.get\("member"\)/, "Testing Day deep links focus the selected member");
 assert.match(memberDashboardScript, /has-testing-day/, "assigned Testing Days are highlighted on the Training calendar");

@@ -141,29 +141,11 @@
     return `${sign}${Math.abs(value).toLocaleString(undefined, { maximumFractionDigits: 1 })}%`;
   }
 
-  function getSparklinePoints(observations, width = 260, height = 72, padding = 8) {
-    if (!observations?.length) return "";
-    const values = observations.map(item => item.value);
-    const minimum = Math.min(...values);
-    const maximum = Math.max(...values);
-    const range = maximum - minimum || 1;
-    const usableWidth = width - (padding * 2);
-    const usableHeight = height - (padding * 2);
-    return observations.map((item, index) => {
-      const x = observations.length === 1
-        ? width / 2
-        : padding + ((index / (observations.length - 1)) * usableWidth);
-      const y = padding + (((maximum - item.value) / range) * usableHeight);
-      return `${x.toFixed(1)},${y.toFixed(1)}`;
-    }).join(" ");
-  }
-
   global.RipCityTestingComparisons = {
     build,
     formatImprovement,
     formatPercent,
     formatValue,
-    getSparklinePoints,
     getMetricKey,
     improvementBetween,
     percentImprovement

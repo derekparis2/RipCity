@@ -63,12 +63,6 @@ function renderDetailTestingComparisonCard(comparison, index) {
   const metrics = window.RipCityTestingComparisons;
   const latestTone = getDetailComparisonTone(comparison.improvementFromPrevious);
   const baselineTone = getDetailComparisonTone(comparison.improvementFromBaseline);
-  const points = metrics.getSparklinePoints(comparison.observations);
-  const circles = points.split(" ").filter(Boolean).map((point, pointIndex) => {
-    const [cx, cy] = point.split(",");
-    const isLatest = pointIndex === comparison.observations.length - 1;
-    return `<circle cx="${cx}" cy="${cy}" r="${isLatest ? 4 : 3}" class="${isLatest ? "is-latest" : ""}"></circle>`;
-  }).join("");
 
   return `
     <details class="testing-comparison-card" ${index === 0 ? "open" : ""}>
@@ -78,7 +72,7 @@ function renderDetailTestingComparisonCard(comparison, index) {
         <span class="testing-comparison-toggle" aria-hidden="true"></span>
       </summary>
       <div class="testing-comparison-details">
-        ${comparison.resultCount > 1 ? `<div class="testing-comparison-chart"><div class="testing-comparison-chart-heading"><span>Result history</span><small>${comparison.direction === "lower" ? "Lower is better" : "Higher is better"}</small></div><svg viewBox="0 0 260 72" role="img" aria-label="${window.RipCityUI.attr(`${comparison.testName} result history`)}" preserveAspectRatio="none"><polyline points="${points}"></polyline>${circles}</svg></div>` : `<p class="testing-comparison-hint">A second finalized result will unlock improvement comparisons.</p>`}
+        ${comparison.resultCount === 1 ? `<p class="testing-comparison-hint">A second finalized result will unlock improvement comparisons.</p>` : ""}
         <div class="testing-comparison-stats">
           <div><span>Baseline</span><strong>${window.RipCityUI.text(metrics.formatValue(comparison.baseline.value, comparison.unit))}</strong><small>${window.RipCityUI.text(formatDetailTestingDate(comparison.baseline.date))}</small></div>
           <div><span>Previous</span><strong>${window.RipCityUI.text(comparison.previous ? metrics.formatValue(comparison.previous.value, comparison.unit) : "—")}</strong><small>${window.RipCityUI.text(comparison.previous ? formatDetailTestingDate(comparison.previous.date) : "Needs another result")}</small></div>

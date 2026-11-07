@@ -105,30 +105,6 @@
   padding: 16px 17px 18px;
 }
 
-.testing-comparison-chart {
-  background: rgba(105, 185, 255, 0.055);
-  border: 1px solid rgba(105, 185, 255, 0.18);
-  border-radius: 13px;
-  display: grid;
-  gap: 10px;
-  padding: 12px;
-}
-
-.testing-comparison-chart-heading {
-  align-items: center;
-  display: flex;
-  gap: 12px;
-  justify-content: space-between;
-}
-
-.testing-comparison-chart-heading span { font-weight: 800; }
-.testing-comparison-chart-heading small { color: var(--muted); }
-
-.testing-comparison-chart svg { height: 72px; overflow: visible; width: 100%; }
-.testing-comparison-chart polyline { fill: none; stroke: #69b9ff; stroke-linecap: round; stroke-linejoin: round; stroke-width: 3; vector-effect: non-scaling-stroke; }
-.testing-comparison-chart circle { fill: var(--surface-1); stroke: #69b9ff; stroke-width: 2; vector-effect: non-scaling-stroke; }
-.testing-comparison-chart circle.is-latest { fill: #69b9ff; }
-
 .testing-comparison-stats,
 .testing-comparison-improvements {
   display: grid;
