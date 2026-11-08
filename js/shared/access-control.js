@@ -7,6 +7,7 @@
 
 (function () {
   const DEFAULT_REQUEST_TIMEOUT_MS = 15000;
+  const SELECTED_FACILITY_KEY = "ripcity:selected-facility-id";
 
   const MODULE_REQUIREMENTS_BY_PAGE = {
     "coach-workouts.html": ["workouts"],
@@ -43,9 +44,32 @@
   function choosePrimaryMembership(profile) {
     const memberships = getJoinedMemberships(profile);
 
+    const selectedFacilityId = window.sessionStorage.getItem(SELECTED_FACILITY_KEY);
+    if (selectedFacilityId) {
+      const selectedMembership = memberships.find(row => (
+        row.facility_id === selectedFacilityId && row.status === "approved"
+      ));
+      if (selectedMembership) return selectedMembership;
+      window.sessionStorage.removeItem(SELECTED_FACILITY_KEY);
+    }
+
     return memberships.find(row => row.status === "approved") ||
       memberships[0] ||
       null;
+  }
+
+  function selectFacility(facilityId) {
+    if (facilityId) window.sessionStorage.setItem(SELECTED_FACILITY_KEY, facilityId);
+    else window.sessionStorage.removeItem(SELECTED_FACILITY_KEY);
+  }
+
+  async function getCurrentUserIsPlatformOwner() {
+    const { data, error } = await withTimeout(
+      db.rpc("current_user_is_platform_owner"),
+      "Checking platform access took too long."
+    );
+    if (error) throw error;
+    return data === true;
   }
 
   async function getSession() {
@@ -341,13 +365,17 @@
       return null;
     }
 
-    const facilityConfig = await getFacilityConfiguration(membership.facility_id);
+    const [facilityConfig, isPlatformOwner] = await Promise.all([
+      getFacilityConfiguration(membership.facility_id),
+      getCurrentUserIsPlatformOwner()
+    ]);
     if (!facilityConfig || facilityConfig.status !== "active") {
       if (onDeniedMessage) onDeniedMessage("This facility is not currently active.", true);
       window.location.replace("pending.html");
       return null;
     }
 
+    window.RipCityPlatformOwner = isPlatformOwner;
     publishFacilityConfiguration(facilityConfig);
 
     if (!currentPageHasEnabledModule(facilityConfig)) {
@@ -363,7 +391,7 @@
       facilityId: membership.facility_id,
       isCoach: isCoachRole(membership.role),
       isAdmin: isAdminRole(membership.role),
-      isPlatformOwner: profile.global_role === "platform_owner",
+      isPlatformOwner,
       facilityConfig
     };
   }
@@ -397,6 +425,8 @@
 
   window.RipCityAccess = {
     choosePrimaryMembership,
+    selectFacility,
+    getCurrentUserIsPlatformOwner,
     getMemberProfileForMembership,
     getCurrentLegalAcceptance,
     getFacilityConfiguration,

@@ -89,6 +89,13 @@ staging application.
   facility-aware retry-safe member signup transaction. It preserves old Rip
   City links through the `rip-city` default while new copied links pass their
   facility slug explicitly.
+- `20261108180000_add_platform_facility_provisioning.sql` adds atomic,
+  platform-owner-only facility creation and explicit audited admin mode.
+  Creation saves the full configuration and one normal approved admin
+  membership without adding a hidden cross-facility RLS bypass.
+- `20261108190000_add_platform_admin_invites.sql` adds owner-only, seven-day,
+  single-use first-admin invitations. A claim creates only pending admin access
+  in the selected facility and continues through the normal approval workflow.
 - Future changes must use a later UTC timestamp and a descriptive name, such as
   `20260817090000_add_facility_timezone.sql`.
 

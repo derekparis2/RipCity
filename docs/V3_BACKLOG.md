@@ -125,8 +125,7 @@ separate product approval rather than keeping Package 3 open.
 
 ## 4. Platform Ownership And Isolation Contract
 
-- **Status:** **In progress on `derek/facility-platform`**; safe to develop in
-  parallel with Package 1
+- **Status:** **Complete on `derek/facility-platform`**
 - **Suggested branch:** `derek/facility-platform`
 - **Plan detail:** [Platform owners](VERSION_3_PLAN.md#platform-owners) · [Required safety rules](VERSION_3_PLAN.md#5-required-safety-rules)
 
@@ -145,8 +144,9 @@ Foundation verified in staging on 2026-11-08:
   approved membership.
 - Platform ownership alone does not bypass cross-facility member RLS.
 - Facility admins and ordinary coaches cannot invoke platform operations.
-- Direct facility creation remains closed until the trusted provisioning
-  workflow is implemented later in this package.
+- Trusted facility creation and explicit admin mode are implemented through
+  owner-only audited operations. Creation atomically stores configuration and
+  grants the owner one normal approved facility-admin membership.
 - The Step 2 configuration schema and owner-only replacement operation passed
   focused staging verification on 2026-11-08. They cover branding, IANA
   timezone, terminology, member programs, module switches, and facility
@@ -157,9 +157,12 @@ Foundation verified in staging on 2026-11-08:
   pages. Member signup links carry the destination facility slug, use that
   facility's enabled programs and branding, and cannot attach an existing
   account to another facility.
-- The remaining work in this package is the audited owner UI and trusted
-  facility-provisioning operation; ordinary facility pages no longer need
-  Rip City-specific configuration to choose modules or signup destinations.
+- The owner UI can create and configure facilities, open a facility in explicit
+  admin mode, and remember the selected approved membership without weakening
+  facility RLS.
+- Focused facility-provisioning checks passed in staging on 2026-11-08. They
+  verify owner-only creation, explicit admin mode, cross-facility denial, and
+  private-data isolation against the retained fake launch facility.
 
 **Complete when:** Only Derek and Sam can invoke platform facility operations;
 facility admins and coaches cannot; normal facility access remains isolated;
@@ -169,8 +172,9 @@ and focused two-facility allowed/denied tests pass in staging.
 
 ## 5. Facility Creation And Configuration
 
-- **Status:** Depends on Package 4
-- **Suggested branch:** `<name>/facility-creation`
+- **Status:** **In progress on `derek/facility-platform`**; first-admin
+  onboarding and the launch rehearsal remain
+- **Suggested branch:** `derek/facility-platform`
 - **Plan detail:** [Facility creation and isolation](VERSION_3_PLAN.md#facility-creation-and-isolation) · [Facility configuration](VERSION_3_PLAN.md#facility-configuration-and-module-visibility)
 
 Build the owner-only facility setup workflow, initial admin creation, branding,

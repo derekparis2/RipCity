@@ -79,6 +79,37 @@ retry preserves the existing same-facility pending rows, and an existing
 account cannot use a different facility signup link to create a cross-facility
 membership.
 
+## Platform Facility Provisioning Checks
+
+After applying `20261108180000_add_platform_facility_provisioning.sql`, run:
+
+```bash
+node supabase/tests/staging_platform_facility_provisioning_checks.mjs
+```
+
+The repeatable test proves that only a platform owner can create a configured
+facility or enter its admin mode, that admin mode uses an explicit approved
+facility membership, and that another facility's member cannot read the new
+configuration. The first successful run retains the fake `Platform Launch
+Rehearsal` facility for the complete second-facility launch rehearsal.
+
+## Goals CRUD And RLS Checks
+
+## Platform First-Admin Invite Checks
+
+After applying `20261108190000_add_platform_admin_invites.sql`, run:
+
+```bash
+node supabase/tests/staging_platform_admin_invite_checks.mjs
+```
+
+The test proves that only a platform owner can create the seven-day link, the
+public lookup reveals only safe facility branding, the link is single-use, and
+claiming it creates only pending administrator access. It also verifies that an
+ordinary coach and another facility's admin cannot approve the request, while
+the platform owner in explicit facility admin mode can approve it. Test rows
+are removed during cleanup.
+
 ## Goals CRUD And RLS Checks
 
 After applying the V2 Goals migration, run:

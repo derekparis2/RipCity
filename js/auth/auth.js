@@ -1,6 +1,8 @@
 const LEGAL_ACKNOWLEDGMENT_VERSION = "2026-10-25";
 let signupCoachInviteCode = "";
 let signupCoachInvite = null;
+let signupAdminInviteCode = "";
+let signupAdminInvite = null;
 let signupFacility = null;
 let signupInProgress = false;
 let loginInProgress = false;
@@ -471,7 +473,7 @@ async function getSignupUser({ email, password, fullName, allowExistingAccount, 
     const sessionUser = sessionData.session?.user;
     if (sessionUser) {
       if (normalizeEmail(sessionUser.email || "") !== normalizeEmail(email)) {
-        throw new Error("Log out of the current account before using this coach invite.");
+        throw new Error("Log out of the current account before using this staff invite.");
       }
 
       const { data: updatedUserData, error: updateUserError } = await withAuthTimeout(
@@ -576,12 +578,14 @@ async function handleSignup(event) {
   showMessage("signup-message", "Creating your account...");
 
   const isCoachSignup = Boolean(signupCoachInviteCode);
+  const isAdminSignup = Boolean(signupAdminInviteCode);
+  const isStaffSignup = isCoachSignup || isAdminSignup;
   const fullName = document.getElementById("signup-full-name").value.trim();
   const email = document.getElementById("signup-email").value.trim();
   const username = normalizeUsername(document.getElementById("signup-username").value);
   const password = document.getElementById("signup-password").value;
   const confirmPassword = document.getElementById("signup-confirm-password").value;
-  const memberType = isCoachSignup
+  const memberType = isStaffSignup
     ? null
     : document.querySelector("input[name='member-type']:checked:not(:disabled)")?.value;
 
@@ -636,12 +640,12 @@ async function handleSignup(event) {
       return;
     }
 
-    if (isCoachSignup && !signupCoachInvite) {
-      showMessage("signup-message", "This coach invite is invalid, expired, or has already been used.", true);
+    if (isStaffSignup && !(isAdminSignup ? signupAdminInvite : signupCoachInvite)) {
+      showMessage("signup-message", "This staff invite is invalid, expired, or has already been used.", true);
       return;
     }
 
-    if (!isCoachSignup && (!signupFacility || !memberType)) {
+    if (!isStaffSignup && (!signupFacility || !memberType)) {
       showMessage("signup-message", "This facility is not currently accepting member signups.", true);
       return;
     }
@@ -680,21 +684,24 @@ async function handleSignup(event) {
     ));
     if (legalAcceptanceError) throw legalAcceptanceError;
 
-    if (isCoachSignup) {
+    if (isStaffSignup) {
       await ensureSignupProfile({ user, email, fullName, username });
       coachProfileReady = true;
 
+      const claimRpc = isAdminSignup ? "claim_platform_admin_invite" : "claim_coach_invite";
+      const claimArgs = isAdminSignup
+        ? { claim_invite_code: signupAdminInviteCode }
+        : { claim_invite_code: signupCoachInviteCode };
       const { data: claimedInvite, error: claimError } = await withAuthTimeout(
-        db.rpc("claim_coach_invite", {
-          claim_invite_code: signupCoachInviteCode
-        }),
-        "Claiming the coach invite took too long."
+        db.rpc(claimRpc, claimArgs),
+        "Claiming the staff invite took too long."
       );
 
       if (claimError) throw claimError;
-      if (!claimedInvite?.length) throw new Error("The coach invite could not be claimed.");
+      if (!claimedInvite?.length) throw new Error("The staff invite could not be claimed.");
 
-      window.location.href = getFacilityPendingUrl(signupCoachInvite.facility_slug);
+      const inviteConfiguration = isAdminSignup ? signupAdminInvite : signupCoachInvite;
+      window.location.href = getFacilityPendingUrl(inviteConfiguration.facility_slug);
       return;
     }
 
@@ -724,10 +731,10 @@ async function handleSignup(event) {
     await redirectByProfile(user.id);
   } catch (error) {
     console.error(error);
-    if (isCoachSignup && coachProfileReady) {
+    if (isStaffSignup && coachProfileReady) {
       showMessage(
         "signup-message",
-        "Your account was saved, but this coach link could not be claimed. Ask the facility administrator for a new link, then use this same email, username, and password.",
+        "Your account was saved, but this staff link could not be claimed. Ask for a new link, then use this same email, username, and password.",
         true
       );
       return;
@@ -1038,14 +1045,20 @@ function getCoachInviteCodeFromUrl() {
   return String(params.get("coach_invite") || "").trim();
 }
 
+function getAdminInviteCodeFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  return String(params.get("admin_invite") || "").trim();
+}
+
 function setSignupSubmitDisabled(disabled) {
   const button = document.querySelector("#signup-form button[type='submit']");
   if (button) button.disabled = disabled;
 }
 
-function applyCoachSignupLayout() {
-  document.getElementById("signup-eyebrow").textContent = "JOIN COACHING STAFF";
-  document.getElementById("signup-title").textContent = "Create Coach Account";
+function applyStaffSignupLayout(role = "coach") {
+  const isAdmin = role === "admin";
+  document.getElementById("signup-eyebrow").textContent = isAdmin ? "JOIN FACILITY LEADERSHIP" : "JOIN COACHING STAFF";
+  document.getElementById("signup-title").textContent = isAdmin ? "Create Administrator Account" : "Create Coach Account";
   document.getElementById("signup-member-type-grid").classList.add("hidden");
 
   document.querySelectorAll(".athlete-only, .member-only").forEach(section => {
@@ -1058,7 +1071,7 @@ function applyCoachSignupLayout() {
 }
 
 async function setupCoachSignupPage() {
-  applyCoachSignupLayout();
+  applyStaffSignupLayout("coach");
   setSignupSubmitDisabled(true);
   showMessage("signup-message", "Checking coach invite...");
 
@@ -1089,9 +1102,46 @@ async function setupCoachSignupPage() {
   document.getElementById("signup-form").addEventListener("submit", handleSignup);
 }
 
+async function setupAdminSignupPage() {
+  applyStaffSignupLayout("admin");
+  setSignupSubmitDisabled(true);
+  showMessage("signup-message", "Checking administrator invite...");
+
+  try {
+    const { data, error } = await db.rpc("lookup_platform_admin_invite_configuration", {
+      lookup_invite_code: signupAdminInviteCode
+    });
+    if (error) throw error;
+    if (!data) throw new Error("This administrator invite is invalid, expired, or has already been used.");
+
+    signupAdminInvite = data;
+    applyPublicFacilityBranding(signupAdminInvite);
+    const loginLink = document.getElementById("signup-login-link");
+    if (loginLink) loginLink.href = getFacilityLoginUrl(signupAdminInvite.facility_slug);
+    document.getElementById("signup-description").textContent =
+      `Create your administrator account for ${signupAdminInvite.facility_name}. A platform owner must approve it before you receive access.`;
+    showMessage("signup-message", "");
+    setSignupSubmitDisabled(false);
+  } catch (error) {
+    console.error(error);
+    signupAdminInvite = null;
+    document.getElementById("signup-description").textContent =
+      "Ask a platform owner to create a new administrator signup link.";
+    showMessage("signup-message", error.message || "Could not verify this administrator invite.", true);
+  }
+
+  document.getElementById("signup-form").addEventListener("submit", handleSignup);
+}
+
 async function setupSignupPage() {
   setupAgeChoiceReset();
   signupCoachInviteCode = getCoachInviteCodeFromUrl();
+  signupAdminInviteCode = getAdminInviteCodeFromUrl();
+
+  if (signupAdminInviteCode) {
+    await setupAdminSignupPage();
+    return;
+  }
 
   if (signupCoachInviteCode) {
     await setupCoachSignupPage();

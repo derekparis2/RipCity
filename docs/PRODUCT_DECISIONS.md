@@ -49,6 +49,10 @@ they are intentionally revisited.
   facility-scoped admin mode. Entering and leaving that mode must be audited;
   platform ownership alone must not silently expose every facility's private
   member data.
+- Creating a facility is one trusted transaction: it creates the facility,
+  validates and stores its configuration, records the audit event, and grants
+  the creating platform owner an explicit approved admin membership. A failed
+  step rolls the entire operation back.
 - Facility setup metadata is changed only through audited platform-owner
   operations. Facility admins can manage their own members and coaching work,
   but cannot change platform-level branding, timezone, terminology, programs,

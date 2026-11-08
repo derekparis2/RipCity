@@ -43,6 +43,10 @@ Use this as the quick orientation guide before editing.
 
 ## Feature JavaScript
 
+- `platform.html`, `js/platform/platform.js`, and `css/platform.css` provide
+  the platform-owner facility directory, trusted facility creation and
+  configuration forms, and explicit audited entry into a facility's existing
+  admin experience. Ordinary facility roles cannot open or invoke these tools.
 - `js/auth/auth.js` controls reusable member signup, single-use coach-invite
   signup, username/email login, status-specific blocked-account messaging,
   required age/guardian/legal acknowledgments, pending logout, and post-login
@@ -104,6 +108,11 @@ Use this as the quick orientation guide before editing.
   require every authenticated account to accept the exact current database
   versions before entering pending or protected pages. `legal_documents` is the
   version catalog and `legal_acceptances` is the server-timestamped evidence.
+- `platform.html` and `js/platform/platform.js` provide the private platform
+  facility directory, facility provisioning/configuration controls, explicit
+  facility admin mode, and single-use first-admin link creation. `signup.html`
+  and `js/auth/auth.js` validate and claim those links without exposing invite
+  rows or granting approved access automatically.
 
 ## Archived Reference
 

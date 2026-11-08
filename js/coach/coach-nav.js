@@ -14,6 +14,9 @@ function initializeCoachNavigation(configuration = window.RipCityFacility) {
     const visibleItems = coachNavigationItems.filter(item => (
       !item.module || configuration?.modules?.[item.module]?.enabled !== false
     ));
+    if (window.RipCityPlatformOwner) {
+      visibleItems.push({ key: "platform", label: "Platform", href: "platform.html" });
+    }
     const links = visibleItems.map((item) => {
       const isActive = item.key === activeKey;
       return `

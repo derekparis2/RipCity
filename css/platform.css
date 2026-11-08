@@ -1,0 +1,108 @@
+.platform-page .coach-page {
+  max-width: 1500px;
+}
+
+.platform-hero {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.platform-facility-list,
+.platform-module-grid,
+.platform-program-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.platform-facility-list {
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.platform-facility-card,
+.platform-config-section,
+.platform-option-card {
+  background: var(--surface-2, #202126);
+  border: 1px solid var(--border, #383a42);
+  border-radius: 18px;
+}
+
+.platform-facility-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 22px;
+}
+
+.platform-facility-card h4,
+.platform-config-section h4 {
+  margin: 0;
+}
+
+.platform-facility-meta {
+  color: var(--muted, #aaaeb8);
+  display: grid;
+  gap: 5px;
+  margin: 0;
+}
+
+.platform-facility-actions,
+.platform-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: auto;
+}
+
+.platform-config-form {
+  display: grid;
+  gap: 20px;
+}
+
+.platform-config-section {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+}
+
+.platform-module-grid,
+.platform-program-grid {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.platform-option-card {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+}
+
+.platform-option-card > label:first-child {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
+
+.platform-status {
+  border: 1px solid #4b9bd8;
+  border-radius: 999px;
+  color: #8ac8ff;
+  font-size: .78rem;
+  font-weight: 800;
+  padding: 6px 10px;
+  text-transform: uppercase;
+}
+
+@media (max-width: 700px) {
+  .platform-hero,
+  .platform-form-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .platform-hero .primary-btn,
+  .platform-form-actions button {
+    width: 100%;
+  }
+}
