@@ -94,6 +94,16 @@ without saved outcomes.
 Testing Day results remain staff-entered. Members may view only their own
 official outcomes and cannot submit or edit Testing Day results.
 
+Member Training separates Schedule from Performance without adding another
+bottom-navigation destination. Schedule contains the workout calendar and
+upcoming Testing Days; Performance contains comparison cards and searchable
+completed Testing Day history.
+
+The coach/admin member profile now separates Overview, Goals, and Performance
+without changing its URL or data access. Overview contains the compact member
+summary and weekly habit/workout history, Goals contains staff goal management,
+and Performance contains Testing Day comparisons and official result history.
+
 New V3 feature branches start from current `v3-development`. The V2 production
 release and its ordered production migration sequence are complete.
 
@@ -327,6 +337,14 @@ Testing Days:
   correct the canonical result. Member Training highlights assigned Testing
   Days on the calendar and keeps a newest-first, searchable, collapsible history
   below it.
+- `derek/testing-comparisons` is the in-progress first slice of V3 advanced
+  testing. It adds a shared migration-free comparison engine, member-own
+  progress cards on Training, and staff progress cards on member detail. The
+  comparison contract uses earliest official result as baseline, immediately
+  previous official result as prior, and best official result as PR while
+  respecting higher/lower ranking direction. Merge this branch only after the
+  Package 1 strength-max release reaches `main`; multiple attempts, correction
+  audit, roster comparisons, and testing leaderboards remain later work.
 
 Coach notes / announcements:
 

@@ -77,7 +77,7 @@ staging on phone and desktop.
 
 ## 3. Advanced Testing Comparisons And Performance History
 
-- **Status:** Ready after Package 1 is live on `main`
+- **Status:** In progress on `derek/testing-comparisons`; merge after Package 1 is live on `main`
 - **Suggested branch:** `<name>/testing-progress`
 - **Plan detail:** [Advanced testing](VERSION_3_PLAN.md#advanced-testing-and-performance-history)
 
@@ -85,6 +85,27 @@ Extend the shipped Testing Day feature with approved attempt/best-result rules,
 comparison history, improvement values, personal records, charts, correction
 audit, and selected leaderboard metrics. Reuse the shared metric contract
 rather than creating a second incompatible statistics system.
+
+The first comparison slice is implemented without a schema change: members can
+review their own numeric Testing Day history and coaches/admins can review the
+same progress from an individual member page. It uses the earliest completed
+official result as the baseline, the immediately previous official result as
+the prior result, and the best official result as the PR. Improvement is
+direction-aware, so a lower sprint time and a higher jump both display as
+positive progress. `Not Tested`, absent, scheduled, text, and unranked outcomes
+do not enter comparisons. Member Training now separates Schedule from
+Performance: the calendar and upcoming Testing Days remain together, while
+comparisons and searchable completed Testing Day history live in the focused
+Performance view. Both member and coach performance lists stay compact as the
+test catalog grows: tests start collapsed, only one opens at a time, search and
+recent/name sorting are available, and results load six at a time.
+The coach/admin member profile uses the same focused pattern: Overview keeps
+member identity and weekly history together, Goals contains goal management,
+and Performance contains Testing Day comparisons and official history.
+
+Remaining Package 3 work includes approved multiple-attempt rules, correction
+audit history, roster-wide comparison tools, and explicitly approved testing
+leaderboard metrics.
 
 **Complete when:** Members and coaches can clearly compare current and prior
 results, approved tests show historically correct improvements and records,
