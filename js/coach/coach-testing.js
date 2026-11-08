@@ -19,6 +19,7 @@ let activeTestingResultDay = null;
 let testingResultMode = "athlete";
 let testingResultFocusId = null;
 let testingResultDrafts = new Map();
+let testingResultPriorChanges = new Map();
 let testingResultsReadOnly = false;
 let testingDayExpansionInitialized = false;
 const expandedTestingDayIds = new Set();
@@ -584,6 +585,7 @@ async function openTestingResults(day, { readOnly = false, memberProfileId = nul
     || day.testing_day_participants?.[0]?.id
     || null;
   testingResultDrafts = new Map();
+  testingResultPriorChanges = new Map();
   const testIds = (day.testing_day_tests || []).map(test => test.id);
   if (testIds.length) {
     const { data, error } = await db.from("testing_results")
@@ -595,6 +597,7 @@ async function openTestingResults(day, { readOnly = false, memberProfileId = nul
       { resultStatus: result.result_status || "recorded", numericValue: result.numeric_value ?? "", textValue: result.text_value ?? "", notes: result.notes || "" }
     ));
   }
+  if (readOnly) await loadTestingResultPriorChanges(day);
   document.getElementById("testing-results-title").textContent = day.name;
   document.getElementById("testing-results-subtitle").textContent = readOnly
     ? `${formatTestingDate(day.testing_date)} · Review by athlete or rank the recorded results by test.`
@@ -609,9 +612,57 @@ async function openTestingResults(day, { readOnly = false, memberProfileId = nul
   document.getElementById("testing-results-panel")?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
+async function loadTestingResultPriorChanges(day) {
+  const comparisonApi = window.RipCityTestingComparisons;
+  const participants = day.testing_day_participants || [];
+  const memberProfileIds = [...new Set(participants.map(participant => participant.member_profile_id).filter(Boolean))];
+  if (!comparisonApi || !memberProfileIds.length) return;
+
+  const { data, error } = await db.from("testing_day_participants")
+    .select(`
+      id,member_profile_id,participation_status,
+      testing_day:testing_days(
+        id,name,testing_date,status,
+        testing_day_tests(
+          id,name,unit,input_type,ranking_direction,
+          testing_results(id,testing_day_participant_id,result_status,numeric_value,recorded_at)
+        )
+      )
+    `)
+    .in("member_profile_id", memberProfileIds);
+  if (error) throw error;
+
+  const historyByMember = new Map();
+  (data || []).forEach(participation => {
+    if (!historyByMember.has(participation.member_profile_id)) historyByMember.set(participation.member_profile_id, []);
+    historyByMember.get(participation.member_profile_id).push(participation);
+  });
+
+  participants.forEach(participant => {
+    const comparisons = comparisonApi.build(historyByMember.get(participant.member_profile_id) || []);
+    (day.testing_day_tests || []).forEach(test => {
+      const comparison = comparisons.find(item => item.key === comparisonApi.getMetricKey(test));
+      const currentIndex = comparison?.observations.findIndex(observation => (
+        observation.dayId === day.id && observation.testId === test.id
+      )) ?? -1;
+      if (currentIndex < 1) return;
+
+      const current = comparison.observations[currentIndex];
+      const previous = comparison.observations[currentIndex - 1];
+      const improvement = comparisonApi.improvementBetween(current.value, previous.value, comparison.direction);
+      if (!Number.isFinite(improvement)) return;
+      testingResultPriorChanges.set(testingResultKey(test.id, participant.id), {
+        className: improvement > 0 ? "is-improved" : improvement < 0 ? "is-declined" : "is-unchanged",
+        label: `${comparisonApi.formatImprovement(improvement, test.unit || "")} vs prior`
+      });
+    });
+  });
+}
+
 function closeTestingResults() {
   activeTestingResultDay = null;
   testingResultDrafts = new Map();
+  testingResultPriorChanges = new Map();
   document.getElementById("testing-results-panel")?.classList.add("hidden");
 }
 
@@ -689,10 +740,16 @@ function renderTestingResultEntry() {
     const isAbsent = participant.participation_status === "did_not_participate";
     if (testingResultsReadOnly) {
       const canRank = testingResultMode === "test" && test.ranking_direction !== "none" && test.input_type !== "text" && !isAbsent && !isNotTested && draft.numericValue !== "" && draft.numericValue != null;
+      const priorChange = testingResultMode === "athlete" && !isAbsent && !isNotTested
+        ? testingResultPriorChanges.get(key)
+        : null;
       return `<article class="testing-result-review-row ${isNotTested ? "is-not-tested" : ""} ${isAbsent ? "is-absent" : ""}">
         ${testingResultMode === "test" ? `<span class="testing-result-rank">${canRank && rank ? `#${rank}` : "—"}</span>` : ""}
         <div><h4>${window.RipCityUI.text(testingResultMode === "athlete" ? test.name : testingParticipantName(participant))}</h4><p>${window.RipCityUI.text(testingResultMode === "athlete" ? (test.unit || test.input_type) : test.name)}</p></div>
-        <strong>${window.RipCityUI.text(isAbsent ? "Did not participate" : testingResultDisplay(test, draft))}</strong>
+        <div class="testing-result-review-value">
+          <strong>${window.RipCityUI.text(isAbsent ? "Did not participate" : testingResultDisplay(test, draft))}</strong>
+          ${priorChange ? `<small class="testing-result-prior-change ${priorChange.className}">${window.RipCityUI.text(priorChange.label)}</small>` : ""}
+        </div>
         ${draft.notes ? `<span class="testing-result-review-note">${window.RipCityUI.text(draft.notes)}</span>` : ""}
       </article>`;
     }

@@ -63,6 +63,7 @@ assert.match(coachPage, /data-testing-step="details"[\s\S]*data-testing-step="te
 assert.match(coachPage, /data-result-mode="athlete"[\s\S]*data-result-mode="test"/, "staff can enter results athlete-first or test-first");
 assert.match(coachPage, /id="testing-target-type"[\s\S]*value="groups"[\s\S]*value="members"[\s\S]*value="both"/, "assignment mirrors the workout builder while supporting groups, members, or both");
 assert.match(coachPage, /id="testing-builder-review"/, "Testing Day scheduling includes the workout-builder-style review card");
+assert.match(coachPage, /testing-comparisons\.js/, "staff result review uses the shared Testing Day comparison rules");
 assert.match(coachScript, /selectedTestingGroupIds/, "coach group selection survives rerenders and searches");
 assert.match(coachScript, /selectedTestingMemberIds/, "coach individual selection survives rerenders and searches");
 assert.match(coachScript, /from\("testing_test_templates"\)/, "saved facility test definitions return to the reusable builder list");
@@ -81,6 +82,9 @@ assert.match(coachScript, /day\.name}[\s\S]*day\.description[\s\S]*date[\s\S]*gr
 assert.match(coachScript, /data-testing-action="view-results"[\s\S]*data-testing-action="edit-results"/, "completed Testing Days support result review and correction");
 assert.match(coachScript, /ranking_direction === "lower"/, "test result review respects lower-is-better rankings");
 assert.match(coachScript, /row\.numeric !== previousValue/, "equal Testing Day results share a ranking position");
+assert.match(coachScript, /loadTestingResultPriorChanges/, "completed athlete result review loads prior official results");
+assert.match(coachScript, /formatImprovement\(improvement, test\.unit/, "athlete result changes use signed direction-aware values");
+assert.match(coachScript, /currentIndex < 1/, "a first Testing Day result does not show a comparison");
 
 assert.match(memberPage, /id="member-testing-panel"/, "member Training includes an assigned Testing Days section");
 assert.ok(memberPage.indexOf('id="member-testing-panel"') > memberPage.indexOf('id="training-calendar-panel"'), "member Testing Days appear below the Training calendar");
