@@ -25,12 +25,17 @@ product's immediate value to facilities come before hitting-specific work.
 
 ### V3 Release Sequence
 
-The first V3 production release is intentionally narrow: complete strength
+The next V3 production release is intentionally narrow: complete strength
 maxes and percentage-based workout programming, verify the full package in
 staging, and merge it through `v3-development` into `main`. Do not hold that
-release for routines, Testing Day comparisons, multi-facility tooling, or
-baseball features. Continue the remaining V3 backlog only after the workout
-package is live and smoke-tested in production.
+release for routines, multi-facility tooling, or baseball features.
+
+Independent work may continue in parallel when branches do not overlap the
+max/programming schema or workout-builder implementation. Testing comparisons
+are already complete on `v3-development`. Platform-owner authorization,
+facility creation, and the fake second-facility rehearsal may be developed as
+the next sales-readiness track while the workout package is finished, but they
+must have their own staging verification and coordinated production release.
 
 ---
 
@@ -105,6 +110,21 @@ V3 extends that stable feature instead of rebuilding it.
 - Reuse the shared metric catalog so Testing Day and hitting data do not become
   unrelated reporting systems.
 
+Current completed V3 slice:
+
+- Members and coaches have separate Schedule and Performance views with
+  searchable, collapsed, paginated official-result history.
+- Numeric ranked tests show baseline, previous, latest, direction-aware change,
+  and personal record; invalid, absent, Not Tested, text, and unranked outcomes
+  are excluded from comparisons.
+- Completed Testing Day staff review shows each recorded result's change from
+  that athlete's immediately previous official result. First results show no
+  comparison, and result color is kept neutral so regression/progress color is
+  unambiguous.
+- A most-improved leaderboard is intentionally not part of the completed
+  package. Multiple-attempt rules and any Testing Day leaderboard expansion
+  require a later explicit decision.
+
 ---
 
 ## 2. Multi-Facility Platform Operations
@@ -124,6 +144,9 @@ V3 extends that stable feature instead of rebuilding it.
 
 ### Facility Creation And Isolation
 
+- Keep one shared application and schema. A new facility receives the same
+  reusable modules and chooses its configuration; it does not receive a custom
+  copy of the Rip City application.
 - Build a platform-owner workflow that creates a facility and its first admin.
 - Configure the facility name, slug, IANA time zone, branding, terminology,
   enabled modules, member programs, starter groups, and initial admin.
