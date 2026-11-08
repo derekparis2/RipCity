@@ -15,7 +15,9 @@
   }
 
   function getTodayString() {
-    return formatLocalDate(new Date());
+    return window.RipCityAccess?.getFacilityDateKey
+      ? window.RipCityAccess.getFacilityDateKey()
+      : formatLocalDate(new Date());
   }
 
   function normalizeJoinedOne(rowOrRows) {

@@ -77,6 +77,18 @@ staging application.
   coach/admin display name on announcements so members see reliable attribution
   without receiving broad access to staff profiles. Apply it before deploying
   frontend assets that select `author_display_name`.
+- `20261108150000_add_platform_owner_foundation.sql` adds the private,
+  audited platform-owner authorization used by Derek and Sam without granting
+  automatic access to facility member data.
+- `20261108160000_add_facility_configuration.sql` adds facility time zones,
+  lifecycle state, terminology, programs, and module configuration. Existing
+  facilities receive the complete current feature set, and only a platform
+  owner can replace configuration through the audited RPC.
+- `20261108170000_add_facility_aware_signup.sql` adds the safe public facility
+  branding/program lookup, facility-branded coach-invite lookup, and a
+  facility-aware retry-safe member signup transaction. It preserves old Rip
+  City links through the `rip-city` default while new copied links pass their
+  facility slug explicitly.
 - Future changes must use a later UTC timestamp and a descriptive name, such as
   `20260817090000_add_facility_timezone.sql`.
 

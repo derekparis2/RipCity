@@ -121,9 +121,10 @@ function updateProfilePreview() {
 
   const program = profileAccess?.isCoach
     ? (profileAccess.membership.role === "admin" ? "Admin" : "Coach")
-    : currentMemberProfile?.member_type === "h2k"
-      ? "H2K Member"
-      : "Athlete";
+    : window.RipCityAccess.getProgramLabel(
+      profileAccess?.facilityConfig,
+      currentMemberProfile?.member_type === "h2k" ? "h2k" : "athlete"
+    );
   const bandBadge = document.getElementById("preview-h2k-band");
 
   document.getElementById("preview-name").textContent = fullName;
@@ -159,8 +160,12 @@ function getProfileMemberTypeLabel() {
   const profileType = String(currentMemberProfile?.member_type || "").toLowerCase();
   const role = String(profileAccess?.membership?.role || "").toLowerCase();
 
-  if (profileType === "h2k" || role === "h2k_member") return "H2K Member";
-  if (profileType === "athlete" || role === "athlete") return "Athlete";
+  if (profileType === "h2k" || role === "h2k_member") {
+    return window.RipCityAccess.getProgramLabel(profileAccess?.facilityConfig, "h2k");
+  }
+  if (profileType === "athlete" || role === "athlete") {
+    return window.RipCityAccess.getProgramLabel(profileAccess?.facilityConfig, "athlete");
+  }
 
   return "Member";
 }
@@ -194,7 +199,12 @@ function updateProfileShellNav() {
   if (pageHeading) pageHeading.textContent = isCoach ? "Coach Profile" : "Member Profile";
   if (editorHeading) editorHeading.textContent = isCoach ? "Coach Info" : "Member Info";
   document.title = isCoach ? "Coach Profile" : "Member Profile";
-  if (heroHeading) heroHeading.textContent = isCoach ? "Build your Rip City coach profile." : "Build your Rip City profile.";
+  const facilityName = profileAccess?.facilityConfig?.name || "your facility";
+  if (heroHeading) {
+    heroHeading.textContent = isCoach
+      ? `Build your ${facilityName} coach profile.`
+      : `Build your ${facilityName} profile.`;
+  }
   if (heroDescription) {
     heroDescription.textContent = isCoach
       ? "Keep your account and profile details current for your facility."

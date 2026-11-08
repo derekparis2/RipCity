@@ -147,6 +147,19 @@ Foundation verified in staging on 2026-11-08:
 - Facility admins and ordinary coaches cannot invoke platform operations.
 - Direct facility creation remains closed until the trusted provisioning
   workflow is implemented later in this package.
+- The Step 2 configuration schema and owner-only replacement operation passed
+  focused staging verification on 2026-11-08. They cover branding, IANA
+  timezone, terminology, member programs, module switches, and facility
+  lifecycle metadata without yet creating facilities.
+- The shared frontend now loads the signed-in facility configuration, applies
+  its name/logo/colors, removes disabled modules from coach/member navigation
+  and dashboard entry points, and redirects direct visits to disabled feature
+  pages. Member signup links carry the destination facility slug, use that
+  facility's enabled programs and branding, and cannot attach an existing
+  account to another facility.
+- The remaining work in this package is the audited owner UI and trusted
+  facility-provisioning operation; ordinary facility pages no longer need
+  Rip City-specific configuration to choose modules or signup destinations.
 
 **Complete when:** Only Derek and Sam can invoke platform facility operations;
 facility admins and coaches cannot; normal facility access remains isolated;

@@ -74,7 +74,9 @@ function formatLocalDate(date) {
 }
 
 function getTodayString() {
-  return formatLocalDate(new Date());
+  return window.RipCityAccess?.getFacilityDateKey
+    ? window.RipCityAccess.getFacilityDateKey()
+    : formatLocalDate(new Date());
 }
 
 // Gets Monday of current week.
@@ -722,7 +724,7 @@ async function loadRecentWorkoutAssignmentsForCoach(facilityId) {
 }
 
 function formatMemberTypeLabel(memberType) {
-  return memberType === "h2k" ? "H2K" : "Athlete";
+  return window.RipCityAccess.getProgramLabel(window.RipCityFacility, memberType);
 }
 
 function getMemberCompletionStatus(member) {

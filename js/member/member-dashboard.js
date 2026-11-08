@@ -699,8 +699,12 @@ function getMemberTypeLabel(profileTypeValue = currentMemberProfile?.member_type
   const profileType = String(profileTypeValue || "").toLowerCase();
   const role = String(currentAccess?.membership?.role || "").toLowerCase();
 
-  if (profileType === "h2k" || role === "h2k_member") return "H2K Member";
-  if (profileType === "athlete" || role === "athlete") return "Athlete";
+  if (profileType === "h2k" || role === "h2k_member") {
+    return window.RipCityAccess.getProgramLabel(currentAccess?.facilityConfig, "h2k");
+  }
+  if (profileType === "athlete" || role === "athlete") {
+    return window.RipCityAccess.getProgramLabel(currentAccess?.facilityConfig, "athlete");
+  }
 
   return "Member";
 }

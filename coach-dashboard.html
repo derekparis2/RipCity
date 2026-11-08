@@ -53,7 +53,7 @@
 
     </section>
 
-    <details class="panel coach-announcements-panel" id="coach-announcements-panel">
+    <details class="panel coach-announcements-panel" id="coach-announcements-panel" data-facility-module="announcements">
       <summary class="coach-announcement-summary">
         <div>
           <p class="eyebrow">COMMUNICATION</p>
@@ -74,8 +74,8 @@
           <label>Audience
             <select id="coach-announcement-audience">
               <option value="facility">Entire facility</option>
-              <option value="athletes">All athletes</option>
-              <option value="h2k">All H2K members</option>
+              <option id="coach-announcement-athlete-audience" value="athletes" data-facility-program="athlete">All athletes</option>
+              <option id="coach-announcement-h2k-audience" value="h2k" data-facility-program="h2k">All H2K members</option>
               <option value="targeted">Custom selection</option>
             </select>
           </label>
@@ -135,19 +135,19 @@
       <article class="stat-card">
         <span>Approved Members</span>
         <strong id="coach-total-members">0</strong>
-        <small>Athletes and H2K members</small>
+        <small>Approved facility members</small>
       </article>
 
-      <article class="stat-card">
-        <span>H2K Members</span>
+      <article class="stat-card" data-facility-program="h2k">
+        <span data-facility-program-label="h2k" data-label-form="plural">H2K Members</span>
         <strong id="coach-total-h2k-members">0</strong>
-        <small>Approved H2K members</small>
+        <small>Approved members</small>
       </article>
 
-      <article class="stat-card">
-        <span>Athletes</span>
+      <article class="stat-card" data-facility-program="athlete">
+        <span data-facility-program-label="athlete" data-label-form="plural">Athletes</span>
         <strong id="coach-total-athletes">0</strong>
-        <small>Approved athletes</small>
+        <small>Approved members</small>
       </article>
 
       <article class="stat-card">
@@ -157,7 +157,7 @@
       </article>
     </section>
 
-    <section class="coach-attention-section">
+    <section class="coach-attention-section" data-facility-module="habits">
       <details class="panel coach-attention-panel" id="coach-attention-panel">
         <summary class="coach-attention-summary">
           <div>
@@ -180,8 +180,8 @@
               Program
               <select id="coach-attention-type-filter">
                 <option value="all">All members</option>
-                <option value="athlete">Athletes</option>
-                <option value="h2k">H2K members</option>
+                <option value="athlete" data-facility-program="athlete" data-facility-program-label="athlete" data-label-form="plural">Athletes</option>
+                <option value="h2k" data-facility-program="h2k" data-facility-program-label="h2k" data-label-form="plural">H2K members</option>
               </select>
             </label>
             <label>
@@ -201,7 +201,7 @@
       </details>
     </section>
 
-    <section class="dashboard-grid h2k-dashboard-grid coach-workout-review-section">
+    <section class="dashboard-grid h2k-dashboard-grid coach-workout-review-section" data-facility-module="workouts">
       <article class="panel coach-workout-review-panel">
         <div class="panel-heading">
           <div>

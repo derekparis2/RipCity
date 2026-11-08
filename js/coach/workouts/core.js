@@ -81,7 +81,9 @@ function setTodayAsDefaultDate() {
   const dateInput = document.getElementById("workout-date");
   if (!dateInput) return;
 
-  dateInput.value = formatLocalDate(new Date());
+  dateInput.value = window.RipCityAccess?.getFacilityDateKey
+    ? window.RipCityAccess.getFacilityDateKey()
+    : formatLocalDate(new Date());
 }
 
 function setFieldValue(id, value) {

@@ -304,7 +304,7 @@ function renderDetailMember() {
     <div class="coach-member-profile-overview">
       <div class="coach-member-detail-heading">
         ${window.RipCityUI.avatarMarkup(detailMember.profile?.full_name, safeProfilePictureUrl, "roster-avatar")}
-        <div><p class="eyebrow">${window.RipCityUI.text(profile.member_type === "h2k" ? "H2K MEMBER" : "ATHLETE")}</p><h2>${window.RipCityUI.text(detailMember.profile?.full_name, "Unnamed Member")}</h2><p>${window.RipCityUI.text(detailMember.profile?.email)}</p></div>
+        <div><p class="eyebrow">${window.RipCityUI.text(window.RipCityAccess.getProgramLabel(window.RipCityFacility, profile.member_type).toUpperCase())}</p><h2>${window.RipCityUI.text(detailMember.profile?.full_name, "Unnamed Member")}</h2><p>${window.RipCityUI.text(detailMember.profile?.email)}</p></div>
       </div>
       <div class="member-goal-meta"><span>${window.RipCityUI.text(groups.join(", ") || "No groups")}</span>${profile.h2k_band_color ? `<span>${window.RipCityUI.text(`${profile.h2k_band_color} Band`)}</span>` : ""}</div>
       ${detailMember.profile?.bio ? `<p class="coach-member-profile-bio">${window.RipCityUI.text(detailMember.profile.bio)}</p>` : ""}

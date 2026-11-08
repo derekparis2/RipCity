@@ -914,6 +914,8 @@
   --danger: #ff6b6b;
   --warning: #f7c948;
   --success: #7ee787;
+  --facility-primary: #69b7ff;
+  --facility-secondary: #f7f7f7;
 }
 
 body {
@@ -975,6 +977,29 @@ button:hover {
   width: 36px;
   height: 36px;
   object-fit: contain;
+}
+
+.facility-brand-initials {
+  color: var(--facility-secondary);
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  line-height: 1;
+}
+
+.auth-brand > .facility-brand-initials {
+  width: 52px;
+  height: 52px;
+  border: 1px solid var(--facility-primary);
+  background: #000;
+  display: grid;
+  place-items: center;
+}
+
+.auth-brand h1,
+.brand h1 {
+  color: var(--facility-secondary);
 }
 
 .brand h1,

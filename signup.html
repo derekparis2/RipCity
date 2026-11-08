@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rip City Signup</title>
+  <title>Facility Signup</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -28,13 +28,13 @@
 
       <form id="signup-form" class="auth-form">
         <div class="member-type-grid" id="signup-member-type-grid">
-          <label class="member-type-card">
+          <label class="member-type-card" data-signup-program="athlete">
             <input type="radio" name="member-type" value="athlete" checked>
             <span>Athlete</span>
             <small>Workouts, goals, progress, coach notes, and development tracking.</small>
           </label>
 
-          <label class="member-type-card">
+          <label class="member-type-card" data-signup-program="h2k">
             <input type="radio" name="member-type" value="h2k">
             <span>H2K Member</span>
             <small>Habit tracking, weekly score, training consistency, and accountability.</small>
@@ -144,7 +144,7 @@
       <p class="auth-message" id="signup-message"></p>
 
       <p class="auth-footer">
-        Already have an account? <a href="login.html">Log in here</a>
+        Already have an account? <a id="signup-login-link" href="login.html">Log in here</a>
       </p>
     </section>
   </main>

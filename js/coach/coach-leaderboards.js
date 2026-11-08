@@ -236,7 +236,12 @@ function renderLeaderboards() {
   }
 
   if (!rows.length) {
-    list.innerHTML = `<div class="empty-state">No matching ${isH2K ? "H2K members" : "athletes"} yet.</div>`;
+    const programLabel = window.RipCityAccess.getProgramLabel(
+      window.RipCityFacility,
+      isH2K ? "h2k" : "athlete",
+      { plural: true }
+    );
+    list.innerHTML = `<div class="empty-state">No matching ${window.RipCityUI.text(programLabel.toLowerCase())} yet.</div>`;
     return;
   }
 
@@ -269,6 +274,17 @@ function selectLeaderboardTab(type) {
   populateGroupFilter();
   populateMetricFilter();
   renderLeaderboards();
+}
+
+function selectInitialLeaderboardTab() {
+  const configuration = leaderboardAccess?.facilityConfig;
+  const preferredTypes = [activeLeaderboardType, "athlete", "h2k"];
+  const enabledType = preferredTypes.find(type =>
+    window.RipCityAccess.isProgramEnabled(configuration, type)
+  );
+
+  activeLeaderboardType = enabledType || "athlete";
+  selectLeaderboardTab(activeLeaderboardType);
 }
 
 async function refreshLeaderboards() {
@@ -307,6 +323,7 @@ async function initCoachLeaderboards() {
       onDeniedMessage: showLeaderboardMessage
     });
     if (!leaderboardAccess) return;
+    selectInitialLeaderboardTab();
     await refreshLeaderboards();
   } catch (error) {
     console.error(error);

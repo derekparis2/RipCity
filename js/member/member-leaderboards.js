@@ -113,7 +113,11 @@
       metric.innerHTML = metricDefinitions().map(item => `<option value="${window.RipCityUI.attr(item.key)}">${window.RipCityUI.text(item.label)}</option>`).join("");
     }
     if (scope) {
-      const programLabel = memberType === "h2k" ? "H2K" : "Athletes";
+      const programLabel = window.RipCityAccess.getProgramLabel(
+        window.RipCityFacility,
+        memberType,
+        { plural: true }
+      );
       scope.innerHTML = `
         <option value="">All ${programLabel}</option>
         ${ownGroups.map(group => `<option value="${window.RipCityUI.attr(group.id)}">${window.RipCityUI.text(group.name)}</option>`).join("")}
@@ -122,9 +126,14 @@
   }
 
   function updateContext() {
-    const label = memberType === "h2k" ? "H2K" : "Athlete";
+    const label = window.RipCityAccess.getProgramLabel(window.RipCityFacility, memberType);
+    const pluralLabel = window.RipCityAccess.getProgramLabel(
+      window.RipCityFacility,
+      memberType,
+      { plural: true }
+    );
     const scope = document.getElementById("member-leaderboard-scope");
-    const scopeLabel = scope?.selectedOptions?.[0]?.textContent || `All ${label}s`;
+    const scopeLabel = scope?.selectedOptions?.[0]?.textContent || `All ${pluralLabel}`;
     const metric = selectedMetric();
     const explanations = {
       fourWeekAverage: "Average weekly habit points across the previous four completed Monday–Sunday weeks.",

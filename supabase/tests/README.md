@@ -47,6 +47,38 @@ platform-owner roster through the REST API.
 Status: the complete platform-owner foundation suite passed against Rip City
 Staging on 2026-11-08.
 
+## Facility Configuration Checks
+
+After applying `20261108160000_add_facility_configuration.sql`, run:
+
+```bash
+node supabase/tests/staging_facility_configuration_checks.mjs
+```
+
+The test proves that existing facilities receive complete default module and
+program configuration, approved users can read only their own facility setup,
+and only a platform owner can replace configuration. It temporarily changes
+Test Facility Alpha's branding, timezone, terminology, module visibility, and
+program visibility, then restores the original configuration in cleanup.
+
+Status: the complete facility-configuration suite passed against Rip City
+Staging on 2026-11-08, including successful restoration of Test Facility
+Alpha's original configuration.
+
+## Facility-Aware Signup Checks
+
+After applying `20261108170000_add_facility_aware_signup.sql`, run:
+
+```bash
+node supabase/tests/staging_facility_signup_checks.mjs
+```
+
+The test verifies that anonymous visitors receive only safe branding and
+enabled-program data for an active facility, unknown slugs return nothing, a
+retry preserves the existing same-facility pending rows, and an existing
+account cannot use a different facility signup link to create a cross-facility
+membership.
+
 ## Goals CRUD And RLS Checks
 
 After applying the V2 Goals migration, run:
