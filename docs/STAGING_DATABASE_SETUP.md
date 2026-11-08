@@ -19,6 +19,12 @@ the shared Netlify staging deployment on 2026-09-11. The project contains
 required configuration, nine fake test identities, and no workout/activity
 data.
 
+The V3 platform-owner foundation was added and verified on 2026-11-08. Its two
+dedicated staging platform identities are documented in
+`docs/STAGING_TEST_ACCOUNTS.md`; they are fake staging fixtures and must never be
+copied to production. The platform-owner test proves that owner tooling does
+not create a general cross-facility data bypass.
+
 Never run the initial baseline against production. Production reference
 `fdzmfohcuratbuitkwoy` is intentionally different.
 

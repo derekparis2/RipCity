@@ -118,6 +118,13 @@ Current V3 work:
   `derek/facility-platform`. It starts with stored owner-only authorization for
   Derek and Sam, then facility creation/configuration, followed by a complete
   fake second-facility launch rehearsal in staging.
+- The first facility-platform foundation migration
+  (`20261108150000_add_platform_owner_foundation.sql`) was applied to staging on
+  2026-11-08. Dedicated `rcplatform@example.com` and
+  `alphaplatform@example.com` fixtures were created, and the focused platform
+  authorization/isolation suite passed completely. Platform owners can list
+  facilities and enter an explicitly assigned facility-admin experience, but
+  cannot bypass member RLS or create facilities directly yet.
 - Facility-platform work may proceed in parallel because it must avoid Sam's
   workout/max schema and builder files. Package 1 should still be released to
   `main` without waiting for the facility track.

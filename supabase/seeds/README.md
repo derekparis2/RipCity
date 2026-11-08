@@ -69,3 +69,18 @@ workout. It must never be run in production.
 Status: refreshed and verified in Rip City Staging on 2026-10-23 after the
 shared-habits update. The result was 10 display-only members, 1,464 fixture
 habit logs, 50 fixture assignments, and 38 completed fixture assignments.
+
+## V3 Platform-Owner Fixture
+
+After applying `20261108150000_add_platform_owner_foundation.sql`, create and
+auto-confirm the two fake Auth identities documented in
+`docs/STAGING_TEST_ACCOUNTS.md`, then run:
+
+1. `staging/v3/01_platform_owner_accounts.sql`
+2. `node supabase/tests/staging_platform_owner_foundation_checks.mjs`
+
+The fixture makes `rcplatform@example.com` and
+`alphaplatform@example.com` platform owners while also giving each one an
+approved admin membership in its named staging facility. The original
+`rcadmin@example.com` and `alphaadmin@example.com` accounts remain ordinary
+facility admins. Never run this fixture in production.

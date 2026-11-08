@@ -45,6 +45,10 @@ they are intentionally revisited.
 - Creating a facility must not grant a silent cross-facility private-data
   bypass. Any future support access by Derek or Sam must be explicit and
   auditable.
+- Platform owners enter a facility's admin experience through an explicit
+  facility-scoped admin mode. Entering and leaving that mode must be audited;
+  platform ownership alone must not silently expose every facility's private
+  member data.
 
 ## Signup Links
 

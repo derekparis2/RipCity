@@ -24,9 +24,28 @@ or print it. It signs into all nine fake accounts and runs read-only checks for:
 The test targets only the hardcoded Rip City Staging reference and publishable
 key. It performs no insert, update, or delete operations.
 
-Platform-owner coverage remains pending its V2 migration and test identity.
+This legacy read suite does not grant or test platform-owner access; that
+authorization is covered by the focused suite below.
 
 Status: all 45 read checks passed against Rip City Staging on 2026-08-28.
+
+## Platform-Owner Foundation Checks
+
+After applying `20261108150000_add_platform_owner_foundation.sql` and granting
+the documented staging-only owner fixture, run:
+
+```bash
+node supabase/tests/staging_platform_owner_foundation_checks.mjs
+```
+
+The test proves that the staging platform-owner fixture can invoke owner-only
+facility operations, while another facility admin and an ordinary coach cannot.
+It also proves that platform ownership does not bypass cross-facility member
+RLS, does not permit direct facility inserts, and does not expose the private
+platform-owner roster through the REST API.
+
+Status: the complete platform-owner foundation suite passed against Rip City
+Staging on 2026-11-08.
 
 ## Goals CRUD And RLS Checks
 

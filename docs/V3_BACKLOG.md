@@ -136,6 +136,18 @@ and the RLS test matrix that prevents platform tooling from becoming an
 automatic private-data bypass. Facility staff remain limited to their own
 facility.
 
+Foundation verified in staging on 2026-11-08:
+
+- Platform ownership is stored privately and is not exposed through the public
+  REST API.
+- The dedicated Rip City and Alpha platform fixtures can list facilities and
+  enter only the existing facility-admin experiences for which they have an
+  approved membership.
+- Platform ownership alone does not bypass cross-facility member RLS.
+- Facility admins and ordinary coaches cannot invoke platform operations.
+- Direct facility creation remains closed until the trusted provisioning
+  workflow is implemented later in this package.
+
 **Complete when:** Only Derek and Sam can invoke platform facility operations;
 facility admins and coaches cannot; normal facility access remains isolated;
 and focused two-facility allowed/denied tests pass in staging.
