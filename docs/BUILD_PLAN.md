@@ -311,7 +311,15 @@ direction and `docs/V3_BACKLOG.md` for the ordered branch queue. New V3 feature
 branches start from `v3-development`; production fixes remain small, reviewed,
 and based on the latest `main` before being merged back into V3.
 
-The immediate V3 release is strength maxes and percentage-based workout
+The next V3 production release is strength maxes and percentage-based workout
 programming. Complete that entire package, verify it in staging, merge it
-through `v3-development` into `main`, and smoke-test production before starting
-the later routines, testing comparisons, multi-facility, or baseball packages.
+through `v3-development` into `main`, and smoke-test production without holding
+the release for unrelated packages.
+
+Testing comparisons are complete on `v3-development`. In parallel with the
+remaining max/percentage work, Derek may build the separate facility-platform
+track: owner-only authorization for Derek and Sam, safe facility creation and
+configuration, and a full fake second-facility launch rehearsal proving that
+no private Rip City data is shared. Daily routines follow the workout release;
+hitting/HitTrax/TrackMan work follows the platform and approved data-contract
+decisions.

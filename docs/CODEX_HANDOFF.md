@@ -107,14 +107,27 @@ and Performance contains Testing Day comparisons and official result history.
 New V3 feature branches start from current `v3-development`. The V2 production
 release and its ordered production migration sequence are complete.
 
-Immediate V3 release gate:
+Current V3 work:
 
-- Strength maxes and percentage-based workout programming is Package 1 and the
-  only implementation priority until complete.
-- Finish and verify the entire package in staging, merge it into
-  `v3-development`, then release `v3-development` to `main` and smoke-test it.
-- Continue routines/checklists, Testing Day comparisons, multi-facility, and
-  hitting implementation only after that workout release is live.
+- Strength maxes and percentage-based workout programming remains Package 1
+  and the next production release gate. Sam is implementing that package.
+- Testing Comparisons and focused member/coach Performance views are complete
+  on `v3-development` through PR #26 (2026-11-08). No schema migration was
+  required, and a most-improved leaderboard was intentionally excluded.
+- Derek is beginning the independent facility-platform track on
+  `derek/facility-platform`. It starts with stored owner-only authorization for
+  Derek and Sam, then facility creation/configuration, followed by a complete
+  fake second-facility launch rehearsal in staging.
+- The first facility-platform foundation migration
+  (`20261108150000_add_platform_owner_foundation.sql`) was applied to staging on
+  2026-11-08. Dedicated `rcplatform@example.com` and
+  `alphaplatform@example.com` fixtures were created, and the focused platform
+  authorization/isolation suite passed completely. Platform owners can list
+  facilities and enter an explicitly assigned facility-admin experience, but
+  cannot bypass member RLS or create facilities directly yet.
+- Facility-platform work may proceed in parallel because it must avoid Sam's
+  workout/max schema and builder files. Package 1 should still be released to
+  `main` without waiting for the facility track.
 
 Current signup-link decision:
 
@@ -337,14 +350,15 @@ Testing Days:
   correct the canonical result. Member Training highlights assigned Testing
   Days on the calendar and keeps a newest-first, searchable, collapsible history
   below it.
-- `derek/testing-comparisons` is the in-progress first slice of V3 advanced
-  testing. It adds a shared migration-free comparison engine, member-own
-  progress cards on Training, and staff progress cards on member detail. The
-  comparison contract uses earliest official result as baseline, immediately
-  previous official result as prior, and best official result as PR while
-  respecting higher/lower ranking direction. Merge this branch only after the
-  Package 1 strength-max release reaches `main`; multiple attempts, correction
-  audit, roster comparisons, and testing leaderboards remain later work.
+- PR #26 completed the first V3 advanced-testing package on
+  `v3-development`. The shared migration-free comparison engine uses the
+  earliest official result as baseline, the immediately previous official
+  result as prior, and the best official result as PR while respecting
+  higher/lower ranking direction. Member and coach Performance views are
+  searchable, collapsed, and paginated. Completed-day staff review also shows
+  change from prior, while first results show no comparison. Multiple-attempt
+  rules and any testing-leaderboard expansion require a separate future
+  decision.
 
 Coach notes / announcements:
 

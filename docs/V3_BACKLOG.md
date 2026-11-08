@@ -9,17 +9,19 @@ Do not create every branch in advance. Before starting a schema-changing
 package, confirm that the other contributor is not applying a different
 migration to the shared staging project.
 
-## Immediate Release Gate
+## Immediate Release And Parallel-Work Rules
 
-**Package 1 is the only implementation priority until it is complete.** Finish
-the complete strength-max and percentage-programming workflow, verify it in
-staging, merge its reviewed feature branch into `v3-development`, and then
-release `v3-development` to `main`. Only after that production merge should
-Derek and Sam continue with Packages 2 and later.
+Package 1 remains the next production release gate: finish the complete
+strength-max and percentage-programming workflow, verify it in staging, merge
+its reviewed feature branch into `v3-development`, and release that package to
+`main` without waiting for unrelated V3 work.
 
-Planning and approved sample-data research may happen while Package 1 is in
-progress, but later feature implementation must not delay or expand the first
-workout release.
+Independent packages may be developed and reviewed in parallel when they do
+not overlap Package 1's workout/max schema or builder files. In particular,
+Package 3 is complete on `v3-development`, and Packages 4-6 may proceed as the
+next platform-sales track while Package 1 is finished. Do not let those
+branches expand or delay the Package 1 production release; coordinate the
+actual release order and rerun focused tests after merging shared changes.
 
 ## Status Key
 
@@ -77,14 +79,14 @@ staging on phone and desktop.
 
 ## 3. Advanced Testing Comparisons And Performance History
 
-- **Status:** In progress on `derek/testing-comparisons`; merge after Package 1 is live on `main`
+- **Status:** **Complete on `v3-development`** (PR #26, 2026-11-08)
 - **Suggested branch:** `<name>/testing-progress`
 - **Plan detail:** [Advanced testing](VERSION_3_PLAN.md#advanced-testing-and-performance-history)
 
-Extend the shipped Testing Day feature with approved attempt/best-result rules,
-comparison history, improvement values, personal records, charts, correction
-audit, and selected leaderboard metrics. Reuse the shared metric contract
-rather than creating a second incompatible statistics system.
+Extend the shipped Testing Day feature with comparison history, direction-aware
+improvement values, personal records, and focused member/staff performance
+views. Reuse the shared metric contract rather than creating a second
+incompatible statistics system.
 
 The first comparison slice is implemented without a schema change: members can
 review their own numeric Testing Day history and coaches/admins can review the
@@ -103,21 +105,28 @@ The coach/admin member profile uses the same focused pattern: Overview keeps
 member identity and weekly history together, Goals contains goal management,
 and Performance contains Testing Day comparisons and official history.
 
-Remaining Package 3 work includes approved multiple-attempt rules, correction
-audit history, roster-wide comparison tools, and explicitly approved testing
-leaderboard metrics.
+Completed Testing Day review also shows each athlete's direction-aware change
+from the immediately previous official result. The result itself remains
+neutral while improvement/regression color applies only to the comparison.
+First results correctly show no change label. Derek decided not to add a
+"most improved" leaderboard in this package.
 
-**Complete when:** Members and coaches can clearly compare current and prior
-results, approved tests show historically correct improvements and records,
-corrections remain auditable, and only explicitly approved metrics enter
-leaderboards.
+**Completed scope:** Members and coaches can compare baseline, previous,
+latest, and personal-record results; completed-day staff review shows change
+from prior; responsive lists remain searchable, collapsed, and paginated as
+the test catalog grows; and only the member's authorized official results are
+used. This package required no schema migration.
+
+Approved multiple-attempt rules, deeper correction audit history, and any
+future Testing Day leaderboard metrics remain optional extensions and require
+separate product approval rather than keeping Package 3 open.
 
 ---
 
 ## 4. Platform Ownership And Isolation Contract
 
-- **Status:** Ready
-- **Suggested branch:** `<name>/platform-owner-isolation`
+- **Status:** **Complete on `derek/facility-platform`**
+- **Suggested branch:** `derek/facility-platform`
 - **Plan detail:** [Platform owners](VERSION_3_PLAN.md#platform-owners) · [Required safety rules](VERSION_3_PLAN.md#5-required-safety-rules)
 
 Add the stored platform-owner authorization for Derek and Sam, trusted
@@ -125,6 +134,35 @@ facility-creation functions, explicit support-access boundaries, audit events,
 and the RLS test matrix that prevents platform tooling from becoming an
 automatic private-data bypass. Facility staff remain limited to their own
 facility.
+
+Foundation verified in staging on 2026-11-08:
+
+- Platform ownership is stored privately and is not exposed through the public
+  REST API.
+- The dedicated Rip City and Alpha platform fixtures can list facilities and
+  enter only the existing facility-admin experiences for which they have an
+  approved membership.
+- Platform ownership alone does not bypass cross-facility member RLS.
+- Facility admins and ordinary coaches cannot invoke platform operations.
+- Trusted facility creation and explicit admin mode are implemented through
+  owner-only audited operations. Creation atomically stores configuration and
+  grants the owner one normal approved facility-admin membership.
+- The Step 2 configuration schema and owner-only replacement operation passed
+  focused staging verification on 2026-11-08. They cover branding, IANA
+  timezone, terminology, member programs, module switches, and facility
+  lifecycle metadata without yet creating facilities.
+- The shared frontend now loads the signed-in facility configuration, applies
+  its name/logo/colors, removes disabled modules from coach/member navigation
+  and dashboard entry points, and redirects direct visits to disabled feature
+  pages. Member signup links carry the destination facility slug, use that
+  facility's enabled programs and branding, and cannot attach an existing
+  account to another facility.
+- The owner UI can create and configure facilities, open a facility in explicit
+  admin mode, and remember the selected approved membership without weakening
+  facility RLS.
+- Focused facility-provisioning checks passed in staging on 2026-11-08. They
+  verify owner-only creation, explicit admin mode, cross-facility denial, and
+  private-data isolation against the retained fake launch facility.
 
 **Complete when:** Only Derek and Sam can invoke platform facility operations;
 facility admins and coaches cannot; normal facility access remains isolated;
@@ -134,14 +172,17 @@ and focused two-facility allowed/denied tests pass in staging.
 
 ## 5. Facility Creation And Configuration
 
-- **Status:** Depends on Package 4
-- **Suggested branch:** `<name>/facility-creation`
+- **Status:** **In progress on `derek/facility-platform`**; first-admin
+  onboarding and the launch rehearsal remain
+- **Suggested branch:** `derek/facility-platform`
 - **Plan detail:** [Facility creation and isolation](VERSION_3_PLAN.md#facility-creation-and-isolation) · [Facility configuration](VERSION_3_PLAN.md#facility-configuration-and-module-visibility)
 
 Build the owner-only facility setup workflow, initial admin creation, branding,
 time zone, terminology, member programs, module switches, starter groups, and
-safe archive/recovery behavior. Remove the hardcoded Rip City/H2K assumptions
-that block a real second-facility launch.
+safe archive/recovery behavior. Existing workouts, habits, goals,
+leaderboards, announcements, and Testing Days are shared platform modules, not
+Rip City-only features. Facility setup configures which modules and labels a
+facility uses rather than rebuilding those features for each customer.
 
 **Complete when:** A new facility can be created from the application, its
 first admin can sign in, disabled modules stay unavailable, and the complete

@@ -34,7 +34,7 @@
         <p class="eyebrow">ROSTER MANAGEMENT</p>
         <h3>Manage members, programs, and training groups.</h3>
         <p>
-          Keep athletes and H2K members organized so workout assignments,
+          Keep members organized so workout assignments,
           reviews, and future leaderboards stay facility-aware.
         </p>
       </div>
@@ -66,13 +66,13 @@
       </article>
 
       <article class="stat-card">
-        <span>Athletes</span>
+        <span data-program-label="athlete">Athletes</span>
         <strong id="roster-athlete-count">0</strong>
         <small>Training group members</small>
       </article>
 
       <article class="stat-card">
-        <span>H2K Members</span>
+        <span data-program-label="h2k">H2K Members</span>
         <strong id="roster-h2k-count">0</strong>
         <small>Habit module members</small>
       </article>
@@ -100,8 +100,8 @@
             Member Type
             <select id="roster-type-filter">
               <option value="all">All</option>
-              <option value="athlete">Athletes</option>
-              <option value="h2k">H2K</option>
+              <option value="athlete" data-program-option="athlete">Athletes</option>
+              <option value="h2k" data-program-option="h2k">H2K Members</option>
             </select>
           </label>
 
@@ -170,8 +170,8 @@
             <label>
               Members
               <select id="new-group-member-type">
-                <option value="athlete">Athletes</option>
-                <option value="h2k">H2K</option>
+                <option value="athlete" data-program-option="athlete">Athletes</option>
+                <option value="h2k" data-program-option="h2k">H2K Members</option>
                 <option value="both">Both</option>
               </select>
             </label>

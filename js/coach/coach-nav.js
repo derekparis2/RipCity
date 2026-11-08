@@ -1,17 +1,23 @@
 const coachNavigationItems = [
   { key: "dashboard", label: "Dashboard", href: "coach-dashboard.html" },
   { key: "roster", label: "Roster", href: "coach-roster.html" },
-  { key: "workouts", label: "Workout Builder", href: "coach-workouts.html" },
-  { key: "testing", label: "Testing Days", href: "coach-testing.html" },
-  { key: "leaderboards", label: "Leaderboards", href: "coach-leaderboards.html" },
+  { key: "workouts", label: "Workout Builder", href: "coach-workouts.html", module: "workouts" },
+  { key: "testing", label: "Testing Days", href: "coach-testing.html", module: "testing_days" },
+  { key: "leaderboards", label: "Leaderboards", href: "coach-leaderboards.html", module: "leaderboards" },
   { key: "approvals", label: "Approvals", href: "coach-approvals.html" },
   { key: "profile", label: "Profile", href: "profile.html" },
 ];
 
-function initializeCoachNavigation() {
+function initializeCoachNavigation(configuration = window.RipCityFacility) {
   document.querySelectorAll("[data-coach-nav]").forEach((nav) => {
     const activeKey = nav.dataset.coachNav;
-    const links = coachNavigationItems.map((item) => {
+    const visibleItems = coachNavigationItems.filter(item => (
+      !item.module || configuration?.modules?.[item.module]?.enabled !== false
+    ));
+    if (window.RipCityPlatformOwner) {
+      visibleItems.push({ key: "platform", label: "Platform", href: "platform.html" });
+    }
+    const links = visibleItems.map((item) => {
       const isActive = item.key === activeKey;
       return `
         <a
@@ -55,3 +61,7 @@ if (document.readyState === "loading") {
 } else {
   initializeCoachNavigation();
 }
+
+window.addEventListener("ripcity:facility-config", event => {
+  initializeCoachNavigation(event.detail);
+});

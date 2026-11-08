@@ -24,9 +24,91 @@ or print it. It signs into all nine fake accounts and runs read-only checks for:
 The test targets only the hardcoded Rip City Staging reference and publishable
 key. It performs no insert, update, or delete operations.
 
-Platform-owner coverage remains pending its V2 migration and test identity.
+This legacy read suite does not grant or test platform-owner access; that
+authorization is covered by the focused suite below.
 
 Status: all 45 read checks passed against Rip City Staging on 2026-08-28.
+
+## Platform-Owner Foundation Checks
+
+After applying `20261108150000_add_platform_owner_foundation.sql` and granting
+the documented staging-only owner fixture, run:
+
+```bash
+node supabase/tests/staging_platform_owner_foundation_checks.mjs
+```
+
+The test proves that the staging platform-owner fixture can invoke owner-only
+facility operations, while another facility admin and an ordinary coach cannot.
+It also proves that platform ownership does not bypass cross-facility member
+RLS, does not permit direct facility inserts, and does not expose the private
+platform-owner roster through the REST API.
+
+Status: the complete platform-owner foundation suite passed against Rip City
+Staging on 2026-11-08.
+
+## Facility Configuration Checks
+
+After applying `20261108160000_add_facility_configuration.sql`, run:
+
+```bash
+node supabase/tests/staging_facility_configuration_checks.mjs
+```
+
+The test proves that existing facilities receive complete default module and
+program configuration, approved users can read only their own facility setup,
+and only a platform owner can replace configuration. It temporarily changes
+Test Facility Alpha's branding, timezone, terminology, module visibility, and
+program visibility, then restores the original configuration in cleanup.
+
+Status: the complete facility-configuration suite passed against Rip City
+Staging on 2026-11-08, including successful restoration of Test Facility
+Alpha's original configuration.
+
+## Facility-Aware Signup Checks
+
+After applying `20261108170000_add_facility_aware_signup.sql`, run:
+
+```bash
+node supabase/tests/staging_facility_signup_checks.mjs
+```
+
+The test verifies that anonymous visitors receive only safe branding and
+enabled-program data for an active facility, unknown slugs return nothing, a
+retry preserves the existing same-facility pending rows, and an existing
+account cannot use a different facility signup link to create a cross-facility
+membership.
+
+## Platform Facility Provisioning Checks
+
+After applying `20261108180000_add_platform_facility_provisioning.sql`, run:
+
+```bash
+node supabase/tests/staging_platform_facility_provisioning_checks.mjs
+```
+
+The repeatable test proves that only a platform owner can create a configured
+facility or enter its admin mode, that admin mode uses an explicit approved
+facility membership, and that another facility's member cannot read the new
+configuration. The first successful run retains the fake `Platform Launch
+Rehearsal` facility for the complete second-facility launch rehearsal.
+
+## Goals CRUD And RLS Checks
+
+## Platform First-Admin Invite Checks
+
+After applying `20261108190000_add_platform_admin_invites.sql`, run:
+
+```bash
+node supabase/tests/staging_platform_admin_invite_checks.mjs
+```
+
+The test proves that only a platform owner can create the seven-day link, the
+public lookup reveals only safe facility branding, the link is single-use, and
+claiming it creates only pending administrator access. It also verifies that an
+ordinary coach and another facility's admin cannot approve the request, while
+the platform owner in explicit facility admin mode can approve it. Test rows
+are removed during cleanup.
 
 ## Goals CRUD And RLS Checks
 

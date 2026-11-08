@@ -47,9 +47,13 @@ async function requireApprovalCoachOrAdmin() {
 }
 
 function formatApprovalRole(role) {
+  if (role === "h2k_member") {
+    return window.RipCityAccess.getProgramLabel(approvalAccess?.facilityConfig, "h2k");
+  }
+  if (role === "athlete") {
+    return window.RipCityAccess.getProgramLabel(approvalAccess?.facilityConfig, "athlete");
+  }
   const labels = {
-    h2k_member: "H2K Member",
-    athlete: "Athlete",
     coach: "Coach",
     admin: "Admin",
     parent: "Parent"
@@ -71,7 +75,11 @@ function getApprovalGroupsForMemberType(memberType) {
 
 function renderApprovalGroupOptions(memberType) {
   const matchingGroups = getApprovalGroupsForMemberType(memberType);
-  const groupLabel = memberType === "h2k" ? "H2K" : "athlete";
+  const groupLabel = window.RipCityAccess.getProgramLabel(
+    approvalAccess?.facilityConfig,
+    memberType,
+    { plural: true }
+  ).toLowerCase();
 
   if (!matchingGroups.length) {
     return `<option value="">No ${groupLabel} groups available — create one in Roster</option>`;
@@ -317,7 +325,7 @@ function renderPendingUsers(users, access) {
           </div>
           ${canDecide && isGroupedMember ? `
             <label class="pending-user-group-control" for="approval-group-${window.RipCityUI.attr(user.id)}">
-              <span>Initial ${memberProfile.member_type === "h2k" ? "H2K" : "training"} group</span>
+              <span>Initial ${window.RipCityUI.text(window.RipCityAccess.getProgramLabel(approvalAccess?.facilityConfig, memberProfile.member_type))} group</span>
               <select id="approval-group-${window.RipCityUI.attr(user.id)}" data-approval-group="${window.RipCityUI.attr(user.id)}">
                 ${renderApprovalGroupOptions(memberProfile.member_type)}
               </select>

@@ -291,7 +291,7 @@ function renderRecentWorkouts() {
             <label>
               Assigned Dates
               <span class="workout-date-input-row">
-                <input type="date" value="${formatLocalDate(new Date())}" data-reuse-date="${window.RipCityUI.attr(workout.id)}" />
+                <input type="date" value="${window.RipCityAccess?.getFacilityDateKey?.() || formatLocalDate(new Date())}" data-reuse-date="${window.RipCityUI.attr(workout.id)}" />
                 <button class="outline-btn small-inline-btn" type="button" data-add-reuse-date="${window.RipCityUI.attr(workout.id)}">Add Date</button>
               </span>
               <span class="workout-selected-dates" data-reuse-selected-dates="${window.RipCityUI.attr(workout.id)}">

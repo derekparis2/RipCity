@@ -52,6 +52,19 @@
     input.min = formatLocalDateTimeInput(new Date(Date.now() + 60_000));
   }
 
+  function applyProgramAudienceLabels() {
+    const configuration = access?.facilityConfig || window.RipCityFacility;
+    const athleteOption = document.getElementById("coach-announcement-athlete-audience");
+    const h2kOption = document.getElementById("coach-announcement-h2k-audience");
+
+    if (athleteOption) {
+      athleteOption.textContent = `All ${window.RipCityAccess.getProgramLabel(configuration, "athlete", { plural: true })}`;
+    }
+    if (h2kOption) {
+      h2kOption.textContent = `All ${window.RipCityAccess.getProgramLabel(configuration, "h2k", { plural: true })}`;
+    }
+  }
+
   function renderTargetOptions() {
     const groupList = document.getElementById("coach-announcement-groups");
     const memberList = document.getElementById("coach-announcement-members");
@@ -80,7 +93,7 @@
                 <small>${ui().text(member.email)}</small>
               </span>
             </span>
-            <span class="announcement-member-type">${ui().text(member.type === "h2k" ? "H2K" : "Athlete")}</span>
+            <span class="announcement-member-type">${ui().text(window.RipCityAccess.getProgramLabel(window.RipCityFacility, member.type))}</span>
           </label>
         `).join("")
       : '<p class="announcement-option-empty">No approved members available.</p>';
@@ -163,8 +176,12 @@
 
   function audienceLabel(announcement) {
     if (announcement.audience_type === "facility") return "Entire facility";
-    if (announcement.audience_type === "athletes") return "All athletes";
-    if (announcement.audience_type === "h2k") return "All H2K members";
+    if (announcement.audience_type === "athletes") {
+      return `All ${window.RipCityAccess.getProgramLabel(window.RipCityFacility, "athlete", { plural: true })}`;
+    }
+    if (announcement.audience_type === "h2k") {
+      return `All ${window.RipCityAccess.getProgramLabel(window.RipCityFacility, "h2k", { plural: true })}`;
+    }
 
     const groupNames = (announcement.groupIds || [])
       .map(id => groups.find(group => group.id === id)?.name)
@@ -482,6 +499,7 @@
       setDefaultExpiration();
       access = await window.RipCityAccess.requireCoachAccess({ onDeniedMessage: showMessage });
       if (!access) return;
+      applyProgramAudienceLabels();
       await Promise.all([loadAudienceOptions(), loadAnnouncements()]);
     } catch (error) {
       console.error(error);

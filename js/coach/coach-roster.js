@@ -40,7 +40,48 @@ function showRosterSignupLinkMessage(message, isError = false) {
 function buildRosterSignupLink(type) {
   const signupUrl = new URL("signup.html", window.location.href);
   signupUrl.searchParams.set("type", type);
+  const facilitySlug = rosterAccess?.facilityConfig?.slug;
+  if (facilitySlug) signupUrl.searchParams.set("facility", facilitySlug);
   return signupUrl.href;
+}
+
+function applyRosterProgramConfiguration() {
+  const programs = rosterAccess?.facilityConfig?.programs || {};
+
+  const getProgram = key => programs[key] || {
+    enabled: true,
+    display_name: key === "h2k" ? "H2K Member" : "Athlete",
+    plural_name: key === "h2k" ? "H2K Members" : "Athletes"
+  };
+
+  document.querySelectorAll("[data-copy-signup-link]").forEach(button => {
+    const programKey = button.dataset.copySignupLink;
+    const program = getProgram(programKey);
+    const enabled = program?.enabled !== false;
+    button.hidden = !enabled;
+    if (program?.display_name) {
+      button.textContent = `Copy ${program.display_name} Link`;
+    }
+  });
+
+  document.querySelectorAll("[data-program-label]").forEach(element => {
+    const program = getProgram(element.dataset.programLabel);
+    const form = element.dataset.programLabelForm || "plural";
+    element.textContent = form === "singular" ? program.display_name : program.plural_name;
+  });
+
+  document.querySelectorAll("option[data-program-option]").forEach(option => {
+    const program = getProgram(option.dataset.programOption);
+    option.textContent = program.plural_name;
+    option.disabled = program.enabled === false;
+    option.hidden = program.enabled === false;
+  });
+
+  const groupMemberType = document.getElementById("new-group-member-type");
+  if (groupMemberType?.selectedOptions[0]?.disabled) {
+    const firstEnabled = [...groupMemberType.options].find(option => !option.disabled);
+    if (firstEnabled) groupMemberType.value = firstEnabled.value;
+  }
 }
 
 async function copyRosterSignupLink(type) {
@@ -62,7 +103,8 @@ async function copyRosterSignupLink(type) {
       if (!copied) throw new Error("Copy failed");
     }
 
-    showRosterSignupLinkMessage(`${type === "h2k" ? "H2K" : "Athlete"} signup link copied.`);
+    const program = rosterAccess?.facilityConfig?.programs?.[type];
+    showRosterSignupLinkMessage(`${program?.display_name || (type === "h2k" ? "H2K" : "Athlete")} signup link copied.`);
   } catch (error) {
     console.error(error);
     showRosterSignupLinkMessage(`Copy this link: ${link}`, true);
@@ -74,13 +116,16 @@ function normalizeMemberProfile(member) {
 }
 
 function formatMemberType(memberType) {
-  return memberType === "h2k" ? "H2K" : "Athlete";
+  return window.RipCityAccess.getProgramLabel(
+    rosterAccess?.facilityConfig,
+    memberType === "h2k" ? "h2k" : "athlete"
+  );
 }
 
 function formatRole(role) {
   const labels = {
-    athlete: "Athlete",
-    h2k_member: "H2K Member",
+    athlete: window.RipCityAccess.getProgramLabel(rosterAccess?.facilityConfig, "athlete"),
+    h2k_member: window.RipCityAccess.getProgramLabel(rosterAccess?.facilityConfig, "h2k"),
     coach: "Coach",
     admin: "Admin",
     parent: "Parent"
@@ -806,6 +851,7 @@ async function initCoachRosterPage() {
     rosterAccess = await requireRosterCoachAccess();
     if (!rosterAccess) return;
 
+    applyRosterProgramConfiguration();
     await refreshRoster();
   } catch (error) {
     console.error(error);
