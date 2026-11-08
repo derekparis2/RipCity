@@ -443,7 +443,7 @@
   gap: 0.2rem;
   text-align: right;
 }
-.testing-result-review-value > strong { color: #8beaab; font-size: 1rem; }
+.testing-result-review-value > strong { color: var(--text, #f4f5f7); font-size: 1rem; }
 .testing-result-review-row.is-not-tested .testing-result-review-value > strong { color: #ffc36d; }
 .testing-result-review-row.is-absent .testing-result-review-value > strong { color: #ff9ca1; }
 .testing-result-prior-change {
