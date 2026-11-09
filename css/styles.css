@@ -4837,6 +4837,368 @@ td {
     margin-top: 18px;
   }
 
+  .workout-programming-panel {
+    grid-column: 1 / -1;
+  }
+
+  .workout-programming-heading {
+    align-items: flex-end;
+    gap: 20px;
+  }
+
+  .workout-programming-heading > div:first-child > p:last-child,
+  .programming-programs-intro p {
+    max-width: 760px;
+    margin: 8px 0 0;
+    color: var(--muted);
+  }
+
+  .workout-programming-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .workout-programming-tabs .is-active {
+    border-color: #67b3ff;
+    background: rgba(103, 179, 255, 0.12);
+    color: #9ed0ff;
+  }
+
+  .workout-programming-view {
+    margin-top: 22px;
+  }
+
+  .programming-calendar-controls {
+    display: grid;
+    grid-template-columns: minmax(170px, 0.45fr) minmax(240px, 1fr) auto;
+    align-items: end;
+    gap: 12px;
+  }
+
+  .programming-calendar-controls label {
+    display: grid;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .programming-calendar-controls select {
+    width: 100%;
+    min-height: 48px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface-2);
+    color: var(--text);
+    padding: 11px 13px;
+    font: inherit;
+    font-weight: 800;
+  }
+
+  .programming-week-navigation {
+    display: flex;
+    gap: 8px;
+  }
+
+  .programming-calendar-summary,
+  .programming-programs-intro {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin-top: 18px;
+    padding: 18px;
+    border: 1px solid rgba(103, 179, 255, 0.28);
+    border-radius: 16px;
+    background: rgba(103, 179, 255, 0.06);
+  }
+
+  .programming-calendar-summary h4,
+  .programming-programs-intro h4 {
+    margin: 4px 0;
+    font-family: "Barlow Condensed", sans-serif;
+    font-size: 28px;
+    line-height: 1;
+    text-transform: uppercase;
+  }
+
+  .programming-calendar-summary p:not(.eyebrow) {
+    margin: 6px 0 0;
+    color: var(--muted);
+  }
+
+  .programming-copy-week {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) auto auto;
+    align-items: end;
+    gap: 10px;
+    margin-top: 12px;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--surface-2);
+  }
+
+  .programming-copy-week.hidden {
+    display: none;
+  }
+
+  .programming-copy-week label {
+    display: grid;
+    gap: 7px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .programming-copy-week input {
+    width: 100%;
+    min-height: 46px;
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    background: var(--surface-1);
+    color: var(--text);
+    padding: 10px 12px;
+    font: inherit;
+  }
+
+  .programming-copy-week small {
+    grid-column: 1 / -1;
+    color: var(--muted);
+  }
+
+  .programming-calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 14px;
+  }
+
+  .programming-calendar-day {
+    min-height: 190px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.025);
+  }
+
+  .programming-calendar-day.is-today {
+    border-color: rgba(103, 179, 255, 0.7);
+  }
+
+  .programming-calendar-day > header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 11px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
+  .programming-calendar-day > header strong {
+    color: var(--text);
+    font-size: 18px;
+  }
+
+  .programming-calendar-day-workouts {
+    display: grid;
+    gap: 7px;
+    padding: 8px;
+  }
+
+  .programming-calendar-workout {
+    display: grid;
+    gap: 3px;
+    width: 100%;
+    padding: 10px;
+    border: 1px solid rgba(103, 179, 255, 0.35);
+    border-radius: 10px;
+    background: rgba(103, 179, 255, 0.09);
+    color: var(--text);
+    text-align: left;
+  }
+
+  .programming-calendar-workout:hover,
+  .programming-calendar-workout:focus-visible {
+    border-color: #67b3ff;
+    background: rgba(103, 179, 255, 0.16);
+    outline: none;
+  }
+
+  .programming-calendar-workout span,
+  .programming-calendar-workout small,
+  .programming-calendar-empty-day {
+    color: var(--muted);
+    font-size: 11px;
+  }
+
+  .programming-calendar-empty-day {
+    padding: 8px 4px;
+  }
+
+  .workout-program-builder {
+    display: grid;
+    gap: 18px;
+    margin-top: 18px;
+    padding: 20px;
+    border: 1px solid rgba(103, 179, 255, 0.35);
+    border-radius: 16px;
+    background: rgba(103, 179, 255, 0.045);
+  }
+
+  .workout-program-builder.hidden {
+    display: none;
+  }
+
+  .program-workout-detail-grid,
+  .program-launch-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(150px, 0.35fr);
+    gap: 12px;
+  }
+
+  .workout-program-builder label,
+  .program-workout-row label,
+  .program-launch-form label {
+    display: grid;
+    gap: 7px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .workout-program-builder input,
+  .workout-program-builder select,
+  .workout-program-builder textarea,
+  .program-launch-form input,
+  .program-launch-form select {
+    width: 100%;
+    min-height: 46px;
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    background: var(--surface-2);
+    color: var(--text);
+    padding: 10px 12px;
+    font: inherit;
+  }
+
+  .program-builder-heading-row,
+  .workout-program-card-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .program-builder-heading-row h4,
+  .workout-program-card h4 {
+    margin: 4px 0;
+    font-family: "Barlow Condensed", sans-serif;
+    font-size: 28px;
+    line-height: 1;
+    text-transform: uppercase;
+  }
+
+  .program-workout-list,
+  .workout-program-list {
+    display: grid;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .program-workout-row {
+    display: grid;
+    grid-template-columns: auto minmax(240px, 1fr) minmax(110px, 0.25fr) minmax(140px, 0.3fr) auto;
+    align-items: end;
+    gap: 10px;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--surface-2);
+  }
+
+  .program-workout-number {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: #f5f5f5;
+    color: #111;
+    font-weight: 900;
+  }
+
+  .program-workout-row-actions {
+    display: flex;
+    gap: 6px;
+  }
+
+  .workout-program-card {
+    padding: 18px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.025);
+  }
+
+  .workout-program-card p:not(.eyebrow),
+  .workout-program-card small {
+    color: var(--muted);
+  }
+
+  .program-launch-form {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  .program-launch-form.hidden {
+    display: none;
+  }
+
+  .program-launch-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .program-launch-form > .primary-btn {
+    margin-top: 12px;
+  }
+
+  .program-schedule-preview {
+    margin-top: 14px;
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+  }
+
+  .program-schedule-preview summary {
+    width: fit-content;
+    cursor: pointer;
+    color: #9ed0ff;
+    font-weight: 800;
+  }
+
+  .program-schedule-preview > div {
+    display: grid;
+    grid-template-columns: minmax(160px, 0.35fr) minmax(0, 1fr);
+    gap: 8px 14px;
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 12px;
+    background: var(--surface-2);
+  }
+
+  .program-schedule-preview span {
+    color: var(--muted);
+  }
+
   .recent-workouts-panel summary {
     display: flex;
     align-items: center;
@@ -4872,7 +5234,7 @@ td {
   }
 
   .recent-workouts-content {
-    margin-top: 18px;
+    margin-top: 0;
   }
 
   .recent-workout-filter-grid {
@@ -7897,11 +8259,52 @@ body {
   .roster-filter-grid,
   .coach-review-filter-grid,
   .recent-workout-filter-grid,
+  .programming-calendar-controls,
   .form-row,
   .set-log-fields,
   .set-input-grid,
   .session-exercise-tags {
     grid-template-columns: 1fr;
+  }
+
+  .workout-programming-heading,
+  .programming-calendar-summary,
+  .programming-programs-intro {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .workout-programming-tabs,
+  .programming-week-navigation {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .program-workout-detail-grid,
+  .program-launch-grid,
+  .program-workout-row,
+  .programming-copy-week {
+    grid-template-columns: 1fr;
+  }
+
+  .program-builder-heading-row,
+  .workout-program-card-summary {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .program-workout-row-actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .programming-calendar-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .programming-calendar-day {
+    min-height: 0;
   }
 
   .stat-card strong {

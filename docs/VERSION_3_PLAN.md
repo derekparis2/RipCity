@@ -25,12 +25,13 @@ product's immediate value to facilities come before hitting-specific work.
 
 ### V3 Release Sequence
 
-The first V3 production release is intentionally narrow: complete strength
-maxes and percentage-based workout programming, verify the full package in
-staging, and merge it through `v3-development` into `main`. Do not hold that
-release for routines, Testing Day comparisons, multi-facility tooling, or
-baseball features. Continue the remaining V3 backlog only after the workout
-package is live and smoke-tested in production.
+The first V3 production release is intentionally focused on sellable workout
+programming: complete strength maxes and percentage-based prescriptions, add
+the group/member programming calendar and reusable multi-week programs, verify
+the package in staging, and merge it through `v3-development` into `main`. Do
+not hold that release for routines, multi-facility tooling, or baseball
+features. Continue the remaining V3 backlog after the workout package is live
+and smoke-tested in production.
 
 ---
 
@@ -60,6 +61,32 @@ separate lifting workflow.
 Before implementation, decide which estimation formulas are supported, how a
 training max is defined, which max source is the default for programming, and
 which rounding increments each facility may use.
+
+### Programming Calendar And Reusable Programs
+
+Extend the existing Workout Builder rather than creating a separate scheduling
+product.
+
+- Make Calendar the primary saved-workout view while retaining searchable
+  Workout Library and Programs views on the same page.
+- Let staff inspect a weekly schedule for either a group or an individual. An
+  individual schedule combines direct, inherited group, and facility-wide
+  assignments without displaying the same workout twice.
+- Let staff copy one group's week to another week. The copied workouts must be
+  normal editable workout records, not references that rewrite the source week.
+- Let staff build reusable programs from saved workouts, choose each workout's
+  week and weekday, and launch the program to a group or individual.
+- Snapshot a program launch by cloning each scheduled workout and its blocks and
+  exercises into normal assignments. Later program or source-workout edits must
+  not alter already launched schedules or historical workout results.
+- Keep program creation, launch, archive, and copy-week operations facility
+  scoped and enforced by trusted database functions and RLS.
+- Preserve who created and assigned each workout, and keep assigned schedules
+  editable through the existing builder.
+
+The program week begins on Monday. Programs may span 1–52 weeks. Archived
+program definitions disappear from the active library while already launched
+calendar workouts remain unchanged.
 
 ### Daily Routines And Checklists
 

@@ -11,11 +11,11 @@ migration to the shared staging project.
 
 ## Immediate Release Gate
 
-**Package 1 is the only implementation priority until it is complete.** Finish
-the complete strength-max and percentage-programming workflow, verify it in
-staging, merge its reviewed feature branch into `v3-development`, and then
-release `v3-development` to `main`. Only after that production merge should
-Derek and Sam continue with Packages 2 and later.
+**Package 1 is the implementation priority until it is complete.** Finish the
+strength-max and percentage workflow plus the programming calendar and reusable
+program workflow, verify both branches together in staging, merge them into
+`v3-development`, and then release `v3-development` to `main`. Only after that
+production merge should Derek and Sam continue with later packages.
 
 Planning and approved sample-data research may happen while Package 1 is in
 progress, but later feature implementation must not delay or expand the first
@@ -55,6 +55,29 @@ responsive staging checks, and production release notes must all be complete.
 **Release action:** When every completion item above passes review, merge this
 package through `v3-development` into `main`. Confirm the production migration
 and smoke test, then continue to Package 2.
+
+### 1B. Programming Calendar And Reusable Programs
+
+- **Status:** In progress on `derek/programming-calendar`
+- **Suggested branch:** `<name>/programming-calendar`
+- **Plan detail:** [Programming calendar and reusable programs](VERSION_3_PLAN.md#programming-calendar-and-reusable-programs)
+
+Replace the Created Workouts-first experience with Calendar, Workout Library,
+and Programs views inside the existing Workout Builder. Support group and
+individual calendars, copy a group's week forward as editable workouts, and
+launch reusable 1–52 week programs to either a group or individual.
+
+**Complete when:** Combined member calendars deduplicate direct, group, and
+facility assignments; copied weeks and launched programs create independent
+editable workout snapshots; later source/program edits do not rewrite launched
+work; staff can create, edit, launch, and archive programs; facility boundaries
+and coach authorization are enforced by RLS/RPCs; and focused automated and
+staging checks pass.
+
+**Merge note:** Sam's strength-max branch and this branch both affect workout
+prescriptions. Before either package is released, extend the program workout
+clone to preserve every new max, percentage, resolved-load, and snapshot field,
+then test a launched program containing a percentage-based exercise.
 
 ---
 

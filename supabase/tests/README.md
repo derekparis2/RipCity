@@ -3,6 +3,18 @@
 This directory is reserved for repeatable schema and RLS tests. Initial manual
 verification remains in `sql/diagnostics/verify_staging_baseline.sql`.
 
+The source-controlled programming-calendar contract can be checked before its
+staging migration is applied:
+
+```bash
+node tests/workout-programming.test.mjs
+```
+
+After applying `20261108170000_add_workout_programs.sql` to staging, manually
+verify saving and editing a program, launching it to both a group and an
+individual, copying a group week, and confirming the resulting workouts remain
+editable without changing the reusable program.
+
 ## Staging RLS Read Checks
 
 After applying the two V2 staging seeds and creating the documented fake Auth

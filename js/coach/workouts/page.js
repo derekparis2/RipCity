@@ -341,6 +341,7 @@ async function initCoachWorkoutsPage() {
     availableGroupMemberships = await loadAssignableGroupMemberships(
       availableMembers.map(member => member.memberProfileId)
     );
+    renderProgrammingScopeOptions();
     refreshAssignmentOptions();
     await refreshExerciseLibrary();
 
@@ -348,6 +349,7 @@ async function initCoachWorkoutsPage() {
     renderSelectedWorkoutDates();
     addBlockCard();
     await loadRecentWorkouts();
+    await loadWorkoutPrograms();
 
     markWorkoutFormClean();
     showWorkoutMessage("");
@@ -359,6 +361,8 @@ async function initCoachWorkoutsPage() {
 
 document.addEventListener("DOMContentLoaded", () => {
   initializeWorkoutBuilderTracking();
+  initProgrammingCalendar();
+  initWorkoutPrograms();
   initCoachWorkoutsPage();
 
   document.getElementById("add-block-btn").addEventListener("click", addBlockCard);

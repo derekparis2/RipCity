@@ -68,7 +68,7 @@ async function fetchRecentWorkoutRows(includeOptionalExerciseColumns = true) {
     .select(buildRecentWorkoutSelect(includeOptionalExerciseColumns))
     .eq("facility_id", workoutCoachAccess.membership.facility_id)
     .order("created_at", { ascending: false })
-    .limit(50);
+    .limit(500);
 }
 
 async function loadRecentWorkouts() {
@@ -93,6 +93,7 @@ async function loadRecentWorkouts() {
   recentWorkoutRows = data || [];
   renderRecentWorkoutAssignerOptions();
   renderRecentWorkouts();
+  renderProgrammingCalendar();
 }
 
 function renderRecentWorkoutAssignerOptions() {

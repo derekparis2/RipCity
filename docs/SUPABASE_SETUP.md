@@ -279,3 +279,19 @@ Open `http://localhost:3000/login.html`, then test:
 - Athlete dashboard with the same Rip City habits and athlete workout access.
 - Workout session Save Set and Save All Sets.
 - Refresh workout session and confirm saved logs reload.
+
+## V3 Workout Programming Migration
+
+The programming calendar UI can render without new tables, but reusable
+programs, program launches, and Copy Week are not functional until
+`20261108170000_add_workout_programs.sql` has been applied.
+
+Apply this migration to **Rip City Staging first**. It adds the program,
+program-item, launch, and launch-workout tables plus transactional RPCs for
+saving, launching, archiving, and copying a group week. Do not apply it to
+production until the staging calendar/program workflow and facility isolation
+have passed review.
+
+When merging the strength-max and percentage-programming package, update the
+program clone function in this migration's production successor to preserve
+every new prescription snapshot field before releasing either feature.
