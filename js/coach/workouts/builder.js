@@ -104,13 +104,17 @@ function getExerciseSummary(card, index) {
   const inputType = card.querySelector(".exercise-input-type")?.value || "weight_reps";
   const isUnilateral = card.querySelector(".exercise-unilateral")?.checked || false;
   const target = getSetTargetHint(reps, sets);
+  const percentTargets = window.RipCityLiftMaxes?.parsePercentTargets(
+    card.querySelector(".exercise-percentage")?.value
+  ) || [];
+  const percentSuffix = percentTargets.length ? ` @ ${percentTargets.join("/")}%` : "";
 
   return {
     label: getExerciseRowLabel(index),
     name,
-    target: isUnilateral
+    target: (isUnilateral
       ? `${target === "Add target" ? "Target" : target} each side`
-      : target,
+      : target) + percentSuffix,
     inputType: formatInputTypeLabel(inputType)
   };
 }
@@ -509,6 +513,11 @@ function createExerciseCard(index) {
         </label>
 
         <label>
+          % of Max
+          <input type="text" class="exercise-percentage" placeholder="70 or 70,75,80" inputmode="decimal" />
+        </label>
+
+        <label>
           Input
           <select class="exercise-input-type">
             <option value="weight_reps">Weight + Reps</option>
@@ -633,6 +642,7 @@ function readExerciseCardValues(card) {
     description: getCardInputValue(card, ".exercise-description") || null,
     sets: getCardInputValue(card, ".exercise-sets") || null,
     reps: getCardInputValue(card, ".exercise-reps") || null,
+    percentage: getCardInputValue(card, ".exercise-percentage") || null,
     tempo: getCardInputValue(card, ".exercise-tempo") || null,
     rest_time: getCardInputValue(card, ".exercise-rest") || null,
     input_type: getCardInputValue(card, ".exercise-input-type") || "weight_reps",
@@ -772,6 +782,7 @@ function setExerciseCardValues(card, exercise = {}) {
   card.querySelector(".exercise-description").value = exercise.description || "";
   card.querySelector(".exercise-sets").value = exercise.sets || "";
   card.querySelector(".exercise-reps").value = exercise.reps || "";
+  card.querySelector(".exercise-percentage").value = exercise.percentage || "";
   card.querySelector(".exercise-tempo").value = exercise.tempo || "";
   card.querySelector(".exercise-rest").value = exercise.rest_time || "";
   card.querySelector(".exercise-input-type").value = exercise.input_type || "weight_reps";
@@ -872,6 +883,7 @@ function getBlockFormData() {
           ? Number(card.querySelector(".exercise-sets").value)
           : null,
         reps: card.querySelector(".exercise-reps").value.trim() || null,
+        percentage: card.querySelector(".exercise-percentage").value.trim() || null,
         tempo: card.querySelector(".exercise-tempo").value.trim() || null,
         rest_time: card.querySelector(".exercise-rest").value.trim() || null,
         input_type: card.querySelector(".exercise-input-type").value,

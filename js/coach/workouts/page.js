@@ -210,6 +210,7 @@ async function saveWorkout(event) {
             description: exercise.description,
             sets: exercise.sets,
             reps: exercise.reps,
+            percentage: exercise.percentage,
             tempo: exercise.tempo,
             rest_time: exercise.rest_time,
             input_type: exercise.input_type,

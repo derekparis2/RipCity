@@ -4402,7 +4402,7 @@ td {
 
   .exercise-quick-row {
     display: grid;
-    grid-template-columns: auto auto minmax(220px, 1.25fr) minmax(78px, 0.32fr) minmax(190px, 0.75fr) minmax(160px, 0.65fr);
+    grid-template-columns: auto auto minmax(220px, 1.25fr) minmax(78px, 0.32fr)     minmax(110px, 0.4fr) minmax(190px, 0.75fr) minmax(160px, 0.65fr);
     gap: 12px;
     align-items: end;
   }

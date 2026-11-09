@@ -8,6 +8,7 @@ let workoutSessionAccess = null;
 let workoutMemberProfile = null;
 let workoutAssignment = null;
 let existingSetLogs = [];
+let memberExerciseMaxes = new Map();
 let currentSessionStepIndex = 0;
 let workoutSessionView = "overview";
 let workoutSessionMessageTimer = null;
@@ -74,19 +75,70 @@ function getExerciseTargetText(exercise) {
   const sets = exercise.sets || 1;
   const reps = exercise.reps || "complete";
   const target = exercise.is_unilateral ? `${reps} each side` : reps;
+  const percentTargets = window.RipCityLiftMaxes.parsePercentTargets(exercise.percentage);
+  const percentSuffix = percentTargets.length ? ` @ ${percentTargets.join("/")}%` : "";
 
-  return `${sets} x ${target}`;
+  return `${sets} x ${target}${percentSuffix}`;
 }
 
 function getSetTargetText(exercise, setNumber) {
   const targetValue = getSetTargetValue(exercise, setNumber);
   const totalSets = Number(exercise.sets || 1);
+  const loadText = getSetLoadText(exercise, setNumber);
+  const loadSuffix = loadText ? ` @ ${loadText}` : "";
 
   if (targetValue) {
-    return `Set ${setNumber} of ${totalSets}: ${targetValue.value}${exercise.is_unilateral ? " each side" : ""}`;
+    return `Set ${setNumber} of ${totalSets}: ${targetValue.value}${exercise.is_unilateral ? " each side" : ""}${loadSuffix}`;
   }
 
-  return `Set ${setNumber} of ${totalSets}: complete`;
+  return `Set ${setNumber} of ${totalSets}: complete${loadSuffix}`;
+}
+
+// Percent-of-max prescription for one set, resolved against the member's
+// calculated max for this exercise when they have one.
+function getSetLoadPrescription(exercise, setNumber) {
+  const lifts = window.RipCityLiftMaxes;
+  const percent = lifts.getPercentForSet(exercise.percentage, setNumber);
+  if (percent === null) return null;
+
+  const max = memberExerciseMaxes.get(lifts.normalizeExerciseName(exercise.name)) ?? null;
+
+  return {
+    percent,
+    max,
+    load: max === null ? null : lifts.calculateLoad(max, percent)
+  };
+}
+
+function getSetLoadText(exercise, setNumber) {
+  const prescription = getSetLoadPrescription(exercise, setNumber);
+  if (!prescription) return "";
+
+  const lifts = window.RipCityLiftMaxes;
+  return prescription.load === null
+    ? `${lifts.formatWeight(prescription.percent)}% of max`
+    : `${lifts.formatWeight(prescription.percent)}% (${lifts.formatWeight(prescription.load)})`;
+}
+
+async function loadMemberExerciseMaxes() {
+  const { data, error } = await db
+    .from("exercise_set_logs")
+    .select("weight, reps_completed, completed, is_max_effort, exercise:workout_exercises ( name )")
+    .eq("member_profile_id", workoutMemberProfile.id)
+    .eq("is_max_effort", true)
+    .eq("completed", true);
+
+  if (error) {
+    console.warn("Could not load lift maxes.", error);
+    return new Map();
+  }
+
+  return window.RipCityLiftMaxes.computeMaxesByExercise(
+    (data || []).map(log => ({
+      ...log,
+      exercise_name: window.RipCityWorkoutData.normalizeJoinedOne(log.exercise)?.name
+    }))
+  );
 }
 
 function getSetTargetValue(exercise, setNumber) {

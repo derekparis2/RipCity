@@ -20,6 +20,7 @@ function buildLogRowFromSetRow(row) {
     distance_value: getInputValue(".set-distance-input", row) || null,
     difficulty_rating: difficultyValue ? Number(difficultyValue) : null,
     athlete_note: getInputValue(".set-note-input", row) || null,
+    is_max_effort: isChecked(".set-max-effort-input", row),
     logged_at: new Date().toISOString()
   };
 
@@ -51,6 +52,7 @@ async function saveSetRow(row) {
   if (error) throw error;
 
   existingSetLogs = await loadExistingSetLogs(workoutAssignment.id);
+  memberExerciseMaxes = await loadMemberExerciseMaxes();
 }
 
 async function saveSetLog(exerciseId, setNumber) {
@@ -119,6 +121,7 @@ async function saveAllSetLogs() {
     if (error) throw error;
 
     existingSetLogs = await loadExistingSetLogs(workoutAssignment.id);
+    memberExerciseMaxes = await loadMemberExerciseMaxes();
     renderWorkoutSession();
 
     showWorkoutSessionToast("All sets saved");
@@ -152,6 +155,7 @@ async function refreshWorkoutSession() {
       .loadAssignmentAttributions([workoutAssignment]);
 
     existingSetLogs = await loadExistingSetLogs(workoutAssignment.id);
+    memberExerciseMaxes = await loadMemberExerciseMaxes();
 
     updateWorkoutHeader();
     renderWorkoutSession();
