@@ -16,7 +16,7 @@ const coachPages = {
 for (const [file, activePage] of Object.entries(coachPages)) {
   const html = await readFile(file, "utf8");
   assert.match(html, new RegExp(`data-coach-nav="${activePage}"`), `${file} has the correct shared coach navigation state`);
-  assert.match(html, /js\/coach\/coach-nav\.js\?v=programming-page-1/, `${file} loads the shared coach navigation`);
+  assert.match(html, /js\/coach\/coach-nav\.js\?v=program-creator-1/, `${file} loads the shared coach navigation`);
 }
 
 const dashboard = await readFile("coach-dashboard.html", "utf8");

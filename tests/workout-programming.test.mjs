@@ -24,9 +24,11 @@ const calendarActionMigration = await readFile(
 );
 const workoutPageController = await readFile("js/coach/workouts/page.js", "utf8");
 
-assert.match(builderPage, /href="coach-programming\.html"/, "Workout Builder links to the Programming workspace");
+assert.match(builderPage, /href="coach-programming\.html\?view=calendar"[^>]*>\s*Workout Calendar</, "Workout Builder links directly to the Workout Calendar");
 assert.doesNotMatch(builderPage, /id="workout-programming-panel"/, "Programming is not embedded under the sticky Workout Builder outline");
+assert.doesNotMatch(builderPage, /workout-outline-panel[\s\S]*Open Programming/, "Workout Calendar is not mixed into the sticky workout outline");
 assert.match(page, /data-coach-nav="programming"/, "Programming has its own shared coach navigation state");
+assert.match(page, /<title>Program Creator<\/title>/, "the programming workspace is presented as the Program Creator");
 assert.doesNotMatch(page, /workout-outline-panel/, "Programming does not load the Workout Builder outline");
 assert.match(page, /js\/coach\/workouts\/programming-page\.js/, "Programming loads its dedicated page controller");
 assert.match(page, /data-programming-view="calendar"/, "Programming includes the programming calendar");
@@ -39,6 +41,8 @@ assert.match(page, /id="copy-programming-selected"/, "calendar can copy an arbit
 assert.match(page, /id="programming-copy-destinations"/, "calendar copy supports multiple destination rosters and dates");
 assert.match(page, /id="create-program-from-selection"/, "selected calendar workouts can seed a reusable program");
 assert.match(page, /id="programming-workout-actions"/, "calendar workouts expose edit and removal actions");
+assert.doesNotMatch(calendar, /row\.workout\.focus \|\| "Workout"/, "calendar workout cards only render the workout title");
+assert.doesNotMatch(calendar, /row\.sourceLabel\}\$\{row\.isDirect/, "calendar workout cards do not render assignment metadata");
 assert.match(page, /id="unassign-programming-selected"/, "calendar supports bulk unassignment");
 assert.match(page, /id="program-coach-filter"/, "admins have a program creator filter");
 assert.match(page, /id="workout-program-builder"/, "program creation has a real builder form");
@@ -48,6 +52,7 @@ assert.match(calendar, /target_type === "facility"/, "individual calendars inclu
 assert.match(calendar, /memberGroupIds\.has/, "individual calendars include inherited group assignments");
 assert.match(calendar, /new Map\(\)/, "combined member schedules are deduplicated");
 assert.match(calendar, /getProgrammingMonthDates/, "calendar renders one month at a time");
+assert.match(calendar, /new URLSearchParams\(window\.location\.search\)/, "workspace links can open a specific programming view");
 assert.match(calendar, /data-copy-calendar-week/, "each populated week can be copied directly from the month");
 assert.match(calendar, /row\.isDirect/, "inherited assignments are visible but excluded from direct copying");
 assert.match(calendar, /db\.rpc\("copy_workout_programming_assignments"/, "calendar copying uses a transactional database function");

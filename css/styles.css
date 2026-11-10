@@ -5216,8 +5216,7 @@ td {
   }
 
   .programming-calendar-workout > button {
-    display: grid;
-    gap: 3px;
+    display: block;
     width: 100%;
     min-width: 0;
     padding: 10px;
@@ -5229,14 +5228,14 @@ td {
   }
 
   .programming-calendar-workout.is-direct > button {
-    padding-right: 36px;
+    padding-left: 36px;
   }
 
   .programming-calendar-select {
     position: absolute;
     z-index: 2;
     top: 10px;
-    right: 10px;
+    left: 10px;
     display: grid;
     place-items: center;
   }
@@ -5261,14 +5260,6 @@ td {
     line-height: 1.2;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
-  }
-
-  .programming-calendar-workout span,
-  .programming-calendar-workout small {
-    display: block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
 
   .programming-calendar-empty-day {

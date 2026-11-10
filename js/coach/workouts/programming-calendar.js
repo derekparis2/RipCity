@@ -52,15 +52,23 @@ function getProgrammingMonthDates() {
   return Array.from({ length: 42 }, (_, index) => addProgrammingDays(firstGridDate, index));
 }
 
-function setProgrammingView(viewName) {
+function setProgrammingView(viewName, { updateUrl = true } = {}) {
+  const supportedViews = new Set(["calendar", "library", "programs"]);
+  const nextView = supportedViews.has(viewName) ? viewName : "calendar";
   document.querySelectorAll("[data-programming-view]").forEach(button => {
-    const isActive = button.dataset.programmingView === viewName;
+    const isActive = button.dataset.programmingView === nextView;
     button.classList.toggle("is-active", isActive);
     button.setAttribute("aria-selected", String(isActive));
   });
   document.querySelectorAll("[data-programming-panel]").forEach(panel => {
-    panel.classList.toggle("hidden", panel.dataset.programmingPanel !== viewName);
+    panel.classList.toggle("hidden", panel.dataset.programmingPanel !== nextView);
   });
+
+  if (updateUrl) {
+    const url = new URL(window.location.href);
+    url.searchParams.set("view", nextView);
+    window.history.replaceState({}, "", url);
+  }
 }
 
 function renderProgrammingScopeOptions() {
@@ -239,8 +247,6 @@ function renderProgrammingCalendar() {
               ` : ""}
               <button type="button" data-calendar-workout="${window.RipCityUI.attr(row.workout.id)}" data-calendar-workout-assignment="${window.RipCityUI.attr(row.assignment.id)}">
                 <strong>${window.RipCityUI.text(row.workout.title)}</strong>
-                <span>${window.RipCityUI.text(row.workout.focus || "Workout")}</span>
-                <small>${window.RipCityUI.text(row.sourceLabel)}${row.isDirect ? "" : " · inherited"}</small>
               </button>
             </article>
           `).join("") : `<span class="programming-calendar-empty-day">No workout</span>`}
@@ -586,6 +592,9 @@ function initProgrammingCalendar() {
   document.querySelectorAll("[data-programming-view]").forEach(button => {
     button.addEventListener("click", () => setProgrammingView(button.dataset.programmingView));
   });
+  setProgrammingView(new URLSearchParams(window.location.search).get("view") || "calendar", {
+    updateUrl: false
+  });
   document.getElementById("programming-scope-type")?.addEventListener("change", renderProgrammingScopeOptions);
   document.getElementById("programming-scope-id")?.addEventListener("change", clearProgrammingSelection);
   document.getElementById("programming-previous-month")?.addEventListener("click", () => moveProgrammingMonth(-1));
@@ -610,7 +619,7 @@ function initProgrammingCalendar() {
     const params = new URLSearchParams({
       template: activeProgrammingWorkoutRow.workout.id,
       editAssignment: activeProgrammingWorkoutRow.assignment.id,
-      return: "coach-programming.html"
+      return: "coach-programming.html?view=calendar"
     });
     window.location.href = `coach-workouts.html?${params.toString()}`;
   });
