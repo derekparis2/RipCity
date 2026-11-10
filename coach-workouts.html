@@ -207,188 +207,18 @@
         <a class="outline-link full-btn workout-library-link" href="coach-exercises.html">
           Manage Exercise Library
         </a>
+        <a class="outline-link full-btn workout-library-link" href="coach-programming.html">
+          Open Programming
+        </a>
       </aside>
 
-      <section class="panel workout-programming-panel" id="workout-programming-panel">
-        <div class="panel-heading workout-programming-heading">
-          <div>
-            <p class="eyebrow">PROGRAMMING</p>
-            <h3>Calendar & Workout Library</h3>
-            <p>See what each group or member is doing, then build, copy, or adjust what comes next.</p>
-          </div>
-          <div class="workout-programming-tabs" role="tablist" aria-label="Workout programming views">
-            <button class="outline-btn is-active" type="button" role="tab" aria-selected="true" data-programming-view="calendar">Calendar</button>
-            <button class="outline-btn" type="button" role="tab" aria-selected="false" data-programming-view="library">Workout Library</button>
-            <button class="outline-btn" type="button" role="tab" aria-selected="false" data-programming-view="programs">Programs</button>
-          </div>
-        </div>
-
-        <div class="workout-programming-view" data-programming-panel="calendar">
-          <div class="programming-calendar-controls">
-            <label>
-              View Schedule For
-              <select id="programming-scope-type">
-                <option value="group">Group</option>
-                <option value="member">Individual member</option>
-              </select>
-            </label>
-            <label>
-              <span id="programming-scope-label">Group</span>
-              <select id="programming-scope-id"></select>
-            </label>
-            <div class="programming-week-navigation" aria-label="Calendar month navigation">
-              <button class="outline-btn" id="programming-previous-month" type="button" aria-label="Previous month">Previous</button>
-              <button class="outline-btn" id="programming-current-month" type="button">This Month</button>
-              <button class="outline-btn" id="programming-next-month" type="button" aria-label="Next month">Next</button>
-            </div>
-          </div>
-
-          <div class="programming-calendar-summary">
-            <div>
-              <p class="eyebrow">MONTHLY SCHEDULE</p>
-              <h4 id="programming-month-label">Loading month...</h4>
-              <p id="programming-calendar-description">Choose a group to view its assigned workouts.</p>
-            </div>
-            <div class="programming-calendar-actions">
-              <button class="outline-btn" id="clear-programming-selection" type="button" disabled>Clear Selection</button>
-              <button class="outline-btn" id="copy-programming-month" type="button" disabled>Copy Month</button>
-              <button class="primary-btn" id="copy-programming-selected" type="button" disabled>Copy Selected</button>
-            </div>
-          </div>
-
-          <div class="programming-copy-week hidden" id="programming-copy-form">
-            <label>
-              <span id="programming-copy-date-label">Copy Starting On</span>
-              <input id="programming-copy-date" type="date" />
-            </label>
-            <button class="primary-btn" id="confirm-copy-programming" type="button">Confirm Copy</button>
-            <button class="outline-btn" id="cancel-copy-programming" type="button">Cancel</button>
-            <small id="programming-copy-help">Copied workouts become independent, editable workout assignments.</small>
-          </div>
-
-          <div class="programming-calendar-scroll">
-            <div class="programming-calendar-weekdays" aria-hidden="true">
-              <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
-            </div>
-            <div id="programming-calendar-grid" class="programming-calendar-grid" aria-live="polite">
-              <div class="empty-state">Loading programming calendar...</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="workout-programming-view hidden" data-programming-panel="library">
-          <div class="recent-workouts-content">
-          <div class="recent-workout-filter-grid">
-            <label>
-              Search
-              <input
-                id="recent-workout-search"
-                type="search"
-                placeholder="Workout title, focus, assignment..."
-                autocomplete="off"
-              />
-            </label>
-
-            <label>
-              Assigned Date
-              <input id="recent-workout-date-filter" type="date" />
-            </label>
-
-            <label>
-              Assignment
-              <select id="recent-workout-target-filter">
-                <option value="all">All assignments</option>
-                <option value="group">Groups</option>
-                <option value="member">Individual members</option>
-                <option value="facility">Entire facility</option>
-                <option value="unassigned">Unassigned</option>
-              </select>
-            </label>
-
-            <label>
-              Assigned By
-              <select id="recent-workout-assigner-filter">
-                <option value="all">All staff</option>
-              </select>
-            </label>
-
-            <button class="outline-btn" id="refresh-workouts-btn" type="button">Refresh</button>
-          </div>
-
-          <div id="recent-workouts-list" class="recent-workouts-list">
-            <div class="empty-state">Loading workouts...</div>
-          </div>
-        </div>
-        </div>
-
-        <div class="workout-programming-view hidden" data-programming-panel="programs">
-          <div class="program-admin-filter hidden" id="program-admin-filter-wrap">
-            <label>
-              Created By
-              <select id="program-coach-filter">
-                <option value="all">All coaches</option>
-              </select>
-            </label>
-          </div>
-          <div class="programming-programs-intro">
-            <div>
-              <p class="eyebrow">REUSABLE PROGRAMS</p>
-              <h4>Build weeks once, then start them for any group.</h4>
-              <p>Build a reusable multi-week plan from saved workouts. Starting a program creates editable copies on a group or member calendar.</p>
-            </div>
-            <button class="primary-btn" id="create-program-btn" type="button">Create Program</button>
-          </div>
-
-          <section class="workout-program-builder hidden" id="workout-program-builder" aria-labelledby="workout-program-builder-heading">
-            <div class="panel-heading">
-              <div>
-                <p class="eyebrow">PROGRAM DETAILS</p>
-                <h4 id="workout-program-builder-heading">Build the program</h4>
-              </div>
-              <button class="outline-btn small-inline-btn" id="cancel-program-btn" type="button">Cancel</button>
-            </div>
-
-            <div class="program-workout-detail-grid">
-              <label>
-                Program Name
-                <input id="program-name" type="text" maxlength="120" placeholder="Winter Strength Program" />
-              </label>
-              <label>
-                Duration (Weeks)
-                <input id="program-duration-weeks" type="number" min="1" max="52" value="4" inputmode="numeric" />
-              </label>
-            </div>
-            <label>
-              Description
-              <textarea id="program-description" rows="2" placeholder="Program focus and coaching notes..."></textarea>
-            </label>
-
-            <div class="program-builder-heading-row">
-              <div>
-                <p class="eyebrow">PROGRAM SCHEDULE</p>
-                <h4>Add saved workouts by week and day</h4>
-              </div>
-              <button class="outline-btn" id="add-program-workout-btn" type="button">Add Workout</button>
-            </div>
-            <div id="program-workout-list" class="program-workout-list"></div>
-            <div class="workout-save-actions">
-              <button class="primary-btn" id="save-program-btn" type="button">Save Program</button>
-            </div>
-          </section>
-
-          <p id="programs-message" class="auth-message"></p>
-          <div id="workout-program-list" class="workout-program-list" aria-live="polite">
-            <div class="empty-state">Loading programs...</div>
-          </div>
-        </div>
-      </section>
     </section>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/shared/supabaseClient.js"></script>
   <script src="js/shared/ui-utils.js"></script>
-  <script src="js/coach/coach-nav.js?v=ui-polish-1"></script>
+  <script src="js/coach/coach-nav.js?v=programming-page-1"></script>
   <script src="js/shared/access-control.js?v=auth-reliability-3"></script>
   <script src="js/shared/workout-data.js?v=workout-attribution-1"></script>
   <script src="js/coach/workouts/core.js"></script>
@@ -397,8 +227,6 @@
   <script src="js/coach/workouts/builder.js?v=workflow-hotfix-1"></script>
   <script src="js/coach/workouts/assignments.js?v=workflow-hotfix-1"></script>
   <script src="js/coach/workouts/history.js?v=workflow-hotfix-1"></script>
-  <script src="js/coach/workouts/programs.js?v=workout-programs-2"></script>
-  <script src="js/coach/workouts/programming-calendar.js?v=programming-calendar-2"></script>
   <script src="js/coach/workouts/page.js?v=workflow-hotfix-1"></script>
 </body>
 </html>

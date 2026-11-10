@@ -16,12 +16,15 @@ Use this as the quick orientation guide before editing.
 - `js/member/member-nav.js` owns the shared member destination map so member
   tabs do not drift or disappear between pages.
 - `js/coach/coach-nav.js` owns the shared coach/admin destination map and the
-  compact mobile menu so Dashboard, Roster, Workout Builder, Leaderboards, and
-  Approvals remain available from every coach surface.
+  compact mobile menu so Dashboard, Roster, Workout Builder, Programming,
+  Testing Days, Leaderboards, and Approvals remain available from every coach
+  surface.
 - `workout-session.html` is the member workout logging screen.
 - `coach-dashboard.html`, `coach-roster.html`, `coach-workouts.html`,
-  `coach-exercises.html`, `coach-testing.html`, `coach-leaderboards.html`, and `coach-approvals.html`
-  are the coach/admin surfaces.
+  `coach-programming.html`, `coach-exercises.html`, `coach-testing.html`,
+  `coach-leaderboards.html`, and `coach-approvals.html` are the coach/admin
+  surfaces. The Workout Builder owns workout creation; Programming owns the
+  month calendar, saved Workout Library, and reusable Programs.
   The Exercise Library is intentionally linked only from the Workout Builder.
 
 ## Shared JavaScript

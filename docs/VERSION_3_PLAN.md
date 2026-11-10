@@ -64,11 +64,13 @@ which rounding increments each facility may use.
 
 ### Programming Calendar And Reusable Programs
 
-Extend the existing Workout Builder rather than creating a separate scheduling
-product.
+Keep workout creation focused in the existing Workout Builder and place
+calendar, saved-workout, and reusable-program management on a dedicated
+Programming page linked from the shared coach/admin navigation.
 
 - Make a month Calendar the primary saved-workout view while retaining
-  searchable Workout Library and Programs views on the same page.
+  searchable Workout Library and Programs views on the same dedicated
+  Programming page.
 - Let staff inspect a monthly schedule for either a group or an individual. An
   individual schedule combines direct, inherited group, and facility-wide
   assignments without displaying the same workout twice.

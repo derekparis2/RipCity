@@ -219,7 +219,7 @@ function renderProgrammingCalendar() {
   grid.querySelectorAll("[data-calendar-workout]").forEach(button => {
     button.addEventListener("click", () => {
       const workout = recentWorkoutRows.find(row => row.id === button.dataset.calendarWorkout);
-      if (workout) loadWorkoutIntoBuilder(workout);
+      openWorkoutInBuilder(workout);
     });
   });
   grid.querySelectorAll("[data-calendar-assignment]").forEach(input => {

@@ -14,6 +14,7 @@ const protectedPages = [
   "coach-exercises.html",
   "coach-leaderboards.html",
   "coach-member-detail.html",
+  "coach-programming.html",
   "coach-roster.html",
   "coach-testing.html",
   "coach-workouts.html",

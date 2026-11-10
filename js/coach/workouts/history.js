@@ -74,7 +74,7 @@ async function fetchRecentWorkoutRows(includeOptionalExerciseColumns = true) {
 async function loadRecentWorkouts() {
   const list = document.getElementById("recent-workouts-list");
 
-  list.innerHTML = `<div class="empty-state">Loading workouts...</div>`;
+  if (list) list.innerHTML = `<div class="empty-state">Loading workouts...</div>`;
 
   let { data, error } = await fetchRecentWorkoutRows(true);
 
@@ -86,14 +86,25 @@ async function loadRecentWorkouts() {
     console.error(error);
     recentWorkoutRows = [];
     renderRecentWorkouts();
-    list.innerHTML = `<div class="empty-state">Could not load workouts.</div>`;
+    if (list) list.innerHTML = `<div class="empty-state">Could not load workouts.</div>`;
     return;
   }
 
   recentWorkoutRows = data || [];
   renderRecentWorkoutAssignerOptions();
   renderRecentWorkouts();
-  renderProgrammingCalendar();
+  if (typeof renderProgrammingCalendar === "function") renderProgrammingCalendar();
+}
+
+function openWorkoutInBuilder(workout) {
+  if (!workout) return;
+
+  if (document.getElementById("workout-form")) {
+    loadWorkoutIntoBuilder(workout);
+    return;
+  }
+
+  window.location.href = `coach-workouts.html?template=${encodeURIComponent(workout.id)}`;
 }
 
 function renderRecentWorkoutAssignerOptions() {
@@ -387,7 +398,7 @@ function renderRecentWorkouts() {
   list.querySelectorAll("[data-load-workout-template]").forEach(button => {
     button.addEventListener("click", () => {
       const workout = recentWorkoutRows.find(row => row.id === button.dataset.loadWorkoutTemplate);
-      loadWorkoutIntoBuilder(workout);
+      openWorkoutInBuilder(workout);
     });
   });
 

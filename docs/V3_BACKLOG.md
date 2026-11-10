@@ -63,7 +63,8 @@ and smoke test, then continue to Package 2.
 - **Plan detail:** [Programming calendar and reusable programs](VERSION_3_PLAN.md#programming-calendar-and-reusable-programs)
 
 Replace the Created Workouts-first experience with Calendar, Workout Library,
-and Programs views inside the existing Workout Builder. Support group and
+and Programs views on a dedicated Programming page linked from the Workout
+Builder and shared coach/admin navigation. Support group and
 individual month calendars, copy one week, one month, or any selected direct
 assignments forward as editable workouts, and launch reusable 1–52 week
 programs to either a group or individual. Facility admins can review and filter

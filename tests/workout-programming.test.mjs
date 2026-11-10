@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
-const page = await readFile("coach-workouts.html", "utf8");
+const builderPage = await readFile("coach-workouts.html", "utf8");
+const page = await readFile("coach-programming.html", "utf8");
 const calendar = await readFile("js/coach/workouts/programming-calendar.js", "utf8");
 const programs = await readFile("js/coach/workouts/programs.js", "utf8");
 const history = await readFile("js/coach/workouts/history.js", "utf8");
@@ -14,9 +15,14 @@ const hardeningMigration = await readFile(
   "utf8"
 );
 
-assert.match(page, /data-programming-view="calendar"/, "Workout Builder includes the programming calendar");
-assert.match(page, /data-programming-view="library"/, "Workout Builder keeps a searchable workout library");
-assert.match(page, /data-programming-view="programs"/, "Workout Builder includes reusable programs");
+assert.match(builderPage, /href="coach-programming\.html"/, "Workout Builder links to the Programming workspace");
+assert.doesNotMatch(builderPage, /id="workout-programming-panel"/, "Programming is not embedded under the sticky Workout Builder outline");
+assert.match(page, /data-coach-nav="programming"/, "Programming has its own shared coach navigation state");
+assert.doesNotMatch(page, /workout-outline-panel/, "Programming does not load the Workout Builder outline");
+assert.match(page, /js\/coach\/workouts\/programming-page\.js/, "Programming loads its dedicated page controller");
+assert.match(page, /data-programming-view="calendar"/, "Programming includes the programming calendar");
+assert.match(page, /data-programming-view="library"/, "Programming keeps a searchable workout library");
+assert.match(page, /data-programming-view="programs"/, "Programming includes reusable programs");
 assert.match(page, /id="programming-scope-type"[\s\S]*value="group"[\s\S]*value="member"/, "calendar supports group and individual schedules");
 assert.match(page, /id="programming-month-label"/, "calendar uses a monthly schedule view");
 assert.match(page, /id="copy-programming-month"/, "calendar can copy the current month");

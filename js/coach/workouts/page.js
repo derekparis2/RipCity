@@ -341,7 +341,6 @@ async function initCoachWorkoutsPage() {
     availableGroupMemberships = await loadAssignableGroupMemberships(
       availableMembers.map(member => member.memberProfileId)
     );
-    renderProgrammingScopeOptions();
     refreshAssignmentOptions();
     await refreshExerciseLibrary();
 
@@ -349,7 +348,13 @@ async function initCoachWorkoutsPage() {
     renderSelectedWorkoutDates();
     addBlockCard();
     await loadRecentWorkouts();
-    await loadWorkoutPrograms();
+
+    const templateId = new URLSearchParams(window.location.search).get("template");
+    if (templateId) {
+      const workout = recentWorkoutRows.find(row => row.id === templateId);
+      if (workout) openWorkoutInBuilder(workout);
+      window.history.replaceState({}, "", window.location.pathname);
+    }
 
     markWorkoutFormClean();
     showWorkoutMessage("");
@@ -361,18 +366,11 @@ async function initCoachWorkoutsPage() {
 
 document.addEventListener("DOMContentLoaded", () => {
   initializeWorkoutBuilderTracking();
-  initProgrammingCalendar();
-  initWorkoutPrograms();
   initCoachWorkoutsPage();
 
   document.getElementById("add-block-btn").addEventListener("click", addBlockCard);
-  document.getElementById("recent-workout-search")?.addEventListener("input", renderRecentWorkouts);
-  document.getElementById("recent-workout-date-filter")?.addEventListener("change", renderRecentWorkouts);
-  document.getElementById("recent-workout-assigner-filter")?.addEventListener("change", renderRecentWorkouts);
   document.getElementById("add-workout-date-btn")?.addEventListener("click", addSelectedWorkoutDate);
-  document.getElementById("recent-workout-target-filter")?.addEventListener("change", renderRecentWorkouts);
   document.getElementById("workout-target-type").addEventListener("change", updateAssignmentControls);
   document.getElementById("workout-form").addEventListener("submit", saveWorkout);
-  document.getElementById("refresh-workouts-btn").addEventListener("click", loadRecentWorkouts);
   document.getElementById("coach-workouts-logout-btn").addEventListener("click", logoutCoachWorkouts);
 });
