@@ -8,6 +8,8 @@
 let programmingMonth = getProgrammingMonthStart(new Date());
 let selectedProgrammingAssignmentIds = new Set();
 let programmingCopySourceStart = null;
+let programmingCopyDestinations = [];
+let activeProgrammingWorkoutRow = null;
 
 function parseProgrammingDate(dateValue) {
   const [year, month, day] = String(dateValue || "").split("-").map(Number);
@@ -143,11 +145,13 @@ function updateProgrammingSelectionActions() {
   const selectedCount = selectedProgrammingAssignmentIds.size;
   const copySelected = document.getElementById("copy-programming-selected");
   const clear = document.getElementById("clear-programming-selection");
+  const createProgram = document.getElementById("create-program-from-selection");
   if (copySelected) {
     copySelected.disabled = selectedCount === 0;
     copySelected.textContent = selectedCount ? `Copy Selected (${selectedCount})` : "Copy Selected";
   }
   if (clear) clear.disabled = selectedCount === 0;
+  if (createProgram) createProgram.disabled = selectedCount === 0;
 }
 
 function renderProgrammingCalendar() {
@@ -204,7 +208,7 @@ function renderProgrammingCalendar() {
                   <span class="sr-only">Select ${window.RipCityUI.text(row.workout.title)}</span>
                 </label>
               ` : ""}
-              <button type="button" data-calendar-workout="${window.RipCityUI.attr(row.workout.id)}">
+              <button type="button" data-calendar-workout="${window.RipCityUI.attr(row.workout.id)}" data-calendar-workout-assignment="${window.RipCityUI.attr(row.assignment.id)}">
                 <strong>${window.RipCityUI.text(row.workout.title)}</strong>
                 <span>${window.RipCityUI.text(row.workout.focus || "Workout")}</span>
                 <small>${window.RipCityUI.text(row.sourceLabel)}${row.isDirect ? "" : " · inherited"}</small>
@@ -218,8 +222,8 @@ function renderProgrammingCalendar() {
 
   grid.querySelectorAll("[data-calendar-workout]").forEach(button => {
     button.addEventListener("click", () => {
-      const workout = recentWorkoutRows.find(row => row.id === button.dataset.calendarWorkout);
-      openWorkoutInBuilder(workout);
+      activeProgrammingWorkoutRow = getProgrammingAssignments().find(row => row.assignment.id === button.dataset.calendarWorkoutAssignment) || null;
+      openProgrammingWorkoutActions();
     });
   });
   grid.querySelectorAll("[data-calendar-assignment]").forEach(input => {
@@ -272,56 +276,202 @@ function prepareSelectedProgrammingCopy() {
 
 function openProgrammingCopy(sourceStart, suggestedDestination, mode) {
   const form = document.getElementById("programming-copy-form");
-  const date = document.getElementById("programming-copy-date");
-  const label = document.getElementById("programming-copy-date-label");
   const help = document.getElementById("programming-copy-help");
-  if (!form || !date || !label || !help) return;
+  if (!form || !help) return;
   programmingCopySourceStart = sourceStart;
-  date.value = formatProgrammingIsoDate(suggestedDestination);
-  label.textContent = mode === "week" ? "Copy To Week Starting" : mode === "month" ? "Copy To Month Starting" : "Copy Selection Starting On";
-  help.textContent = `${selectedProgrammingAssignmentIds.size} workout${selectedProgrammingAssignmentIds.size === 1 ? "" : "s"} selected. Dates keep the same spacing, and every copy remains independently editable.`;
+  programmingCopyDestinations = [{
+    key: `destination-${Date.now()}`,
+    target_type: document.getElementById("programming-scope-type")?.value || "group",
+    target_id: document.getElementById("programming-scope-id")?.value || "",
+    destination_start: formatProgrammingIsoDate(suggestedDestination)
+  }];
+  help.textContent = `${selectedProgrammingAssignmentIds.size} workout${selectedProgrammingAssignmentIds.size === 1 ? "" : "s"} selected from this ${mode}. Add any groups, members, weeks, or months that should receive independent copies.`;
+  renderProgrammingCopyDestinations();
   form.classList.remove("hidden");
-  date.focus();
+  form.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
 function closeProgrammingCopy() {
   programmingCopySourceStart = null;
+  programmingCopyDestinations = [];
   document.getElementById("programming-copy-form")?.classList.add("hidden");
 }
 
+function getProgrammingDestinationOptions(type, selectedId = "") {
+  const options = type === "group"
+    ? availableGroups.map(group => ({ id: group.id, label: group.name }))
+    : availableMembers.map(member => ({ id: member.memberProfileId, label: `${member.name} · ${getMemberGroupNames(member.memberProfileId).join(", ") || "No group"}` }));
+  return options.map(option => `<option value="${window.RipCityUI.attr(option.id)}" ${option.id === selectedId ? "selected" : ""}>${window.RipCityUI.text(option.label)}</option>`).join("");
+}
+
+function addProgrammingDestination() {
+  const last = programmingCopyDestinations.at(-1);
+  const nextDate = last?.destination_start ? formatProgrammingIsoDate(addProgrammingMonths(parseProgrammingDate(last.destination_start), 1)) : formatProgrammingIsoDate(programmingMonth);
+  programmingCopyDestinations.push({
+    key: `destination-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    target_type: last?.target_type || "group",
+    target_id: last?.target_id || availableGroups[0]?.id || "",
+    destination_start: nextDate
+  });
+  renderProgrammingCopyDestinations();
+}
+
+function getSelectedProgrammingRows() {
+  return getCopyableAssignments().filter(row => selectedProgrammingAssignmentIds.has(row.assignment.id));
+}
+
+function getProgrammingCopyPreview() {
+  const selectedRows = getSelectedProgrammingRows();
+  const existingRows = recentWorkoutRows.flatMap(workout => (workout.workout_assignments || []).map(assignment => ({ workout, assignment })));
+  const plannedKeys = new Map();
+  const rows = programmingCopyDestinations.flatMap(destination => selectedRows.map(row => {
+    const dayOffset = Math.round((parseProgrammingDate(row.assignment.assigned_date) - programmingCopySourceStart) / 86400000);
+    const assignedDate = formatProgrammingIsoDate(addProgrammingDays(parseProgrammingDate(destination.destination_start), dayOffset));
+    const target = destination.target_type === "group"
+      ? availableGroups.find(group => group.id === destination.target_id)?.name
+      : availableMembers.find(member => member.memberProfileId === destination.target_id)?.name;
+    const existingConflict = existingRows.some(existing => existing.assignment.assigned_date === assignedDate
+      && existing.assignment.target_type === destination.target_type
+      && (destination.target_type === "group"
+        ? existing.assignment.target_group_id === destination.target_id
+        : existing.assignment.target_member_profile_id === destination.target_id));
+    const plannedKey = `${destination.target_type}:${destination.target_id}:${assignedDate}`;
+    plannedKeys.set(plannedKey, (plannedKeys.get(plannedKey) || 0) + 1);
+    return { destination, workout: row.workout, assignedDate, target: target || "Choose a roster", existingConflict, plannedKey };
+  }));
+  return rows.map(row => ({
+    ...row,
+    duplicateConflict: (plannedKeys.get(row.plannedKey) || 0) > 1,
+    conflict: row.existingConflict || (plannedKeys.get(row.plannedKey) || 0) > 1
+  }));
+}
+
+function renderProgrammingCopyDestinations() {
+  const list = document.getElementById("programming-copy-destinations");
+  const preview = document.getElementById("programming-copy-preview");
+  const confirm = document.getElementById("confirm-copy-programming");
+  if (!list || !preview || !confirm) return;
+  list.innerHTML = programmingCopyDestinations.map((destination, index) => `
+    <article class="programming-copy-destination" data-copy-destination="${window.RipCityUI.attr(destination.key)}">
+      <strong>Destination ${index + 1}</strong>
+      <label>Roster Type<select data-copy-destination-field="target_type"><option value="group" ${destination.target_type === "group" ? "selected" : ""}>Group</option><option value="member" ${destination.target_type === "member" ? "selected" : ""}>Individual member</option></select></label>
+      <label>Roster<select data-copy-destination-field="target_id">${getProgrammingDestinationOptions(destination.target_type, destination.target_id)}</select></label>
+      <label>Paste Starting<input type="date" data-copy-destination-field="destination_start" value="${window.RipCityUI.attr(destination.destination_start)}" /></label>
+      <button class="outline-btn small-inline-btn danger-outline-btn" type="button" data-remove-copy-destination ${programmingCopyDestinations.length === 1 ? "disabled" : ""}>Remove</button>
+    </article>
+  `).join("");
+  list.querySelectorAll("[data-copy-destination]").forEach(row => {
+    const destination = programmingCopyDestinations.find(item => item.key === row.dataset.copyDestination);
+    row.querySelectorAll("[data-copy-destination-field]").forEach(field => field.addEventListener("change", () => {
+      destination[field.dataset.copyDestinationField] = field.value;
+      if (field.dataset.copyDestinationField === "target_type") {
+        destination.target_id = field.value === "group" ? availableGroups[0]?.id || "" : availableMembers[0]?.memberProfileId || "";
+      }
+      renderProgrammingCopyDestinations();
+    }));
+    row.querySelector("[data-remove-copy-destination]")?.addEventListener("click", () => {
+      programmingCopyDestinations = programmingCopyDestinations.filter(item => item.key !== destination.key);
+      renderProgrammingCopyDestinations();
+    });
+  });
+  const rows = getProgrammingCopyPreview();
+  const conflicts = rows.filter(row => row.conflict).length;
+  preview.innerHTML = `
+    <div class="programming-copy-preview-summary"><strong>${rows.length} workout assignment${rows.length === 1 ? "" : "s"} will be created</strong><span class="${conflicts ? "has-conflict" : ""}">${conflicts ? `${conflicts} conflict${conflicts === 1 ? "" : "s"} must be resolved` : "No schedule conflicts"}</span></div>
+    <div class="programming-copy-preview-list">${rows.map(row => `<span class="${row.conflict ? "has-conflict" : ""}"><strong>${window.RipCityUI.text(row.workout.title)}</strong> → ${window.RipCityUI.text(row.target)} · ${window.RipCityUI.text(formatDisplayDate(row.assignedDate))}${row.existingConflict ? " · already has a workout" : row.duplicateConflict ? " · duplicated in this copy plan" : ""}</span>`).join("")}</div>`;
+  confirm.disabled = !rows.length || conflicts > 0 || programmingCopyDestinations.some(destination => !destination.target_id || !destination.destination_start);
+}
+
 async function copyProgrammingAssignments() {
-  const destinationValue = document.getElementById("programming-copy-date")?.value || "";
-  if (!selectedProgrammingAssignmentIds.size || !programmingCopySourceStart || !destinationValue) {
-    return showWorkoutMessage("Choose workouts and a destination date.", true);
+  if (!selectedProgrammingAssignmentIds.size || !programmingCopySourceStart || !programmingCopyDestinations.length) {
+    return showWorkoutMessage("Choose workouts and at least one destination.", true);
   }
 
   const sourceValue = formatProgrammingIsoDate(programmingCopySourceStart);
-  const destinationDate = parseProgrammingDate(destinationValue);
-  const scopeName = document.getElementById("programming-scope-id")?.selectedOptions?.[0]?.textContent || "this schedule";
-  if (!window.confirm(`Copy ${selectedProgrammingAssignmentIds.size} selected workout${selectedProgrammingAssignmentIds.size === 1 ? "" : "s"} for ${scopeName}, starting ${formatDisplayDate(destinationValue)}?`)) return;
+  const previewRows = getProgrammingCopyPreview();
+  if (previewRows.some(row => row.conflict)) return showWorkoutMessage("Resolve the destination conflicts before copying.", true);
+  if (!window.confirm(`Create ${previewRows.length} independent workout assignment${previewRows.length === 1 ? "" : "s"} across ${programmingCopyDestinations.length} destination${programmingCopyDestinations.length === 1 ? "" : "s"}?`)) return;
 
   const button = document.getElementById("confirm-copy-programming");
   button.disabled = true;
   button.textContent = "Copying...";
   try {
+    const firstDestinationStart = programmingCopyDestinations[0]?.destination_start || sourceValue;
     const { data, error } = await db.rpc("copy_workout_programming_assignments", {
       check_assignment_ids: [...selectedProgrammingAssignmentIds],
       check_source_start: sourceValue,
-      check_destination_start: destinationValue
+      check_destinations: programmingCopyDestinations.map(({ target_type, target_id, destination_start }) => ({ target_type, target_id, destination_start }))
     });
     if (error) throw error;
     closeProgrammingCopy();
     selectedProgrammingAssignmentIds.clear();
     await loadRecentWorkouts();
-    programmingMonth = getProgrammingMonthStart(destinationDate);
+    programmingMonth = getProgrammingMonthStart(parseProgrammingDate(firstDestinationStart));
     renderProgrammingCalendar();
-    showWorkoutMessage(`${data} workout${Number(data) === 1 ? "" : "s"} copied to the schedule.`);
+    const copiedCount = Number(data?.copied_count || 0);
+    showWorkoutMessage(`${copiedCount} workout assignment${copiedCount === 1 ? "" : "s"} copied to the schedule.`);
   } catch (error) {
     console.error(error);
     showWorkoutMessage(error.message || "Could not copy the selected programming.", true);
   } finally {
     button.disabled = false;
     button.textContent = "Confirm Copy";
+  }
+}
+
+function createProgramFromProgrammingSelection() {
+  const rows = getSelectedProgrammingRows().sort((a, b) => a.assignment.assigned_date.localeCompare(b.assignment.assigned_date));
+  if (!rows.length) return showWorkoutMessage("Select one or more directly assigned workouts first.", true);
+  const sourceStart = getProgrammingWeekStart(parseProgrammingDate(rows[0].assignment.assigned_date));
+  const lastDate = parseProgrammingDate(rows.at(-1).assignment.assigned_date);
+  const durationWeeks = Math.floor((getProgrammingWeekStart(lastDate) - sourceStart) / (7 * 86400000)) + 1;
+  const scopeName = document.getElementById("programming-scope-id")?.selectedOptions?.[0]?.textContent?.split(" · ")[0] || "New";
+  const items = rows.map((row, index) => {
+    const date = parseProgrammingDate(row.assignment.assigned_date);
+    return {
+      source_workout_id: row.workout.id,
+      week_number: Math.floor((getProgrammingWeekStart(date) - sourceStart) / (7 * 86400000)) + 1,
+      day_of_week: date.getDay() === 0 ? 7 : date.getDay(),
+      item_order: index
+    };
+  });
+  setProgrammingView("programs");
+  openProgramBuilder(null, { name: `${scopeName} Program`, durationWeeks, items });
+}
+
+function openProgrammingWorkoutActions() {
+  const panel = document.getElementById("programming-workout-actions");
+  const description = document.getElementById("programming-workout-actions-description");
+  if (!panel || !description || !activeProgrammingWorkoutRow) return;
+  description.textContent = `${activeProgrammingWorkoutRow.workout.title} · ${formatDisplayDate(activeProgrammingWorkoutRow.assignment.assigned_date)} · ${activeProgrammingWorkoutRow.sourceLabel}`;
+  document.getElementById("unassign-programming-workout").disabled = !activeProgrammingWorkoutRow.isDirect;
+  document.getElementById("delete-programming-workout").disabled = !activeProgrammingWorkoutRow.isDirect;
+  panel.classList.remove("hidden");
+  panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+function closeProgrammingWorkoutActions() {
+  activeProgrammingWorkoutRow = null;
+  document.getElementById("programming-workout-actions")?.classList.add("hidden");
+}
+
+async function removeProgrammingWorkout(deleteWorkout) {
+  if (!activeProgrammingWorkoutRow?.isDirect) return;
+  const verb = deleteWorkout ? "delete this workout and its assignment" : "unassign this workout";
+  if (!window.confirm(`Are you sure you want to ${verb}? Started workouts and linked program workouts are protected.`)) return;
+  try {
+    const { error } = await db.rpc("remove_workout_programming_assignment", {
+      check_assignment_id: activeProgrammingWorkoutRow.assignment.id,
+      check_delete_workout: deleteWorkout
+    });
+    if (error) throw error;
+    closeProgrammingWorkoutActions();
+    await loadRecentWorkouts();
+    renderProgrammingCalendar();
+    showWorkoutMessage(deleteWorkout ? "Workout deleted from the calendar." : "Workout unassigned from the calendar.");
+  } catch (error) {
+    console.error(error);
+    showWorkoutMessage(error.message || "Could not change this calendar workout.", true);
   }
 }
 
@@ -348,7 +498,13 @@ function initProgrammingCalendar() {
   });
   document.getElementById("copy-programming-month")?.addEventListener("click", prepareProgrammingMonthCopy);
   document.getElementById("copy-programming-selected")?.addEventListener("click", prepareSelectedProgrammingCopy);
+  document.getElementById("create-program-from-selection")?.addEventListener("click", createProgramFromProgrammingSelection);
   document.getElementById("clear-programming-selection")?.addEventListener("click", clearProgrammingSelection);
   document.getElementById("cancel-copy-programming")?.addEventListener("click", closeProgrammingCopy);
+  document.getElementById("add-programming-destination")?.addEventListener("click", addProgrammingDestination);
   document.getElementById("confirm-copy-programming")?.addEventListener("click", copyProgrammingAssignments);
+  document.getElementById("close-programming-workout-actions")?.addEventListener("click", closeProgrammingWorkoutActions);
+  document.getElementById("edit-programming-workout")?.addEventListener("click", () => activeProgrammingWorkoutRow && openWorkoutInBuilder(activeProgrammingWorkoutRow.workout));
+  document.getElementById("unassign-programming-workout")?.addEventListener("click", () => removeProgrammingWorkout(false));
+  document.getElementById("delete-programming-workout")?.addEventListener("click", () => removeProgrammingWorkout(true));
 }

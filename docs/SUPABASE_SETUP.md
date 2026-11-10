@@ -288,6 +288,7 @@ workout-program migrations have been applied in order:
 
 1. `20261108170000_add_workout_programs.sql`
 2. `20261109120000_harden_program_ownership_and_calendar_copy.sql`
+3. `20261109210000_link_programs_and_expand_calendar_copy.sql`
 
 Apply this migration to **Rip City Staging first**. It adds the program,
 program-item, launch, and launch-workout tables plus transactional RPCs for
@@ -295,12 +296,15 @@ saving, launching, archiving, and copying a group week. Do not apply it to
 production until the staging calendar/program workflow and facility isolation
 have passed review.
 
-The follow-up hardening migration changes the calendar to support transactional
-week, month, and selected-workout copies for either a group or an individual.
+The hardening migrations change the calendar to support transactional week,
+month, and selected-workout copies to multiple group or individual destinations.
 It also makes program ownership authoritative: ordinary coaches can read,
 edit, archive, and launch only programs they created, while facility admins can
 manage every program in their facility and filter the UI by creator. Neither
-role receives cross-facility access.
+role receives cross-facility access. Calendar copies become independent workout
+snapshots. Program launches stay linked: editing a program updates its future,
+unstarted occurrences across launches, while past or started occurrences remain
+frozen history.
 
 When merging the strength-max and percentage-programming package, update the
 program clone function in this migration's production successor to preserve

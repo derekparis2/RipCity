@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=ui-polish-4" />
+  <link rel="stylesheet" href="css/styles.css?v=linked-programs-1" />
 </head>
 <body class="auth-body">
   <main class="coach-page coach-programming-page">
@@ -64,14 +64,34 @@
           <div class="programming-calendar-actions">
             <button class="outline-btn" id="clear-programming-selection" type="button" disabled>Clear Selection</button>
             <button class="outline-btn" id="copy-programming-month" type="button" disabled>Copy Month</button>
+            <button class="outline-btn" id="create-program-from-selection" type="button" disabled>Create Program</button>
             <button class="primary-btn" id="copy-programming-selected" type="button" disabled>Copy Selected</button>
           </div>
         </div>
         <div class="programming-copy-week hidden" id="programming-copy-form">
-          <label><span id="programming-copy-date-label">Copy Starting On</span><input id="programming-copy-date" type="date" /></label>
-          <button class="primary-btn" id="confirm-copy-programming" type="button">Confirm Copy</button>
-          <button class="outline-btn" id="cancel-copy-programming" type="button">Cancel</button>
-          <small id="programming-copy-help">Copied workouts become independent, editable workout assignments.</small>
+          <div class="programming-copy-heading">
+            <div><p class="eyebrow">COPY PREVIEW</p><h4>Choose every destination</h4><small id="programming-copy-help">Copied workouts become independent, editable workout assignments.</small></div>
+            <button class="outline-btn small-inline-btn" id="add-programming-destination" type="button">Add Destination</button>
+          </div>
+          <div id="programming-copy-destinations" class="programming-copy-destinations"></div>
+          <div id="programming-copy-preview" class="programming-copy-preview"></div>
+          <div class="programming-copy-actions">
+            <button class="outline-btn" id="cancel-copy-programming" type="button">Cancel</button>
+            <button class="primary-btn" id="confirm-copy-programming" type="button">Confirm Copy</button>
+          </div>
+        </div>
+        <div class="programming-workout-actions hidden" id="programming-workout-actions" role="dialog" aria-modal="true" aria-labelledby="programming-workout-actions-title">
+          <div>
+            <p class="eyebrow">CALENDAR WORKOUT</p>
+            <h4 id="programming-workout-actions-title">Workout actions</h4>
+            <p id="programming-workout-actions-description"></p>
+          </div>
+          <div class="programming-workout-action-buttons">
+            <button class="primary-btn" id="edit-programming-workout" type="button">Open & Edit</button>
+            <button class="outline-btn" id="unassign-programming-workout" type="button">Unassign</button>
+            <button class="outline-btn danger-outline-btn" id="delete-programming-workout" type="button">Delete Workout</button>
+            <button class="outline-btn" id="close-programming-workout-actions" type="button">Close</button>
+          </div>
         </div>
         <div class="programming-calendar-scroll">
           <div class="programming-calendar-weekdays" aria-hidden="true"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
@@ -97,7 +117,7 @@
           <label>Created By<select id="program-coach-filter"><option value="all">All coaches</option></select></label>
         </div>
         <div class="programming-programs-intro">
-          <div><p class="eyebrow">REUSABLE PROGRAMS</p><h4>Build weeks once, then start them for any group.</h4><p>Build a reusable multi-week plan from saved workouts. Starting a program creates editable copies on a group or member calendar.</p></div>
+          <div><p class="eyebrow">REUSABLE PROGRAMS</p><h4>Build weeks once, then keep every future schedule linked.</h4><p>Start from scratch or turn selected calendar workouts into a program. Future, unstarted workouts update when the program changes; completed history stays unchanged.</p></div>
           <button class="primary-btn" id="create-program-btn" type="button">Create Program</button>
         </div>
         <section class="workout-program-builder hidden" id="workout-program-builder" aria-labelledby="workout-program-builder-heading">
@@ -127,8 +147,8 @@
   <script src="js/coach/workouts/data.js"></script>
   <script src="js/coach/workouts/assignments.js?v=workflow-hotfix-1"></script>
   <script src="js/coach/workouts/history.js?v=programming-page-1"></script>
-  <script src="js/coach/workouts/programs.js?v=workout-programs-2"></script>
-  <script src="js/coach/workouts/programming-calendar.js?v=programming-page-1"></script>
+  <script src="js/coach/workouts/programs.js?v=linked-programs-1"></script>
+  <script src="js/coach/workouts/programming-calendar.js?v=linked-programs-1"></script>
   <script src="js/coach/workouts/programming-page.js?v=programming-page-1"></script>
 </body>
 </html>

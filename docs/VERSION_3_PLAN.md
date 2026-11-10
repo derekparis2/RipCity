@@ -75,26 +75,30 @@ Programming page linked from the shared coach/admin navigation.
   individual schedule combines direct, inherited group, and facility-wide
   assignments without displaying the same workout twice.
 - Let staff copy a week, a month, or any selected direct group/member workout
-  assignments to new dates. Inherited group/facility work remains visible on an
-  individual calendar but cannot be accidentally duplicated as a direct
-  assignment. Copied workouts must be normal editable workout records, not
-  references that rewrite the source schedule.
+  assignments to one or more destination dates and rosters. Show an exact
+  preview, block occupied dates instead of overwriting them, and deduplicate
+  overlapping destinations. Inherited group/facility work remains visible on
+  an individual calendar but cannot be accidentally duplicated as a direct
+  assignment. Copied workouts are independent editable records.
 - Let staff build reusable programs from saved workouts, choose each workout's
   week and weekday, and launch the program to a group or individual.
-- Snapshot a program launch by cloning each scheduled workout and its blocks and
-  exercises into normal assignments. Later program or source-workout edits must
-  not alter already launched schedules or historical workout results.
+- Clone each launched program workout into a normal assignment while retaining
+  its program link. Editing a program updates every linked future workout that
+  has not been started, including its date and prescription. Past, started, and
+  completed workouts remain frozen historical snapshots. Independent calendar
+  copies never inherit this link.
 - Keep program creation, launch, archive, and calendar-copy operations facility
   scoped and enforced by trusted database functions and RLS.
 - Let facility admins view every facility program and filter them by creating
   coach. Ordinary coaches may see, edit, launch, and archive only programs they
   created.
-- Preserve who created and assigned each workout, and keep assigned schedules
-  editable through the existing builder.
+- Preserve who created and assigned each workout. Independent calendar workouts
+  remain editable through the existing builder; linked program occurrences are
+  changed from the program so every affected future schedule stays consistent.
 
 The program week begins on Monday. Programs may span 1–52 weeks. Archived
-program definitions disappear from the active library while already launched
-calendar workouts remain unchanged.
+program definitions disappear from the active library while existing calendar
+and historical workout records remain available.
 
 ### Daily Routines And Checklists
 

@@ -1,8 +1,8 @@
 // =====================================================
 // REUSABLE WORKOUT PROGRAMS
 // =====================================================
-// Programs reference saved workouts while they are being designed. Launching a
-// program clones every workout into normal, editable calendar assignments.
+// Programs remain linked to future, unstarted calendar assignments. Editing a
+// program updates those future occurrences while preserving started history.
 
 let workoutPrograms = [];
 let workoutProgramItems = [];
@@ -47,6 +47,7 @@ function getProgramWorkoutOptions(selectedId = "") {
 
 function addProgramWorkoutItem(item = {}) {
   programBuilderItems.push({
+    id: item.id || null,
     key: item.key || `program-item-${Date.now()}-${Math.random().toString(16).slice(2)}`,
     source_workout_id: item.source_workout_id || "",
     week_number: Number(item.week_number) || 1,
@@ -119,7 +120,7 @@ function renderProgramWorkoutItems() {
   });
 }
 
-function openProgramBuilder(programId = null) {
+function openProgramBuilder(programId = null, seed = null) {
   const builder = document.getElementById("workout-program-builder");
   if (!builder) return;
   editingProgramId = programId;
@@ -128,10 +129,11 @@ function openProgramBuilder(programId = null) {
     .filter(item => item.program_id === programId)
     .sort((a, b) => a.week_number - b.week_number || a.day_of_week - b.day_of_week || a.item_order - b.item_order);
 
-  document.getElementById("program-name").value = program?.name || "";
-  document.getElementById("program-description").value = program?.description || "";
-  document.getElementById("program-duration-weeks").value = String(program?.duration_weeks || 4);
-  programBuilderItems = items.map(item => ({ ...item, key: item.id }));
+  document.getElementById("program-name").value = program?.name || seed?.name || "";
+  document.getElementById("program-description").value = program?.description || seed?.description || "";
+  document.getElementById("program-duration-weeks").value = String(program?.duration_weeks || seed?.durationWeeks || 4);
+  const startingItems = program ? items : (seed?.items || []);
+  programBuilderItems = startingItems.map(item => ({ ...item, id: item.id || null, key: item.id || item.key || `program-item-${Date.now()}-${Math.random().toString(16).slice(2)}` }));
   if (!programBuilderItems.length) addProgramWorkoutItem();
   else renderProgramWorkoutItems();
   document.getElementById("workout-program-builder-heading").textContent = program ? "Edit the program" : "Build the program";
@@ -159,6 +161,7 @@ async function saveWorkoutProgram() {
   }
 
   const button = document.getElementById("save-program-btn");
+  const wasEditing = Boolean(editingProgramId);
   button.disabled = true;
   button.textContent = "Saving...";
   showProgramsMessage("Saving program...");
@@ -170,6 +173,7 @@ async function saveWorkoutProgram() {
       check_description: description,
       check_duration_weeks: durationWeeks,
       check_items: programBuilderItems.map((item, index) => ({
+        id: item.id,
         source_workout_id: item.source_workout_id,
         week_number: item.week_number,
         day_of_week: item.day_of_week,
@@ -187,7 +191,7 @@ async function saveWorkoutProgram() {
       : error.message || "Could not save program.", true);
   } finally {
     button.disabled = false;
-    button.textContent = editingProgramId ? "Update Program" : "Save Program";
+    button.textContent = wasEditing ? "Update Program" : "Save Program";
   }
 }
 
@@ -260,7 +264,7 @@ function renderWorkoutPrograms() {
               <input type="date" data-program-start-date value="${getProgramDefaultStartDate()}" />
             </label>
           </div>
-          <p class="field-help">The start date is Week 1 Monday. Every program workout becomes an editable calendar copy.</p>
+          <p class="field-help">The start date is Week 1 Monday. Future, unstarted workouts stay linked to this program; completed history stays unchanged.</p>
           <button class="primary-btn" type="button" data-launch-program>Confirm & Start Program</button>
         </div>
       </article>
