@@ -18,6 +18,11 @@ const linkedMigration = await readFile(
   "supabase/migrations/20261109210000_link_programs_and_expand_calendar_copy.sql",
   "utf8"
 );
+const calendarActionMigration = await readFile(
+  "supabase/migrations/20261110140000_harden_calendar_assignment_actions.sql",
+  "utf8"
+);
+const workoutPageController = await readFile("js/coach/workouts/page.js", "utf8");
 
 assert.match(builderPage, /href="coach-programming\.html"/, "Workout Builder links to the Programming workspace");
 assert.doesNotMatch(builderPage, /id="workout-programming-panel"/, "Programming is not embedded under the sticky Workout Builder outline");
@@ -34,6 +39,7 @@ assert.match(page, /id="copy-programming-selected"/, "calendar can copy an arbit
 assert.match(page, /id="programming-copy-destinations"/, "calendar copy supports multiple destination rosters and dates");
 assert.match(page, /id="create-program-from-selection"/, "selected calendar workouts can seed a reusable program");
 assert.match(page, /id="programming-workout-actions"/, "calendar workouts expose edit and removal actions");
+assert.match(page, /id="unassign-programming-selected"/, "calendar supports bulk unassignment");
 assert.match(page, /id="program-coach-filter"/, "admins have a program creator filter");
 assert.match(page, /id="workout-program-builder"/, "program creation has a real builder form");
 assert.match(page, /id="program-duration-weeks"[^>]*max="52"/, "program length supports up to one year");
@@ -47,6 +53,11 @@ assert.match(calendar, /row\.isDirect/, "inherited assignments are visible but e
 assert.match(calendar, /db\.rpc\("copy_workout_programming_assignments"/, "calendar copying uses a transactional database function");
 assert.match(calendar, /plannedKeys = new Map/, "calendar copy detects duplicate destinations before saving");
 assert.match(calendar, /db\.rpc\("remove_workout_programming_assignment"/, "calendar mistakes can be removed through a protected database function");
+assert.match(calendar, /db\.rpc\("get_workout_programming_action_states"/, "calendar loads server-authoritative edit and delete availability");
+assert.match(calendar, /db\.rpc\("remove_workout_programming_assignments"/, "calendar bulk unassignment uses a protected database function");
+assert.match(calendar, /editAssignment:/, "calendar opens a specific occurrence for editing");
+assert.match(workoutPageController, /db\.rpc\("replace_workout_programming_assignment"/, "occurrence editing replaces only the selected assignment snapshot");
+assert.match(workoutPageController, /Other dates and assignments will not change/, "occurrence editing explains its isolated scope");
 
 assert.match(programs, /db\.rpc\("save_workout_program"/, "program definitions save through a database function");
 assert.match(programs, /db\.rpc\("launch_workout_program"/, "program launches use a transactional database function");
@@ -94,5 +105,12 @@ assert.match(linkedMigration, /A destination already has a workout/, "calendar c
 assert.match(linkedMigration, /drop function if exists public\.copy_workout_programming_assignments\(uuid\[\], date, date\)/, "obsolete single-destination copy RPC is removed");
 assert.match(linkedMigration, /Linked program workouts must be changed from the program/, "linked occurrences cannot be independently removed");
 assert.match(linkedMigration, /Program item does not belong to this program/, "program updates cannot adopt item ids from another program");
+
+assert.match(calendarActionMigration, /get_workout_programming_action_states/, "calendar action availability is computed by the database");
+assert.match(calendarActionMigration, /remove_workout_programming_assignments/, "bulk unassignment is source controlled");
+assert.match(calendarActionMigration, /replace_workout_programming_assignment/, "single-occurrence replacement is source controlled");
+assert.match(calendarActionMigration, /exercise_set_logs/, "started occurrences are protected from calendar changes");
+assert.match(calendarActionMigration, /workout_program_launch_workouts/, "program-linked occurrences are protected from direct changes");
+assert.match(calendarActionMigration, /not exists \([\s\S]*workout_assignments/, "unused occurrence snapshots are cleaned up without deleting shared workouts");
 
 console.log("Workout programming calendar and reusable program tests passed");

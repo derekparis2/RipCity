@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/styles.css?v=ui-polish-4" />
+  <link rel="stylesheet" href="css/styles.css?v=programming-actions-1" />
 </head>
 
 <body class="auth-body">
@@ -131,7 +131,7 @@
 
             <div class="workout-builder-review" id="workout-builder-review" aria-live="polite"></div>
 
-            <div class="workout-assignment-fields">
+            <div class="workout-assignment-fields" id="workout-assignment-fields">
               <p class="field-help">These fields are only required when you choose Create & Assign.</p>
 
               <div class="form-row">
@@ -174,14 +174,14 @@
             </div>
 
             <div class="workout-save-actions">
-              <button class="outline-btn" type="submit" name="save-mode" value="draft">
+              <button class="outline-btn" id="save-workout-draft-btn" type="submit" name="save-mode" value="draft">
                 Save Draft
               </button>
-              <button class="primary-btn" type="submit" name="save-mode" value="assign">
+              <button class="primary-btn" id="save-workout-assign-btn" type="submit" name="save-mode" value="assign">
                 Create & Assign
               </button>
             </div>
-            <p class="field-help workout-save-help">
+            <p class="field-help workout-save-help" id="workout-save-help">
               Drafts stay in Created Workouts and can be assigned later.
             </p>
           </section>
@@ -224,9 +224,9 @@
   <script src="js/coach/workouts/core.js"></script>
   <script src="js/coach/workouts/data.js"></script>
   <script src="js/coach/workouts/exercise-library.js"></script>
-  <script src="js/coach/workouts/builder.js?v=workflow-hotfix-1"></script>
+  <script src="js/coach/workouts/builder.js?v=programming-actions-1"></script>
   <script src="js/coach/workouts/assignments.js?v=workflow-hotfix-1"></script>
   <script src="js/coach/workouts/history.js?v=workflow-hotfix-1"></script>
-  <script src="js/coach/workouts/page.js?v=workflow-hotfix-1"></script>
+  <script src="js/coach/workouts/page.js?v=programming-actions-1"></script>
 </body>
 </html>

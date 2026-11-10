@@ -800,10 +800,11 @@ function addBlockCard() {
   setOpenBlock(newestBlock);
 }
 
-function loadWorkoutIntoBuilder(workout) {
+function loadWorkoutIntoBuilder(workout, options = {}) {
   if (!workout) return;
 
-  setFieldValue("workout-title", `${workout.title || "Workout"} Copy`);
+  const occurrenceEdit = Boolean(options.occurrenceEdit);
+  setFieldValue("workout-title", occurrenceEdit ? (workout.title || "Workout") : `${workout.title || "Workout"} Copy`);
   setFieldValue("workout-focus", workout.focus || "");
   setFieldValue("workout-minutes", workout.estimated_minutes || "");
   setFieldValue("workout-description", workout.description || "");
@@ -850,7 +851,9 @@ function loadWorkoutIntoBuilder(workout) {
     block: "start"
   });
 
-  showWorkoutMessage("Workout loaded into builder. Save it to create a new assigned workout.");
+  showWorkoutMessage(occurrenceEdit
+    ? "Editing this calendar occurrence. Saving will not change the same workout on other dates."
+    : "Workout loaded into builder. Save it to create a new assigned workout.");
   markWorkoutFormDirty();
 }
 

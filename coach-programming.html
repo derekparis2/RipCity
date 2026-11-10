@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=linked-programs-1" />
+  <link rel="stylesheet" href="css/styles.css?v=programming-actions-1" />
 </head>
 <body class="auth-body">
   <main class="coach-page coach-programming-page">
@@ -63,6 +63,7 @@
           <div><p class="eyebrow">MONTHLY SCHEDULE</p><h4 id="programming-month-label">Loading month...</h4><p id="programming-calendar-description">Choose a group to view its assigned workouts.</p></div>
           <div class="programming-calendar-actions">
             <button class="outline-btn" id="clear-programming-selection" type="button" disabled>Clear Selection</button>
+            <button class="outline-btn danger-outline-btn" id="unassign-programming-selected" type="button" disabled>Unassign Selected</button>
             <button class="outline-btn" id="copy-programming-month" type="button" disabled>Copy Month</button>
             <button class="outline-btn" id="create-program-from-selection" type="button" disabled>Create Program</button>
             <button class="primary-btn" id="copy-programming-selected" type="button" disabled>Copy Selected</button>
@@ -85,6 +86,7 @@
             <p class="eyebrow">CALENDAR WORKOUT</p>
             <h4 id="programming-workout-actions-title">Workout actions</h4>
             <p id="programming-workout-actions-description"></p>
+            <p id="programming-workout-actions-reason" class="field-help"></p>
           </div>
           <div class="programming-workout-action-buttons">
             <button class="primary-btn" id="edit-programming-workout" type="button">Open & Edit</button>
@@ -148,7 +150,7 @@
   <script src="js/coach/workouts/assignments.js?v=workflow-hotfix-1"></script>
   <script src="js/coach/workouts/history.js?v=programming-page-1"></script>
   <script src="js/coach/workouts/programs.js?v=linked-programs-1"></script>
-  <script src="js/coach/workouts/programming-calendar.js?v=linked-programs-1"></script>
+  <script src="js/coach/workouts/programming-calendar.js?v=programming-actions-1"></script>
   <script src="js/coach/workouts/programming-page.js?v=programming-page-1"></script>
 </body>
 </html>

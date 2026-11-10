@@ -10,6 +10,8 @@ let selectedProgrammingAssignmentIds = new Set();
 let programmingCopySourceStart = null;
 let programmingCopyDestinations = [];
 let activeProgrammingWorkoutRow = null;
+let programmingActionStates = new Map();
+let programmingActionStateKey = "";
 
 function parseProgrammingDate(dateValue) {
   const [year, month, day] = String(dateValue || "").split("-").map(Number);
@@ -146,12 +148,38 @@ function updateProgrammingSelectionActions() {
   const copySelected = document.getElementById("copy-programming-selected");
   const clear = document.getElementById("clear-programming-selection");
   const createProgram = document.getElementById("create-program-from-selection");
+  const unassignSelected = document.getElementById("unassign-programming-selected");
   if (copySelected) {
     copySelected.disabled = selectedCount === 0;
     copySelected.textContent = selectedCount ? `Copy Selected (${selectedCount})` : "Copy Selected";
   }
   if (clear) clear.disabled = selectedCount === 0;
   if (createProgram) createProgram.disabled = selectedCount === 0;
+  if (unassignSelected) {
+    unassignSelected.disabled = selectedCount === 0;
+    unassignSelected.textContent = selectedCount ? `Unassign Selected (${selectedCount})` : "Unassign Selected";
+  }
+}
+
+async function refreshProgrammingActionStates(assignments) {
+  const assignmentIds = [...new Set(assignments.map(row => row.assignment.id).filter(Boolean))].sort();
+  const nextKey = assignmentIds.join(",");
+  if (nextKey === programmingActionStateKey) return;
+  programmingActionStateKey = nextKey;
+  programmingActionStates = new Map();
+  if (!assignmentIds.length) return;
+
+  try {
+    const { data, error } = await db.rpc("get_workout_programming_action_states", {
+      check_assignment_ids: assignmentIds
+    });
+    if (error) throw error;
+    programmingActionStates = new Map((data || []).map(row => [row.assignment_id, row]));
+    renderProgrammingCalendar();
+  } catch (error) {
+    console.error(error);
+    programmingActionStateKey = "";
+  }
 }
 
 function renderProgrammingCalendar() {
@@ -176,6 +204,7 @@ function renderProgrammingCalendar() {
   }
 
   const assignments = getProgrammingAssignments();
+  void refreshProgrammingActionStates(assignments);
   const visibleAssignments = getVisibleMonthAssignments(assignments);
   const copyableMonthAssignments = visibleAssignments.filter(row => row.isDirect);
   const validAssignmentIds = new Set(getCopyableAssignments(assignments).map(row => row.assignment.id));
@@ -201,7 +230,7 @@ function renderProgrammingCalendar() {
         </header>
         <div class="programming-calendar-day-workouts">
           ${dayAssignments.length ? dayAssignments.map(row => `
-            <article class="programming-calendar-workout ${row.isDirect ? "is-direct" : "is-inherited"}">
+            <article class="programming-calendar-workout ${row.isDirect ? "is-direct" : "is-inherited"} ${selectedProgrammingAssignmentIds.has(row.assignment.id) ? "is-selected" : ""}">
               ${row.isDirect ? `
                 <label class="programming-calendar-select" title="Select this workout to copy">
                   <input type="checkbox" data-calendar-assignment="${window.RipCityUI.attr(row.assignment.id)}" ${selectedProgrammingAssignmentIds.has(row.assignment.id) ? "checked" : ""} />
@@ -230,6 +259,7 @@ function renderProgrammingCalendar() {
     input.addEventListener("change", () => {
       if (input.checked) selectedProgrammingAssignmentIds.add(input.dataset.calendarAssignment);
       else selectedProgrammingAssignmentIds.delete(input.dataset.calendarAssignment);
+      input.closest(".programming-calendar-workout")?.classList.toggle("is-selected", input.checked);
       updateProgrammingSelectionActions();
     });
   });
@@ -442,10 +472,39 @@ function createProgramFromProgrammingSelection() {
 function openProgrammingWorkoutActions() {
   const panel = document.getElementById("programming-workout-actions");
   const description = document.getElementById("programming-workout-actions-description");
-  if (!panel || !description || !activeProgrammingWorkoutRow) return;
-  description.textContent = `${activeProgrammingWorkoutRow.workout.title} · ${formatDisplayDate(activeProgrammingWorkoutRow.assignment.assigned_date)} · ${activeProgrammingWorkoutRow.sourceLabel}`;
-  document.getElementById("unassign-programming-workout").disabled = !activeProgrammingWorkoutRow.isDirect;
-  document.getElementById("delete-programming-workout").disabled = !activeProgrammingWorkoutRow.isDirect;
+  const reason = document.getElementById("programming-workout-actions-reason");
+  const editButton = document.getElementById("edit-programming-workout");
+  const unassignButton = document.getElementById("unassign-programming-workout");
+  const deleteButton = document.getElementById("delete-programming-workout");
+  if (!panel || !description || !reason || !editButton || !unassignButton || !deleteButton || !activeProgrammingWorkoutRow) return;
+
+  const row = activeProgrammingWorkoutRow;
+  const state = programmingActionStates.get(row.assignment.id);
+  const targetScope = row.assignment.target_type === "group"
+    ? `${row.sourceLabel} on ${formatDisplayDate(row.assignment.assigned_date)}`
+    : row.assignment.target_type === "member"
+      ? `this member on ${formatDisplayDate(row.assignment.assigned_date)}`
+      : `the facility on ${formatDisplayDate(row.assignment.assigned_date)}`;
+  description.textContent = `${row.workout.title} · ${targetScope}`;
+
+  const canEdit = Boolean(state?.can_edit);
+  const canUnassign = Boolean(state?.can_unassign) && row.isDirect;
+  const canDelete = Boolean(state?.can_delete_workout) && row.isDirect;
+  editButton.classList.toggle("hidden", !canEdit);
+  unassignButton.classList.toggle("hidden", !canUnassign);
+  deleteButton.classList.toggle("hidden", !canDelete);
+
+  if (state?.is_program_linked) {
+    reason.textContent = "This occurrence belongs to a program. Edit or remove it through the program so every linked assignment stays consistent.";
+  } else if (!row.isDirect) {
+    reason.textContent = `This workout is inherited from ${row.sourceLabel}. Editing it changes that group occurrence; switch to the group calendar to unassign it.`;
+  } else if (state?.is_started) {
+    reason.textContent = "A member has already started this occurrence, so it is protected from editing or removal.";
+  } else if (!canDelete) {
+    reason.textContent = "You can edit or unassign this occurrence. Delete is hidden because the workout is also assigned elsewhere or used by a program.";
+  } else {
+    reason.textContent = "Edit changes only this calendar occurrence. Unassign removes it from this date; Delete permanently removes the unused workout.";
+  }
   panel.classList.remove("hidden");
   panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
@@ -457,6 +516,13 @@ function closeProgrammingWorkoutActions() {
 
 async function removeProgrammingWorkout(deleteWorkout) {
   if (!activeProgrammingWorkoutRow?.isDirect) return;
+  const state = programmingActionStates.get(activeProgrammingWorkoutRow.assignment.id);
+  if (deleteWorkout && !state?.can_delete_workout) {
+    return showWorkoutMessage("This workout is still used elsewhere and cannot be deleted.", true);
+  }
+  if (!deleteWorkout && !state?.can_unassign) {
+    return showWorkoutMessage("This occurrence is protected and cannot be unassigned here.", true);
+  }
   const verb = deleteWorkout ? "delete this workout and its assignment" : "unassign this workout";
   if (!window.confirm(`Are you sure you want to ${verb}? Started workouts and linked program workouts are protected.`)) return;
   try {
@@ -466,12 +532,46 @@ async function removeProgrammingWorkout(deleteWorkout) {
     });
     if (error) throw error;
     closeProgrammingWorkoutActions();
+    programmingActionStateKey = "";
     await loadRecentWorkouts();
     renderProgrammingCalendar();
     showWorkoutMessage(deleteWorkout ? "Workout deleted from the calendar." : "Workout unassigned from the calendar.");
   } catch (error) {
     console.error(error);
     showWorkoutMessage(error.message || "Could not change this calendar workout.", true);
+  }
+}
+
+async function unassignSelectedProgrammingWorkouts() {
+  const selectedRows = getCopyableAssignments().filter(row => selectedProgrammingAssignmentIds.has(row.assignment.id));
+  if (!selectedRows.length) return showWorkoutMessage("Select one or more directly assigned workouts first.", true);
+
+  const removableRows = selectedRows.filter(row => programmingActionStates.get(row.assignment.id)?.can_unassign);
+  const blockedCount = selectedRows.length - removableRows.length;
+  if (blockedCount) {
+    return showWorkoutMessage(`${blockedCount} selected workout${blockedCount === 1 ? " is" : "s are"} protected because a member started it or it belongs to a program.`, true);
+  }
+  if (!window.confirm(`Unassign ${removableRows.length} selected workout${removableRows.length === 1 ? "" : "s"}? The workout templates will remain available.`)) return;
+
+  const button = document.getElementById("unassign-programming-selected");
+  button.disabled = true;
+  button.textContent = "Unassigning...";
+  try {
+    const { data, error } = await db.rpc("remove_workout_programming_assignments", {
+      check_assignment_ids: removableRows.map(row => row.assignment.id)
+    });
+    if (error) throw error;
+    selectedProgrammingAssignmentIds.clear();
+    programmingActionStateKey = "";
+    await loadRecentWorkouts();
+    renderProgrammingCalendar();
+    const removedCount = Number(data?.removed_count || removableRows.length);
+    showWorkoutMessage(`${removedCount} workout assignment${removedCount === 1 ? "" : "s"} removed from the calendar.`);
+  } catch (error) {
+    console.error(error);
+    showWorkoutMessage(error.message || "Could not unassign the selected workouts.", true);
+  } finally {
+    updateProgrammingSelectionActions();
   }
 }
 
@@ -498,13 +598,22 @@ function initProgrammingCalendar() {
   });
   document.getElementById("copy-programming-month")?.addEventListener("click", prepareProgrammingMonthCopy);
   document.getElementById("copy-programming-selected")?.addEventListener("click", prepareSelectedProgrammingCopy);
+  document.getElementById("unassign-programming-selected")?.addEventListener("click", unassignSelectedProgrammingWorkouts);
   document.getElementById("create-program-from-selection")?.addEventListener("click", createProgramFromProgrammingSelection);
   document.getElementById("clear-programming-selection")?.addEventListener("click", clearProgrammingSelection);
   document.getElementById("cancel-copy-programming")?.addEventListener("click", closeProgrammingCopy);
   document.getElementById("add-programming-destination")?.addEventListener("click", addProgrammingDestination);
   document.getElementById("confirm-copy-programming")?.addEventListener("click", copyProgrammingAssignments);
   document.getElementById("close-programming-workout-actions")?.addEventListener("click", closeProgrammingWorkoutActions);
-  document.getElementById("edit-programming-workout")?.addEventListener("click", () => activeProgrammingWorkoutRow && openWorkoutInBuilder(activeProgrammingWorkoutRow.workout));
+  document.getElementById("edit-programming-workout")?.addEventListener("click", () => {
+    if (!activeProgrammingWorkoutRow) return;
+    const params = new URLSearchParams({
+      template: activeProgrammingWorkoutRow.workout.id,
+      editAssignment: activeProgrammingWorkoutRow.assignment.id,
+      return: "coach-programming.html"
+    });
+    window.location.href = `coach-workouts.html?${params.toString()}`;
+  });
   document.getElementById("unassign-programming-workout")?.addEventListener("click", () => removeProgrammingWorkout(false));
   document.getElementById("delete-programming-workout")?.addEventListener("click", () => removeProgrammingWorkout(true));
 }
