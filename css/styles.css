@@ -4930,6 +4930,43 @@ td {
     color: var(--muted);
   }
 
+  .programming-calendar-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .program-admin-filter {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 14px;
+  }
+
+  .program-admin-filter.hidden {
+    display: none;
+  }
+
+  .program-admin-filter label {
+    display: grid;
+    gap: 7px;
+    min-width: min(100%, 280px);
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .program-admin-filter select {
+    min-height: 46px;
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    background: var(--surface-2);
+    color: var(--text);
+    padding: 10px 12px;
+    font: inherit;
+  }
+
   .programming-copy-week {
     display: grid;
     grid-template-columns: minmax(220px, 1fr) auto auto;
@@ -4972,11 +5009,28 @@ td {
     color: var(--muted);
   }
 
+  .programming-calendar-scroll {
+    overflow-x: auto;
+    margin-top: 14px;
+    padding-bottom: 4px;
+  }
+
+  .programming-calendar-weekdays,
   .programming-calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, minmax(0, 1fr));
     gap: 8px;
-    margin-top: 14px;
+    min-width: 980px;
+  }
+
+  .programming-calendar-weekdays {
+    margin-bottom: 8px;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-align: center;
+    text-transform: uppercase;
   }
 
   .programming-calendar-day {
@@ -4989,6 +5043,10 @@ td {
 
   .programming-calendar-day.is-today {
     border-color: rgba(103, 179, 255, 0.7);
+  }
+
+  .programming-calendar-day.is-outside-month {
+    opacity: 0.42;
   }
 
   .programming-calendar-day > header {
@@ -5009,6 +5067,16 @@ td {
     font-size: 18px;
   }
 
+  .programming-calendar-day > header button {
+    border: 0;
+    background: transparent;
+    color: #9ed0ff;
+    cursor: pointer;
+    font: inherit;
+    font-size: 10px;
+    text-transform: uppercase;
+  }
+
   .programming-calendar-day-workouts {
     display: grid;
     gap: 7px;
@@ -5016,22 +5084,52 @@ td {
   }
 
   .programming-calendar-workout {
-    display: grid;
-    gap: 3px;
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
     width: 100%;
     padding: 10px;
     border: 1px solid rgba(103, 179, 255, 0.35);
     border-radius: 10px;
     background: rgba(103, 179, 255, 0.09);
     color: var(--text);
-    text-align: left;
   }
 
   .programming-calendar-workout:hover,
-  .programming-calendar-workout:focus-visible {
+  .programming-calendar-workout:focus-within {
     border-color: #67b3ff;
     background: rgba(103, 179, 255, 0.16);
     outline: none;
+  }
+
+  .programming-calendar-workout.is-inherited {
+    border-style: dashed;
+    background: rgba(255, 255, 255, 0.035);
+  }
+
+  .programming-calendar-workout > button {
+    display: grid;
+    flex: 1;
+    gap: 3px;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    text-align: left;
+  }
+
+  .programming-calendar-select {
+    display: grid;
+    place-items: center;
+    padding-top: 2px;
+  }
+
+  .programming-calendar-select input {
+    width: 16px;
+    height: 16px;
+    margin: 0;
   }
 
   .programming-calendar-workout span,
@@ -8299,12 +8397,14 @@ body {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .programming-calendar-grid {
-    grid-template-columns: 1fr;
+  .programming-calendar-day {
+    min-height: 150px;
   }
 
-  .programming-calendar-day {
-    min-height: 0;
+  .programming-calendar-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
   }
 
   .stat-card strong {

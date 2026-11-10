@@ -10,10 +10,19 @@ staging migration is applied:
 node tests/workout-programming.test.mjs
 ```
 
-After applying `20261108170000_add_workout_programs.sql` to staging, manually
-verify saving and editing a program, launching it to both a group and an
-individual, copying a group week, and confirming the resulting workouts remain
-editable without changing the reusable program.
+After applying `20261108170000_add_workout_programs.sql` and then
+`20261109120000_harden_program_ownership_and_calendar_copy.sql` to staging,
+manually verify:
+
+- A coach can create, edit, archive, and launch their own program.
+- That coach cannot see or operate another coach's program.
+- A facility admin sees every facility program, can filter by creator, and can
+  edit, archive, or launch any of them.
+- Neither role can read or operate another facility's programs.
+- Group and individual calendars include inherited assignments but only allow
+  direct assignments to be copied.
+- Copy Week, Copy Month, and Copy Selected preserve date spacing and create
+  independently editable workouts without changing the source program.
 
 ## Staging RLS Read Checks
 

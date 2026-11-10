@@ -9,26 +9,38 @@ const migration = await readFile(
   "supabase/migrations/20261108170000_add_workout_programs.sql",
   "utf8"
 );
+const hardeningMigration = await readFile(
+  "supabase/migrations/20261109120000_harden_program_ownership_and_calendar_copy.sql",
+  "utf8"
+);
 
 assert.match(page, /data-programming-view="calendar"/, "Workout Builder includes the programming calendar");
 assert.match(page, /data-programming-view="library"/, "Workout Builder keeps a searchable workout library");
 assert.match(page, /data-programming-view="programs"/, "Workout Builder includes reusable programs");
 assert.match(page, /id="programming-scope-type"[\s\S]*value="group"[\s\S]*value="member"/, "calendar supports group and individual schedules");
-assert.match(page, /id="programming-copy-week-form"/, "calendar includes an explicit copy-week workflow");
+assert.match(page, /id="programming-month-label"/, "calendar uses a monthly schedule view");
+assert.match(page, /id="copy-programming-month"/, "calendar can copy the current month");
+assert.match(page, /id="copy-programming-selected"/, "calendar can copy an arbitrary workout selection");
+assert.match(page, /id="program-coach-filter"/, "admins have a program creator filter");
 assert.match(page, /id="workout-program-builder"/, "program creation has a real builder form");
 assert.match(page, /id="program-duration-weeks"[^>]*max="52"/, "program length supports up to one year");
 
 assert.match(calendar, /target_type === "facility"/, "individual calendars include facility-wide assignments");
 assert.match(calendar, /memberGroupIds\.has/, "individual calendars include inherited group assignments");
 assert.match(calendar, /new Map\(\)/, "combined member schedules are deduplicated");
-assert.match(calendar, /db\.rpc\("copy_group_programming_week"/, "week copying uses a transactional database function");
+assert.match(calendar, /getProgrammingMonthDates/, "calendar renders one month at a time");
+assert.match(calendar, /data-copy-calendar-week/, "each populated week can be copied directly from the month");
+assert.match(calendar, /row\.isDirect/, "inherited assignments are visible but excluded from direct copying");
+assert.match(calendar, /db\.rpc\("copy_workout_programming_assignments"/, "calendar copying uses a transactional database function");
 
 assert.match(programs, /db\.rpc\("save_workout_program"/, "program definitions save through a database function");
 assert.match(programs, /db\.rpc\("launch_workout_program"/, "program launches use a transactional database function");
 assert.match(programs, /db\.rpc\("archive_workout_program"/, "programs archive without deleting assigned history");
-assert.match(programs, /getProgrammingWeekStart/, "program starts are normalized to Monday");
 assert.match(programs, /targetType\.value === "group" \? "Group" : "Member"/, "program launch controls distinguish groups and individuals");
 assert.match(programs, /check_target_type: targetType/, "the selected group or individual target type is sent to the launch transaction");
+assert.match(programs, /programsQuery = programsQuery\.eq\("created_by", workoutCoachAccess\.profile\.id\)/, "ordinary coaches explicitly load only their own programs");
+assert.match(programs, /workoutCoachAccess\?\.isAdmin && coachFilter !== "all"/, "admins can filter the facility program list by coach");
+assert.match(programs, /Created by/, "admin program cards identify their creator");
 assert.match(history, /\.limit\(500\)/, "calendar and program source lists load a practical workout history window");
 
 for (const table of [
@@ -50,5 +62,12 @@ assert.match(migration, /Programs may be launched to a group or individual membe
 assert.match(migration, /Program workouts must belong to the same facility/, "program definitions cannot use another facility's workouts");
 assert.match(migration, /app_private\.is_facility_coach/, "program operations require facility staff authorization");
 assert.match(migration, /set archived_at = now\(\)/, "archive preserves program and launch history");
+
+assert.match(hardeningMigration, /workout programs owners and admins can read/, "program reads are limited to creators and facility admins");
+assert.match(hardeningMigration, /enforce_workout_program_owner_or_admin/, "program updates enforce creator or admin ownership");
+assert.match(hardeningMigration, /enforce_workout_program_launch_owner_or_admin/, "program launches enforce creator or admin ownership");
+assert.match(hardeningMigration, /copy_workout_programming_assignments/, "selected calendar assignments are copied transactionally");
+assert.match(hardeningMigration, /Every copied workout must use the same direct calendar target/, "bulk copies cannot combine unrelated calendar targets");
+assert.match(hardeningMigration, /Only direct group or member assignments can be copied/, "inherited facility work cannot be duplicated as a direct assignment");
 
 console.log("Workout programming calendar and reusable program tests passed");

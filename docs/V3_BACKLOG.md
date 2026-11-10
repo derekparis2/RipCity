@@ -64,15 +64,19 @@ and smoke test, then continue to Package 2.
 
 Replace the Created Workouts-first experience with Calendar, Workout Library,
 and Programs views inside the existing Workout Builder. Support group and
-individual calendars, copy a group's week forward as editable workouts, and
-launch reusable 1–52 week programs to either a group or individual.
+individual month calendars, copy one week, one month, or any selected direct
+assignments forward as editable workouts, and launch reusable 1–52 week
+programs to either a group or individual. Facility admins can review and filter
+all programs by creating coach; ordinary coaches see and manage only programs
+they created.
 
-**Complete when:** Combined member calendars deduplicate direct, group, and
-facility assignments; copied weeks and launched programs create independent
-editable workout snapshots; later source/program edits do not rewrite launched
-work; staff can create, edit, launch, and archive programs; facility boundaries
-and coach authorization are enforced by RLS/RPCs; and focused automated and
-staging checks pass.
+**Complete when:** Combined member month calendars deduplicate direct, group,
+and facility assignments; copied weeks, months, selections, and launched
+programs create independent editable workout snapshots; later source/program
+edits do not rewrite launched work; facility admins can filter and manage every
+facility program while coaches can read, edit, launch, and archive only their
+own; facility boundaries and coach authorization are enforced by RLS/RPCs; and
+focused automated and staging checks pass.
 
 **Merge note:** Sam's strength-max branch and this branch both affect workout
 prescriptions. Before either package is released, extend the program workout

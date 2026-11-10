@@ -201,12 +201,16 @@ function getProgramTargetOptions(type) {
 function renderWorkoutPrograms() {
   const list = document.getElementById("workout-program-list");
   if (!list) return;
-  if (!workoutPrograms.length) {
+  const coachFilter = document.getElementById("program-coach-filter")?.value || "all";
+  const visiblePrograms = workoutCoachAccess?.isAdmin && coachFilter !== "all"
+    ? workoutPrograms.filter(program => program.created_by === coachFilter)
+    : workoutPrograms;
+  if (!visiblePrograms.length) {
     list.innerHTML = `<div class="empty-state">No programs yet. Create one from your saved workout library.</div>`;
     return;
   }
 
-  list.innerHTML = workoutPrograms.map(program => {
+  list.innerHTML = visiblePrograms.map(program => {
     const items = workoutProgramItems
       .filter(item => item.program_id === program.id)
       .sort((a, b) => a.week_number - b.week_number || a.day_of_week - b.day_of_week || a.item_order - b.item_order);
@@ -218,7 +222,7 @@ function renderWorkoutPrograms() {
             <p class="eyebrow">${program.duration_weeks} WEEK PROGRAM</p>
             <h4>${window.RipCityUI.text(program.name)}</h4>
             <p>${window.RipCityUI.text(program.description, "No description added.")}</p>
-            <small>${items.length} scheduled workout${items.length === 1 ? "" : "s"} · ${workoutCount} saved workout${workoutCount === 1 ? "" : "s"}</small>
+            <small>${items.length} scheduled workout${items.length === 1 ? "" : "s"} · ${workoutCount} saved workout${workoutCount === 1 ? "" : "s"}${workoutCoachAccess?.isAdmin ? ` · Created by ${window.RipCityUI.text(program.creator?.full_name || program.creator?.email || "facility staff")}` : ""}</small>
           </div>
           <div class="recent-workout-actions">
             <button class="outline-btn small-inline-btn" type="button" data-edit-program>Edit Program</button>
@@ -327,7 +331,7 @@ async function launchWorkoutProgram(programId, card, button) {
     document.getElementById("programming-scope-type").value = targetType;
     renderProgrammingScopeOptions();
     document.getElementById("programming-scope-id").value = targetId;
-    programmingWeekStart = getProgrammingWeekStart(parseProgrammingDate(startDate));
+    programmingMonth = getProgrammingMonthStart(parseProgrammingDate(startDate));
     renderProgrammingCalendar();
     showProgramsMessage("Program started and added to the calendar.");
   } catch (error) {
@@ -344,8 +348,14 @@ async function loadWorkoutPrograms() {
   if (!list || !workoutCoachAccess) return;
   list.innerHTML = `<div class="empty-state">Loading programs...</div>`;
   const facilityId = workoutCoachAccess.membership.facility_id;
+  let programsQuery = db.from("workout_programs")
+    .select("id, facility_id, name, description, duration_weeks, created_by, created_at, creator:profiles!workout_programs_created_by_fkey(id, full_name, email)")
+    .eq("facility_id", facilityId)
+    .is("archived_at", null)
+    .order("created_at", { ascending: false });
+  if (!workoutCoachAccess.isAdmin) programsQuery = programsQuery.eq("created_by", workoutCoachAccess.profile.id);
   const [{ data: programs, error: programsError }, { data: items, error: itemsError }] = await Promise.all([
-    db.from("workout_programs").select("id, facility_id, name, description, duration_weeks, created_by, created_at").eq("facility_id", facilityId).is("archived_at", null).order("created_at", { ascending: false }),
+    programsQuery,
     db.from("workout_program_items").select("id, program_id, source_workout_id, week_number, day_of_week, item_order").order("week_number").order("day_of_week").order("item_order")
   ]);
   const error = programsError || itemsError;
@@ -359,7 +369,26 @@ async function loadWorkoutPrograms() {
   workoutPrograms = programs || [];
   const programIds = new Set(workoutPrograms.map(program => program.id));
   workoutProgramItems = (items || []).filter(item => programIds.has(item.program_id));
+  renderProgramCoachFilter();
   renderWorkoutPrograms();
+}
+
+function renderProgramCoachFilter() {
+  const wrapper = document.getElementById("program-admin-filter-wrap");
+  const select = document.getElementById("program-coach-filter");
+  if (!wrapper || !select) return;
+  wrapper.classList.toggle("hidden", !workoutCoachAccess?.isAdmin);
+  if (!workoutCoachAccess?.isAdmin) return;
+  const previous = select.value;
+  const creators = new Map();
+  workoutPrograms.forEach(program => {
+    creators.set(program.created_by, program.creator?.full_name || program.creator?.email || "Facility staff");
+  });
+  select.innerHTML = `<option value="all">All coaches</option>${[...creators.entries()]
+    .sort((a, b) => a[1].localeCompare(b[1]))
+    .map(([id, label]) => `<option value="${window.RipCityUI.attr(id)}">${window.RipCityUI.text(label)}</option>`)
+    .join("")}`;
+  select.value = creators.has(previous) ? previous : "all";
 }
 
 function initWorkoutPrograms() {
@@ -367,6 +396,7 @@ function initWorkoutPrograms() {
   document.getElementById("cancel-program-btn")?.addEventListener("click", closeProgramBuilder);
   document.getElementById("add-program-workout-btn")?.addEventListener("click", () => addProgramWorkoutItem());
   document.getElementById("save-program-btn")?.addEventListener("click", saveWorkoutProgram);
+  document.getElementById("program-coach-filter")?.addEventListener("change", renderWorkoutPrograms);
   document.getElementById("program-duration-weeks")?.addEventListener("change", () => {
     const durationInput = document.getElementById("program-duration-weeks");
     const duration = Math.max(1, Math.min(52, Number(durationInput.value) || 1));

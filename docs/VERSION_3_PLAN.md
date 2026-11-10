@@ -67,20 +67,26 @@ which rounding increments each facility may use.
 Extend the existing Workout Builder rather than creating a separate scheduling
 product.
 
-- Make Calendar the primary saved-workout view while retaining searchable
-  Workout Library and Programs views on the same page.
-- Let staff inspect a weekly schedule for either a group or an individual. An
+- Make a month Calendar the primary saved-workout view while retaining
+  searchable Workout Library and Programs views on the same page.
+- Let staff inspect a monthly schedule for either a group or an individual. An
   individual schedule combines direct, inherited group, and facility-wide
   assignments without displaying the same workout twice.
-- Let staff copy one group's week to another week. The copied workouts must be
-  normal editable workout records, not references that rewrite the source week.
+- Let staff copy a week, a month, or any selected direct group/member workout
+  assignments to new dates. Inherited group/facility work remains visible on an
+  individual calendar but cannot be accidentally duplicated as a direct
+  assignment. Copied workouts must be normal editable workout records, not
+  references that rewrite the source schedule.
 - Let staff build reusable programs from saved workouts, choose each workout's
   week and weekday, and launch the program to a group or individual.
 - Snapshot a program launch by cloning each scheduled workout and its blocks and
   exercises into normal assignments. Later program or source-workout edits must
   not alter already launched schedules or historical workout results.
-- Keep program creation, launch, archive, and copy-week operations facility
+- Keep program creation, launch, archive, and calendar-copy operations facility
   scoped and enforced by trusted database functions and RLS.
+- Let facility admins view every facility program and filter them by creating
+  coach. Ordinary coaches may see, edit, launch, and archive only programs they
+  created.
 - Preserve who created and assigned each workout, and keep assigned schedules
   editable through the existing builder.
 

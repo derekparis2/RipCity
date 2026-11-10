@@ -236,34 +236,43 @@
               <span id="programming-scope-label">Group</span>
               <select id="programming-scope-id"></select>
             </label>
-            <div class="programming-week-navigation" aria-label="Calendar week navigation">
-              <button class="outline-btn" id="programming-previous-week" type="button" aria-label="Previous week">Previous</button>
-              <button class="outline-btn" id="programming-current-week" type="button">This Week</button>
-              <button class="outline-btn" id="programming-next-week" type="button" aria-label="Next week">Next</button>
+            <div class="programming-week-navigation" aria-label="Calendar month navigation">
+              <button class="outline-btn" id="programming-previous-month" type="button" aria-label="Previous month">Previous</button>
+              <button class="outline-btn" id="programming-current-month" type="button">This Month</button>
+              <button class="outline-btn" id="programming-next-month" type="button" aria-label="Next month">Next</button>
             </div>
           </div>
 
           <div class="programming-calendar-summary">
             <div>
-              <p class="eyebrow">SELECTED WEEK</p>
-              <h4 id="programming-week-label">Loading week...</h4>
+              <p class="eyebrow">MONTHLY SCHEDULE</p>
+              <h4 id="programming-month-label">Loading month...</h4>
               <p id="programming-calendar-description">Choose a group to view its assigned workouts.</p>
             </div>
-            <button class="primary-btn" id="copy-programming-week" type="button" disabled>Copy Week</button>
+            <div class="programming-calendar-actions">
+              <button class="outline-btn" id="clear-programming-selection" type="button" disabled>Clear Selection</button>
+              <button class="outline-btn" id="copy-programming-month" type="button" disabled>Copy Month</button>
+              <button class="primary-btn" id="copy-programming-selected" type="button" disabled>Copy Selected</button>
+            </div>
           </div>
 
-          <div class="programming-copy-week hidden" id="programming-copy-week-form">
+          <div class="programming-copy-week hidden" id="programming-copy-form">
             <label>
-              Copy To Week Starting
-              <input id="programming-copy-week-date" type="date" />
+              <span id="programming-copy-date-label">Copy Starting On</span>
+              <input id="programming-copy-date" type="date" />
             </label>
-            <button class="primary-btn" id="confirm-copy-programming-week" type="button">Confirm Copy</button>
-            <button class="outline-btn" id="cancel-copy-programming-week" type="button">Cancel</button>
-            <small>Only group-specific workouts are copied. The new week receives editable workout copies.</small>
+            <button class="primary-btn" id="confirm-copy-programming" type="button">Confirm Copy</button>
+            <button class="outline-btn" id="cancel-copy-programming" type="button">Cancel</button>
+            <small id="programming-copy-help">Copied workouts become independent, editable workout assignments.</small>
           </div>
 
-          <div id="programming-calendar-grid" class="programming-calendar-grid" aria-live="polite">
-            <div class="empty-state">Loading programming calendar...</div>
+          <div class="programming-calendar-scroll">
+            <div class="programming-calendar-weekdays" aria-hidden="true">
+              <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+            </div>
+            <div id="programming-calendar-grid" class="programming-calendar-grid" aria-live="polite">
+              <div class="empty-state">Loading programming calendar...</div>
+            </div>
           </div>
         </div>
 
@@ -313,6 +322,14 @@
         </div>
 
         <div class="workout-programming-view hidden" data-programming-panel="programs">
+          <div class="program-admin-filter hidden" id="program-admin-filter-wrap">
+            <label>
+              Created By
+              <select id="program-coach-filter">
+                <option value="all">All coaches</option>
+              </select>
+            </label>
+          </div>
           <div class="programming-programs-intro">
             <div>
               <p class="eyebrow">REUSABLE PROGRAMS</p>
@@ -380,8 +397,8 @@
   <script src="js/coach/workouts/builder.js?v=workflow-hotfix-1"></script>
   <script src="js/coach/workouts/assignments.js?v=workflow-hotfix-1"></script>
   <script src="js/coach/workouts/history.js?v=workflow-hotfix-1"></script>
-  <script src="js/coach/workouts/programs.js?v=workout-programs-1"></script>
-  <script src="js/coach/workouts/programming-calendar.js?v=programming-calendar-1"></script>
+  <script src="js/coach/workouts/programs.js?v=workout-programs-2"></script>
+  <script src="js/coach/workouts/programming-calendar.js?v=programming-calendar-2"></script>
   <script src="js/coach/workouts/page.js?v=workflow-hotfix-1"></script>
 </body>
 </html>
