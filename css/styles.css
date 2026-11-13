@@ -11247,3 +11247,63 @@ details[open] > .compact-panel-summary > span:last-child::after {
     grid-template-columns: 1fr;
   }
 }
+
+.program-workout-picker {
+  display: grid;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.program-selected-workout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid rgba(103, 181, 255, 0.35);
+  border-radius: 0.75rem;
+  background: rgba(103, 181, 255, 0.08);
+}
+
+.program-selected-workout a {
+  flex: 0 0 auto;
+  color: #9ed0ff;
+  font-weight: 800;
+}
+
+.program-workout-results {
+  display: grid;
+  gap: 0.35rem;
+  max-height: 13rem;
+  overflow-y: auto;
+}
+
+.program-workout-results:empty {
+  display: none;
+}
+
+.program-workout-results button {
+  width: 100%;
+  min-width: 0;
+  justify-content: flex-start;
+  padding: 0.65rem 0.8rem;
+  text-align: left;
+}
+
+.program-launch-history {
+  margin-top: 0.8rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.program-launch-history ul {
+  display: grid;
+  gap: 0.4rem;
+  margin: 0.65rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.program-launch-history li {
+  color: var(--muted-text, #a7a7ad);
+}

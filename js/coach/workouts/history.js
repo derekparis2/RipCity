@@ -16,6 +16,9 @@ function buildRecentWorkoutSelect(includeOptionalExerciseColumns = true) {
     estimated_minutes,
     created_by,
     created_at,
+    updated_at,
+    workout_kind,
+    source_workout_id,
     creator:profiles!workouts_created_by_fkey (
       id,
       full_name
@@ -96,6 +99,10 @@ async function loadRecentWorkouts() {
   if (typeof renderProgrammingCalendar === "function") renderProgrammingCalendar();
 }
 
+function getReusableWorkoutRows() {
+  return recentWorkoutRows.filter(workout => !workout.workout_kind || workout.workout_kind === "saved");
+}
+
 function openWorkoutInBuilder(workout) {
   if (!workout) return;
 
@@ -113,7 +120,7 @@ function renderRecentWorkoutAssignerOptions() {
 
   const selectedValue = select.value || "all";
   const staff = new Map();
-  recentWorkoutRows.forEach(workout => {
+  getReusableWorkoutRows().forEach(workout => {
     (workout.workout_assignments || []).forEach(assignment => {
       if (assignment.assigned_by) {
         staff.set(assignment.assigned_by, window.RipCityWorkoutData.getProfileName(assignment.assigner));
@@ -178,19 +185,20 @@ function renderRecentWorkouts() {
   const count = document.getElementById("recent-workouts-count");
   if (!list) return;
 
-  if (!recentWorkoutRows.length) {
+  const reusableWorkouts = getReusableWorkoutRows();
+  if (!reusableWorkouts.length) {
     if (count) count.textContent = "No workouts yet";
     list.innerHTML = `<div class="empty-state">No workouts created yet.</div>`;
     return;
   }
 
   const filters = getRecentWorkoutFilters();
-  const filteredWorkouts = recentWorkoutRows.filter(workout =>
+  const filteredWorkouts = reusableWorkouts.filter(workout =>
     workoutMatchesRecentFilters(workout, filters)
   );
 
   if (count) {
-    count.textContent = `${filteredWorkouts.length} of ${recentWorkoutRows.length} shown`;
+    count.textContent = `${filteredWorkouts.length} of ${reusableWorkouts.length} shown`;
   }
 
   if (!filteredWorkouts.length) {

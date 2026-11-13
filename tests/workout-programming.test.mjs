@@ -4,6 +4,7 @@ import { readFile } from "node:fs/promises";
 const builderPage = await readFile("coach-workouts.html", "utf8");
 const page = await readFile("coach-programming.html", "utf8");
 const calendar = await readFile("js/coach/workouts/programming-calendar.js", "utf8");
+const programmingPage = await readFile("js/coach/workouts/programming-page.js", "utf8");
 const programs = await readFile("js/coach/workouts/programs.js", "utf8");
 const history = await readFile("js/coach/workouts/history.js", "utf8");
 const migration = await readFile(
@@ -22,13 +23,17 @@ const calendarActionMigration = await readFile(
   "supabase/migrations/20261110140000_harden_calendar_assignment_actions.sql",
   "utf8"
 );
+const isolatedProgramWorkoutMigration = await readFile(
+  "supabase/migrations/20261111120000_classify_workouts_and_edit_program_items.sql",
+  "utf8"
+);
 const workoutPageController = await readFile("js/coach/workouts/page.js", "utf8");
 
 assert.match(builderPage, /href="coach-programming\.html\?view=calendar"[^>]*>\s*Workout Calendar</, "Workout Builder links directly to the Workout Calendar");
 assert.doesNotMatch(builderPage, /id="workout-programming-panel"/, "Programming is not embedded under the sticky Workout Builder outline");
 assert.doesNotMatch(builderPage, /workout-outline-panel[\s\S]*Open Programming/, "Workout Calendar is not mixed into the sticky workout outline");
 assert.match(page, /data-coach-nav="programming"/, "Programming has its own shared coach navigation state");
-assert.match(page, /<title>Program Creator<\/title>/, "the programming workspace is presented as the Program Creator");
+assert.match(page, /<title>Workout Planning<\/title>/, "the calendar and program workspace has a shared planning name");
 assert.doesNotMatch(page, /workout-outline-panel/, "Programming does not load the Workout Builder outline");
 assert.match(page, /js\/coach\/workouts\/programming-page\.js/, "Programming loads its dedicated page controller");
 assert.match(page, /data-programming-view="calendar"/, "Programming includes the programming calendar");
@@ -43,6 +48,8 @@ assert.match(page, /id="create-program-from-selection"/, "selected calendar work
 assert.match(page, /id="programming-workout-actions"/, "calendar workouts expose edit and removal actions");
 assert.doesNotMatch(calendar, /row\.workout\.focus \|\| "Workout"/, "calendar workout cards only render the workout title");
 assert.doesNotMatch(calendar, /row\.sourceLabel\}\$\{row\.isDirect/, "calendar workout cards do not render assignment metadata");
+assert.match(calendar, /aria-label="Select \$\{window\.RipCityUI\.attr\(row\.workout\.title\)\} to copy"/, "calendar selection remains accessible without visible helper text");
+assert.doesNotMatch(calendar, /<span class="sr-only">Select/, "calendar cards do not leak checkbox helper text into the visible title");
 assert.match(page, /id="unassign-programming-selected"/, "calendar supports bulk unassignment");
 assert.match(page, /id="program-coach-filter"/, "admins have a program creator filter");
 assert.match(page, /id="workout-program-builder"/, "program creation has a real builder form");
@@ -53,6 +60,8 @@ assert.match(calendar, /memberGroupIds\.has/, "individual calendars include inhe
 assert.match(calendar, /new Map\(\)/, "combined member schedules are deduplicated");
 assert.match(calendar, /getProgrammingMonthDates/, "calendar renders one month at a time");
 assert.match(calendar, /new URLSearchParams\(window\.location\.search\)/, "workspace links can open a specific programming view");
+assert.match(calendar, /window\.localStorage\.setItem\(PROGRAMMING_PREFERENCES_KEY/, "calendar filters persist across refreshes");
+assert.match(programmingPage, /renderProgrammingScopeOptions\(preferences\.scopeId\)/, "the saved group or member filter is restored after data loads");
 assert.match(calendar, /data-copy-calendar-week/, "each populated week can be copied directly from the month");
 assert.match(calendar, /row\.isDirect/, "inherited assignments are visible but excluded from direct copying");
 assert.match(calendar, /db\.rpc\("copy_workout_programming_assignments"/, "calendar copying uses a transactional database function");
@@ -72,7 +81,11 @@ assert.match(programs, /check_target_type: targetType/, "the selected group or i
 assert.match(programs, /programsQuery = programsQuery\.eq\("created_by", workoutCoachAccess\.profile\.id\)/, "ordinary coaches explicitly load only their own programs");
 assert.match(programs, /workoutCoachAccess\?\.isAdmin && coachFilter !== "all"/, "admins can filter the facility program list by coach");
 assert.match(programs, /Created by/, "admin program cards identify their creator");
+assert.match(programs, /data-program-workout-search/, "program workouts use a searchable picker instead of a giant native select");
+assert.match(workoutPageController, /replace_workout_program_item_source/, "saved program slots can receive isolated workout edits");
+assert.match(programs, /program-launch-history/, "program cards show who and when each program was assigned");
 assert.match(history, /\.limit\(500\)/, "calendar and program source lists load a practical workout history window");
+assert.match(history, /getReusableWorkoutRows/, "generated program and assignment snapshots stay out of the reusable workout library");
 
 for (const table of [
   "workout_programs",
@@ -117,5 +130,10 @@ assert.match(calendarActionMigration, /replace_workout_programming_assignment/, 
 assert.match(calendarActionMigration, /exercise_set_logs/, "started occurrences are protected from calendar changes");
 assert.match(calendarActionMigration, /workout_program_launch_workouts/, "program-linked occurrences are protected from direct changes");
 assert.match(calendarActionMigration, /not exists \([\s\S]*workout_assignments/, "unused occurrence snapshots are cleaned up without deleting shared workouts");
+
+assert.match(isolatedProgramWorkoutMigration, /workout_kind/, "workouts are classified as reusable or generated snapshots");
+assert.match(isolatedProgramWorkoutMigration, /assignment_snapshot/, "calendar and program launch copies are marked as assignment snapshots");
+assert.match(isolatedProgramWorkoutMigration, /replace_workout_program_item_source/, "isolated program-slot editing is source controlled");
+assert.match(isolatedProgramWorkoutMigration, /exercise_set_logs/, "started program occurrences are not rewritten by later edits");
 
 console.log("Workout programming calendar and reusable program tests passed");

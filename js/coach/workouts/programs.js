@@ -6,6 +6,7 @@
 
 let workoutPrograms = [];
 let workoutProgramItems = [];
+let workoutProgramLaunches = [];
 let editingProgramId = null;
 let programBuilderItems = [];
 
@@ -31,18 +32,15 @@ function getProgramDefaultStartDate() {
   return formatProgrammingIsoDate(date);
 }
 
-function getProgramWorkoutOptions(selectedId = "") {
-  if (!recentWorkoutRows.length) {
-    return `<option value="">Create or save a workout first</option>`;
-  }
-  return `
-    <option value="">Select saved workout...</option>
-    ${recentWorkoutRows.map(workout => `
-      <option value="${window.RipCityUI.attr(workout.id)}" ${workout.id === selectedId ? "selected" : ""}>
-        ${window.RipCityUI.text(workout.title)}${workout.focus ? ` · ${window.RipCityUI.text(workout.focus)}` : ""}
-      </option>
-    `).join("")}
-  `;
+function getProgramSourceWorkout(item) {
+  return recentWorkoutRows.find(workout => workout.id === item.source_workout_id) || null;
+}
+
+function getProgramWorkoutMatches(item) {
+  const query = String(item.workout_search || "").trim().toLowerCase();
+  const rows = typeof getReusableWorkoutRows === "function" ? getReusableWorkoutRows() : recentWorkoutRows;
+  return rows.filter(workout => !query || [workout.title, workout.focus, workout.creator?.full_name]
+    .some(value => String(value || "").toLowerCase().includes(query))).slice(0, 8);
 }
 
 function addProgramWorkoutItem(item = {}) {
@@ -50,6 +48,7 @@ function addProgramWorkoutItem(item = {}) {
     id: item.id || null,
     key: item.key || `program-item-${Date.now()}-${Math.random().toString(16).slice(2)}`,
     source_workout_id: item.source_workout_id || "",
+    workout_search: item.workout_search || "",
     week_number: Number(item.week_number) || 1,
     day_of_week: Number(item.day_of_week) || 1
   });
@@ -66,13 +65,24 @@ function renderProgramWorkoutItems() {
     return;
   }
 
-  list.innerHTML = programBuilderItems.map((item, index) => `
+  list.innerHTML = programBuilderItems.map((item, index) => {
+    const selectedWorkout = getProgramSourceWorkout(item);
+    const editUrl = item.id && selectedWorkout
+      ? `coach-workouts.html?template=${encodeURIComponent(selectedWorkout.id)}&programItem=${encodeURIComponent(item.id)}&return=${encodeURIComponent("coach-programming.html?view=programs")}`
+      : "";
+    return `
     <article class="program-workout-row" data-program-item="${window.RipCityUI.attr(item.key)}">
       <span class="program-workout-number">${index + 1}</span>
-      <label>
-        Saved Workout
-        <select data-program-item-field="source_workout_id">${getProgramWorkoutOptions(item.source_workout_id)}</select>
-      </label>
+      <div class="program-workout-picker">
+        <label>Saved Workout
+          <input type="search" data-program-workout-search value="${window.RipCityUI.attr(item.workout_search)}" placeholder="Search saved workouts..." autocomplete="off" />
+        </label>
+        ${selectedWorkout ? `<div class="program-selected-workout">
+          <span><strong>${window.RipCityUI.text(selectedWorkout.title)}</strong>${selectedWorkout.focus ? `<small>${window.RipCityUI.text(selectedWorkout.focus)}</small>` : ""}</span>
+          ${editUrl ? `<a class="outline-btn small-inline-btn" href="${window.RipCityUI.attr(editUrl)}">Open & Edit This Slot</a>` : `<small>Save the program before editing this slot separately.</small>`}
+        </div>` : ""}
+        <div class="program-workout-results" data-program-workout-results></div>
+      </div>
       <label>
         Week
         <select data-program-item-field="week_number">
@@ -95,14 +105,34 @@ function renderProgramWorkoutItems() {
         <button class="outline-btn small-inline-btn danger-outline-btn" type="button" data-remove-program-item aria-label="Remove workout">Remove</button>
       </div>
     </article>
-  `).join("");
+    `;
+  }).join("");
 
   list.querySelectorAll("[data-program-item]").forEach(row => {
     const index = programBuilderItems.findIndex(item => item.key === row.dataset.programItem);
+    const search = row.querySelector("[data-program-workout-search]");
+    const results = row.querySelector("[data-program-workout-results]");
+    const renderMatches = () => {
+      const matches = getProgramWorkoutMatches(programBuilderItems[index]);
+      results.innerHTML = matches.length ? matches.map(workout => `
+        <button type="button" data-select-program-workout="${window.RipCityUI.attr(workout.id)}">
+          <strong>${window.RipCityUI.text(workout.title)}</strong>${workout.focus ? `<small>${window.RipCityUI.text(workout.focus)}</small>` : ""}
+        </button>`).join("") : `<small>No reusable workouts match.</small>`;
+      results.querySelectorAll("[data-select-program-workout]").forEach(button => button.addEventListener("click", () => {
+        programBuilderItems[index].source_workout_id = button.dataset.selectProgramWorkout;
+        programBuilderItems[index].workout_search = "";
+        renderProgramWorkoutItems();
+      }));
+    };
+    search?.addEventListener("input", () => {
+      programBuilderItems[index].workout_search = search.value;
+      renderMatches();
+    });
+    search?.addEventListener("focus", renderMatches);
     row.querySelectorAll("[data-program-item-field]").forEach(field => {
       field.addEventListener("change", () => {
         const name = field.dataset.programItemField;
-        programBuilderItems[index][name] = name === "source_workout_id" ? field.value : Number(field.value);
+        programBuilderItems[index][name] = Number(field.value);
       });
     });
     row.querySelector("[data-remove-program-item]")?.addEventListener("click", () => {
@@ -133,7 +163,7 @@ function openProgramBuilder(programId = null, seed = null) {
   document.getElementById("program-description").value = program?.description || seed?.description || "";
   document.getElementById("program-duration-weeks").value = String(program?.duration_weeks || seed?.durationWeeks || 4);
   const startingItems = program ? items : (seed?.items || []);
-  programBuilderItems = startingItems.map(item => ({ ...item, id: item.id || null, key: item.id || item.key || `program-item-${Date.now()}-${Math.random().toString(16).slice(2)}` }));
+  programBuilderItems = startingItems.map(item => ({ ...item, workout_search: "", id: item.id || null, key: item.id || item.key || `program-item-${Date.now()}-${Math.random().toString(16).slice(2)}` }));
   if (!programBuilderItems.length) addProgramWorkoutItem();
   else renderProgramWorkoutItems();
   document.getElementById("workout-program-builder-heading").textContent = program ? "Edit the program" : "Build the program";
@@ -202,6 +232,11 @@ function getProgramTargetOptions(type) {
   return options.map(option => `<option value="${window.RipCityUI.attr(option.id)}">${window.RipCityUI.text(option.label)}</option>`).join("");
 }
 
+function getProgramLaunchTarget(launch) {
+  if (launch.target_type === "group") return availableGroups.find(group => group.id === launch.target_group_id)?.name || "Group";
+  return availableMembers.find(member => member.memberProfileId === launch.target_member_profile_id)?.name || "Member";
+}
+
 function renderWorkoutPrograms() {
   const list = document.getElementById("workout-program-list");
   if (!list) return;
@@ -219,6 +254,7 @@ function renderWorkoutPrograms() {
       .filter(item => item.program_id === program.id)
       .sort((a, b) => a.week_number - b.week_number || a.day_of_week - b.day_of_week || a.item_order - b.item_order);
     const workoutCount = new Set(items.map(item => item.source_workout_id)).size;
+    const launches = workoutProgramLaunches.filter(launch => launch.program_id === program.id);
     return `
       <article class="workout-program-card" data-program-card="${window.RipCityUI.attr(program.id)}">
         <div class="workout-program-card-summary">
@@ -246,6 +282,10 @@ function renderWorkoutPrograms() {
             }).join("")}
           </div>
         </details>
+        ${launches.length ? `<details class="program-launch-history">
+          <summary>Assigned ${launches.length} time${launches.length === 1 ? "" : "s"}</summary>
+          <div>${launches.map(launch => `<p><strong>${window.RipCityUI.text(getProgramLaunchTarget(launch))}</strong> · starts ${formatDisplayDate(launch.start_date)} · assigned by ${window.RipCityUI.text(launch.assigner?.full_name || launch.assigner?.email || "facility staff")}</p>`).join("")}</div>
+        </details>` : ""}
         <div class="program-launch-form hidden" data-program-launch-form>
           <div class="program-launch-grid">
             <label>
@@ -330,7 +370,7 @@ async function launchWorkoutProgram(programId, card, button) {
       check_start_date: startDate
     });
     if (error) throw error;
-    await loadRecentWorkouts();
+    await Promise.all([loadRecentWorkouts(), loadWorkoutPrograms()]);
     setProgrammingView("calendar");
     document.getElementById("programming-scope-type").value = targetType;
     renderProgrammingScopeOptions();
@@ -358,21 +398,24 @@ async function loadWorkoutPrograms() {
     .is("archived_at", null)
     .order("created_at", { ascending: false });
   if (!workoutCoachAccess.isAdmin) programsQuery = programsQuery.eq("created_by", workoutCoachAccess.profile.id);
-  const [{ data: programs, error: programsError }, { data: items, error: itemsError }] = await Promise.all([
+  const [{ data: programs, error: programsError }, { data: items, error: itemsError }, { data: launches, error: launchesError }] = await Promise.all([
     programsQuery,
-    db.from("workout_program_items").select("id, program_id, source_workout_id, week_number, day_of_week, item_order").order("week_number").order("day_of_week").order("item_order")
+    db.from("workout_program_items").select("id, program_id, source_workout_id, week_number, day_of_week, item_order").order("week_number").order("day_of_week").order("item_order"),
+    db.from("workout_program_launches").select("id, program_id, target_type, target_group_id, target_member_profile_id, start_date, assigned_by, created_at, assigner:profiles!workout_program_launches_assigned_by_fkey(id, full_name, email)").eq("facility_id", facilityId).order("created_at", { ascending: false })
   ]);
-  const error = programsError || itemsError;
+  const error = programsError || itemsError || launchesError;
   if (error) {
     console.error(error);
     workoutPrograms = [];
     workoutProgramItems = [];
+    workoutProgramLaunches = [];
     list.innerHTML = `<div class="empty-state">${isMissingProgramsMigration(error) ? "Apply the workout-program migration to enable reusable programs." : "Could not load programs."}</div>`;
     return;
   }
   workoutPrograms = programs || [];
   const programIds = new Set(workoutPrograms.map(program => program.id));
   workoutProgramItems = (items || []).filter(item => programIds.has(item.program_id));
+  workoutProgramLaunches = (launches || []).filter(launch => programIds.has(launch.program_id));
   renderProgramCoachFilter();
   renderWorkoutPrograms();
 }

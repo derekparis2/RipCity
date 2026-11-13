@@ -12,6 +12,37 @@ let programmingCopyDestinations = [];
 let activeProgrammingWorkoutRow = null;
 let programmingActionStates = new Map();
 let programmingActionStateKey = "";
+const PROGRAMMING_PREFERENCES_KEY = "ripcity-programming-preferences-v1";
+
+function getProgrammingPreferences() {
+  try {
+    return JSON.parse(window.localStorage.getItem(PROGRAMMING_PREFERENCES_KEY) || "{}") || {};
+  } catch {
+    return {};
+  }
+}
+
+function saveProgrammingPreferences() {
+  const activeView = document.querySelector("[data-programming-view].is-active")?.dataset.programmingView || "calendar";
+  const preferences = {
+    view: activeView,
+    scopeType: document.getElementById("programming-scope-type")?.value || "group",
+    scopeId: document.getElementById("programming-scope-id")?.value || "",
+    month: `${programmingMonth.getFullYear()}-${String(programmingMonth.getMonth() + 1).padStart(2, "0")}`
+  };
+  try {
+    window.localStorage.setItem(PROGRAMMING_PREFERENCES_KEY, JSON.stringify(preferences));
+  } catch {
+    // The calendar still works when browser storage is unavailable.
+  }
+}
+
+function restoreProgrammingMonth(monthValue) {
+  if (!/^\d{4}-\d{2}$/.test(String(monthValue || ""))) return;
+  const [year, month] = monthValue.split("-").map(Number);
+  if (month < 1 || month > 12) return;
+  programmingMonth = new Date(year, month - 1, 1, 12, 0, 0);
+}
 
 function parseProgrammingDate(dateValue) {
   const [year, month, day] = String(dateValue || "").split("-").map(Number);
@@ -71,13 +102,13 @@ function setProgrammingView(viewName, { updateUrl = true } = {}) {
   }
 }
 
-function renderProgrammingScopeOptions() {
+function renderProgrammingScopeOptions(preferredValue = "") {
   const type = document.getElementById("programming-scope-type")?.value || "group";
   const select = document.getElementById("programming-scope-id");
   const label = document.getElementById("programming-scope-label");
   if (!select || !label) return;
 
-  const previousValue = select.value;
+  const previousValue = preferredValue || select.value;
   label.textContent = type === "group" ? "Group" : "Member";
   const options = type === "group"
     ? availableGroups.map(group => ({ id: group.id, label: group.name }))
@@ -241,8 +272,12 @@ function renderProgrammingCalendar() {
             <article class="programming-calendar-workout ${row.isDirect ? "is-direct" : "is-inherited"} ${selectedProgrammingAssignmentIds.has(row.assignment.id) ? "is-selected" : ""}">
               ${row.isDirect ? `
                 <label class="programming-calendar-select" title="Select this workout to copy">
-                  <input type="checkbox" data-calendar-assignment="${window.RipCityUI.attr(row.assignment.id)}" ${selectedProgrammingAssignmentIds.has(row.assignment.id) ? "checked" : ""} />
-                  <span class="sr-only">Select ${window.RipCityUI.text(row.workout.title)}</span>
+                  <input
+                    type="checkbox"
+                    data-calendar-assignment="${window.RipCityUI.attr(row.assignment.id)}"
+                    aria-label="Select ${window.RipCityUI.attr(row.workout.title)} to copy"
+                    ${selectedProgrammingAssignmentIds.has(row.assignment.id) ? "checked" : ""}
+                  />
                 </label>
               ` : ""}
               <button type="button" data-calendar-workout="${window.RipCityUI.attr(row.workout.id)}" data-calendar-workout-assignment="${window.RipCityUI.attr(row.assignment.id)}">
@@ -583,24 +618,39 @@ async function unassignSelectedProgrammingWorkouts() {
 
 function moveProgrammingMonth(offset) {
   programmingMonth = addProgrammingMonths(programmingMonth, offset);
+  saveProgrammingPreferences();
   selectedProgrammingAssignmentIds.clear();
   closeProgrammingCopy();
   renderProgrammingCalendar();
 }
 
 function initProgrammingCalendar() {
+  const preferences = getProgrammingPreferences();
+  restoreProgrammingMonth(preferences.month);
   document.querySelectorAll("[data-programming-view]").forEach(button => {
-    button.addEventListener("click", () => setProgrammingView(button.dataset.programmingView));
+    button.addEventListener("click", () => {
+      setProgrammingView(button.dataset.programmingView);
+      saveProgrammingPreferences();
+    });
   });
-  setProgrammingView(new URLSearchParams(window.location.search).get("view") || "calendar", {
+  setProgrammingView(new URLSearchParams(window.location.search).get("view") || preferences.view || "calendar", {
     updateUrl: false
   });
-  document.getElementById("programming-scope-type")?.addEventListener("change", renderProgrammingScopeOptions);
-  document.getElementById("programming-scope-id")?.addEventListener("change", clearProgrammingSelection);
+  const scopeType = document.getElementById("programming-scope-type");
+  if (scopeType && ["group", "member"].includes(preferences.scopeType)) scopeType.value = preferences.scopeType;
+  scopeType?.addEventListener("change", () => {
+    renderProgrammingScopeOptions();
+    saveProgrammingPreferences();
+  });
+  document.getElementById("programming-scope-id")?.addEventListener("change", () => {
+    saveProgrammingPreferences();
+    clearProgrammingSelection();
+  });
   document.getElementById("programming-previous-month")?.addEventListener("click", () => moveProgrammingMonth(-1));
   document.getElementById("programming-next-month")?.addEventListener("click", () => moveProgrammingMonth(1));
   document.getElementById("programming-current-month")?.addEventListener("click", () => {
     programmingMonth = getProgrammingMonthStart(new Date());
+    saveProgrammingPreferences();
     selectedProgrammingAssignmentIds.clear();
     closeProgrammingCopy();
     renderProgrammingCalendar();

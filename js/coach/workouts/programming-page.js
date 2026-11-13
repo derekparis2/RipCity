@@ -16,7 +16,10 @@ async function initCoachProgrammingPage() {
       availableMembers.map(member => member.memberProfileId)
     );
 
-    renderProgrammingScopeOptions();
+    const preferences = getProgrammingPreferences();
+    const scopeType = document.getElementById("programming-scope-type");
+    if (scopeType && ["group", "member"].includes(preferences.scopeType)) scopeType.value = preferences.scopeType;
+    renderProgrammingScopeOptions(preferences.scopeId);
     await loadRecentWorkouts();
     await loadWorkoutPrograms();
     showWorkoutMessage("");
