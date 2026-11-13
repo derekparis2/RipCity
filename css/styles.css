@@ -11275,7 +11275,12 @@ details[open] > .compact-panel-summary > span:last-child::after {
   display: grid;
   gap: 0.35rem;
   max-height: 13rem;
+  padding: 0.4rem;
   overflow-y: auto;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 0.75rem;
+  background: #17191d;
+  box-shadow: 0 0.8rem 1.8rem rgba(0, 0, 0, 0.32);
 }
 
 .program-workout-results:empty {
@@ -11287,7 +11292,28 @@ details[open] > .compact-panel-summary > span:last-child::after {
   min-width: 0;
   justify-content: flex-start;
   padding: 0.65rem 0.8rem;
+  border: 1px solid transparent;
+  border-radius: 0.55rem;
+  background: #22252b;
+  color: #f4f4f4;
   text-align: left;
+  box-shadow: none;
+}
+
+.program-workout-results button:hover,
+.program-workout-results button:focus-visible {
+  border-color: rgba(103, 181, 255, 0.65);
+  background: #292f37;
+}
+
+.program-workout-results button strong,
+.program-workout-results button small {
+  display: block;
+}
+
+.program-workout-results button small {
+  margin-top: 0.15rem;
+  color: #aeb4bd;
 }
 
 .program-launch-history {
