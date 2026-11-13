@@ -25,12 +25,13 @@ product's immediate value to facilities come before hitting-specific work.
 
 ### V3 Release Sequence
 
-The first V3 production release is intentionally narrow: complete strength
-maxes and percentage-based workout programming, verify the full package in
-staging, and merge it through `v3-development` into `main`. Do not hold that
-release for routines, Testing Day comparisons, multi-facility tooling, or
-baseball features. Continue the remaining V3 backlog only after the workout
-package is live and smoke-tested in production.
+The first V3 production release is intentionally focused on sellable workout
+programming: complete strength maxes and percentage-based prescriptions, add
+the group/member programming calendar and reusable multi-week programs, verify
+the package in staging, and merge it through `v3-development` into `main`. Do
+not hold that release for routines, multi-facility tooling, or baseball
+features. Continue the remaining V3 backlog after the workout package is live
+and smoke-tested in production.
 
 ---
 
@@ -60,6 +61,44 @@ separate lifting workflow.
 Before implementation, decide which estimation formulas are supported, how a
 training max is defined, which max source is the default for programming, and
 which rounding increments each facility may use.
+
+### Programming Calendar And Reusable Programs
+
+Keep workout creation focused in the existing Workout Builder and place
+calendar, saved-workout, and reusable-program management on a dedicated
+Programming page linked from the shared coach/admin navigation.
+
+- Make a month Calendar the primary saved-workout view while retaining
+  searchable Workout Library and Programs views on the same dedicated
+  Programming page.
+- Let staff inspect a monthly schedule for either a group or an individual. An
+  individual schedule combines direct, inherited group, and facility-wide
+  assignments without displaying the same workout twice.
+- Let staff copy a week, a month, or any selected direct group/member workout
+  assignments to one or more destination dates and rosters. Show an exact
+  preview, block occupied dates instead of overwriting them, and deduplicate
+  overlapping destinations. Inherited group/facility work remains visible on
+  an individual calendar but cannot be accidentally duplicated as a direct
+  assignment. Copied workouts are independent editable records.
+- Let staff build reusable programs from saved workouts, choose each workout's
+  week and weekday, and launch the program to a group or individual.
+- Clone each launched program workout into a normal assignment while retaining
+  its program link. Editing a program updates every linked future workout that
+  has not been started, including its date and prescription. Past, started, and
+  completed workouts remain frozen historical snapshots. Independent calendar
+  copies never inherit this link.
+- Keep program creation, launch, archive, and calendar-copy operations facility
+  scoped and enforced by trusted database functions and RLS.
+- Let facility admins view every facility program and filter them by creating
+  coach. Ordinary coaches may see, edit, launch, and archive only programs they
+  created.
+- Preserve who created and assigned each workout. Independent calendar workouts
+  remain editable through the existing builder; linked program occurrences are
+  changed from the program so every affected future schedule stays consistent.
+
+The program week begins on Monday. Programs may span 1–52 weeks. Archived
+program definitions disappear from the active library while existing calendar
+and historical workout records remain available.
 
 ### Daily Routines And Checklists
 

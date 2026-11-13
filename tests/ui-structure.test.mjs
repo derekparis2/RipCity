@@ -5,6 +5,7 @@ const coachPages = {
   "coach-dashboard.html": "dashboard",
   "coach-roster.html": "roster",
   "coach-workouts.html": "workouts",
+  "coach-programming.html": "programming",
   "coach-leaderboards.html": "leaderboards",
   "coach-approvals.html": "approvals",
   "coach-member-detail.html": "roster",
@@ -15,7 +16,7 @@ const coachPages = {
 for (const [file, activePage] of Object.entries(coachPages)) {
   const html = await readFile(file, "utf8");
   assert.match(html, new RegExp(`data-coach-nav="${activePage}"`), `${file} has the correct shared coach navigation state`);
-  assert.match(html, /js\/coach\/coach-nav\.js\?v=ui-polish-1/, `${file} loads the shared coach navigation`);
+  assert.match(html, /js\/coach\/coach-nav\.js\?v=program-creator-1/, `${file} loads the shared coach navigation`);
 }
 
 const dashboard = await readFile("coach-dashboard.html", "utf8");
@@ -93,6 +94,7 @@ for (const file of activePages) {
   const sharedStylesVersion = memberNavPages.has(file)
     ? "member-nav-fixed-1"
     : file === "coach-dashboard.html" ? "attention-habits-1"
+      : file === "coach-programming.html" ? "linked-programs-1"
       : ["signup.html", "legal-consent.html"].includes(file) ? "signup-legal-2"
         : "ui-polish-4";
   assert.match(html, new RegExp(`css/styles\\.css\\?v=${sharedStylesVersion}`), `${file} loads the current shared stylesheet release`);

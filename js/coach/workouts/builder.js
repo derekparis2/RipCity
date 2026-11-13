@@ -19,22 +19,6 @@ function applyExerciseTemplateToCard(card, templateId) {
   updateExerciseTargetField(card);
 }
 
-function applyExerciseTemplateSearch(card) {
-  const searchInput = card.querySelector(".exercise-template-search");
-  const hiddenInput = card.querySelector(".exercise-template-id");
-  if (!searchInput || !hiddenInput) return;
-
-  const search = searchInput.value.trim().toLowerCase();
-  const template = findExerciseTemplateByName(search);
-
-  if (!template) {
-    hiddenInput.value = "";
-    return;
-  }
-
-  applyExerciseTemplateToCard(card, template.id);
-}
-
 // ----------------------------
 // Block / Exercise form UI
 // ----------------------------
@@ -476,7 +460,6 @@ function createBlockCard(index) {
 
 function createExerciseCard(index) {
   // Exercise fields map directly to workout_exercises columns.
-  const templateListId = `exercise-template-list-${createClientId()}`;
   const exerciseLabel = getExerciseRowLabel(index - 1);
 
   return `
@@ -490,12 +473,11 @@ function createExerciseCard(index) {
           <input
             type="text"
             class="exercise-name exercise-template-search"
-            list="${window.RipCityUI.attr(templateListId)}"
             placeholder="Type to search library..."
             autocomplete="off"
             required
           />
-          <datalist id="${window.RipCityUI.attr(templateListId)}"></datalist>
+          <div class="exercise-template-suggestions hidden" data-exercise-template-suggestions></div>
         </label>
 
         <label>
@@ -698,11 +680,32 @@ function attachExerciseEvents(card) {
   renderExerciseTemplatePicker(templateSearch);
 
   templateSearch.addEventListener("input", () => {
-    applyExerciseTemplateSearch(card);
+    card.querySelector(".exercise-template-id").value = "";
+    renderExerciseTemplateSuggestions(templateSearch);
   });
 
-  templateSearch.addEventListener("change", () => {
-    applyExerciseTemplateSearch(card);
+  templateSearch.addEventListener("focus", () => {
+    renderExerciseTemplateSuggestions(templateSearch);
+  });
+
+  templateSearch.addEventListener("keydown", event => {
+    if (event.key !== "Escape") return;
+    card.querySelector("[data-exercise-template-suggestions]").classList.add("hidden");
+  });
+
+  templateSearch.addEventListener("blur", () => {
+    window.setTimeout(() => {
+      const suggestions = card.querySelector("[data-exercise-template-suggestions]");
+      if (!suggestions.contains(document.activeElement)) suggestions.classList.add("hidden");
+    }, 0);
+  });
+
+  card.querySelector("[data-exercise-template-suggestions]").addEventListener("click", event => {
+    const choice = event.target.closest("[data-exercise-template-choice]");
+    if (!choice) return;
+
+    applyExerciseTemplateToCard(card, choice.dataset.exerciseTemplateChoice);
+    card.querySelector("[data-exercise-template-suggestions]").classList.add("hidden");
     updateExerciseSummary(card);
   });
 
@@ -797,10 +800,11 @@ function addBlockCard() {
   setOpenBlock(newestBlock);
 }
 
-function loadWorkoutIntoBuilder(workout) {
+function loadWorkoutIntoBuilder(workout, options = {}) {
   if (!workout) return;
 
-  setFieldValue("workout-title", `${workout.title || "Workout"} Copy`);
+  const occurrenceEdit = Boolean(options.occurrenceEdit);
+  setFieldValue("workout-title", occurrenceEdit ? (workout.title || "Workout") : `${workout.title || "Workout"} Copy`);
   setFieldValue("workout-focus", workout.focus || "");
   setFieldValue("workout-minutes", workout.estimated_minutes || "");
   setFieldValue("workout-description", workout.description || "");
@@ -847,7 +851,9 @@ function loadWorkoutIntoBuilder(workout) {
     block: "start"
   });
 
-  showWorkoutMessage("Workout loaded into builder. Save it to create a new assigned workout.");
+  showWorkoutMessage(occurrenceEdit
+    ? "Editing this calendar occurrence. Saving will not change the same workout on other dates."
+    : "Workout loaded into builder. Save it to create a new assigned workout.");
   markWorkoutFormDirty();
 }
 

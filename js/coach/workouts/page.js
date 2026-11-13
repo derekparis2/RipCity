@@ -101,7 +101,10 @@ async function saveWorkout(event) {
   updateAssignmentControls();
 
   const submitButton = event.submitter;
-  const shouldAssign = submitButton?.value !== "draft";
+    const occurrenceEdit = Boolean(editingProgrammingAssignmentId);
+    const programItemEdit = Boolean(editingProgramItemId);
+    const isolatedEdit = occurrenceEdit || programItemEdit;
+    const shouldAssign = occurrenceEdit || (!programItemEdit && submitButton?.value !== "draft");
   const submitButtons = Array.from(document.querySelectorAll("#workout-form button[type='submit']"));
   const originalSubmitLabels = new Map(submitButtons.map(button => [button, button.textContent]));
   let workoutId = null;
@@ -121,7 +124,7 @@ async function saveWorkout(event) {
     const assignedDate = assignedDates[0] || "";
 
     const validationError = getWorkoutValidationError({
-      shouldAssign,
+      shouldAssign: shouldAssign && !occurrenceEdit,
       title,
       minutes,
       targetType,
@@ -142,7 +145,17 @@ async function saveWorkout(event) {
       return;
     }
 
-    if (shouldAssign && !confirmWorkoutCreate({ title, targetType, groupIds, memberProfileId, assignedDate, assignedDates })) {
+    if (occurrenceEdit && !window.confirm("Save these changes to this calendar occurrence? Other dates and assignments will not change.")) {
+      showWorkoutMessage("Workout changes cancelled.");
+      return;
+    }
+
+    if (programItemEdit && !window.confirm("Save these changes to this program slot? The reusable workout and unrelated assignments will not change.")) {
+      showWorkoutMessage("Program workout changes cancelled.");
+      return;
+    }
+
+    if (!occurrenceEdit && shouldAssign && !confirmWorkoutCreate({ title, targetType, groupIds, memberProfileId, assignedDate, assignedDates })) {
       showWorkoutMessage("Workout creation cancelled.");
       return;
     }
@@ -153,10 +166,10 @@ async function saveWorkout(event) {
     });
 
     if (submitButton) {
-      submitButton.textContent = shouldAssign ? "Creating & Assigning..." : "Saving Draft...";
+      submitButton.textContent = isolatedEdit ? "Saving Changes..." : shouldAssign ? "Creating & Assigning..." : "Saving Draft...";
     }
 
-    showWorkoutMessage(shouldAssign ? "Creating and assigning workout..." : "Saving workout draft...");
+    showWorkoutMessage(programItemEdit ? "Saving changes to this program slot..." : occurrenceEdit ? "Saving changes to this occurrence..." : shouldAssign ? "Creating and assigning workout..." : "Saving workout draft...");
 
     // Only sync custom exercises after any assignment confirmation so canceling
     // the workflow never writes an exercise template by itself.
@@ -164,6 +177,9 @@ async function saveWorkout(event) {
     createdTemplateIds = librarySync.createdTemplateIds;
 
     workoutId = createClientId();
+    const searchParams = new URLSearchParams(window.location.search);
+    const sourceTemplateId = searchParams.get("template");
+    const sourceTemplate = recentWorkoutRows.find(row => row.id === sourceTemplateId);
 
     // Save order matters: workout -> blocks -> exercises -> assignment.
     // This preserves the relationships expected by member-dashboard/workout-session.
@@ -178,7 +194,9 @@ async function saveWorkout(event) {
         focus: focus || null,
         description: description || null,
         estimated_minutes: minutes ? Number(minutes) : null,
-        created_by: workoutCoachAccess.profile.id
+        created_by: workoutCoachAccess.profile.id,
+        workout_kind: programItemEdit ? "program_item" : occurrenceEdit ? "assignment_snapshot" : "saved",
+        source_workout_id: programItemEdit || occurrenceEdit ? (sourceTemplate?.source_workout_id || sourceTemplateId) : null
       });
 
     if (workoutError) throw workoutError;
@@ -234,7 +252,21 @@ async function saveWorkout(event) {
     
     if (exerciseError) throw exerciseError;
 
-    if (shouldAssign) {
+    if (occurrenceEdit) {
+      const { error: replacementError } = await db.rpc("replace_workout_programming_assignment", {
+        check_assignment_id: editingProgrammingAssignmentId,
+        replacement_workout_id: workoutId
+      });
+      if (replacementError) throw replacementError;
+      showWorkoutMessage(`Changes to "${title}" were saved for this occurrence only.`);
+    } else if (programItemEdit) {
+      const { error: replacementError } = await db.rpc("replace_workout_program_item_source", {
+        check_program_item_id: editingProgramItemId,
+        replacement_workout_id: workoutId
+      });
+      if (replacementError) throw replacementError;
+      showWorkoutMessage(`Changes to "${title}" were saved for this program slot.`);
+    } else if (shouldAssign) {
       const assignmentRows = buildAssignmentRows({
         workoutId,
         targetType,
@@ -264,6 +296,13 @@ async function saveWorkout(event) {
     // back a workout that was successfully saved.
     workoutId = null;
     createdTemplateIds = [];
+    if (isolatedEdit) {
+      workoutFormDirty = false;
+      const returnUrl = editingProgrammingReturnUrl || "coach-programming.html";
+      window.location.href = returnUrl;
+      return;
+    }
+
     resetWorkoutForm();
     await loadRecentWorkouts();
   } catch (error) {
@@ -349,6 +388,30 @@ async function initCoachWorkoutsPage() {
     addBlockCard();
     await loadRecentWorkouts();
 
+    const searchParams = new URLSearchParams(window.location.search);
+    const templateId = searchParams.get("template");
+    const occurrenceAssignmentId = searchParams.get("editAssignment");
+    const programItemId = searchParams.get("programItem");
+    if (templateId) {
+      const workout = recentWorkoutRows.find(row => row.id === templateId);
+      if (workout && occurrenceAssignmentId) {
+        const assignment = (workout.workout_assignments || []).find(row => row.id === occurrenceAssignmentId);
+        if (!assignment) throw new Error("This calendar occurrence is no longer available.");
+        editingProgrammingAssignmentId = occurrenceAssignmentId;
+        editingProgrammingReturnUrl = searchParams.get("return") || "coach-programming.html";
+        loadWorkoutIntoBuilder(workout, { occurrenceEdit: true });
+        configureProgrammingOccurrenceEdit(assignment);
+      } else if (workout && programItemId) {
+        editingProgramItemId = programItemId;
+        editingProgrammingReturnUrl = searchParams.get("return") || "coach-programming.html?view=programs";
+        loadWorkoutIntoBuilder(workout, { occurrenceEdit: true });
+        configureProgramItemEdit();
+      } else if (workout) {
+        openWorkoutInBuilder(workout);
+        window.history.replaceState({}, "", window.location.pathname);
+      }
+    }
+
     markWorkoutFormClean();
     showWorkoutMessage("");
   } catch (error) {
@@ -357,18 +420,45 @@ async function initCoachWorkoutsPage() {
   }
 }
 
+function configureProgramItemEdit() {
+  const assignmentFields = document.getElementById("workout-assignment-fields");
+  const draftButton = document.getElementById("save-workout-draft-btn");
+  const saveButton = document.getElementById("save-workout-assign-btn");
+  const help = document.getElementById("workout-save-help");
+  const heading = document.getElementById("workout-schedule-heading");
+  if (assignmentFields) assignmentFields.classList.add("hidden");
+  if (draftButton) draftButton.classList.add("hidden");
+  if (saveButton) saveButton.textContent = "Save Program Slot Changes";
+  if (heading) heading.textContent = "Review this program slot";
+  if (help) help.textContent = "This creates an isolated program version. The reusable workout and unrelated assignments stay unchanged.";
+}
+
+function configureProgrammingOccurrenceEdit(assignment) {
+  const assignmentFields = document.getElementById("workout-assignment-fields");
+  const draftButton = document.getElementById("save-workout-draft-btn");
+  const saveButton = document.getElementById("save-workout-assign-btn");
+  const help = document.getElementById("workout-save-help");
+  const heading = document.getElementById("workout-schedule-heading");
+  if (assignmentFields) assignmentFields.classList.add("hidden");
+  if (draftButton) draftButton.classList.add("hidden");
+  if (saveButton) saveButton.textContent = "Save Occurrence Changes";
+  if (heading) heading.textContent = "Review this occurrence";
+
+  const target = assignment.target_type === "group"
+    ? availableGroups.find(group => group.id === assignment.target_group_id)?.name || "the assigned group"
+    : assignment.target_type === "member"
+      ? availableMembers.find(member => member.memberProfileId === assignment.target_member_profile_id)?.name || "the assigned member"
+      : "the facility";
+  if (help) help.textContent = `This changes ${target} on ${formatDisplayDate(assignment.assigned_date)} only. Other dates stay unchanged.`;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   initializeWorkoutBuilderTracking();
   initCoachWorkoutsPage();
 
   document.getElementById("add-block-btn").addEventListener("click", addBlockCard);
-  document.getElementById("recent-workout-search")?.addEventListener("input", renderRecentWorkouts);
-  document.getElementById("recent-workout-date-filter")?.addEventListener("change", renderRecentWorkouts);
-  document.getElementById("recent-workout-assigner-filter")?.addEventListener("change", renderRecentWorkouts);
   document.getElementById("add-workout-date-btn")?.addEventListener("click", addSelectedWorkoutDate);
-  document.getElementById("recent-workout-target-filter")?.addEventListener("change", renderRecentWorkouts);
   document.getElementById("workout-target-type").addEventListener("change", updateAssignmentControls);
   document.getElementById("workout-form").addEventListener("submit", saveWorkout);
-  document.getElementById("refresh-workouts-btn").addEventListener("click", loadRecentWorkouts);
   document.getElementById("coach-workouts-logout-btn").addEventListener("click", logoutCoachWorkouts);
 });

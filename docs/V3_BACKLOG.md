@@ -11,11 +11,11 @@ migration to the shared staging project.
 
 ## Immediate Release Gate
 
-**Package 1 is the only implementation priority until it is complete.** Finish
-the complete strength-max and percentage-programming workflow, verify it in
-staging, merge its reviewed feature branch into `v3-development`, and then
-release `v3-development` to `main`. Only after that production merge should
-Derek and Sam continue with Packages 2 and later.
+**Package 1 is the implementation priority until it is complete.** Finish the
+strength-max and percentage workflow plus the programming calendar and reusable
+program workflow, verify both branches together in staging, merge them into
+`v3-development`, and then release `v3-development` to `main`. Only after that
+production merge should Derek and Sam continue with later packages.
 
 Planning and approved sample-data research may happen while Package 1 is in
 progress, but later feature implementation must not delay or expand the first
@@ -55,6 +55,35 @@ responsive staging checks, and production release notes must all be complete.
 **Release action:** When every completion item above passes review, merge this
 package through `v3-development` into `main`. Confirm the production migration
 and smoke test, then continue to Package 2.
+
+### 1B. Programming Calendar And Reusable Programs
+
+- **Status:** In progress on `derek/programming-calendar`
+- **Suggested branch:** `<name>/programming-calendar`
+- **Plan detail:** [Programming calendar and reusable programs](VERSION_3_PLAN.md#programming-calendar-and-reusable-programs)
+
+Replace the Created Workouts-first experience with Calendar, Workout Library,
+and Programs views on a dedicated Programming page linked from the Workout
+Builder and shared coach/admin navigation. Support group and
+individual month calendars, copy one week, one month, or any selected direct
+assignments to multiple dates and rosters with a conflict-safe preview, and
+launch reusable 1–52 week programs to either a group or individual. Facility
+admins can review and filter all programs by creating coach; ordinary coaches
+see and manage only programs they created.
+
+**Complete when:** Combined member month calendars deduplicate direct, group,
+and facility assignments; copied weeks, months, and selections create
+independent editable workout snapshots without overwriting occupied dates;
+program edits update linked future unstarted occurrences across every launch
+while past, started, and completed work remains frozen; facility admins can
+filter and manage every facility program while coaches can read, edit, launch,
+and archive only their own; facility boundaries and coach authorization are
+enforced by RLS/RPCs; and focused automated and staging checks pass.
+
+**Merge note:** Sam's strength-max branch and this branch both affect workout
+prescriptions. Before either package is released, extend the program workout
+clone to preserve every new max, percentage, resolved-load, and snapshot field,
+then test a launched program containing a percentage-based exercise.
 
 ---
 

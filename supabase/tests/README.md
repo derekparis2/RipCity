@@ -3,6 +3,31 @@
 This directory is reserved for repeatable schema and RLS tests. Initial manual
 verification remains in `sql/diagnostics/verify_staging_baseline.sql`.
 
+The source-controlled programming-calendar contract can be checked before its
+staging migration is applied:
+
+```bash
+node tests/workout-programming.test.mjs
+```
+
+After applying `20261108170000_add_workout_programs.sql`,
+`20261109120000_harden_program_ownership_and_calendar_copy.sql`, and
+`20261109210000_link_programs_and_expand_calendar_copy.sql` to staging in that
+order, manually verify:
+
+- A coach can create, edit, archive, and launch their own program.
+- That coach cannot see or operate another coach's program.
+- A facility admin sees every facility program, can filter by creator, and can
+  edit, archive, or launch any of them.
+- Neither role can read or operate another facility's programs.
+- Group and individual calendars include inherited assignments but only allow
+  direct assignments to be copied.
+- Copy Week, Copy Month, and Copy Selected preserve date spacing, support
+  multiple group/member destinations, refuse occupied dates, and create
+  independently editable workouts without changing the source program.
+- Editing a program updates only its future unstarted linked occurrences; past,
+  started, and completed workout history remains unchanged.
+
 ## Staging RLS Read Checks
 
 After applying the two V2 staging seeds and creating the documented fake Auth
