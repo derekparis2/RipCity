@@ -208,6 +208,7 @@ function renderRecentWorkouts() {
 
   list.innerHTML = filteredWorkouts.map(workout => {
     const assignments = workout.workout_assignments || [];
+    const canManageAssignments = canManageWorkoutAssignments(workout);
     const targetLabels = assignments.map(getAssignmentTargetLabel);
     const targetLabel = targetLabels.length
       ? [...new Set(targetLabels)].join(", ")
@@ -233,18 +234,22 @@ function renderRecentWorkouts() {
         </div>
 
         <div class="recent-workout-actions">
-          <button class="outline-btn small-inline-btn" type="button" data-toggle-reassign-workout="${window.RipCityUI.attr(workout.id)}">
-            Assign Again
-          </button>
+          ${canManageAssignments ? `
+            <button class="outline-btn small-inline-btn" type="button" data-toggle-reassign-workout="${window.RipCityUI.attr(workout.id)}">
+              Assign Again
+            </button>
+          ` : ""}
           <button class="outline-btn small-inline-btn" type="button" data-load-workout-template="${window.RipCityUI.attr(workout.id)}">
             Load in Builder
           </button>
           <button class="outline-btn small-inline-btn" type="button" data-toggle-workout-edit="${window.RipCityUI.attr(workout.id)}">
             Edit Details
           </button>
-          <button class="outline-btn small-inline-btn danger-outline-btn" type="button" data-delete-workout="${window.RipCityUI.attr(workout.id)}">
-            Delete Workout
-          </button>
+          ${canManageAssignments ? `
+            <button class="outline-btn small-inline-btn danger-outline-btn" type="button" data-delete-workout="${window.RipCityUI.attr(workout.id)}">
+              Delete Workout
+            </button>
+          ` : ""}
         </div>
 
         <details class="recent-assignment-list">
@@ -259,9 +264,11 @@ function renderRecentWorkouts() {
                 <strong>${window.RipCityUI.text(formatDisplayDate(assignment.assigned_date))}</strong>
                 ${window.RipCityUI.text(getAssignmentTargetLabel(assignment))} · Assigned by ${window.RipCityUI.text(window.RipCityWorkoutData.getProfileName(assignment.assigner))}
               </span>
-              <button class="outline-btn small-inline-btn danger-outline-btn" type="button" data-remove-assignment="${window.RipCityUI.attr(assignment.id)}">
-                Remove Assignment
-              </button>
+              ${canManageAssignments ? `
+                <button class="outline-btn small-inline-btn danger-outline-btn" type="button" data-remove-assignment="${window.RipCityUI.attr(assignment.id)}">
+                  Remove Assignment
+                </button>
+              ` : ""}
             </div>
           `).join("") : `<div class="empty-state compact-empty-state">This workout is saved but not assigned to a date.</div>`}
           </div>
@@ -292,7 +299,7 @@ function renderRecentWorkouts() {
           </div>
         </form>
 
-        <div class="recent-reassign-card hidden" data-reassign-workout-card="${window.RipCityUI.attr(workout.id)}">
+        ${canManageAssignments ? `<div class="recent-reassign-card hidden" data-reassign-workout-card="${window.RipCityUI.attr(workout.id)}">
           <div>
             <strong>Assign this workout again</strong>
             <span>Reuse the same blocks and exercises for another date, group, or athlete.</span>
@@ -338,7 +345,7 @@ function renderRecentWorkouts() {
           <button class="outline-btn full-btn" type="button" data-assign-existing-workout="${window.RipCityUI.attr(workout.id)}">
             Assign Existing Workout
           </button>
-        </div>
+        </div>` : ""}
 
         <details class="workout-preview-details">
           <summary>
@@ -434,6 +441,10 @@ function renderRecentWorkouts() {
 async function deleteWorkout(workoutId) {
   const workout = recentWorkoutRows.find(row => row.id === workoutId);
   if (!workout) return;
+  if (!canManageWorkoutAssignments(workout)) {
+    showWorkoutMessage("Only the workout creator or a facility admin can delete this workout.", true);
+    return;
+  }
 
   const assignmentCount = workout.workout_assignments?.length || 0;
   const confirmed = window.confirm(

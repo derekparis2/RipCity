@@ -253,3 +253,16 @@ completion operation twice. It verifies both retries preserve the existing
 membership and member-profile IDs, leave exactly one of each row, and reject a
 retry that attempts to replace the saved username. It does not send Auth email
 and does not change fixture status or relationships.
+
+## Workout Ownership Checks
+
+After applying `20261115120000_restrict_workout_assignment_ownership.sql`, run:
+
+```bash
+node supabase/tests/staging_workout_ownership_checks.mjs
+```
+
+The staging test verifies that coaches can still view shared facility workouts
+but can assign, unassign, and delete only workouts they created. It also verifies
+that facility admins can assign, unassign, and delete any workout in their
+facility. Temporary workout and assignment fixtures are removed after the test.
