@@ -178,8 +178,16 @@ function getVisibleMonthAssignments(assignments = getProgrammingAssignments()) {
   });
 }
 
+function canManageProgrammingWorkout(row) {
+  if (!row?.workout) return false;
+  return Boolean(
+    workoutCoachAccess?.isAdmin
+    || row.workout.created_by === workoutCoachAccess?.profile?.id
+  );
+}
+
 function getCopyableAssignments(assignments = getProgrammingAssignments()) {
-  return assignments.filter(row => row.isDirect);
+  return assignments.filter(row => row.isDirect && canManageProgrammingWorkout(row));
 }
 
 function updateProgrammingSelectionActions() {
@@ -195,6 +203,7 @@ function updateProgrammingSelectionActions() {
   if (clear) clear.disabled = selectedCount === 0;
   if (createProgram) createProgram.disabled = selectedCount === 0;
   if (unassignSelected) {
+    unassignSelected.classList.toggle("hidden", selectedCount === 0);
     unassignSelected.disabled = selectedCount === 0;
     unassignSelected.textContent = selectedCount ? `Unassign Selected (${selectedCount})` : "Unassign Selected";
   }
@@ -245,7 +254,7 @@ function renderProgrammingCalendar() {
   const assignments = getProgrammingAssignments();
   void refreshProgrammingActionStates(assignments);
   const visibleAssignments = getVisibleMonthAssignments(assignments);
-  const copyableMonthAssignments = visibleAssignments.filter(row => row.isDirect);
+  const copyableMonthAssignments = getCopyableAssignments(visibleAssignments);
   const validAssignmentIds = new Set(getCopyableAssignments(assignments).map(row => row.assignment.id));
   selectedProgrammingAssignmentIds = new Set([...selectedProgrammingAssignmentIds].filter(id => validAssignmentIds.has(id)));
   description.textContent = `${scopeName} · ${visibleAssignments.length} workout${visibleAssignments.length === 1 ? "" : "s"} this month`;
@@ -268,9 +277,11 @@ function renderProgrammingCalendar() {
           ${index % 7 === 0 && weekCopyable.length ? `<button type="button" data-copy-calendar-week="${dateKey}" title="Copy this week">Copy week</button>` : ""}
         </header>
         <div class="programming-calendar-day-workouts">
-          ${dayAssignments.length ? dayAssignments.map(row => `
-            <article class="programming-calendar-workout ${row.isDirect ? "is-direct" : "is-inherited"} ${selectedProgrammingAssignmentIds.has(row.assignment.id) ? "is-selected" : ""}">
-              ${row.isDirect ? `
+          ${dayAssignments.length ? dayAssignments.map(row => {
+            const canManage = canManageProgrammingWorkout(row);
+            return `
+            <article class="programming-calendar-workout ${row.isDirect && canManage ? "is-direct" : "is-inherited"} ${selectedProgrammingAssignmentIds.has(row.assignment.id) ? "is-selected" : ""}">
+              ${row.isDirect && canManage ? `
                 <label class="programming-calendar-select" title="Select this workout to copy">
                   <input
                     type="checkbox"
@@ -284,7 +295,8 @@ function renderProgrammingCalendar() {
                 <strong>${window.RipCityUI.text(row.workout.title)}</strong>
               </button>
             </article>
-          `).join("") : `<span class="programming-calendar-empty-day">No workout</span>`}
+          `;
+          }).join("") : `<span class="programming-calendar-empty-day">No workout</span>`}
         </div>
       </article>
     `;
@@ -311,7 +323,7 @@ function renderProgrammingCalendar() {
 }
 
 function selectProgrammingAssignments(rows) {
-  selectedProgrammingAssignmentIds = new Set(rows.filter(row => row.isDirect).map(row => row.assignment.id));
+  selectedProgrammingAssignmentIds = new Set(getCopyableAssignments(rows).map(row => row.assignment.id));
   renderProgrammingCalendar();
 }
 
@@ -331,7 +343,7 @@ function prepareProgrammingWeekCopy(sourceWeekValue) {
 }
 
 function prepareProgrammingMonthCopy() {
-  const rows = getVisibleMonthAssignments().filter(row => row.isDirect);
+  const rows = getCopyableAssignments(getVisibleMonthAssignments());
   if (!rows.length) return showWorkoutMessage("No directly assigned workouts were found in this month.", true);
   selectProgrammingAssignments(rows);
   openProgrammingCopy(programmingMonth, addProgrammingMonths(programmingMonth, 1), "month");
@@ -528,14 +540,17 @@ function openProgrammingWorkoutActions() {
       : `the facility on ${formatDisplayDate(row.assignment.assigned_date)}`;
   description.textContent = `${row.workout.title} · ${targetScope}`;
 
-  const canEdit = Boolean(state?.can_edit);
-  const canUnassign = Boolean(state?.can_unassign) && row.isDirect;
-  const canDelete = Boolean(state?.can_delete_workout) && row.isDirect;
+  const canManage = canManageProgrammingWorkout(row);
+  const canEdit = canManage && Boolean(state?.can_edit);
+  const canUnassign = canManage && Boolean(state?.can_unassign) && row.isDirect;
+  const canDelete = canManage && Boolean(state?.can_delete_workout) && row.isDirect;
   editButton.classList.toggle("hidden", !canEdit);
   unassignButton.classList.toggle("hidden", !canUnassign);
   deleteButton.classList.toggle("hidden", !canDelete);
 
-  if (state?.is_program_linked) {
+  if (!canManage) {
+    reason.textContent = "This workout was created by another coach and is read-only. A facility admin can manage it.";
+  } else if (state?.is_program_linked) {
     reason.textContent = "This occurrence belongs to a program. Edit or remove it through the program so every linked assignment stays consistent.";
   } else if (!row.isDirect) {
     reason.textContent = `This workout is inherited from ${row.sourceLabel}. Editing it changes that group occurrence; switch to the group calendar to unassign it.`;

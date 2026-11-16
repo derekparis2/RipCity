@@ -64,6 +64,10 @@ assert.match(calendar, /window\.localStorage\.setItem\(PROGRAMMING_PREFERENCES_K
 assert.match(programmingPage, /renderProgrammingScopeOptions\(preferences\.scopeId\)/, "the saved group or member filter is restored after data loads");
 assert.match(calendar, /data-copy-calendar-week/, "each populated week can be copied directly from the month");
 assert.match(calendar, /row\.isDirect/, "inherited assignments are visible but excluded from direct copying");
+assert.match(calendar, /row\.workout\.created_by === workoutCoachAccess\?\.profile\?\.id/, "ordinary coaches can select only workouts they created");
+assert.match(calendar, /row\.isDirect && canManage \? "is-direct" : "is-inherited"/, "another coach's direct assignments use the inherited read-only calendar appearance");
+assert.match(calendar, /unassignSelected\.classList\.toggle\("hidden", selectedCount === 0\)/, "bulk unassignment stays hidden without manageable selections");
+assert.match(calendar, /const canUnassign = canManage && Boolean\(state\?\.can_unassign\)/, "another coach's workout never exposes the single unassign action");
 assert.match(calendar, /db\.rpc\("copy_workout_programming_assignments"/, "calendar copying uses a transactional database function");
 assert.match(calendar, /plannedKeys = new Map/, "calendar copy detects duplicate destinations before saving");
 assert.match(calendar, /db\.rpc\("remove_workout_programming_assignment"/, "calendar mistakes can be removed through a protected database function");
