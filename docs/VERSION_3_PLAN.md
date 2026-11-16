@@ -66,11 +66,11 @@ which rounding increments each facility may use.
 
 Keep workout creation focused in the existing Workout Builder and place
 calendar, saved-workout, and reusable-program management on a dedicated
-Programming page linked from the shared coach/admin navigation.
+Workout Planner page linked from the shared coach/admin navigation.
 
 - Make a month Calendar the primary saved-workout view while retaining
   searchable Workout Library and Programs views on the same dedicated
-  Programming page.
+  Workout Planner page.
 - Let staff inspect a monthly schedule for either a group or an individual. An
   individual schedule combines direct, inherited group, and facility-wide
   assignments without displaying the same workout twice.
@@ -95,6 +95,12 @@ Programming page linked from the shared coach/admin navigation.
 - Preserve who created and assigned each workout. Independent calendar workouts
   remain editable through the existing builder; linked program occurrences are
   changed from the program so every affected future schedule stays consistent.
+- Coaches may inspect shared facility workouts, but may assign, unassign, or
+  delete only workouts they created. Facility admins may manage every workout
+  in their facility. Read-only calendar entries remain clearly visible without
+  showing selection or action controls that the current staff member cannot use.
+- Remember the selected calendar scope, roster, month, program filter, and
+  library filter across refreshes on the same device.
 
 The program week begins on Monday. Programs may span 1–52 weeks. Archived
 program definitions disappear from the active library while existing calendar

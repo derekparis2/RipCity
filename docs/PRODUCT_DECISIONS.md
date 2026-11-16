@@ -114,12 +114,27 @@ they are intentionally revisited.
 - Facility-wide and group workout assignments currently apply dynamically.
 - If a member joins the facility/group later, they should receive matching current
   assignments under the existing visibility model.
-- Multiple active coaches/admins in the same facility may assign authorized
-  workouts, including workouts created by another coach in that facility.
+- Facility admins may assign, unassign, or delete any own-facility workout.
+  Ordinary coaches may view shared facility workouts but may assign, unassign,
+  or delete only workouts they created.
 - Members and coach review/history views should show who assigned each workout.
 - Duplicate workout/target/date assignments must be prevented safely even when
   two coaches assign at nearly the same time.
 - Historical recipient snapshots may be considered later if reporting needs it.
+
+## Workout Planner And Programs
+
+- The dedicated staff surface is named **Workout Planner**. It owns month
+  calendars, the saved Workout Library, and reusable Programs; Workout Builder
+  remains focused on creating and editing workout content.
+- Individual calendars combine direct and inherited group assignments. Inherited
+  or otherwise read-only workouts remain visible but cannot be selected or
+  unassigned by an unauthorized coach.
+- Calendar copies are independent snapshots. Program launches remain linked so
+  program edits update future unstarted occurrences while preserving past,
+  started, and completed history.
+- Facility admins can view and filter all facility programs by creator. Coaches
+  can view, edit, launch, and archive only programs they created.
 
 ## Testing Days
 

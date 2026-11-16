@@ -289,8 +289,11 @@ workout-program migrations have been applied in order:
 1. `20261108170000_add_workout_programs.sql`
 2. `20261109120000_harden_program_ownership_and_calendar_copy.sql`
 3. `20261109210000_link_programs_and_expand_calendar_copy.sql`
+4. `20261110140000_harden_calendar_assignment_actions.sql`
+5. `20261111120000_classify_workouts_and_edit_program_items.sql`
+6. `20261115120000_restrict_workout_assignment_ownership.sql`
 
-Apply this migration to **Rip City Staging first**. It adds the program,
+Apply these migrations to **Rip City Staging first**, in the order shown. They add the program,
 program-item, launch, and launch-workout tables plus transactional RPCs for
 saving, launching, archiving, and copying a group week. Do not apply it to
 production until the staging calendar/program workflow and facility isolation
@@ -305,6 +308,12 @@ role receives cross-facility access. Calendar copies become independent workout
 snapshots. Program launches stay linked: editing a program updates its future,
 unstarted occurrences across launches, while past or started occurrences remain
 frozen history.
+
+The final three migrations add safe single-occurrence editing and bulk
+unassignment, separate saved workouts from generated program/calendar snapshots,
+and enforce workout ownership at the database layer. Coaches may continue to
+read shared facility workouts, but only the workout creator or a facility admin
+may assign, reassign, unassign, or delete one.
 
 When merging the strength-max and percentage-programming package, update the
 program clone function in this migration's production successor to preserve

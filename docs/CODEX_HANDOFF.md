@@ -111,6 +111,9 @@ Immediate V3 release gate:
 
 - Strength maxes and percentage-based workout programming is Package 1 and the
   only implementation priority until complete.
+- The Workout Planner/programming-calendar package is complete when its branch
+  merges into `v3-development`; its six ordered migrations must reach production
+  before the corresponding frontend release.
 - Finish and verify the entire package in staging, merge it into
   `v3-development`, then release `v3-development` to `main` and smoke-test it.
 - Continue routines/checklists, Testing Day comparisons, multi-facility, and
