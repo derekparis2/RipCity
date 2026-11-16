@@ -1178,6 +1178,19 @@ nav {
   color: var(--text);
 }
 
+.workout-page-link {
+  border-color: #6fb8ff;
+  background: #6fb8ff;
+  color: #08131f;
+  text-decoration: none;
+}
+
+.workout-page-link:hover {
+  background: transparent;
+  color: #b8dcff;
+  text-decoration: none;
+}
+
 .text-btn {
   border: 0;
   color: var(--text);
