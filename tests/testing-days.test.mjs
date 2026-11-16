@@ -25,6 +25,7 @@ const memberScript = await readFile("js/member/member-testing-days.js", "utf8");
 const memberDashboardScript = await readFile("js/member/member-dashboard.js", "utf8");
 const memberDetailPage = await readFile("coach-member-detail.html", "utf8");
 const memberDetailScript = await readFile("js/coach/coach-member-detail.js", "utf8");
+const comparisonScript = await readFile("js/shared/testing-comparisons.js", "utf8");
 
 for (const table of [
   "testing_test_templates",
@@ -62,6 +63,7 @@ assert.match(coachPage, /data-testing-step="details"[\s\S]*data-testing-step="te
 assert.match(coachPage, /data-result-mode="athlete"[\s\S]*data-result-mode="test"/, "staff can enter results athlete-first or test-first");
 assert.match(coachPage, /id="testing-target-type"[\s\S]*value="groups"[\s\S]*value="members"[\s\S]*value="both"/, "assignment mirrors the workout builder while supporting groups, members, or both");
 assert.match(coachPage, /id="testing-builder-review"/, "Testing Day scheduling includes the workout-builder-style review card");
+assert.match(coachPage, /testing-comparisons\.js/, "staff result review uses the shared Testing Day comparison rules");
 assert.match(coachScript, /selectedTestingGroupIds/, "coach group selection survives rerenders and searches");
 assert.match(coachScript, /selectedTestingMemberIds/, "coach individual selection survives rerenders and searches");
 assert.match(coachScript, /from\("testing_test_templates"\)/, "saved facility test definitions return to the reusable builder list");
@@ -80,23 +82,57 @@ assert.match(coachScript, /day\.name}[\s\S]*day\.description[\s\S]*date[\s\S]*gr
 assert.match(coachScript, /data-testing-action="view-results"[\s\S]*data-testing-action="edit-results"/, "completed Testing Days support result review and correction");
 assert.match(coachScript, /ranking_direction === "lower"/, "test result review respects lower-is-better rankings");
 assert.match(coachScript, /row\.numeric !== previousValue/, "equal Testing Day results share a ranking position");
+assert.match(coachScript, /loadTestingResultPriorChanges/, "completed athlete result review loads prior official results");
+assert.match(coachScript, /formatImprovement\(improvement, test\.unit/, "athlete result changes use signed direction-aware values");
+assert.match(coachScript, /currentIndex < 1/, "a first Testing Day result does not show a comparison");
 
 assert.match(memberPage, /id="member-testing-panel"/, "member Training includes an assigned Testing Days section");
 assert.ok(memberPage.indexOf('id="member-testing-panel"') > memberPage.indexOf('id="training-calendar-panel"'), "member Testing Days appear below the Training calendar");
+assert.match(memberPage, /data-training-view="schedule"/, "member Training has a focused Schedule view");
+assert.match(memberPage, /data-training-view="performance"/, "member Training has a focused Performance view");
+assert.match(memberPage, /data-training-view-panel="schedule"[\s\S]*id="training-calendar-panel"[\s\S]*id="member-testing-upcoming-list"/, "Schedule keeps the calendar and upcoming Testing Days together");
+assert.match(memberPage, /data-training-view-panel="performance"[\s\S]*id="member-testing-comparison-list"[\s\S]*id="member-testing-list"/, "Performance keeps comparisons and completed Testing Day history together");
 assert.match(memberPage, /id="member-testing-search"/, "members can search a longer Testing Day history");
+assert.match(memberScript, /function setMemberTrainingView/, "member Training switches between Schedule and Performance without leaving the page");
+assert.match(memberScript, /day\.status === "scheduled"/, "only scheduled Testing Days stay in Schedule");
+assert.match(memberScript, /day\.status === "completed"/, "completed Testing Days stay in Performance history");
 assert.match(memberScript, /testing_day_participants/, "member schedule loads through the snapshotted participant roster");
 assert.match(memberScript, /testing_results/, "member schedule renders the signed-in member's official results");
+assert.match(memberPage, /testing-comparisons\.js/, "member Training loads the shared Testing Day comparison engine");
+assert.match(memberPage, /id="member-testing-comparison-list"/, "member Training includes performance comparisons");
+assert.match(memberScript, /ranking_direction/, "member comparisons load each test's improvement direction");
+assert.match(memberScript, /recorded_at/, "member comparisons retain stable result chronology");
 assert.match(memberScript, /FINAL RESULTS/, "completed member Testing Days are clearly labeled as final results");
 assert.doesNotMatch(memberScript, /Official results appear here as your coach saves them/, "completed result cards omit the redundant result footer");
 assert.match(memberScript, /sort\(\(a, b\) => b\.day\.testing_date\.localeCompare\(a\.day\.testing_date\)\)/, "member Testing Days default to newest date first");
 assert.match(memberScript, /data-member-testing-toggle/, "member Testing Day cards can be collapsed");
 assert.match(memberScript, /is-collapsed/, "collapsed member Testing Day cards use the compact presentation");
 assert.match(memberDetailPage, /id="coach-member-testing-panel"/, "coach member detail includes Testing Day results");
+assert.match(memberDetailPage, /data-coach-member-view="overview"/, "coach member detail has a focused Overview view");
+assert.match(memberDetailPage, /data-coach-member-view="goals"/, "coach member detail has a focused Goals view");
+assert.match(memberDetailPage, /data-coach-member-view="performance"/, "coach member detail has a focused Performance view");
+assert.match(memberDetailPage, /data-coach-member-view-panel="overview"[\s\S]*id="coach-member-detail-summary"[\s\S]*id="coach-member-history-panel"/, "coach Overview keeps identity and weekly history together");
+assert.match(memberDetailPage, /data-coach-member-view-panel="goals"[\s\S]*id="coach-member-goals-panel"/, "coach Goals keeps goal management in its own workspace");
+assert.match(memberDetailPage, /data-coach-member-view-panel="performance"[\s\S]*id="coach-member-testing-panel"/, "coach Performance keeps testing comparisons and history together");
+assert.match(memberDetailScript, /function setCoachMemberDetailView/, "coach member detail switches views without leaving the member page");
 assert.match(memberDetailScript, /testing_day_participants/, "coach member detail loads the member's Testing Day history");
+assert.match(memberDetailPage, /id="coach-testing-comparison-list"/, "coach member detail includes performance comparisons");
+assert.match(memberDetailPage, /id="coach-testing-comparison-search"[\s\S]*id="coach-testing-comparison-sort"[\s\S]*id="coach-testing-comparison-more"/, "coach comparison history has scalable search, sorting, and pagination controls");
+assert.match(memberDetailPage, /testing-comparisons\.js/, "coach member detail uses the shared comparison engine");
+assert.match(memberDetailScript, /RipCityTestingComparisons\.build/, "coach and member comparison rules stay shared");
+assert.doesNotMatch(memberDetailScript, /testing-comparison-chart/, "coach comparison cards stay compact without a result graph");
+assert.doesNotMatch(memberScript, /testing-comparison-chart/, "member comparison cards stay compact without a result graph");
+assert.match(memberPage, /id="member-testing-comparison-search"[\s\S]*id="member-testing-comparison-sort"[\s\S]*id="member-testing-comparison-more"/, "member comparison history has scalable search, sorting, and pagination controls");
+assert.match(memberScript, /memberTestingComparisonPageSize = 6/, "member comparison history initially limits the number of visible tests");
+assert.match(memberDetailScript, /detailTestingComparisonPageSize = 6/, "coach comparison history initially limits the number of visible tests");
+assert.match(comparisonScript, /otherCard\.open = false/, "only one performance comparison expands at a time");
 assert.match(memberDetailScript, /coach-testing\.html\?testingDay=/, "member Testing Day summaries link to canonical staff result editing");
 assert.match(coachScript, /memberProfileId: params\.get\("member"\)/, "Testing Day deep links focus the selected member");
 assert.match(memberDashboardScript, /has-testing-day/, "assigned Testing Days are highlighted on the Training calendar");
 assert.match(memberDashboardScript, /testing-label-short">Test Day/, "the mobile calendar uses a compact Testing Day label");
 assert.doesNotMatch(memberScript, /insert\(|update\(|upsert\(|save_testing_results/, "member Testing Day schedule has no result write flow");
+assert.match(comparisonScript, /day\.status !== "completed"/, "only completed Testing Days enter official comparisons");
+assert.match(comparisonScript, /result_status !== "recorded"/, "not-tested outcomes never affect comparisons");
+assert.match(comparisonScript, /direction === "lower"/, "comparison math supports lower-is-better tests");
 
 console.log("Testing Day foundation tests passed");

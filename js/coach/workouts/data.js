@@ -11,6 +11,9 @@ let availableGroupMemberships = [];
 let exerciseTemplates = [];
 let exerciseLibraryAvailable = false;
 let recentWorkoutRows = [];
+let editingProgrammingAssignmentId = null;
+let editingProgramItemId = null;
+let editingProgrammingReturnUrl = "";
 
 async function requireCoachOrAdmin() {
   return window.RipCityAccess.requireCoachAccess({

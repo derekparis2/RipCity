@@ -58,7 +58,7 @@ If a feature is only for Rip City baseball, build it as an optional program-spec
 - Coach view of member habit scores
 - Coach workout builder
 - Separate coach Athlete and H2K habit leaderboards
-- Member Top 5 and own-rank leaderboard work in progress
+- Member Top 5 and own-rank leaderboards, separated by Athlete and H2K
 - Workout blocks: Warmup, A Block, B Block, Finisher, etc.
 - Group/member/facility workout assignment across one or multiple dates
 - Member can see today’s assigned workout
@@ -68,6 +68,8 @@ If a feature is only for Rip City baseball, build it as an optional program-spec
 - Save Set
 - Save All Sets
 - Actual weight/reps/time/distance/band data saves to Supabase
+- Coach/admin-created Testing Days with staff-only official result entry,
+  ranked review, member-own result history, and calendar visibility
 
 ---
 
@@ -304,5 +306,13 @@ Payments:
 
 ## Near-Term Priorities
 
-V2 is complete. Use `docs/VERSION_3_PLAN.md` for new feature sequencing and
-keep production fixes small, reviewed, and based on the latest `main`.
+V2 is complete and deployed. Use `docs/VERSION_3_PLAN.md` for approved product
+direction and `docs/V3_BACKLOG.md` for the ordered branch queue. New V3 feature
+branches start from `v3-development`; production fixes remain small, reviewed,
+and based on the latest `main` before being merged back into V3.
+
+The immediate V3 release combines strength maxes and percentage-based workout
+programming with the completed Workout Planner and reusable-program package.
+Verify both together in staging, merge through `v3-development` into `main`,
+and smoke-test production before starting the later routines, multi-facility,
+or baseball packages.

@@ -209,12 +209,25 @@ function confirmWorkoutCreate({ title, targetType, groupIds, memberProfileId, as
   );
 }
 
+function canManageWorkoutAssignments(workout) {
+  return Boolean(
+    workout && (
+      workoutCoachAccess?.isAdmin ||
+      workout.created_by === workoutCoachAccess?.profile?.id
+    )
+  );
+}
+
 async function removeWorkoutAssignment(assignmentId) {
   const assignment = recentWorkoutRows
     .flatMap(workout => (workout.workout_assignments || []).map(row => ({ ...row, workout })))
     .find(row => row.id === assignmentId);
 
   if (!assignment) return;
+  if (!canManageWorkoutAssignments(assignment.workout)) {
+    showWorkoutMessage("Only the workout creator or a facility admin can remove this assignment.", true);
+    return;
+  }
 
   const logWarning = await getAssignmentLogWarning(assignmentId);
   const confirmed = window.confirm(
@@ -295,6 +308,10 @@ function updateRecentAssignmentControls(workoutId) {
 
 async function assignExistingWorkout(workout) {
   if (!workout) return;
+  if (!canManageWorkoutAssignments(workout)) {
+    showWorkoutMessage("Only the workout creator or a facility admin can assign this workout.", true);
+    return;
+  }
 
   const workoutId = workout.id;
   const targetType = document.querySelector(`[data-reuse-target-type="${workoutId}"]`)?.value || "group";
