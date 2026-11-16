@@ -279,8 +279,13 @@ function renderProgrammingCalendar() {
         <div class="programming-calendar-day-workouts">
           ${dayAssignments.length ? dayAssignments.map(row => {
             const canManage = canManageProgrammingWorkout(row);
+            const ownershipClass = !row.isDirect
+              ? "is-inherited"
+              : canManage
+                ? "is-direct"
+                : "is-read-only";
             return `
-            <article class="programming-calendar-workout ${row.isDirect && canManage ? "is-direct" : "is-inherited"} ${selectedProgrammingAssignmentIds.has(row.assignment.id) ? "is-selected" : ""}">
+            <article class="programming-calendar-workout ${ownershipClass} ${selectedProgrammingAssignmentIds.has(row.assignment.id) ? "is-selected" : ""}">
               ${row.isDirect && canManage ? `
                 <label class="programming-calendar-select" title="Select this workout to copy">
                   <input

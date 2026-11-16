@@ -5205,8 +5205,20 @@ td {
   }
 
   .programming-calendar-workout.is-inherited {
+    border-color: rgba(103, 179, 255, 0.55);
     border-style: dashed;
-    background: rgba(255, 255, 255, 0.035);
+    background: rgba(103, 179, 255, 0.055);
+  }
+
+  .programming-calendar-workout.is-read-only {
+    border-color: rgba(255, 255, 255, 0.24);
+    background: rgba(255, 255, 255, 0.055);
+  }
+
+  .programming-calendar-workout.is-read-only:hover,
+  .programming-calendar-workout.is-read-only:focus-within {
+    border-color: rgba(255, 255, 255, 0.38);
+    background: rgba(255, 255, 255, 0.08);
   }
 
   .programming-calendar-workout.is-selected {
@@ -5257,6 +5269,7 @@ td {
     display: -webkit-box;
     overflow: hidden;
     overflow-wrap: anywhere;
+    color: #fff;
     line-height: 1.2;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;

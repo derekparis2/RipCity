@@ -65,7 +65,7 @@ assert.match(programmingPage, /renderProgrammingScopeOptions\(preferences\.scope
 assert.match(calendar, /data-copy-calendar-week/, "each populated week can be copied directly from the month");
 assert.match(calendar, /row\.isDirect/, "inherited assignments are visible but excluded from direct copying");
 assert.match(calendar, /row\.workout\.created_by === workoutCoachAccess\?\.profile\?\.id/, "ordinary coaches can select only workouts they created");
-assert.match(calendar, /row\.isDirect && canManage \? "is-direct" : "is-inherited"/, "another coach's direct assignments use the inherited read-only calendar appearance");
+assert.match(calendar, /canManage\s*\?\s*"is-direct"\s*:\s*"is-read-only"/, "another coach's direct assignments use a visible read-only state");
 assert.match(calendar, /unassignSelected\.classList\.toggle\("hidden", selectedCount === 0\)/, "bulk unassignment stays hidden without manageable selections");
 assert.match(calendar, /const canUnassign = canManage && Boolean\(state\?\.can_unassign\)/, "another coach's workout never exposes the single unassign action");
 assert.match(calendar, /db\.rpc\("copy_workout_programming_assignments"/, "calendar copying uses a transactional database function");
