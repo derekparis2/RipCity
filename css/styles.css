@@ -4953,7 +4953,7 @@ td {
   .program-admin-filter {
     display: flex;
     justify-content: flex-end;
-    margin-bottom: 14px;
+    margin: 14px 0;
   }
 
   .program-admin-filter.hidden {
