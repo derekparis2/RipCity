@@ -66,12 +66,20 @@ function isMissingExerciseTemplateColumnError(error) {
 }
 
 async function fetchRecentWorkoutRows(includeOptionalExerciseColumns = true) {
-  return db
-    .from("workouts")
-    .select(buildRecentWorkoutSelect(includeOptionalExerciseColumns))
-    .eq("facility_id", workoutCoachAccess.membership.facility_id)
-    .order("created_at", { ascending: false })
-    .limit(500);
+  const rows = [];
+  const pageSize = 200;
+  for (let offset = 0; ; offset += pageSize) {
+    const { data, error } = await db
+      .from("workouts")
+      .select(buildRecentWorkoutSelect(includeOptionalExerciseColumns))
+      .eq("facility_id", workoutCoachAccess.membership.facility_id)
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
+      .range(offset, offset + pageSize - 1);
+    if (error) return { data: null, error };
+    rows.push(...(data || []));
+    if (!data || data.length < pageSize) return { data: rows, error: null };
+  }
 }
 
 async function loadRecentWorkouts() {

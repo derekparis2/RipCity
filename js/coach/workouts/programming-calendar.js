@@ -12,6 +12,7 @@ let programmingCopyDestinations = [];
 let activeProgrammingWorkoutRow = null;
 let programmingActionStates = new Map();
 let programmingActionStateKey = "";
+let programmingActionStateRequest = 0;
 const PROGRAMMING_PREFERENCES_KEY = "ripcity-programming-preferences-v1";
 
 function getProgrammingPreferences() {
@@ -211,9 +212,10 @@ function updateProgrammingSelectionActions() {
 
 async function refreshProgrammingActionStates(assignments) {
   const assignmentIds = [...new Set(assignments.map(row => row.assignment.id).filter(Boolean))].sort();
-  const nextKey = assignmentIds.join(",");
+  const nextKey = `${document.getElementById("programming-scope-type")?.value}:${document.getElementById("programming-scope-id")?.value}:${assignmentIds.join(",")}`;
   if (nextKey === programmingActionStateKey) return;
   programmingActionStateKey = nextKey;
+  const request = ++programmingActionStateRequest;
   programmingActionStates = new Map();
   if (!assignmentIds.length) return;
 
@@ -221,10 +223,12 @@ async function refreshProgrammingActionStates(assignments) {
     const { data, error } = await db.rpc("get_workout_programming_action_states", {
       check_assignment_ids: assignmentIds
     });
+    if (request !== programmingActionStateRequest) return;
     if (error) throw error;
     programmingActionStates = new Map((data || []).map(row => [row.assignment_id, row]));
     renderProgrammingCalendar();
   } catch (error) {
+    if (request !== programmingActionStateRequest) return;
     console.error(error);
     programmingActionStateKey = "";
   }
@@ -512,13 +516,13 @@ function createProgramFromProgrammingSelection() {
   if (!rows.length) return showWorkoutMessage("Select one or more directly assigned workouts first.", true);
   const sourceStart = getProgrammingWeekStart(parseProgrammingDate(rows[0].assignment.assigned_date));
   const lastDate = parseProgrammingDate(rows.at(-1).assignment.assigned_date);
-  const durationWeeks = Math.floor((getProgrammingWeekStart(lastDate) - sourceStart) / (7 * 86400000)) + 1;
+  const durationWeeks = Math.round((getProgrammingWeekStart(lastDate) - sourceStart) / (7 * 86400000)) + 1;
   const scopeName = document.getElementById("programming-scope-id")?.selectedOptions?.[0]?.textContent?.split(" · ")[0] || "New";
   const items = rows.map((row, index) => {
     const date = parseProgrammingDate(row.assignment.assigned_date);
     return {
       source_workout_id: row.workout.id,
-      week_number: Math.floor((getProgrammingWeekStart(date) - sourceStart) / (7 * 86400000)) + 1,
+      week_number: Math.round((getProgrammingWeekStart(date) - sourceStart) / (7 * 86400000)) + 1,
       day_of_week: date.getDay() === 0 ? 7 : date.getDay(),
       item_order: index
     };

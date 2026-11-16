@@ -1,3 +1,14 @@
+function getSafeProgrammingReturnUrl(value, fallback = "coach-programming.html") {
+  try {
+    const url = new URL(value || fallback, window.location.href);
+    const expected = new URL("coach-programming.html", window.location.href);
+    if (url.origin !== expected.origin || url.pathname !== expected.pathname) return fallback;
+    return `coach-programming.html${url.search}${url.hash}`;
+  } catch {
+    return fallback;
+  }
+}
+
 // =====================================================
 // COACH WORKOUTS PAGE CONTROLLER
 // =====================================================
@@ -398,12 +409,12 @@ async function initCoachWorkoutsPage() {
         const assignment = (workout.workout_assignments || []).find(row => row.id === occurrenceAssignmentId);
         if (!assignment) throw new Error("This calendar occurrence is no longer available.");
         editingProgrammingAssignmentId = occurrenceAssignmentId;
-        editingProgrammingReturnUrl = searchParams.get("return") || "coach-programming.html";
+        editingProgrammingReturnUrl = getSafeProgrammingReturnUrl(searchParams.get("return"));
         loadWorkoutIntoBuilder(workout, { occurrenceEdit: true });
         configureProgrammingOccurrenceEdit(assignment);
       } else if (workout && programItemId) {
         editingProgramItemId = programItemId;
-        editingProgrammingReturnUrl = searchParams.get("return") || "coach-programming.html?view=programs";
+        editingProgrammingReturnUrl = getSafeProgrammingReturnUrl(searchParams.get("return"), "coach-programming.html?view=programs");
         loadWorkoutIntoBuilder(workout, { occurrenceEdit: true });
         configureProgramItemEdit();
       } else if (workout) {

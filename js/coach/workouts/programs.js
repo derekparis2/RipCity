@@ -212,7 +212,7 @@ async function saveWorkoutProgram() {
     });
     if (error) throw error;
     closeProgramBuilder();
-    await loadWorkoutPrograms();
+    await Promise.all([loadWorkoutPrograms(), loadRecentWorkouts()]);
     showProgramsMessage("Program saved.");
   } catch (error) {
     console.error(error);

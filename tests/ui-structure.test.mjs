@@ -94,7 +94,7 @@ for (const file of activePages) {
   const sharedStylesVersion = memberNavPages.has(file)
     ? "member-nav-fixed-1"
     : file === "coach-dashboard.html" ? "attention-habits-1"
-      : file === "coach-programming.html" ? "linked-programs-1"
+      : ["coach-programming.html", "coach-workouts.html"].includes(file) ? "workout-page-links-1"
       : ["signup.html", "legal-consent.html"].includes(file) ? "signup-legal-2"
         : "ui-polish-4";
   assert.match(html, new RegExp(`css/styles\\.css\\?v=${sharedStylesVersion}`), `${file} loads the current shared stylesheet release`);

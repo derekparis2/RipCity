@@ -266,3 +266,40 @@ The staging test verifies that coaches can still view shared facility workouts
 but can assign, unassign, and delete only workouts they created. It also verifies
 that facility admins can assign, unassign, and delete any workout in their
 facility. Temporary workout and assignment fixtures are removed after the test.
+
+## Programming Hardening (2026-11-16)
+
+Apply `supabase/migrations/20261116120000_harden_programming_security_and_lifecycle.sql`
+only to Rip City Staging (`xjgmjliqqkhfnqphigbk`) after all earlier migrations.
+It is transactional and forward-only. Existing applied migrations are unchanged.
+
+Local validation:
+
+```bash
+node --test tests/*.test.mjs
+```
+
+After applying, run `node supabase/tests/staging_workout_ownership_checks.mjs`.
+The expanded checks cover immutable attribution, saved-workout preservation on
+assignment replacement, and parent-workout assignment cascades.
+
+Also verify against staging before merging:
+
+- Launch a coach-owned program as an admin, then update it as its creator.
+  Add, move, and remove future unstarted slots; verify the calendar refreshes.
+- Send two simultaneous copy RPCs to the same empty roster/date. Exactly one
+  succeeds and the other reports an occupied destination, with no partial copy.
+- Confirm copies have `workout_kind = 'assignment_snapshot'` and do not appear
+  in the reusable Workout Library.
+- Refresh an unstarted program occurrence twice; confirm exercises do not
+  accumulate with null block IDs. Preserve exercises that have recorded results.
+- Remove staff approval and confirm program reads and mutation RPCs are denied.
+- Obtain a fresh Copilot review on the final PR diff.
+
+Status: all 18 local test files pass. Derek reported successful staging migration
+application and a fully passing ownership-test rerun on 2026-11-16. This covers
+immutable attribution, assignment ownership, saved-workout preservation, and
+parent-workout assignment cascades. The cascade fixture uses a minimal-return
+insert followed by a separate read, matching the earlier assignment fixtures.
+Live program/copy, exercise-cleanup, and revoked-staff checks above, plus a fresh
+Copilot review, remain pending before merging.

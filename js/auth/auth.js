@@ -685,7 +685,7 @@ function setupAgeChoiceReset() {
 
 function getSafeLegalNextPage() {
   const value = new URLSearchParams(window.location.search).get("next") || "";
-  const normalized = value.replace(/^\/+/, "");
+  const normalized = value;
   if (!/^[a-z0-9-]+\.html(?:[?#].*)?$/i.test(normalized)) return "";
   if (normalized.toLowerCase().startsWith("legal-consent.html")) return "";
   return normalized;

@@ -88,7 +88,7 @@ assert.match(programs, /Created by/, "admin program cards identify their creator
 assert.match(programs, /data-program-workout-search/, "program workouts use a searchable picker instead of a giant native select");
 assert.match(workoutPageController, /replace_workout_program_item_source/, "saved program slots can receive isolated workout edits");
 assert.match(programs, /program-launch-history/, "program cards show who and when each program was assigned");
-assert.match(history, /\.limit\(500\)/, "calendar and program source lists load a practical workout history window");
+assert.match(history, /\.range\(offset, offset \+ pageSize - 1\)/, "workout history is paginated without a fixed total cap");
 assert.match(history, /getReusableWorkoutRows/, "generated program and assignment snapshots stay out of the reusable workout library");
 
 for (const table of [

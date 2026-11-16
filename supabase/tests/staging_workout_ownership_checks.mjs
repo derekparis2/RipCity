@@ -149,6 +149,15 @@ try {
   );
   assert(visibleAdminWorkout.body[0]?.id === adminWorkoutId, "coach can still view another staff member's workout");
 
+  const ownershipTheft = await request(`workouts?id=eq.${adminWorkoutId}`, ripCoach.token, {
+    method: "PATCH", body: JSON.stringify({ created_by: ripCoach.userId })
+  });
+  assert(!ownershipTheft.response.ok, "coach cannot take ownership of another coach's workout");
+  const ownOwnershipChange = await request(`workouts?id=eq.${coachWorkoutId}`, ripCoach.token, {
+    method: "PATCH", body: JSON.stringify({ created_by: ripAdmin.userId })
+  });
+  assert(!ownOwnershipChange.response.ok, "workout attribution is immutable even for its creator");
+
   const deniedAssignment = await request("workout_assignments?select=id", ripCoach.token, {
     method: "POST",
     body: JSON.stringify({
@@ -240,6 +249,15 @@ try {
     "facility admin can read the newly created coach-workout assignment"
   );
 
+  const replacement = await request("rpc/replace_workout_programming_assignment", ripAdmin.token, {
+    method: "POST", body: JSON.stringify({
+      check_assignment_id: adminAssignmentId, replacement_workout_id: adminWorkoutId
+    })
+  });
+  assert(replacement.response.ok, "admin can replace an isolated assignment");
+  const preserved = await request(`workouts?select=id&id=eq.${coachWorkoutId}`, ripAdmin.token);
+  assert(preserved.body[0]?.id === coachWorkoutId, "replacement preserves the original saved library workout");
+
   const adminUnassign = await request(
     `workout_assignments?id=eq.${adminAssignmentId}`,
     ripAdmin.token,
@@ -263,12 +281,39 @@ try {
   assert(coachOwnedDelete.body[0]?.id === coachWorkoutId, "coach can delete their own workout");
   coachWorkoutId = null;
 
+  adminAssignmentId = crypto.randomUUID();
+  const cascadeFixture = await request("workout_assignments", ripAdmin.token, {
+    method: "POST",
+    headers: { Prefer: "return=minimal" },
+    body: JSON.stringify({
+      id: adminAssignmentId, workout_id: adminWorkoutId, assigned_by: ripAdmin.userId,
+      target_type: "facility", target_facility_id: ripCity.id, assigned_date: "2099-01-04"
+    })
+  });
+  assert(
+    cascadeFixture.response.ok,
+    `cascade deletion fixture is assigned (${cascadeFixture.response.status}: ${JSON.stringify(cascadeFixture.body)})`
+  );
+  const readableCascadeFixture = await request(
+    `workout_assignments?select=id&id=eq.${adminAssignmentId}`, ripAdmin.token
+  );
+  assert(
+    readableCascadeFixture.response.ok && readableCascadeFixture.body[0]?.id === adminAssignmentId,
+    "cascade deletion fixture exists before parent deletion"
+  );
+
   const adminOwnedDelete = await request(
     `workouts?id=eq.${adminWorkoutId}&select=id`,
     ripAdmin.token,
     { method: "DELETE" }
   );
-  assert(adminOwnedDelete.body[0]?.id === adminWorkoutId, "facility admin can delete any facility workout");
+  assert(
+    adminOwnedDelete.response.ok && adminOwnedDelete.body[0]?.id === adminWorkoutId,
+    `facility admin can delete any facility workout (${adminOwnedDelete.response.status}: ${JSON.stringify(adminOwnedDelete.body)})`
+  );
+  const cascaded = await request(`workout_assignments?select=id&id=eq.${adminAssignmentId}`, ripAdmin.token);
+  assert(cascaded.response.ok && cascaded.body.length === 0, "parent workout deletion cascades without a missing-parent ownership failure");
+  adminAssignmentId = null;
   adminWorkoutId = null;
 } finally {
   if (coachAssignmentId) {
