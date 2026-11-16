@@ -311,7 +311,8 @@ direction and `docs/V3_BACKLOG.md` for the ordered branch queue. New V3 feature
 branches start from `v3-development`; production fixes remain small, reviewed,
 and based on the latest `main` before being merged back into V3.
 
-The immediate V3 release is strength maxes and percentage-based workout
-programming. Complete that entire package, verify it in staging, merge it
-through `v3-development` into `main`, and smoke-test production before starting
-the later routines, testing comparisons, multi-facility, or baseball packages.
+The immediate V3 release combines strength maxes and percentage-based workout
+programming with the completed Workout Planner and reusable-program package.
+Verify both together in staging, merge through `v3-development` into `main`,
+and smoke-test production before starting the later routines, multi-facility,
+or baseball packages.

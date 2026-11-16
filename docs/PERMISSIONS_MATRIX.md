@@ -47,7 +47,7 @@ historical relationships. It must not create a disconnected replacement user.
 | Coach invitations | Create seven-day, single-use coach links for own facility | Cannot create coach links | May claim a valid link, which creates pending access only |
 | Member profiles | View and manage profiles in own facility | View and coach-manage profiles in own facility | View/edit allowed fields on own profile only |
 | Groups | Create, view, edit, archive/delete, and manage membership for all own-facility groups | Create groups; edit/delete only own groups; add members to facility groups; remove members only from own groups | View own groups only |
-| Workouts | Full own-facility coaching access | Create, assign, edit, archive, and delete allowed drafts | View assigned workouts and log own results |
+| Workouts | Full own-facility coaching access, including assigning, unassigning, or deleting any facility workout | Create and edit workouts; assign, unassign, or delete only workouts they created; view other staff workouts | View assigned workouts and log own results |
 | Exercise library | Manage own-facility exercises, overrides, and hides | Manage own-facility exercises, overrides, and hides | Read exercises only through assigned workout experience |
 | Habits | Manage facility habits and view facility member logs | Manage facility habits and view facility member logs | View applicable habits and manage own logs |
 | Goals | Manage all goals for members in own facility | Create/manage facility-member goals and view member-created goals | Create/manage own goals; status-only updates on coach-created goals |
