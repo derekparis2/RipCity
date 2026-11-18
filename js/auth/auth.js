@@ -187,6 +187,17 @@ function chooseAuthMembership(memberships) {
     memberships.find(row => row.status === "approved") || memberships[0] || null;
 }
 
+async function routePlatformOwnerWithoutFacility(membership) {
+  if (membership?.status === "approved") return false;
+  const { data: isOwner, error } = await withAuthTimeout(
+    db.rpc("current_user_is_platform_owner"), "Checking platform access took too long."
+  );
+  if (error) throw error;
+  if (!isOwner) return false;
+  window.location.replace("platform.html");
+  return true;
+}
+
 async function redirectByProfile(userId, options = {}) {
   if (!options.skipLegalCheck) {
     const legalStatus = await getCurrentLegalAcceptance();
@@ -201,6 +212,7 @@ async function redirectByProfile(userId, options = {}) {
     profile["facility_members!facility_members_profile_id_fkey"] || [];
   const membership = chooseAuthMembership(memberships);
 
+  if (await routePlatformOwnerWithoutFacility(membership)) return;
   if (!membership || membership.status !== "approved") {
     window.location.href = getFacilityPendingUrl();
     return;
@@ -1198,6 +1210,7 @@ async function setupPendingPage() {
       profile["facility_members!facility_members_profile_id_fkey"] || [];
     const membership = chooseAuthMembership(memberships) || null;
 
+    if (await routePlatformOwnerWithoutFacility(membership)) return;
     let facilityUnavailable = false;
     if (membership?.status === "approved") {
       const { data: configuration, error } = await withAuthTimeout(

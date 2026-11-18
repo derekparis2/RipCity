@@ -33,7 +33,17 @@ prefixes and currently uses the manual SQL Editor workflow.
 
 ## Staging verification
 
-The new SQL has not yet been executed or behavior-tested against PostgreSQL.
+Derek reported successful application of `20261117120000` and passing facility
+configuration, signup, provisioning/support-exit, and admin-invite suites.
+
+A subsequent pre-rehearsal review adds owner-without-membership routing and
+`20261117133000_require_active_facility_for_staff_invites.sql`. This additional
+migration blocks coach/admin invite claims for archived facilities, holding a
+shared row lock so archival cannot race the claim. It has not been applied or
+behavior-tested against PostgreSQL yet. Apply it after `20261117120000` and
+rerun the signup/admin-invite checks. Also test an invite created while active
+that is claimed after archiving the disposable facility; the claim must fail
+without creating a membership or consuming the invite.
 Run the existing focused suites with the private staging password:
 
 ```bash

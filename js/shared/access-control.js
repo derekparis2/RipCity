@@ -354,6 +354,10 @@
     const membership = choosePrimaryMembership(profile);
 
     if (!membership || membership.status !== "approved") {
+      if (await getCurrentUserIsPlatformOwner()) {
+        window.location.replace("platform.html");
+        return null;
+      }
       window.location.href = pendingUrl;
       return null;
     }

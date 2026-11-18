@@ -77,3 +77,29 @@ assert.match(migration, /after insert or update of enabled on public.facility_mo
 console.log('Facility review runtime and migration contract checks passed');
 
 assert.match(migration, /alter table app_private\.platform_support_memberships enable row level security/);
+
+// A platform owner can reach onboarding even without a facility membership.
+const ownerRoutingSource = auth.slice(auth.indexOf('async function routePlatformOwnerWithoutFacility('), auth.indexOf('async function redirectByProfile'));
+const destinations = [];
+let ownerResult = true;
+let ownerQueries = 0;
+const ownerContext = vm.createContext({
+  window: { location: { replace: url => destinations.push(url) } },
+  withAuthTimeout: async request => request,
+  db: { rpc: async () => { ownerQueries++; return { data: ownerResult, error: null }; } }
+});
+vm.runInContext(ownerRoutingSource, ownerContext);
+assert.equal(await ownerContext.routePlatformOwnerWithoutFacility(null), true);
+assert.deepEqual(destinations, ['platform.html']);
+ownerResult = false;
+assert.equal(await ownerContext.routePlatformOwnerWithoutFacility({ status: 'pending' }), false);
+assert.equal(destinations.length, 1, 'ordinary pending accounts do not enter Platform');
+const queriesBeforeApproved = ownerQueries;
+assert.equal(await ownerContext.routePlatformOwnerWithoutFacility({ status: 'approved' }), false);
+assert.equal(ownerQueries, queriesBeforeApproved, 'approved facility access keeps its normal routing');
+const inviteHardening = await read('supabase/migrations/20261117133000_require_active_facility_for_staff_invites.sql');
+assert.equal((inviteHardening.match(/facility\.status = 'active'/g) || []).length, 2);
+assert.equal((inviteHardening.match(/for share;/g) || []).length, 2);
+for (const functionBody of inviteHardening.split('create or replace function public.').slice(1)) {
+  assert.ok(functionBody.indexOf('for share;') < functionBody.indexOf('insert into public.facility_members'));
+}
