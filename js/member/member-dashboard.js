@@ -1646,6 +1646,8 @@ async function initMemberPage() {
     if (!currentAccess) return;
 
     selectedHabitDate = getTodayString();
+    selectedWorkoutDate = selectedHabitDate;
+    workoutCalendarMonth = getMonthStart(parseAssignmentDate(selectedWorkoutDate));
     setMemberTypeText(getMemberTypeLabel());
     currentMemberProfile = await getMemberProfile(currentAccess.membership.id);
     updateMemberShell();
@@ -1654,7 +1656,8 @@ async function initMemberPage() {
     applyMemberModuleVisibility();
 
     const needsHabits = ["dashboard", "habits", "history"].includes(page);
-    const needsWorkoutHistory = ["dashboard", "training", "history"].includes(page);
+    const needsWorkoutHistory = ["dashboard", "training", "history"].includes(page)
+      && window.RipCityAccess.isModuleEnabled(currentAccess.facilityConfig, "workouts");
 
     if (needsHabits) {
       sharedHabits = await loadHabits(currentAccess.membership.facility_id);

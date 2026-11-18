@@ -81,7 +81,8 @@ function getTodayString() {
 
 // Gets Monday of current week.
 function getStartOfWeekDate() {
-  const today = new Date();
+  const [year, month, date] = getTodayString().split("-").map(Number);
+  const today = new Date(year, month - 1, date, 12);
   const day = today.getDay();
   const diff = today.getDate() - day + (day === 0 ? -6 : 1);
   return new Date(today.getFullYear(), today.getMonth(), diff);

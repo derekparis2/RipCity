@@ -82,7 +82,7 @@ function renderApprovalGroupOptions(memberType) {
   ).toLowerCase();
 
   if (!matchingGroups.length) {
-    return `<option value="">No ${groupLabel} groups available — create one in Roster</option>`;
+    return `<option value="">No ${window.RipCityUI.text(groupLabel)} groups available — create one in Roster</option>`;
   }
 
   return `

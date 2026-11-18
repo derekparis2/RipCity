@@ -119,7 +119,7 @@
         { plural: true }
       );
       scope.innerHTML = `
-        <option value="">All ${programLabel}</option>
+        <option value="">All ${window.RipCityUI.text(programLabel)}</option>
         ${ownGroups.map(group => `<option value="${window.RipCityUI.attr(group.id)}">${window.RipCityUI.text(group.name)}</option>`).join("")}
       `;
     }

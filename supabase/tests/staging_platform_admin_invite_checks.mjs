@@ -142,6 +142,8 @@ try {
   if (inviteId) {
     await request(`facility_invites?id=eq.${inviteId}`, platformOwner.token, { method: "DELETE" });
   }
+  const exited = await rpc("exit_platform_facility_admin", platformOwner.token);
+  assert(exited.response.ok, "first-admin test revokes its temporary support access");
 }
 
 console.log("Platform first-admin invite staging checks passed and fixtures were cleaned up.");

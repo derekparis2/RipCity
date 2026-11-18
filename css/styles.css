@@ -11384,3 +11384,6 @@ details[open] > .compact-panel-summary > span:last-child::after {
 .program-launch-history li {
   color: var(--muted-text, #a7a7ad);
 }
+
+/* Facility visibility must override component display rules. */
+[hidden] { display: none !important; }

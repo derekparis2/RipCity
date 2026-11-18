@@ -105,8 +105,20 @@ assert(!deniedAdminMode.response.ok, "ordinary facility admin cannot enter anoth
 const deniedMemberRead = await rpc("get_facility_configuration", alphaMember.token, { p_facility_id: rehearsal.facility_id });
 assert(!deniedMemberRead.response.ok, "member cannot read another facility configuration");
 
+const clearedSupport = await rpc("exit_platform_facility_admin", platformOwner.token);
+assert(clearedSupport.response.ok, "prior support access can be revoked before the rehearsal");
+const membershipPath = `facility_members?select=id,role,status,approved_by,approved_at&facility_id=eq.${rehearsal.facility_id}&profile_id=eq.${platformOwner.userId}`;
+const beforeSupport = await request(membershipPath, platformOwner.token);
+assert(beforeSupport.response.ok, "original membership can be read before support entry");
+try {
 const adminMode = await rpc("enter_platform_facility_admin", platformOwner.token, { p_facility_id: rehearsal.facility_id });
 assert(adminMode.response.ok, "platform owner can explicitly enter the new facility admin mode");
+const repeatedEntry = await rpc("enter_platform_facility_admin", platformOwner.token, { p_facility_id: rehearsal.facility_id });
+assert(repeatedEntry.response.ok, "reentering support mode retains the original membership snapshot");
+const habits = await request(`habits?select=id&facility_id=eq.${rehearsal.facility_id}`, platformOwner.token);
+assert(habits.response.ok && habits.body.length === 6, "new facility has six independent habit definitions");
+const directModules = await request(`facility_modules?select=module_key&facility_id=eq.${rehearsal.facility_id}`, platformOwner.token);
+assert(directModules.response.ok && directModules.body.length === 6, "authenticated direct module reads can execute the owner RLS helper");
 const ownerMembership = await request(
   `facility_members?select=id,role,status,facility_id&facility_id=eq.${rehearsal.facility_id}&profile_id=eq.${platformOwner.userId}`,
   platformOwner.token
@@ -122,5 +134,13 @@ assert(
   !crossFacilityProfiles.response.ok || crossFacilityProfiles.body.every((row) => row.id === alphaMember.userId),
   "member does not receive unrelated profiles while the new facility exists"
 );
+
+} finally {
+  const exited = await rpc("exit_platform_facility_admin", platformOwner.token);
+  assert(exited.response.ok, `support mode exits successfully (${exited.response.status}: ${JSON.stringify(exited.body)})`);
+}
+const afterSupport = await request(membershipPath, platformOwner.token);
+assert(afterSupport.response.ok && JSON.stringify(afterSupport.body) === JSON.stringify(beforeSupport.body),
+  "support exit restores the exact prior membership or removes a support-only grant");
 
 console.log("Platform facility provisioning staging checks passed; rehearsal facility was retained for launch testing.");

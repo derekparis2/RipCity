@@ -180,6 +180,13 @@ function getLegalConsentUrl(nextPage = "") {
   return `legal-consent.html${query ? `?${query}` : ""}`;
 }
 
+function chooseAuthMembership(memberships) {
+  const selectedId = window.sessionStorage.getItem("ripcity:selected-facility-id");
+  // Pending invited memberships take precedence until the destination approves.
+  return memberships.find(row => row.facility_id === selectedId) ||
+    memberships.find(row => row.status === "approved") || memberships[0] || null;
+}
+
 async function redirectByProfile(userId, options = {}) {
   if (!options.skipLegalCheck) {
     const legalStatus = await getCurrentLegalAcceptance();
@@ -192,7 +199,7 @@ async function redirectByProfile(userId, options = {}) {
   const profile = await getCurrentUserProfile(userId);
   const memberships = profile.facility_members ||
     profile["facility_members!facility_members_profile_id_fkey"] || [];
-  const membership = memberships.find(row => row.status === "approved") || memberships[0];
+  const membership = chooseAuthMembership(memberships);
 
   if (!membership || membership.status !== "approved") {
     window.location.href = getFacilityPendingUrl();
@@ -392,7 +399,7 @@ async function loadSignedInFacilityBranding(userId) {
     const profile = await getCurrentUserProfile(userId);
     const memberships = profile.facility_members ||
       profile["facility_members!facility_members_profile_id_fkey"] || [];
-    const membership = memberships.find(row => row.status === "approved") || memberships[0];
+    const membership = chooseAuthMembership(memberships);
     if (!membership?.facility_id) return false;
 
     const { data: facility, error: facilityError } = await withAuthTimeout(
@@ -701,6 +708,7 @@ async function handleSignup(event) {
       if (!claimedInvite?.length) throw new Error("The staff invite could not be claimed.");
 
       const inviteConfiguration = isAdminSignup ? signupAdminInvite : signupCoachInvite;
+      window.sessionStorage.setItem("ripcity:selected-facility-id", claimedInvite[0].facility_id);
       window.location.href = getFacilityPendingUrl(inviteConfiguration.facility_slug);
       return;
     }
@@ -1188,14 +1196,29 @@ async function setupPendingPage() {
     const profile = await getCurrentUserProfile(data.session.user.id);
     const memberships = profile.facility_members ||
       profile["facility_members!facility_members_profile_id_fkey"] || [];
-    const membership = memberships.find(row => row.status === "approved") || memberships[0] || null;
+    const membership = chooseAuthMembership(memberships) || null;
 
+    let facilityUnavailable = false;
     if (membership?.status === "approved") {
+      const { data: configuration, error } = await withAuthTimeout(
+        db.rpc("get_facility_configuration", { p_facility_id: membership.facility_id }),
+        "Loading facility status took too long."
+      );
+      if (error) throw error;
+      facilityUnavailable = !configuration || configuration.status !== "active";
+    }
+
+    if (membership?.status === "approved" && !facilityUnavailable) {
       await redirectByProfile(profile.id);
       return;
     }
 
     const statusContent = {
+      facility_unavailable: {
+        eyebrow: "FACILITY UNAVAILABLE",
+        title: "Facility Inactive",
+        description: "Your facility is not currently active. Contact your facility administrator for help."
+      },
       pending: {
         eyebrow: "AWAITING APPROVAL",
         title: membership?.role === "coach" ? "Coach Approval Pending" : "Account Approval Pending",
@@ -1219,7 +1242,7 @@ async function setupPendingPage() {
         description: "This account is not connected to a facility. Contact a facility administrator for help."
       }
     };
-    const content = statusContent[membership?.status] || statusContent.none;
+    const content = statusContent[facilityUnavailable ? "facility_unavailable" : membership?.status] || statusContent.none;
 
     document.title = content.title;
     document.getElementById("account-status-eyebrow").textContent = content.eyebrow;

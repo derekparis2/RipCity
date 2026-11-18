@@ -48,7 +48,7 @@
     const selectedFacilityId = window.sessionStorage.getItem(SELECTED_FACILITY_KEY);
     if (selectedFacilityId) {
       const selectedMembership = memberships.find(row => (
-        row.facility_id === selectedFacilityId && row.status === "approved"
+        row.facility_id === selectedFacilityId
       ));
       if (selectedMembership) return selectedMembership;
       window.sessionStorage.removeItem(SELECTED_FACILITY_KEY);

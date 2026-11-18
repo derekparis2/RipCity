@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=member-nav-fixed-1" />
+  <link rel="stylesheet" href="css/styles.css?v=member-nav-fixed-1&amp;review=facility-review-1" />
   <link rel="stylesheet" href="css/member-testing.css?v=training-views-1" />
   <link rel="stylesheet" href="css/testing-comparisons.css?v=comparison-cards-2" />
 </head>
@@ -25,11 +25,11 @@
 
     <nav class="training-view-switch" aria-label="Training views">
       <button type="button" class="training-view-button is-active" data-training-view="schedule" aria-selected="true">Schedule</button>
-      <button type="button" class="training-view-button" data-training-view="performance" aria-selected="false">Performance</button>
+      <button type="button" class="training-view-button" data-training-view="performance" data-facility-module="testing_days" aria-selected="false">Performance</button>
     </nav>
 
     <div class="training-view" data-training-view-panel="schedule">
-      <section class="panel training-calendar-panel future-workouts-panel member-page-panel" id="training-calendar-panel">
+      <section class="panel training-calendar-panel future-workouts-panel member-page-panel" id="training-calendar-panel" data-facility-module="workouts">
         <div class="panel-heading"><div><p class="eyebrow">SCHEDULE</p><h3>Training Calendar</h3></div><p id="workout-history-message" class="auth-message" aria-live="polite"></p></div>
         <div class="training-calendar-layout">
           <div id="future-workout-list" class="future-calendar training-calendar"><div class="empty-state">Loading assigned workouts...</div></div>
@@ -37,7 +37,7 @@
         </div>
       </section>
 
-      <section class="panel member-testing-panel member-page-panel" id="member-testing-schedule-panel">
+      <section class="panel member-testing-panel member-page-panel" id="member-testing-schedule-panel" data-facility-module="testing_days">
         <div class="panel-heading">
           <div><p class="eyebrow">PERFORMANCE TESTING</p><h3>Upcoming Testing Days</h3></div>
           <span class="member-testing-count" id="member-testing-upcoming-count">0 upcoming</span>
@@ -49,7 +49,7 @@
       </section>
     </div>
 
-    <div class="training-view hidden" data-training-view-panel="performance">
+    <div class="training-view hidden" data-training-view-panel="performance" data-facility-module="testing_days">
       <section class="panel member-testing-panel member-page-panel" id="member-testing-panel">
         <div class="panel-heading">
           <div><p class="eyebrow">PERFORMANCE HISTORY</p><h3>Testing Progress</h3></div>
@@ -85,12 +85,12 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/shared/supabaseClient.js"></script>
   <script src="js/shared/ui-utils.js"></script>
-  <script src="js/shared/access-control.js?v=auth-reliability-3"></script>
+  <script src="js/shared/access-control.js?v=auth-reliability-3&amp;review=facility-review-1"></script>
   <script src="js/shared/workout-data.js?v=workout-attribution-1"></script>
   <script src="js/shared/leaderboard-metrics.js?v=member-leaderboards-1"></script>
   <script src="js/shared/testing-comparisons.js?v=comparison-list-1"></script>
   <script src="js/member/member-nav.js?v=member-leaderboards-1"></script>
-  <script src="js/member/member-dashboard.js?v=member-role-guard-1"></script>
-  <script src="js/member/member-testing-days.js?v=comparison-list-1"></script>
+  <script src="js/member/member-dashboard.js?v=member-role-guard-1&amp;review=facility-review-1"></script>
+  <script src="js/member/member-testing-days.js?v=comparison-list-1&amp;review=facility-review-1"></script>
 </body>
 </html>

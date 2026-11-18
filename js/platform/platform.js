@@ -169,6 +169,7 @@
     `;
 
     const form = container.querySelector("form");
+    form.facilityModuleSettings = structuredClone(config.modules);
     if (mode === "create") {
       const nameInput = form.elements.name;
       const slugInput = form.elements.slug;
@@ -203,7 +204,7 @@
       p_modules: MODULES.map(([moduleKey]) => ({
         module_key: moduleKey,
         enabled: form.elements[`module_${moduleKey}`].checked,
-        settings: {}
+        settings: form.facilityModuleSettings?.[moduleKey]?.settings || {}
       })),
       p_programs: ["athlete", "h2k"].map((programKey, index) => ({
         program_key: programKey,
@@ -270,6 +271,9 @@
   }
 
   async function loadFacilities() {
+    const { error: exitError } = await db.rpc("exit_platform_facility_admin");
+    if (exitError) throw exitError;
+    window.RipCityAccess.selectFacility(null);
     list.innerHTML = '<div class="empty-state">Loading facilities...</div>';
     const { data, error } = await db.rpc("list_platform_facilities");
     if (error) throw error;

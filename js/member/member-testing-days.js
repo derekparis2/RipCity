@@ -26,7 +26,8 @@ const memberTrainingViewCopy = {
 };
 
 function setMemberTrainingView(view) {
-  const nextView = memberTrainingViewCopy[view] ? view : "schedule";
+  const testingEnabled = window.RipCityAccess?.isModuleEnabled(window.RipCityFacility, "testing_days") !== false;
+  const nextView = memberTrainingViewCopy[view] && (view !== "performance" || testingEnabled) ? view : "schedule";
   activeMemberTrainingView = nextView;
   document.querySelectorAll("[data-training-view-panel]").forEach(panel => {
     panel.classList.toggle("hidden", panel.dataset.trainingViewPanel !== nextView);
@@ -237,6 +238,7 @@ async function initializeMemberTestingDays() {
   try {
     const access = await window.RipCityAccess.requireMemberAccess();
     if (!access || !["athlete", "h2k_member"].includes(access.membership.role)) return;
+    if (!window.RipCityAccess.isModuleEnabled(access.facilityConfig, "testing_days")) return;
     const memberProfile = await window.RipCityAccess.getMemberProfileForMembership(access.membership.id);
 
     const { data, error } = await db.from("testing_day_participants")
@@ -296,3 +298,5 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   initializeMemberTestingDays();
 });
+
+window.addEventListener("ripcity:facility-config", () => setMemberTrainingView(activeMemberTrainingView));
