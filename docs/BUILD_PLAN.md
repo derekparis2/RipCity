@@ -323,3 +323,9 @@ configuration, and a full fake second-facility launch rehearsal proving that
 no private Rip City data is shared. Daily routines follow the workout release;
 hitting/HitTrax/TrackMan work follows the platform and approved data-contract
 decisions.
+
+Update (2026-11-17): Workout Planner and reusable programs are merged into
+`v3-development` and `main`; Derek reported successful production SQL
+application and live smoke tests. Sam continues strength-max work. The active
+facility-platform branch is now being integrated and reviewed for facility
+editing and new-facility onboarding, followed by staging verification.

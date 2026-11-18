@@ -11,6 +11,7 @@
 
   const MODULE_REQUIREMENTS_BY_PAGE = {
     "coach-workouts.html": ["workouts"],
+    "coach-programming.html": ["workouts"],
     "coach-exercises.html": ["workouts"],
     "workout-session.html": ["workouts"],
     "coach-testing.html": ["testing_days"],

@@ -61,8 +61,8 @@ function findExerciseTemplateByName(name) {
 function renderExerciseTemplatePicker(input) {
   if (!input) return;
 
-  const list = input.parentElement?.querySelector("datalist") ||
-    input.closest("[data-exercise-card]")?.querySelector("datalist");
+  const list = input.closest("[data-exercise-card]")
+    ?.querySelector("[data-exercise-template-suggestions]");
 
   if (!exerciseLibraryAvailable) {
     input.placeholder = "Type an exercise name...";
@@ -81,16 +81,47 @@ function renderExerciseTemplatePicker(input) {
   input.disabled = false;
   input.placeholder = "Start typing an exercise...";
 
+  if (list) list.innerHTML = "";
+}
+
+function getExerciseTemplateSuggestions(searchValue, limit = 8) {
+  const search = normalizeExerciseName(searchValue);
+  if (!search) return [];
+
+  return exerciseTemplates
+    .filter(template => normalizeExerciseName(template.name).includes(search))
+    .sort((a, b) => {
+      const aName = normalizeExerciseName(a.name);
+      const bName = normalizeExerciseName(b.name);
+      const aStarts = aName.startsWith(search);
+      const bStarts = bName.startsWith(search);
+
+      if (aStarts !== bStarts) return aStarts ? -1 : 1;
+      return aName.localeCompare(bName);
+    })
+    .slice(0, limit);
+}
+
+function renderExerciseTemplateSuggestions(input) {
+  const list = input?.closest("[data-exercise-card]")
+    ?.querySelector("[data-exercise-template-suggestions]");
   if (!list) return;
 
-  list.innerHTML = `
-    ${exerciseTemplates.map(template => `
-      <option
-        value="${window.RipCityUI.attr(template.name)}"
-        label="${window.RipCityUI.attr(getExerciseTemplateLabel(template))}"
-      ></option>
-    `).join("")}
-  `;
+  const suggestions = exerciseLibraryAvailable
+    ? getExerciseTemplateSuggestions(input.value)
+    : [];
+
+  list.innerHTML = suggestions.map(template => `
+    <button
+      type="button"
+      class="exercise-template-suggestion"
+      data-exercise-template-choice="${window.RipCityUI.attr(template.id)}"
+    >
+      <strong>${window.RipCityUI.text(template.name)}</strong>
+      <span>${window.RipCityUI.text(getExerciseTemplateLabel(template) || "Exercise library")}</span>
+    </button>
+  `).join("");
+  list.classList.toggle("hidden", suggestions.length === 0);
 }
 
 function refreshExerciseTemplatePickers() {

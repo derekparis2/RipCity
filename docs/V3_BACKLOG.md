@@ -58,6 +58,37 @@ responsive staging checks, and production release notes must all be complete.
 package through `v3-development` into `main`. Confirm the production migration
 and smoke test, then continue to Package 2.
 
+### 1B. Workout Planner And Reusable Programs
+
+- **Status:** Complete when `derek/programming-calendar` merges into `v3-development`
+- **Suggested branch:** `<name>/programming-calendar`
+- **Plan detail:** [Programming calendar and reusable programs](VERSION_3_PLAN.md#programming-calendar-and-reusable-programs)
+
+Replace the Created Workouts-first experience with Calendar, Workout Library,
+and Programs views on a dedicated Workout Planner page linked from the Workout
+Builder and shared coach/admin navigation. Support group and
+individual month calendars, copy one week, one month, or any selected direct
+assignments to multiple dates and rosters with a conflict-safe preview, and
+launch reusable 1–52 week programs to either a group or individual. Facility
+admins can review and filter all programs by creating coach; ordinary coaches
+see and manage only programs they created.
+
+**Complete when:** Combined member month calendars deduplicate direct, group,
+and facility assignments; copied weeks, months, and selections create
+independent editable workout snapshots without overwriting occupied dates;
+program edits update linked future unstarted occurrences across every launch
+while past, started, and completed work remains frozen; facility admins can
+filter and manage every facility program while coaches can read, edit, launch,
+and archive only their own; coaches can view shared facility workouts but may
+assign, unassign, or delete only workouts they created, while admins can manage
+all facility workouts; facility boundaries and staff authorization are enforced
+by RLS/RPCs; and focused automated and staging checks pass.
+
+**Merge note:** Sam's strength-max branch and this branch both affect workout
+prescriptions. Before either package is released, extend the program workout
+clone to preserve every new max, percentage, resolved-load, and snapshot field,
+then test a launched program containing a percentage-based exercise.
+
 ---
 
 ## 2. Daily Routines And Checklists
@@ -326,3 +357,9 @@ is not workout/exercise hardening and should remain separate from feature work.
 
 **Complete when:** Every page loads the correct styles in the original cascade
 order and mobile/desktop visual regression checks pass.
+
+Update (2026-11-17): Workout Planner and reusable programs are merged into
+`v3-development` and `main`; Derek reported successful production SQL
+application and live smoke tests. Sam continues strength-max work. The active
+facility-platform branch is now being integrated and reviewed for facility
+editing and new-facility onboarding, followed by staging verification.

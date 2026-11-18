@@ -66,6 +66,50 @@ Before implementation, decide which estimation formulas are supported, how a
 training max is defined, which max source is the default for programming, and
 which rounding increments each facility may use.
 
+### Programming Calendar And Reusable Programs
+
+Keep workout creation focused in the existing Workout Builder and place
+calendar, saved-workout, and reusable-program management on a dedicated
+Workout Planner page linked from the shared coach/admin navigation.
+
+- Make a month Calendar the primary saved-workout view while retaining
+  searchable Workout Library and Programs views on the same dedicated
+  Workout Planner page.
+- Let staff inspect a monthly schedule for either a group or an individual. An
+  individual schedule combines direct, inherited group, and facility-wide
+  assignments without displaying the same workout twice.
+- Let staff copy a week, a month, or any selected direct group/member workout
+  assignments to one or more destination dates and rosters. Show an exact
+  preview, block occupied dates instead of overwriting them, and deduplicate
+  overlapping destinations. Inherited group/facility work remains visible on
+  an individual calendar but cannot be accidentally duplicated as a direct
+  assignment. Copied workouts are independent editable records.
+- Let staff build reusable programs from saved workouts, choose each workout's
+  week and weekday, and launch the program to a group or individual.
+- Clone each launched program workout into a normal assignment while retaining
+  its program link. Editing a program updates every linked future workout that
+  has not been started, including its date and prescription. Past, started, and
+  completed workouts remain frozen historical snapshots. Independent calendar
+  copies never inherit this link.
+- Keep program creation, launch, archive, and calendar-copy operations facility
+  scoped and enforced by trusted database functions and RLS.
+- Let facility admins view every facility program and filter them by creating
+  coach. Ordinary coaches may see, edit, launch, and archive only programs they
+  created.
+- Preserve who created and assigned each workout. Independent calendar workouts
+  remain editable through the existing builder; linked program occurrences are
+  changed from the program so every affected future schedule stays consistent.
+- Coaches may inspect shared facility workouts, but may assign, unassign, or
+  delete only workouts they created. Facility admins may manage every workout
+  in their facility. Read-only calendar entries remain clearly visible without
+  showing selection or action controls that the current staff member cannot use.
+- Remember the selected calendar scope, roster, month, program filter, and
+  library filter across refreshes on the same device.
+
+The program week begins on Monday. Programs may span 1–52 weeks. Archived
+program definitions disappear from the active library while existing calendar
+and historical workout records remain available.
+
 ### Daily Routines And Checklists
 
 Add morning, afternoon, and night routines as a focused extension of the habit
@@ -318,3 +362,9 @@ Testing Day improvement; Derek or Sam can create and launch a second real
 facility without custom rebuilding or cross-facility data leakage; and Rip City
 can use an approved hitting-development workflow with trustworthy
 HitTrax/TrackMan data while preserving privacy, source history, and corrections.
+
+Update (2026-11-17): Workout Planner and reusable programs are merged into
+`v3-development` and `main`; Derek reported successful production SQL
+application and live smoke tests. Sam continues strength-max work. The active
+facility-platform branch is now being integrated and reviewed for facility
+editing and new-facility onboarding, followed by staging verification.

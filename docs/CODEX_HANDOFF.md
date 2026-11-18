@@ -397,3 +397,9 @@ Common local testing:
 - VS Code Live Server often runs on port `5500`.
 - The shared local server runs on port `3000`; stop it when not needed.
 - Use `git switch v3-development` before starting V3 feature branches.
+
+Update (2026-11-17): Workout Planner and reusable programs are merged into
+`v3-development` and `main`; Derek reported successful production SQL
+application and live smoke tests. Sam continues strength-max work. The active
+facility-platform branch is now being integrated and reviewed for facility
+editing and new-facility onboarding, followed by staging verification.

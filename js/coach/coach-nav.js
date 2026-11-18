@@ -2,6 +2,7 @@ const coachNavigationItems = [
   { key: "dashboard", label: "Dashboard", href: "coach-dashboard.html" },
   { key: "roster", label: "Roster", href: "coach-roster.html" },
   { key: "workouts", label: "Workout Builder", href: "coach-workouts.html", module: "workouts" },
+  { key: "programming", label: "Workout Planner", href: "coach-programming.html?view=programs", module: "workouts" },
   { key: "testing", label: "Testing Days", href: "coach-testing.html", module: "testing_days" },
   { key: "leaderboards", label: "Leaderboards", href: "coach-leaderboards.html", module: "leaderboards" },
   { key: "approvals", label: "Approvals", href: "coach-approvals.html" },

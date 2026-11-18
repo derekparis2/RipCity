@@ -89,3 +89,6 @@ assert.match(
 );
 
 console.log("Facility-aware frontend tests passed");
+
+assert.match(accessControl, /"coach-programming\.html": \["workouts"\]/, "the merged planner requires the workouts module");
+assert.match(coachNav, /key: "programming"[^\n]*module: "workouts"/, "planner navigation follows workout module configuration");
