@@ -207,9 +207,19 @@ async function redirectByProfile(userId, options = {}) {
     }
   }
 
+  if (options.preferPlatform) {
+    const { data: isOwner, error } = await withAuthTimeout(db.rpc("current_user_is_platform_owner"), "Checking platform access took too long.");
+    if (error) throw error;
+    if (isOwner) { window.location.href = "platform.html"; return; }
+  }
+
   const profile = await getCurrentUserProfile(userId);
   const memberships = profile.facility_members ||
     profile["facility_members!facility_members_profile_id_fkey"] || [];
+  if (memberships.filter(row => row.status === "approved").length > 1 && !window.sessionStorage.getItem("ripcity:selected-facility-id")) {
+    window.location.href = "facility-select.html";
+    return;
+  }
   const membership = chooseAuthMembership(memberships);
 
   if (await routePlatformOwnerWithoutFacility(membership)) return;
@@ -254,7 +264,7 @@ function normalizeEmail(value) {
 
 function getSignupFacilitySlug() {
   const params = new URLSearchParams(window.location.search);
-  return String(params.get("facility") || "rip-city").trim().toLowerCase();
+  return String(params.get("facility") || "").trim().toLowerCase();
 }
 
 function getCurrentFacilitySlug() {
@@ -262,14 +272,16 @@ function getCurrentFacilitySlug() {
     document.documentElement.dataset.facilitySlug
       || signupFacility?.facility_slug
       || signupCoachInvite?.facility_slug
+      || signupAdminInvite?.facility_slug
       || getSignupFacilitySlug()
-      || "rip-city"
+      || ""
   ).trim().toLowerCase();
 }
 
 function getFacilityPageUrl(page, facilitySlug = getCurrentFacilitySlug()) {
+  if (!facilitySlug) return page;
   const separator = page.includes("?") ? "&" : "?";
-  return `${page}${separator}facility=${encodeURIComponent(facilitySlug || "rip-city")}`;
+  return `${page}${separator}facility=${encodeURIComponent(facilitySlug)}`;
 }
 
 function getFacilityPendingUrl(facilitySlug = getCurrentFacilitySlug()) {
@@ -277,7 +289,7 @@ function getFacilityPendingUrl(facilitySlug = getCurrentFacilitySlug()) {
 }
 
 function getFacilityLoginUrl(facilitySlug) {
-  return `login.html?facility=${encodeURIComponent(facilitySlug || "rip-city")}`;
+  return "login.html";
 }
 
 function getFacilitySignupUrl(facilitySlug) {
@@ -304,6 +316,18 @@ function applyPublicFacilityBranding(configuration) {
   document.documentElement.style.setProperty("--facility-primary", configuration.primary_color || "#69b7ff");
   document.documentElement.style.setProperty("--facility-secondary", configuration.secondary_color || "#f7f7f7");
   document.documentElement.dataset.facilitySlug = facilitySlug;
+  const primary = configuration.primary_color || "#69b7ff";
+  document.documentElement.style.setProperty("--accent", primary);
+  if (/^#[0-9a-f]{6}$/i.test(primary)) {
+    const rgb = [1,3,5].map(offset => parseInt(primary.slice(offset, offset + 2), 16));
+    document.documentElement.style.setProperty("--accent-soft", `rgba(${rgb.join(",")}, .12)`);
+    const linear = rgb.map(value => { const channel = value / 255; return channel <= .04045 ? channel / 12.92 : ((channel + .055) / 1.055) ** 2.4; });
+    const luminance = linear[0] * .2126 + linear[1] * .7152 + linear[2] * .0722;
+    document.documentElement.style.setProperty("--accent-ink", luminance > .179 ? "#000000" : "#ffffff");
+  }
+
+  document.documentElement.dataset.facilityState = "ready";
+  document.documentElement.dataset.facilityTheme = ["midnight", "slate", "forest"].includes(configuration.ui_theme) ? configuration.ui_theme : "midnight";
 
   document.querySelectorAll(".auth-brand h1").forEach(element => {
     element.textContent = facilityName.toUpperCase();
@@ -314,13 +338,17 @@ function applyPublicFacilityBranding(configuration) {
     parent?.querySelector(".facility-brand-initials")?.remove();
 
     if (logoUrl) {
+      image.hidden = true;
+      image.onload = () => { image.hidden = false; };
+      image.onerror = () => { image.hidden = true; };
       image.src = logoUrl;
       image.alt = `${facilityName} logo`;
-      image.hidden = false;
+      if (image.complete && image.naturalWidth > 0) image.hidden = false;
       return;
     }
 
     if (facilitySlug === "rip-city") {
+      image.src = "assets/rip-city-logo.png";
       image.alt = `${facilityName} logo`;
       image.hidden = false;
       return;
@@ -375,7 +403,7 @@ async function loadSignupFacility() {
     "Loading the signup facility took too long."
   );
   if (error) throw error;
-  if (!data) throw new Error("This facility signup link is invalid or no longer active.");
+  if (!data) throw new Error("Ask your facility for a valid registration link.");
 
   signupFacility = data;
   applyPublicFacilityBranding(signupFacility);
@@ -390,20 +418,8 @@ async function loadSignupFacility() {
 }
 
 async function loadLoginFacility() {
-  const facilitySlug = getSignupFacilitySlug();
-  const { data, error } = await withAuthTimeout(
-    db.rpc("lookup_signup_facility", { p_facility_slug: facilitySlug }),
-    "Loading facility details took too long."
-  );
-  if (error) throw error;
-  if (!data) return;
-
-  applyPublicFacilityBranding(data);
-  const facilityName = data.facility_name || "your facility";
-  const description = document.getElementById("login-description");
-  const signupLink = document.getElementById("login-signup-link");
-  if (description) description.textContent = `Access your ${facilityName} account.`;
-  if (signupLink) signupLink.href = getFacilitySignupUrl(data.facility_slug);
+  // Login is intentionally neutral. Registration links carry facility context.
+  document.documentElement.dataset.facilityState = "ready";
 }
 
 async function loadSignedInFacilityBranding(userId) {
@@ -801,7 +817,7 @@ async function handleLogin(event) {
       data = { user: recoveredUser };
     }
 
-    await runAuthStage("load-destination", () => redirectByProfile(data.user.id));
+    await runAuthStage("load-destination", () => redirectByProfile(data.user.id, { preferPlatform: true }));
   } catch (error) {
     console.error(error);
     showMessage(
@@ -942,7 +958,7 @@ async function continueAfterLegalAcceptance(userId) {
     window.location.href = nextPage;
     return;
   }
-  await redirectByProfile(userId, { skipLegalCheck: true });
+  await redirectByProfile(userId, { skipLegalCheck: true, preferPlatform: true });
 }
 
 async function handleLegalConsent(event) {
@@ -1218,7 +1234,9 @@ async function setupPendingPage() {
         "Loading facility status took too long."
       );
       if (error) throw error;
-      facilityUnavailable = !configuration || configuration.status !== "active";
+      const key = membership.role === "athlete" ? "athlete" : membership.role === "h2k_member" ? "h2k" : null;
+      const memberProgram = (configuration?.programs || []).find(program => program.program_key === key);
+      facilityUnavailable = !configuration || configuration.status !== "active" || memberProgram?.enabled === false;
     }
 
     if (membership?.status === "approved" && !facilityUnavailable) {
@@ -1230,7 +1248,7 @@ async function setupPendingPage() {
       facility_unavailable: {
         eyebrow: "FACILITY UNAVAILABLE",
         title: "Facility Inactive",
-        description: "Your facility is not currently active. Contact your facility administrator for help."
+        description: "Your facility or member program is not currently active. Contact your facility administrator for help."
       },
       pending: {
         eyebrow: "AWAITING APPROVAL",

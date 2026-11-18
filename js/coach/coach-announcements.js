@@ -499,6 +499,7 @@
       setDefaultExpiration();
       access = await window.RipCityAccess.requireCoachAccess({ onDeniedMessage: showMessage });
       if (!access) return;
+      if (!window.RipCityAccess.isModuleEnabled(access.facilityConfig, "announcements")) return;
       applyProgramAudienceLabels();
       await Promise.all([loadAudienceOptions(), loadAnnouncements()]);
     } catch (error) {

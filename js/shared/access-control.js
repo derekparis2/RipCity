@@ -167,6 +167,19 @@
     };
   }
 
+  function getMemberProgramKey(membership) {
+    return membership?.role === "athlete" ? "athlete" : membership?.role === "h2k_member" ? "h2k" : null;
+  }
+
+  function getEffectiveFacilityConfiguration(configuration, membership) {
+    const key = getMemberProgramKey(membership);
+    if (!key) return configuration;
+    const overrides = configuration.programs?.[key]?.module_overrides || {};
+    return { ...configuration, modules: Object.fromEntries(Object.entries(configuration.modules).map(([moduleKey, module]) => [
+      moduleKey, { ...module, enabled: module.enabled !== false && overrides[moduleKey] !== false }
+    ])) };
+  }
+
   function getFacilityInitials(name) {
     return String(name || "Facility")
       .split(/\s+/)
@@ -183,6 +196,17 @@
     document.documentElement.style.setProperty("--facility-primary", configuration.primary_color || "#69b7ff");
     document.documentElement.style.setProperty("--facility-secondary", configuration.secondary_color || "#f7f7f7");
     document.documentElement.dataset.facilitySlug = configuration.slug || "";
+    document.documentElement.dataset.facilityTheme = ["midnight", "slate", "forest"].includes(configuration.ui_theme) ? configuration.ui_theme : "midnight";
+    document.documentElement.dataset.facilityState = "ready";
+    const primary = configuration.primary_color || "#69b7ff";
+    document.documentElement.style.setProperty("--accent", primary);
+    if (/^#[0-9a-f]{6}$/i.test(primary)) {
+      const rgb = [1,3,5].map(offset => parseInt(primary.slice(offset, offset + 2), 16));
+      document.documentElement.style.setProperty("--accent-soft", `rgba(${rgb.join(",")}, .12)`);
+      const linear = rgb.map(value => { const channel = value / 255; return channel <= .04045 ? channel / 12.92 : ((channel + .055) / 1.055) ** 2.4; });
+      const luminance = linear[0] * .2126 + linear[1] * .7152 + linear[2] * .0722;
+      document.documentElement.style.setProperty("--accent-ink", luminance > .179 ? "#000000" : "#ffffff");
+    }
 
     document.querySelectorAll(".auth-brand h1, .brand h1").forEach(element => {
       element.textContent = String(configuration.name || "Facility").toUpperCase();
@@ -193,9 +217,12 @@
       parent?.querySelector(".facility-brand-initials")?.remove();
 
       if (configuration.logo_url) {
+        image.hidden = true;
+        image.onload = () => { image.hidden = false; };
+        image.onerror = () => { image.hidden = true; };
         image.src = configuration.logo_url;
         image.alt = `${configuration.name} logo`;
-        image.hidden = false;
+        if (image.complete && image.naturalWidth > 0) image.hidden = false;
         return;
       }
 
@@ -203,6 +230,7 @@
       // not provide a hosted logo. Other facilities receive a text monogram
       // until a logo URL is configured.
       if (configuration.slug === "rip-city") {
+        image.src = "assets/rip-city-logo.png";
         image.alt = `${configuration.name} logo`;
         image.hidden = false;
         return;
@@ -301,7 +329,8 @@
 
   function getRequiredModulesForCurrentPage() {
     const page = window.location.pathname.split("/").pop() || "";
-    return MODULE_REQUIREMENTS_BY_PAGE[page] || [];
+    const normalizedPage = page.endsWith(".html") ? page : `${page}.html`;
+    return MODULE_REQUIREMENTS_BY_PAGE[normalizedPage] || [];
   }
 
   function currentPageHasEnabledModule(configuration) {
@@ -370,16 +399,22 @@
       return null;
     }
 
-    const [facilityConfig, isPlatformOwner] = await Promise.all([
+    const [storedFacilityConfig, isPlatformOwner] = await Promise.all([
       getFacilityConfiguration(membership.facility_id),
       getCurrentUserIsPlatformOwner()
     ]);
-    if (!facilityConfig || facilityConfig.status !== "active") {
+    if (!storedFacilityConfig || storedFacilityConfig.status !== "active") {
       if (onDeniedMessage) onDeniedMessage("This facility is not currently active.", true);
       window.location.replace("pending.html");
       return null;
     }
 
+    const programKey = getMemberProgramKey(membership);
+    if (programKey && storedFacilityConfig.programs?.[programKey]?.enabled === false) {
+      window.location.replace("pending.html");
+      return null;
+    }
+    const facilityConfig = getEffectiveFacilityConfiguration(storedFacilityConfig, membership);
     window.RipCityPlatformOwner = isPlatformOwner;
     publishFacilityConfiguration(facilityConfig);
 
@@ -430,6 +465,7 @@
 
   window.RipCityAccess = {
     choosePrimaryMembership,
+    getEffectiveFacilityConfiguration,
     selectFacility,
     getCurrentUserIsPlatformOwner,
     getMemberProfileForMembership,

@@ -17,6 +17,23 @@
     group_plural: "Groups"
   };
 
+  const TIME_ZONES = [
+    ["America/New_York", "Eastern Time — New York"],
+    ["America/Chicago", "Central Time — Chicago"],
+    ["America/Denver", "Mountain Time — Denver"],
+    ["America/Phoenix", "Arizona — Phoenix"],
+    ["America/Los_Angeles", "Pacific Time — Los Angeles"],
+    ["America/Anchorage", "Alaska — Anchorage"],
+    ["Pacific/Honolulu", "Hawaii — Honolulu"],
+    ["UTC", "UTC"]
+  ];
+  function timeZoneOptions(selected) {
+    const zones = new Map(TIME_ZONES);
+    const additional = typeof Intl.supportedValuesOf === "function" ? Intl.supportedValuesOf("timeZone") : [];
+    for (const zone of [...additional, selected]) if (zone && !zones.has(zone)) zones.set(zone, zone.replaceAll("_", " "));
+    return [...zones].map(([value, label]) => `<option value="${escapeHtml(value)}"${value === selected ? " selected" : ""}>${escapeHtml(label)}</option>`).join("");
+  }
+
   let profile = null;
   let facilities = [];
 
@@ -70,11 +87,12 @@
       primary_color: "#69b7ff",
       secondary_color: "#f7f7f7",
       time_zone: "America/New_York",
+      ui_theme: "midnight",
       terminology: { ...DEFAULT_TERMINOLOGY },
       modules: Object.fromEntries(MODULES.map(([key]) => [key, { enabled: true, settings: {} }])),
       programs: {
         athlete: { program_key: "athlete", display_name: "Athlete", plural_name: "Athletes", enabled: true, sort_order: 10 },
-        h2k: { program_key: "h2k", display_name: "H2K Member", plural_name: "H2K Members", enabled: true, sort_order: 20 }
+        h2k: { program_key: "h2k", display_name: "Member", plural_name: "Members", enabled: true, sort_order: 20 }
       }
     };
   }
@@ -109,7 +127,7 @@
             ${slugField}
           </div>
           <div class="form-row">
-            <label>IANA Time Zone<input name="time_zone" value="${escapeHtml(config.time_zone)}" required placeholder="America/New_York"></label>
+            <label>Time Zone<select name="time_zone" required>${timeZoneOptions(config.time_zone)}</select></label>
             <label>Logo URL<input name="logo_url" type="url" value="${escapeHtml(config.logo_url || "")}" placeholder="https://..."></label>
           </div>
           <div class="form-row">
@@ -118,6 +136,13 @@
           </div>
         </section>
 
+        <section class="platform-config-section">
+          <h4>Appearance</h4>
+          <label>Page Theme<select name="ui_theme">
+            ${[["midnight", "Midnight"], ["slate", "Slate"], ["forest", "Forest"]].map(([key, label]) => `<option value="${key}"${config.ui_theme === key ? " selected" : ""}>${label}</option>`).join("")}
+          </select></label>
+          <p class="platform-facility-meta">Themes set page surfaces. Your facility colors, logo, and terminology personalize each page.</p>
+        </section>
         <section class="platform-config-section">
           <h4>Modules</h4>
           <div class="platform-module-grid">
@@ -132,14 +157,20 @@
 
         <section class="platform-config-section">
           <h4>Member programs</h4>
+          <p class="platform-facility-meta">Set feature access for each kind of member. Add as many teams, age groups, or training groups as needed in Roster.</p>
           <div class="platform-program-grid">
             ${["athlete", "h2k"].map(key => {
               const program = config.programs[key];
               return `
                 <div class="platform-option-card">
-                  <label><input type="checkbox" name="program_${key}_enabled" ${program.enabled !== false ? "checked" : ""}><span>Enable ${key === "athlete" ? "Athlete" : "H2K"}</span></label>
+                  <h4>${key === "athlete" ? "Athlete program" : "Additional member program"}</h4>
+                  <label><input type="checkbox" name="program_${key}_enabled" ${program.enabled !== false ? "checked" : ""}><span>Enable this program</span></label>
                   <label>Singular label<input name="program_${key}_display" value="${escapeHtml(program.display_name)}" required></label>
                   <label>Plural label<input name="program_${key}_plural" value="${escapeHtml(program.plural_name)}" required></label>
+                  <fieldset class="platform-program-features"><legend>Features for these members</legend>
+                    ${MODULES.map(([moduleKey, label]) => `<label><input type="checkbox" name="program_${key}_module_${moduleKey}"${program.module_overrides?.[moduleKey] !== false ? " checked" : ""}><span>${label}</span></label>`).join("")}
+                  </fieldset>
+                  <p class="platform-facility-meta">Facility-wide feature switches take precedence.</p>
                 </div>
               `;
             }).join("")}
@@ -181,6 +212,13 @@
           .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
       });
     }
+    function syncProgramFeatureControls() {
+      for (const key of ["athlete", "h2k"]) for (const [moduleKey] of MODULES) {
+        form.elements[`program_${key}_module_${moduleKey}`].disabled = !form.elements[`module_${moduleKey}`].checked;
+      }
+    }
+    form.addEventListener("change", syncProgramFeatureControls);
+    syncProgramFeatureControls();
     form.addEventListener("submit", saveConfiguration);
   }
 
@@ -193,6 +231,7 @@
       p_primary_color: String(data.get("primary_color") || "").trim(),
       p_secondary_color: String(data.get("secondary_color") || "").trim(),
       p_time_zone: String(data.get("time_zone") || "").trim(),
+      p_ui_theme: String(data.get("ui_theme") || "midnight"),
       p_terminology: {
         member_singular: String(data.get("term_member_singular") || "").trim(),
         member_plural: String(data.get("term_member_plural") || "").trim(),
@@ -211,7 +250,10 @@
         display_name: String(data.get(`program_${programKey}_display`) || "").trim(),
         plural_name: String(data.get(`program_${programKey}_plural`) || "").trim(),
         enabled: form.elements[`program_${programKey}_enabled`].checked,
-        sort_order: (index + 1) * 10
+        sort_order: (index + 1) * 10,
+        module_overrides: Object.fromEntries(MODULES.map(([moduleKey]) => [moduleKey,
+          form.elements[`program_${programKey}_module_${moduleKey}`]?.checked !== false
+        ]))
       }))
     };
   }

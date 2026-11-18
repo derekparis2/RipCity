@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Choose Your Facility</title>
+  <link rel="stylesheet" href="css/styles.css?v=ui-polish-4&amp;review=facility-ui-3" />
+</head>
+<body class="auth-body">
+  <main class="auth-page"><section class="auth-card">
+    <div class="auth-brand"><span class="neutral-brand-mark" aria-hidden="true">T</span><div><h1>TRAINING PLATFORM</h1><p>Your facility. Your training.</p></div></div>
+    <div class="auth-heading"><p class="eyebrow">WELCOME BACK</p><h2>Choose your facility</h2><p>Open a facility where you have approved access.</p></div>
+    <p id="facility-choice-message" class="auth-message" role="status">Loading your facilities...</p>
+    <div id="facility-choice-list" class="auth-form"></div>
+    <p class="auth-footer"><button id="facility-choice-logout" class="auth-text-btn" type="button">Log out</button></p>
+  </section></main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/shared/supabaseClient.js?v=facility-ui-3"></script>
+  <script src="js/shared/access-control.js?v=facility-ui-3&amp;review=facility-ui-3"></script>
+  <script src="js/auth/facility-select.js?v=facility-ui-3"></script>
+</body>
+</html>

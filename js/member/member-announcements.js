@@ -219,6 +219,7 @@
     try {
       const access = await window.RipCityAccess.requireMemberAccess();
       if (!access) return;
+      if (!window.RipCityAccess.isModuleEnabled(access.facilityConfig, "announcements")) return;
       memberProfile = await window.RipCityAccess.getMemberProfileForMembership(access.membership.id);
 
       const { data, error } = await db

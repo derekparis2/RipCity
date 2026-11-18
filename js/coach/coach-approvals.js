@@ -107,6 +107,7 @@ async function loadPendingUsers() {
 
     approvalAccess = access;
     document.getElementById("coach-invite-panel")?.classList.toggle("hidden", !access.isAdmin);
+    document.getElementById("admin-invite-panel")?.classList.toggle("hidden", !access.isAdmin);
     document.getElementById("coach-management-panel")?.classList.toggle("hidden", !access.isAdmin);
 
     const accessNote = document.getElementById("approval-access-note");
@@ -494,6 +495,32 @@ async function createCoachInvite() {
   }
 }
 
+async function createFacilityAdminInvite() {
+  const access = approvalAccess || await requireApprovalCoachOrAdmin();
+  if (!access?.isAdmin) return;
+  const button = document.getElementById("create-admin-invite-btn");
+  const message = document.getElementById("admin-invite-message");
+  button.disabled = true;
+  message.textContent = "Creating an administrator link...";
+  try {
+    const { data, error } = await db.rpc("create_facility_admin_invite", { p_facility_id: access.membership.facility_id });
+    if (error) throw error;
+    if (!data?.[0]?.invite_code) throw new Error("The admin invite could not be created.");
+    const url = new URL("signup.html", window.location.href);
+    url.searchParams.set("admin_invite", data[0].invite_code);
+    try {
+      await copyCoachInviteText(url.href);
+      message.textContent = "Admin signup link copied. It expires in seven days and requires approval.";
+    } catch {
+      message.textContent = `Copy this admin signup link: ${url.href}`;
+    }
+    message.classList.remove("error-message");
+  } catch (error) {
+    message.textContent = error.message || "Could not create the admin signup link.";
+    message.classList.add("error-message");
+  } finally { button.disabled = false; }
+}
+
 async function handleApprovalLogout() {
   await db.auth.signOut();
   window.location.href = "login.html";
@@ -504,5 +531,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("refresh-approvals-btn").addEventListener("click", loadPendingUsers);
   document.getElementById("create-coach-invite-btn").addEventListener("click", createCoachInvite);
+  document.getElementById("create-admin-invite-btn")?.addEventListener("click", createFacilityAdminInvite);
   document.getElementById("approval-logout-btn").addEventListener("click", handleApprovalLogout);
 });

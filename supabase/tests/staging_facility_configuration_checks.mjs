@@ -58,6 +58,7 @@ function replacePayload(facilityId, config, overrides = {}) {
     p_primary_color: overrides.primaryColor ?? config.primary_color,
     p_secondary_color: overrides.secondaryColor ?? config.secondary_color,
     p_time_zone: overrides.timeZone ?? config.time_zone,
+    p_ui_theme: overrides.uiTheme ?? config.ui_theme ?? "midnight",
     p_terminology: overrides.terminology ?? config.terminology,
     p_modules: overrides.modules ?? config.modules,
     p_programs: overrides.programs ?? config.programs
@@ -154,17 +155,26 @@ let configurationChanged = false;
 try {
   const replaceResult = await rpc("replace_platform_facility_configuration", platformOwner.token, {
     ...replacePayload(alpha.facility_id, alphaOriginal),
+    p_ui_theme: "slate",
     p_primary_color: "#123456",
     p_secondary_color: "#ABCDEF",
     p_time_zone: "America/Chicago",
     p_terminology: configuredTerminology,
     p_modules: configuredModules,
-    p_programs: configuredPrograms
+    p_programs: configuredPrograms.map(program => ({...program, module_overrides: {workouts:false, testing_days:true}}))
   });
   assert(replaceResult.response.ok, "platform owner can transactionally replace facility configuration");
   configurationChanged = true;
 
   const configured = replaceResult.body;
+  assert(configured.ui_theme === "slate", "facility page theme persists");
+  assert(configured.programs.every(program => program.module_overrides.workouts === false && program.module_overrides.testing_days === true), "per-program feature overrides persist independently");
+  const invalidTheme = await rpc("replace_platform_facility_configuration", platformOwner.token,
+    {...replacePayload(alpha.facility_id, configured), p_ui_theme: "unsupported"});
+  assert(!invalidTheme.response.ok, "unknown page themes are rejected");
+  const invalidModules = await rpc("replace_platform_facility_configuration", platformOwner.token,
+    {...replacePayload(alpha.facility_id, configured), p_programs: configured.programs.map(program => ({...program, module_overrides: {workouts: "false"}}))});
+  assert(!invalidModules.response.ok, "non-boolean program feature overrides are rejected atomically");
   assert(configured.time_zone === "America/Chicago", "facility configuration stores its authoritative time zone");
   assert(configured.primary_color === "#123456", "facility configuration stores validated branding colors");
   assert(configured.terminology.member_plural === "Players", "facility configuration stores custom terminology");

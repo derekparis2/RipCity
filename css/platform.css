@@ -106,3 +106,28 @@
     width: 100%;
   }
 }
+
+.platform-config-form .form-row { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+.platform-config-form label { display:grid; gap:8px; color:var(--text); font-size:.9rem; font-weight:600; }
+.platform-config-form input:not([type="checkbox"]), .platform-config-form select {
+  width:100%; min-width:0; min-height:46px; padding:11px 13px;
+  color:var(--text); background:var(--surface); border:1px solid var(--border); border-radius:10px; font:inherit;
+}
+.platform-config-form input:disabled { opacity:.65; }
+.platform-config-form input[type="color"] { height:46px; padding:5px; cursor:pointer; }
+.platform-config-form input[type="checkbox"] { width:18px; height:18px; margin:0; accent-color:var(--facility-primary); }
+.platform-config-form .platform-module-grid > label { display:flex; align-items:center; gap:12px; }
+.platform-config-form input:focus-visible, .platform-config-form select:focus-visible { outline:2px solid var(--facility-primary); outline-offset:2px; }
+.platform-option-card:has(input:checked) { border-color:var(--facility-primary); }
+@media(max-width:700px) { .platform-config-form .form-row { grid-template-columns:1fr; } }
+
+.platform-program-features { display:grid; gap:10px; margin:4px 0 0; padding:14px; border:1px solid var(--border); border-radius:10px; }
+.platform-program-features legend { font-size:.8rem; color:var(--muted); padding:0 6px; }
+.platform-config-form .platform-program-features label { display:flex; align-items:center; gap:10px; }
+.platform-config-form label:has(input:disabled) { color:var(--muted); }
+
+.platform-config-form .platform-option-card > label:has(> input[type="checkbox"]) { display:flex; align-items:center; gap:10px; }
+
+.platform-page .coach-page, .platform-config-form, .platform-config-section, .platform-option-card { min-width:0; }
+.platform-facility-list { grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr)); }
+@media(max-width:700px) { .platform-page .h2k-header { flex-wrap:wrap; gap:16px; } }

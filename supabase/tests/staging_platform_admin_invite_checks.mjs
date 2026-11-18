@@ -59,11 +59,22 @@ const [platformOwner, alphaAdmin, ripCoach, invitee, secondMember] = await Promi
 const directory = await rpc("list_platform_facilities", platformOwner.token);
 const rehearsal = directory.body.find((facility) => facility.facility_slug === "platform-launch-rehearsal");
 assert(Boolean(rehearsal), "launch-rehearsal facility is available");
+const alpha = directory.body.find(facility => facility.facility_slug === "test-facility-alpha");
+assert(Boolean(alpha), "Alpha facility is available for same-facility admin invites");
 
 const deniedCreate = await rpc("create_platform_admin_invite", alphaAdmin.token, {
   p_facility_id: rehearsal.facility_id
 });
 assert(!deniedCreate.response.ok, "facility admin cannot create a platform first-admin invite");
+const ownAdminInvite = await rpc("create_facility_admin_invite", alphaAdmin.token, { p_facility_id: alpha.facility_id });
+assert(ownAdminInvite.response.ok && ownAdminInvite.body[0]?.invite_code, "approved facility admin can invite another admin in their own facility");
+if (ownAdminInvite.body[0]?.invite_id) {
+  const removedInvite = await request(`facility_invites?id=eq.${ownAdminInvite.body[0].invite_id}`, alphaAdmin.token, {method:"DELETE"});
+  assert(removedInvite.response.ok, "temporary additional-admin invite is cleaned up");
+}
+const crossAdminInvite = await rpc("create_facility_admin_invite", alphaAdmin.token, { p_facility_id: rehearsal.facility_id });
+assert(!crossAdminInvite.response.ok, "facility admin cannot invite an admin into another facility");
+
 
 let inviteId;
 let inviteCode;

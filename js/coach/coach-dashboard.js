@@ -940,7 +940,7 @@ function getFilteredWorkoutReviewRows(rows, searchTerm) {
 
 async function refreshCoachWorkoutReview() {
   const list = document.getElementById("coach-workout-review-list");
-  if (!list || !coachAccess) return;
+  if (!list || !coachAccess || !window.RipCityAccess.isModuleEnabled(coachAccess.facilityConfig, "workouts")) return;
 
   showCoachWorkoutReviewMessage("Loading workout completion...");
 
@@ -1462,10 +1462,9 @@ async function refreshCoachDashboard() {
     const facilityId = coachAccess.membership.facility_id;
     const todayKey = getTodayString();
     const members = await loadApprovedFacilityMembers(facilityId);
-    const habitLogs = await loadHabitLogsForAttention(
-      members.map(member => member.memberProfileId),
-      todayKey
-    );
+    const habitLogs = window.RipCityAccess.isModuleEnabled(coachAccess.facilityConfig, "habits")
+      ? await loadHabitLogsForAttention(members.map(member => member.memberProfileId), todayKey)
+      : [];
 
     await refreshCoachWorkoutReview();
     populateCoachAttentionGroupFilter();

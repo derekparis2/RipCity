@@ -3,11 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="js/shared/facility-shell.js?v=facility-ui-1&amp;review=facility-ui-3"></script>
   <title>Coach Approvals</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=ui-polish-4&amp;review=facility-review-1" />
+  <link rel="stylesheet" href="css/styles.css?v=ui-polish-4&amp;review=facility-ui-3" />
 </head>
 
 <body class="auth-body">
@@ -62,6 +63,15 @@
         </div>
       </details>
 
+      <details class="panel hidden approval-admin-tool" id="admin-invite-panel">
+        <summary class="compact-panel-summary"><span><span class="eyebrow">ADMIN ONLY</span><strong>Invite an Admin</strong></span><span aria-hidden="true">Open +</span></summary>
+        <div class="compact-panel-body">
+          <p>Create a single-use link for another administrator in this facility. It expires in seven days and requires approval.</p>
+          <button class="primary-btn" type="button" id="create-admin-invite-btn">Create &amp; Copy Admin Link</button>
+          <p id="admin-invite-message" class="auth-message" role="status" aria-live="polite"></p>
+        </div>
+      </details>
+
       <details class="panel hidden approval-admin-tool" id="coach-management-panel">
         <summary class="compact-panel-summary">
           <span><span class="eyebrow">ADMIN ONLY</span><strong>Coach Access</strong></span>
@@ -81,7 +91,7 @@
   <script src="js/shared/supabaseClient.js"></script>
   <script src="js/shared/ui-utils.js"></script>
   <script src="js/coach/coach-nav.js?v=program-creator-1"></script>
-  <script src="js/shared/access-control.js?v=auth-reliability-3&amp;review=facility-review-2"></script>
-  <script src="js/coach/coach-approvals.js?v=auth-reliability-1&amp;review=facility-review-1"></script>
+  <script src="js/shared/access-control.js?v=auth-reliability-3&amp;review=facility-ui-3"></script>
+  <script src="js/coach/coach-approvals.js?v=auth-reliability-1&amp;review=facility-ui-3"></script>
 </body>
 </html>

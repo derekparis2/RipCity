@@ -77,3 +77,31 @@ In the staging browser, verify:
 Remaining release gates: live staging checks, fresh review, and separately
 coordinated production migrations/deployment. Do not treat local source checks
 as evidence of successful database execution.
+
+
+## UI polish and member-program features (2026-11-17)
+
+`20261117200000_add_facility_themes_and_program_features.sql` adds theme storage,
+program-level feature switches, and same-facility admin invitation creation.
+Derek reported successful staging application. It keeps the existing RPC
+signatures and adds overloads with a required `p_ui_theme` argument; new clients
+use those overloads to save appearance and per-program feature settings atomically.
+
+The additional member program uses an editable label instead of an H2K enable
+switch. The two existing stored member categories remain compatible with current
+auth roles and history. Roster groups are not limited to two: staff can create
+multiple team, age, sport, custom, and program groups within each facility.
+
+Themes and per-program overrides have local/runtime coverage. Apply no earlier
+migration again. Run the updated configuration/admin-invite scripts after the
+new migration, then deploy the updated preview before verifying its new controls
+with actual admin/member sessions. All tested live feature changes were restored.
+
+
+Derek reported that the expanded configuration and admin-invite staging checks
+both passed after the appearance/program-feature migration. He chose to retain
+early workout logging: future calendar actions now say Open Workout, and future
+assignments show their actual In Progress/Complete state once results exist.
+The remaining verification step is the newly deployed preview UI, especially
+member navigation for each program's feature settings. Local changes have not
+been committed or pushed by the agent.
