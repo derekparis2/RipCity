@@ -11409,3 +11409,10 @@ html[data-facility-theme] body { background:var(--bg); }
 html[data-facility-theme] .hero-card { background:linear-gradient(120deg,var(--surface-2),var(--surface)); }
 html[data-facility-theme] .member-sidebar { background:var(--surface); }
 .facility-brand-initials { color:var(--text); }
+
+/* Secondary color is a visible accent, never the only readable text color. */
+html[data-facility-slug] .h2k-header { border-bottom:3px solid var(--facility-secondary); padding-bottom:16px; }
+html[data-facility-slug] .member-sidebar { border-top:5px solid var(--facility-secondary); }
+html[data-facility-slug] .hero-card { border-bottom:3px solid var(--facility-secondary); }
+html[data-facility-slug] .outline-btn, html[data-facility-slug] .outline-link { border-color:var(--facility-secondary); }
+html[data-facility-slug] .coach-nav-link.active, html[data-facility-slug] .nav-link.active { box-shadow:inset 0 -3px var(--facility-secondary); }

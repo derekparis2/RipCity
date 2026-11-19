@@ -21,7 +21,7 @@ const platformUnderTest = platform.slice(0, platform.indexOf('  document.getElem
   + 'window.testApi = { readPayload, normalizeConfig }; })();';
 vm.runInContext(platformUnderTest, platformContext);
 const config = platformContext.window.testApi.normalizeConfig({ modules: [{ module_key: 'workouts', enabled: true, settings: { rounding: 5 } }] });
-const form = { elements: {}, facilityModuleSettings: structuredClone(config.modules) };
+const form = { facilityProgramKeys:["athlete","h2k"], elements: {content_show_feedback:{checked:true},content_show_scores:{checked:true}}, facilityModuleSettings: structuredClone(config.modules) };
 for (const key of ['workouts','habits','goals','leaderboards','announcements','testing_days']) {
   form.elements[`module_${key}`] = { checked: true };
   form.elements[`program_${key}_enabled`] = { checked: true };

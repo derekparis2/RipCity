@@ -1,6 +1,7 @@
 (function () {
   let memberProfile = null;
   let memberType = "athlete";
+  let memberProgramKey = "athlete";
   let ownGroups = [];
 
   function showMessage(message, isError = false) {
@@ -115,7 +116,7 @@
     if (scope) {
       const programLabel = window.RipCityAccess.getProgramLabel(
         window.RipCityFacility,
-        memberType,
+        memberProgramKey,
         { plural: true }
       );
       scope.innerHTML = `
@@ -126,10 +127,10 @@
   }
 
   function updateContext() {
-    const label = window.RipCityAccess.getProgramLabel(window.RipCityFacility, memberType);
+    const label = window.RipCityAccess.getProgramLabel(window.RipCityFacility, memberProgramKey);
     const pluralLabel = window.RipCityAccess.getProgramLabel(
       window.RipCityFacility,
-      memberType,
+      memberProgramKey,
       { plural: true }
     );
     const scope = document.getElementById("member-leaderboard-scope");
@@ -163,8 +164,9 @@
     showMessage("");
   }
 
-  async function initialize({ profile }) {
+  async function initialize({ profile, access }) {
     memberProfile = profile;
+    memberProgramKey = access?.membership?.program_key || profile?.member_type || "athlete";
     memberType = profile?.member_type === "h2k" ? "h2k" : "athlete";
     await loadGroups();
     populateControls();

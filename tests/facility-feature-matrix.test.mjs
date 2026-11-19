@@ -35,7 +35,7 @@ assert.match(sql,/not app_private\.is_facility_admin\(p_facility_id\)/);
 assert.match(sql,/create or replace function public\.create_facility_admin_invite/);
 const login = await readFile('login.html','utf8');
 assert.doesNotMatch(login,/rip-city-logo|RIP CITY|id="login-signup-link"/);
-assert.match(login,/Ask your facility for a registration link/);
+assert.match(login,/Register with a facility code/);
 const shell = await readFile('js/shared/facility-shell.js','utf8');
 assert.match(shell,/facilityState = "loading"/);
 console.log(`Facility and member program feature matrix: ${checked} combinations passed`);

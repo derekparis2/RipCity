@@ -41,28 +41,35 @@ function buildRosterSignupLink(type) {
   const signupUrl = new URL("signup.html", window.location.href);
   signupUrl.searchParams.set("type", type);
   const facilitySlug = rosterAccess?.facilityConfig?.slug;
-  if (facilitySlug) signupUrl.searchParams.set("facility", facilitySlug);
+  const code = rosterAccess?.facilityConfig?.registration_code;
+  if (code) signupUrl.searchParams.set("code",code);
+  else if (facilitySlug) signupUrl.searchParams.set("facility", facilitySlug);
   return signupUrl.href;
 }
 
 function applyRosterProgramConfiguration() {
   const programs = rosterAccess?.facilityConfig?.programs || {};
 
-  const getProgram = key => programs[key] || {
-    enabled: true,
-    display_name: key === "h2k" ? "H2K Member" : "Athlete",
-    plural_name: key === "h2k" ? "H2K Members" : "Athletes"
-  };
-
-  document.querySelectorAll("[data-copy-signup-link]").forEach(button => {
-    const programKey = button.dataset.copySignupLink;
-    const program = getProgram(programKey);
-    const enabled = program?.enabled !== false;
-    button.hidden = !enabled;
-    if (program?.display_name) {
-      button.textContent = `Copy ${program.display_name} Link`;
+  const getProgram = key => programs[key] || {enabled:false,display_name:"Member",plural_name:"Members"};
+  const links = document.getElementById("roster-registration-links");
+  if(links) {
+    links.replaceChildren();
+    for(const program of Object.values(programs).filter(program=>program.enabled !== false)) {
+      const button=document.createElement("button");button.type="button";button.className="outline-btn";
+      button.textContent=`Copy ${program.display_name} Link`; button.addEventListener("click",()=>copyRosterSignupLink(program.program_key));links.append(button);
     }
-  });
+    const code=document.getElementById("roster-registration-code");if(code) code.textContent=rosterAccess.facilityConfig.registration_code || "Unavailable";
+  }
+  for(const id of ["roster-type-filter","new-group-member-type"]) {
+    const select=document.getElementById(id);if(!select) continue;
+    const previous=select.value;select.replaceChildren();
+    const all=document.createElement("option");all.value=id==="roster-type-filter"?"all":"both";all.textContent="All programs";select.append(all);
+    for(const program of Object.values(programs)) {
+      if(program.enabled === false && id!=="roster-type-filter") continue;
+      const option=document.createElement("option");option.value=program.program_key;option.textContent=program.plural_name;select.append(option);
+    }
+    if([...select.options].some(option=>option.value===previous)) select.value=previous;
+  }
 
   document.querySelectorAll("[data-program-label]").forEach(element => {
     const program = getProgram(element.dataset.programLabel);
@@ -118,7 +125,7 @@ function normalizeMemberProfile(member) {
 function formatMemberType(memberType) {
   return window.RipCityAccess.getProgramLabel(
     rosterAccess?.facilityConfig,
-    memberType === "h2k" ? "h2k" : "athlete"
+    memberType
   );
 }
 
@@ -134,8 +141,8 @@ function formatRole(role) {
   return labels[role] || role;
 }
 
-function groupSupportsMember(group, memberType) {
-  return group.member_type === "both" || group.member_type === memberType;
+function groupSupportsMember(group, memberType, programKey) {
+  return (!group.program_key || group.program_key === programKey) && (group.member_type === "both" || group.member_type === memberType);
 }
 
 function getMemberGroupIds(memberProfileId) {
@@ -218,7 +225,7 @@ function getFilteredMembers() {
       memberProfile?.school
     ].filter(Boolean).join(" ").toLowerCase();
 
-    if (typeFilter !== "all" && member.memberType !== typeFilter) return false;
+    if (typeFilter !== "all" && member.programKey !== typeFilter) return false;
     if (statusFilter !== "all" && member.status !== statusFilter) return false;
     if (groupFilter !== "all" && !groupIds.includes(groupFilter)) return false;
     if (search && !searchText.includes(search)) return false;
@@ -242,6 +249,7 @@ function buildRosterMemberSelect(includeBandColor = true) {
     id,
     role,
     status,
+    program_key,
     created_at,
     profile:profiles!facility_members_profile_id_fkey (
       id,
@@ -300,6 +308,7 @@ async function loadRosterMembers(facilityId) {
       profileId: member.profile?.id,
       memberProfileId: memberProfile?.id,
       memberType: memberProfile?.member_type || (member.role === "h2k_member" ? "h2k" : "athlete"),
+      programKey: member.program_key || memberProfile?.member_type,
       role: member.role,
       status: member.status,
       name: member.profile?.full_name || "Unnamed Member",
@@ -334,6 +343,11 @@ async function loadRosterGroupMemberships(memberProfileIds) {
 }
 
 function updateRosterStats() {
+  const programStats=document.getElementById("facility-program-stats");
+  if(programStats) programStats.innerHTML=Object.values(rosterAccess?.facilityConfig?.programs || {}).filter(program=>program.enabled!==false).map(program=>
+    `<article class="stat-card"><span>${window.RipCityUI.text(program.plural_name)}</span><strong>${rosterMembers.filter(member=>member.programKey===program.program_key).length}</strong><small>Facility members</small></article>`
+  ).join("");
+
   const ungrouped = rosterMembers.filter(member => !getMemberGroupIds(member.memberProfileId).length);
 
   document.getElementById("roster-total-members").textContent = rosterMembers.length;
@@ -371,7 +385,7 @@ function renderGroupList() {
       <article class="roster-group-card">
         <div>
           <strong>${window.RipCityUI.text(group.name)}</strong>
-          <span>${window.RipCityUI.text(group.group_type)} · ${window.RipCityUI.text(group.member_type)}</span>
+          <span>${window.RipCityUI.text(group.group_type)} · ${window.RipCityUI.text(group.program_key ? formatMemberType(group.program_key) : "All programs")}</span>
         </div>
         <div class="roster-group-card-actions">
           <b>${count}</b>
@@ -418,6 +432,16 @@ function renderRosterMembers() {
     renderRosterMembers();
   });
 
+  document.querySelectorAll("[data-change-member-program]").forEach(button=>button.addEventListener("click",async()=>{
+    const membershipId=button.dataset.changeMemberProgram;
+    const key=document.querySelector(`[data-member-program="${membershipId}"]`)?.value;
+    if(!confirm("Change this member's program? Their saved results remain intact. Incompatible program groups must be removed first.")) return;
+    button.disabled=true;
+    try {
+      const {error}=await db.rpc("change_member_facility_program",{p_membership_id:membershipId,p_program_key:key});
+      if(error) throw error; await refreshRoster();showRosterMessage("Member program updated.");
+    } catch(error){showRosterMessage(error.message,true);button.disabled=false;}
+  }));
   document.querySelectorAll("[data-roster-group-toggle]").forEach(input => {
     input.addEventListener("change", () => markMemberGroupChanges(input.dataset.memberProfileId));
   });
@@ -494,7 +518,7 @@ function renderRosterMemberCard(member) {
   const memberProfile = member.memberProfile || {};
   const memberGroups = getMemberGroups(member.memberProfileId);
   const groupIds = new Set(memberGroups.map(group => group.id));
-  const compatibleGroups = rosterGroups.filter(group => groupSupportsMember(group, member.memberType));
+  const compatibleGroups = rosterGroups.filter(group => groupSupportsMember(group, member.memberType, member.programKey));
   const meta = [
     formatRole(member.role),
     member.status,
@@ -525,7 +549,7 @@ function renderRosterMemberCard(member) {
         <div>
           <div class="roster-member-heading">
             <h4>${window.RipCityUI.text(member.name)}</h4>
-            <span class="status-pill">${window.RipCityUI.text(formatMemberType(member.memberType))}</span>
+            <span class="status-pill">${window.RipCityUI.text(formatMemberType(member.programKey))}</span>
             ${member.memberType === "h2k" ? `
               <span class="h2k-band-badge">${window.RipCityUI.text(memberProfile.h2k_band_color ? `${memberProfile.h2k_band_color} Band` : "No Band")}</span>
             ` : ""}
@@ -570,6 +594,8 @@ function renderRosterMemberCard(member) {
         </div>
 
         ${member.memberType === "h2k" ? renderH2KBandEditor(member) : ""}
+        ${rosterAccess?.isAdmin ? `<div class="form-row"><label>Member program<select data-member-program="${window.RipCityUI.attr(member.facilityMemberId)}">${Object.values(rosterAccess.facilityConfig.programs).filter(program=>program.enabled!==false || program.program_key===member.programKey).map(program=>`<option value="${window.RipCityUI.attr(program.program_key)}"${program.program_key===member.programKey?" selected":""}>${window.RipCityUI.text(program.display_name)}</option>`).join("")}</select></label><button class="outline-btn" type="button" data-change-member-program="${window.RipCityUI.attr(member.facilityMemberId)}">Change Program</button></div>` : ""}
+
 
         <div class="roster-group-checkboxes">
           ${compatibleGroups.length ? compatibleGroups.map(group => `
@@ -800,7 +826,8 @@ async function createRosterGroup(event) {
         facility_id: rosterAccess.membership.facility_id,
         name,
         group_type: groupType,
-        member_type: memberType,
+        member_type: "both",
+        program_key: memberType === "both" ? null : memberType,
         created_by: rosterAccess.profile.id
       });
 

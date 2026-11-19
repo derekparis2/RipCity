@@ -169,6 +169,7 @@ async function logoutWorkoutSession() {
 }
 
 function getWorkoutSessionMemberTypeLabel() {
+  if(workoutSessionAccess?.membership?.program_key) return window.RipCityAccess.getProgramLabel(workoutSessionAccess.facilityConfig,workoutSessionAccess.membership.program_key);
   const profileType = String(workoutMemberProfile?.member_type || "").toLowerCase();
   const role = String(workoutSessionAccess?.membership?.role || "").toLowerCase();
 

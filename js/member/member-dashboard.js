@@ -696,6 +696,7 @@ function isHabitCompleteForSelectedDate(habitId) {
 }
 
 function getMemberTypeLabel(profileTypeValue = currentMemberProfile?.member_type) {
+  if(currentAccess?.membership?.program_key) return window.RipCityAccess.getProgramLabel(currentAccess.facilityConfig,currentAccess.membership.program_key);
   const profileType = String(profileTypeValue || "").toLowerCase();
   const role = String(currentAccess?.membership?.role || "").toLowerCase();
 

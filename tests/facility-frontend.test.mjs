@@ -57,8 +57,8 @@ assert.match(
   /option\[data-program-option\]/,
   "roster program choices use facility program configuration"
 );
-assert.match(signup, /data-signup-program="athlete"/, "signup exposes a configurable athlete program card");
-assert.match(signup, /data-signup-program="h2k"/, "signup exposes a configurable H2K program card");
+assert.match(signup, /id="signup-member-type-grid"/, "signup exposes a dynamic program container");
+assert.match(auth, /enabledPrograms\.forEach/, "signup renders every enabled configured program");
 assert.match(auth, /db\.rpc\("lookup_signup_facility"/, "signup loads safe public facility branding and programs");
 assert.match(auth, /p_facility_slug: signupFacility\.facility_slug/, "signup completion targets the selected facility");
 assert.match(auth, /lookup_coach_invite_configuration/, "coach invites load their destination facility branding");

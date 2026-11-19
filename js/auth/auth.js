@@ -148,6 +148,7 @@ async function getCurrentUserProfile(userId) {
           id,
           role,
           status,
+          program_key,
           facility_id
         )
       `)
@@ -207,7 +208,7 @@ async function redirectByProfile(userId, options = {}) {
     }
   }
 
-  if (options.preferPlatform) {
+  if (options.preferPlatform !== false) {
     const { data: isOwner, error } = await withAuthTimeout(db.rpc("current_user_is_platform_owner"), "Checking platform access took too long.");
     if (error) throw error;
     if (isOwner) { window.location.href = "platform.html"; return; }
@@ -379,15 +380,15 @@ function getEnabledSignupPrograms() {
 
 function applySignupProgramConfiguration() {
   const enabledPrograms = getEnabledSignupPrograms();
-  const enabledKeys = new Set(enabledPrograms.map(program => program.program_key));
-
-  document.querySelectorAll("[data-signup-program]").forEach(card => {
-    const key = card.dataset.signupProgram;
-    const program = enabledPrograms.find(row => row.program_key === key);
-    card.hidden = !enabledKeys.has(key);
-    const input = card.querySelector("input[name='member-type']");
-    if (input) input.disabled = !enabledKeys.has(key);
-    if (program?.display_name) card.querySelector("span").textContent = program.display_name;
+  const container = document.getElementById("signup-member-type-grid");
+  container.replaceChildren();
+  enabledPrograms.forEach((program, index) => {
+    const card = document.createElement("label"); card.className = "member-type-card"; card.dataset.signupProgram = program.program_key;
+    const input = document.createElement("input"); input.type = "radio"; input.name = "member-type"; input.value = program.program_key; input.checked = index === 0;
+    input.addEventListener("change", handleSignupMemberTypeChange);
+    const name = document.createElement("span"); name.textContent = program.display_name;
+    const detail = document.createElement("small"); detail.textContent = program.profile_type === "athlete" ? "Athlete registration" : "Member registration";
+    card.append(input,name,detail); container.append(card);
   });
 
   const selected = document.querySelector("input[name='member-type']:checked:not(:disabled)");
@@ -398,8 +399,9 @@ function applySignupProgramConfiguration() {
 }
 
 async function loadSignupFacility() {
+  const registrationCode = new URLSearchParams(window.location.search).get("code");
   const { data, error } = await withAuthTimeout(
-    db.rpc("lookup_signup_facility", { p_facility_slug: getSignupFacilitySlug() }),
+    registrationCode ? db.rpc("lookup_registration_facility", {p_code:registrationCode}) : db.rpc("lookup_signup_facility", { p_facility_slug: getSignupFacilitySlug() }),
     "Loading the signup facility took too long."
   );
   if (error) throw error;
@@ -751,7 +753,8 @@ async function handleSignup(event) {
         p_school: school || null,
         p_graduation_year: graduationYear ? Number(graduationYear) : null,
         p_body_weight: bodyWeight ? Number(bodyWeight) : null,
-        p_facility_slug: signupFacility.facility_slug
+        p_facility_slug: signupFacility.facility_slug,
+        p_registration_code: new URLSearchParams(window.location.search).get("code") || null
       }),
       "Finishing the facility account took too long."
     ));
@@ -917,7 +920,8 @@ async function handlePendingLogout() {
 function updateSignupMemberTypeFields() {
   const selected = document.querySelector("input[name='member-type']:checked:not(:disabled)")?.value || "";
   const athleteFields = document.querySelectorAll(".athlete-only");
-  const isAthlete = selected === "athlete";
+  const program = signupFacility?.programs?.find(program => program.program_key === selected);
+  const isAthlete = program ? program.profile_type === "athlete" : selected === "athlete";
 
   athleteFields.forEach(field => {
     field.classList.toggle("hidden", !isAthlete);
@@ -1067,9 +1071,9 @@ function applySignupTypeFromUrl() {
   const params = new URLSearchParams(window.location.search);
   const type = String(params.get("type") || "").toLowerCase();
 
-  if (!["athlete", "h2k"].includes(type)) return;
+  if (!signupFacility?.programs?.some(program => program.program_key === type && program.enabled !== false)) return;
 
-  const input = document.querySelector(`input[name='member-type'][value='${type}']:not(:disabled)`);
+  const input = [...document.querySelectorAll("input[name='member-type']:not(:disabled)")].find(input => input.value === type);
   if (!input) return;
 
   input.checked = true;
@@ -1155,14 +1159,14 @@ async function setupAdminSignupPage() {
     const loginLink = document.getElementById("signup-login-link");
     if (loginLink) loginLink.href = getFacilityLoginUrl(signupAdminInvite.facility_slug);
     document.getElementById("signup-description").textContent =
-      `Create your administrator account for ${signupAdminInvite.facility_name}. A platform owner must approve it before you receive access.`;
+      `Create your administrator account for ${signupAdminInvite.facility_name}. An existing facility administrator or platform owner must approve it before you receive access.`;
     showMessage("signup-message", "");
     setSignupSubmitDisabled(false);
   } catch (error) {
     console.error(error);
     signupAdminInvite = null;
     document.getElementById("signup-description").textContent =
-      "Ask a platform owner to create a new administrator signup link.";
+      "Ask your facility administrator or a platform owner for a new administrator signup link.";
     showMessage("signup-message", error.message || "Could not verify this administrator invite.", true);
   }
 
@@ -1234,7 +1238,7 @@ async function setupPendingPage() {
         "Loading facility status took too long."
       );
       if (error) throw error;
-      const key = membership.role === "athlete" ? "athlete" : membership.role === "h2k_member" ? "h2k" : null;
+      const key = membership.program_key || (membership.role === "athlete" ? "athlete" : membership.role === "h2k_member" ? "h2k" : null);
       const memberProgram = (configuration?.programs || []).find(program => program.program_key === key);
       facilityUnavailable = !configuration || configuration.status !== "active" || memberProgram?.enabled === false;
     }

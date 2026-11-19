@@ -131,3 +131,6 @@
 .platform-page .coach-page, .platform-config-form, .platform-config-section, .platform-option-card { min-width:0; }
 .platform-facility-list { grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr)); }
 @media(max-width:700px) { .platform-page .h2k-header { flex-wrap:wrap; gap:16px; } }
+
+.platform-config-form textarea { width:100%;min-height:100px;resize:vertical;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);font:inherit; }
+.platform-config-form label:has(> input[type="checkbox"]) { display:flex;align-items:center;gap:10px; }

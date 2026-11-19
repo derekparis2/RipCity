@@ -123,7 +123,7 @@ function updateProfilePreview() {
     ? (profileAccess.membership.role === "admin" ? "Admin" : "Coach")
     : window.RipCityAccess.getProgramLabel(
       profileAccess?.facilityConfig,
-      currentMemberProfile?.member_type === "h2k" ? "h2k" : "athlete"
+      profileAccess?.membership?.program_key || (currentMemberProfile?.member_type === "h2k" ? "h2k" : "athlete")
     );
   const bandBadge = document.getElementById("preview-h2k-band");
 
@@ -157,6 +157,7 @@ function getProfileMemberTypeLabel() {
     return profileAccess.membership.role === "admin" ? "Admin" : "Coach";
   }
 
+  if(profileAccess?.membership?.program_key) return window.RipCityAccess.getProgramLabel(profileAccess.facilityConfig,profileAccess.membership.program_key);
   const profileType = String(currentMemberProfile?.member_type || "").toLowerCase();
   const role = String(profileAccess?.membership?.role || "").toLowerCase();
 

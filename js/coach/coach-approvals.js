@@ -46,7 +46,8 @@ async function requireApprovalCoachOrAdmin() {
   });
 }
 
-function formatApprovalRole(role) {
+function formatApprovalRole(role, programKey) {
+  if(programKey) return window.RipCityAccess.getProgramLabel(approvalAccess.facilityConfig,programKey);
   if (role === "h2k_member") {
     return window.RipCityAccess.getProgramLabel(approvalAccess?.facilityConfig, "h2k");
   }
@@ -67,17 +68,17 @@ function getApprovalMemberProfile(user) {
   return user.member_profile || null;
 }
 
-function getApprovalGroupsForMemberType(memberType) {
+function getApprovalGroupsForMemberType(memberType, programKey) {
   return approvalMemberGroups.filter(group => (
-    group.member_type === memberType || group.member_type === "both"
+    (!group.program_key || group.program_key === programKey) && (group.member_type === memberType || group.member_type === "both")
   ));
 }
 
-function renderApprovalGroupOptions(memberType) {
-  const matchingGroups = getApprovalGroupsForMemberType(memberType);
+function renderApprovalGroupOptions(memberType, programKey) {
+  const matchingGroups = getApprovalGroupsForMemberType(memberType,programKey);
   const groupLabel = window.RipCityAccess.getProgramLabel(
     approvalAccess?.facilityConfig,
-    memberType,
+    programKey || memberType,
     { plural: true }
   ).toLowerCase();
 
@@ -124,6 +125,7 @@ async function loadPendingUsers() {
           .select(`
             id,
             role,
+            program_key,
             status,
             created_at,
             profile:profiles!facility_members_profile_id_fkey (
@@ -141,7 +143,7 @@ async function loadPendingUsers() {
           .order("created_at", { ascending: false }),
         db
           .from("groups")
-          .select("id, name, member_type")
+          .select("id, name, member_type, program_key")
           .eq("facility_id", access.membership.facility_id)
           .in("member_type", ["athlete", "h2k", "both"])
           .order("name", { ascending: true })
@@ -320,15 +322,15 @@ function renderPendingUsers(users, access) {
           <h4>${window.RipCityUI.text(profile?.full_name, "Unnamed User")}</h4>
           <div class="pending-user-meta">
             <span>${window.RipCityUI.text(profile?.email, "No email")}</span>
-            <span>${window.RipCityUI.text(formatApprovalRole(user.role))}</span>
+            <span>${window.RipCityUI.text(formatApprovalRole(user.role, user.program_key))}</span>
             <span>Status: ${window.RipCityUI.text(user.status)}</span>
             ${!canDecide ? "<span>Facility-admin action required</span>" : ""}
           </div>
           ${canDecide && isGroupedMember ? `
             <label class="pending-user-group-control" for="approval-group-${window.RipCityUI.attr(user.id)}">
-              <span>Initial ${window.RipCityUI.text(window.RipCityAccess.getProgramLabel(approvalAccess?.facilityConfig, memberProfile.member_type))} group</span>
+              <span>Initial ${window.RipCityUI.text(window.RipCityAccess.getProgramLabel(approvalAccess?.facilityConfig, user.program_key || memberProfile.member_type))} group</span>
               <select id="approval-group-${window.RipCityUI.attr(user.id)}" data-approval-group="${window.RipCityUI.attr(user.id)}">
-                ${renderApprovalGroupOptions(memberProfile.member_type)}
+                ${renderApprovalGroupOptions(memberProfile.member_type, user.program_key)}
               </select>
             </label>
           ` : ""}

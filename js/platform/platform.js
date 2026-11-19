@@ -108,18 +108,23 @@
         : { ...base.modules, ...(configuration.modules || {}) },
       programs: Array.isArray(configuration.programs)
         ? Object.fromEntries(configuration.programs.map(item => [item.program_key, item]))
-        : { ...base.programs, ...(configuration.programs || {}) }
+        : configuration.programs ? { ...configuration.programs } : base.programs
     };
   }
 
   function renderForm(container, configuration, mode) {
     const config = normalizeConfig(configuration);
+    const registrationTools = mode === "edit" ? `<section class="platform-config-section"><h4>Member registration</h4>
+      <label>Facility Code<input name="registration_code" readonly value="${escapeHtml(config.registration_code || "")}"></label>
+      <div class="platform-form-actions"><button type="button" class="outline-btn" data-copy-registration>Copy Registration Link</button><button type="button" class="outline-btn" data-rotate-registration>Rotate Code</button></div>
+      <p class="platform-facility-meta">The code identifies this facility. New members still require approval.</p></section>` : "";
     const slugField = mode === "create" ? `
       <label>Facility Slug<input name="slug" value="${escapeHtml(config.slug)}" placeholder="new-facility" required pattern="[a-z0-9]+(?:-[a-z0-9]+)*"></label>
     ` : `<label>Facility Slug<input value="${escapeHtml(config.slug)}" disabled></label>`;
 
     container.innerHTML = `
       <form class="platform-config-form" data-platform-config-form data-mode="${mode}" data-facility-id="${escapeHtml(config.id || "")}">
+        ${registrationTools}
         <section class="platform-config-section">
           <h4>Identity &amp; location</h4>
           <div class="form-row">
@@ -157,14 +162,19 @@
 
         <section class="platform-config-section">
           <h4>Member programs</h4>
-          <p class="platform-facility-meta">Set feature access for each kind of member. Add as many teams, age groups, or training groups as needed in Roster.</p>
+          <button class="outline-btn" type="button" data-add-program>Add Program</button>
+          <p class="platform-facility-meta">Add any number of member programs; each member chooses one. Disable unused programs to preserve their history. Teams and training groups are managed separately in Roster.</p>
           <div class="platform-program-grid">
-            ${["athlete", "h2k"].map(key => {
+            ${Object.keys(config.programs).map(key => {
               const program = config.programs[key];
               return `
                 <div class="platform-option-card">
-                  <h4>${key === "athlete" ? "Athlete program" : "Additional member program"}</h4>
+                  <h4>${escapeHtml(program.display_name || "Member program")}</h4>
                   <label><input type="checkbox" name="program_${key}_enabled" ${program.enabled !== false ? "checked" : ""}><span>Enable this program</span></label>
+                  <label>Registration details<select name="program_${key}_profile_type">
+                    <option value="athlete"${(program.profile_type || (key === "athlete" ? "athlete" : "general")) === "athlete" ? " selected" : ""}>Athlete details (sport, position, school)</option>
+                    <option value="general"${(program.profile_type || (key === "athlete" ? "athlete" : "general")) === "general" ? " selected" : ""}>General member details</option>
+                  </select></label>
                   <label>Singular label<input name="program_${key}_display" value="${escapeHtml(program.display_name)}" required></label>
                   <label>Plural label<input name="program_${key}_plural" value="${escapeHtml(program.plural_name)}" required></label>
                   <fieldset class="platform-program-features"><legend>Features for these members</legend>
@@ -177,6 +187,15 @@
           </div>
         </section>
 
+        <section class="platform-config-section">
+          <h4>Dashboard content</h4>
+          <label>Member welcome heading<input name="content_member_title" maxlength="500" value="${escapeHtml(config.dashboard_content?.member_title || "")}" placeholder="Your training starts here"></label>
+          <label>Member welcome message<textarea name="content_member_message" maxlength="500">${escapeHtml(config.dashboard_content?.member_message || "")}</textarea></label>
+          <label>Coach welcome heading<input name="content_coach_title" maxlength="500" value="${escapeHtml(config.dashboard_content?.coach_title || "")}" placeholder="Your coaching dashboard"></label>
+          <label>Coach welcome message<textarea name="content_coach_message" maxlength="500">${escapeHtml(config.dashboard_content?.coach_message || "")}</textarea></label>
+          <label><input type="checkbox" name="content_show_feedback"${config.dashboard_content?.show_feedback !== false ? " checked" : ""}>Show feedback section</label>
+          <label><input type="checkbox" name="content_show_scores"${config.dashboard_content?.show_scores !== false ? " checked" : ""}>Show habit score cards</label>
+        </section>
         <section class="platform-config-section">
           <h4>Shared terminology</h4>
           <div class="form-row">
@@ -201,10 +220,11 @@
 
     const form = container.querySelector("form");
     form.facilityModuleSettings = structuredClone(config.modules);
+    form.facilityProgramKeys = Object.keys(config.programs);
     if (mode === "create") {
       const nameInput = form.elements.name;
       const slugInput = form.elements.slug;
-      let slugWasEdited = false;
+      let slugWasEdited = Boolean(slugInput.value);
       slugInput.addEventListener("input", () => { slugWasEdited = true; });
       nameInput.addEventListener("input", () => {
         if (slugWasEdited) return;
@@ -212,11 +232,38 @@
           .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
       });
     }
+    form.querySelector("[data-copy-registration]")?.addEventListener("click", async () => {
+      const url = new URL("signup.html",window.location.href);
+      url.searchParams.set("code",form.elements.registration_code.value);
+      try { await copyText(url.href); showMessage("Member registration link copied."); }
+      catch { showMessage(`Registration link: ${url.href}`); }
+    });
+    form.querySelector("[data-rotate-registration]")?.addEventListener("click", async event => {
+      if (!window.confirm("Rotate this facility registration code? Existing code links will stop working; approved accounts are unchanged.")) return;
+      const button=event.currentTarget;
+      button.disabled = true;
+      try {
+        const {data,error}=await db.rpc("rotate_facility_registration_code",{p_facility_id:config.id});
+        if(error) throw error;
+        config.registration_code=data; form.elements.registration_code.value=data; showMessage("Facility code rotated.");
+      } catch(error) {showMessage(error.message,true);} finally {button.disabled=false;}
+    });
     function syncProgramFeatureControls() {
-      for (const key of ["athlete", "h2k"]) for (const [moduleKey] of MODULES) {
+      for (const key of form.facilityProgramKeys) for (const [moduleKey] of MODULES) {
         form.elements[`program_${key}_module_${moduleKey}`].disabled = !form.elements[`module_${moduleKey}`].checked;
       }
     }
+    form.querySelector("[data-add-program]").addEventListener("click", () => {
+      const values = readPayload(form);
+      const programs = Object.fromEntries(values.p_programs.map(program => [program.program_key, program]));
+      let key = `program-${Object.keys(programs).length + 1}`;
+      while (programs[key]) key = `program-${Object.keys(programs).length + 1}-${Math.random().toString(36).slice(2, 6)}`;
+      programs[key] = {program_key:key,display_name:"New Program",plural_name:"New Program Members",profile_type:"general",enabled:true,module_overrides:{}};
+      renderForm(container, {...config, name:values.p_name, slug:mode === "create" ? values.p_slug : config.slug,
+        logo_url:values.p_logo_url,primary_color:values.p_primary_color,secondary_color:values.p_secondary_color,
+        time_zone:values.p_time_zone,ui_theme:values.p_ui_theme,dashboard_content:values.p_dashboard_content,
+        terminology:values.p_terminology,modules:values.p_modules,programs}, mode);
+    });
     form.addEventListener("change", syncProgramFeatureControls);
     syncProgramFeatureControls();
     form.addEventListener("submit", saveConfiguration);
@@ -232,6 +279,14 @@
       p_secondary_color: String(data.get("secondary_color") || "").trim(),
       p_time_zone: String(data.get("time_zone") || "").trim(),
       p_ui_theme: String(data.get("ui_theme") || "midnight"),
+      p_dashboard_content: {
+        member_title: String(data.get("content_member_title") || "").trim(),
+        member_message: String(data.get("content_member_message") || "").trim(),
+        coach_title: String(data.get("content_coach_title") || "").trim(),
+        coach_message: String(data.get("content_coach_message") || "").trim(),
+        show_feedback: form.elements.content_show_feedback.checked,
+        show_scores: form.elements.content_show_scores.checked
+      },
       p_terminology: {
         member_singular: String(data.get("term_member_singular") || "").trim(),
         member_plural: String(data.get("term_member_plural") || "").trim(),
@@ -245,7 +300,8 @@
         enabled: form.elements[`module_${moduleKey}`].checked,
         settings: form.facilityModuleSettings?.[moduleKey]?.settings || {}
       })),
-      p_programs: ["athlete", "h2k"].map((programKey, index) => ({
+      p_programs: form.facilityProgramKeys.map((programKey, index) => ({
+        profile_type: String(data.get(`program_${programKey}_profile_type`) || "general"),
         program_key: programKey,
         display_name: String(data.get(`program_${programKey}_display`) || "").trim(),
         plural_name: String(data.get(`program_${programKey}_plural`) || "").trim(),
@@ -408,6 +464,8 @@
       }
       window.RipCityPlatformOwner = true;
       profile = await window.RipCityAccess.getProfileWithMemberships(session.user.id);
+      const ownerIdentity = document.getElementById("platform-owner-identity");
+      if(ownerIdentity) ownerIdentity.textContent = `Global platform owner · ${profile.full_name || profile.email || "Owner"}`;
       renderForm(document.getElementById("platform-create-form"), defaultConfiguration(), "create");
       await loadFacilities();
     } catch (error) {

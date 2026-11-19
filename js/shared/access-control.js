@@ -117,6 +117,7 @@
             id,
             role,
             status,
+            program_key,
             facility_id
           )
         `)
@@ -168,7 +169,7 @@
   }
 
   function getMemberProgramKey(membership) {
-    return membership?.role === "athlete" ? "athlete" : membership?.role === "h2k_member" ? "h2k" : null;
+    return membership?.program_key || (membership?.role === "athlete" ? "athlete" : membership?.role === "h2k_member" ? "h2k" : null);
   }
 
   function getEffectiveFacilityConfiguration(configuration, membership) {
@@ -254,7 +255,8 @@
   }
 
   function isProgramEnabled(configuration, programKey) {
-    return configuration?.programs?.[programKey]?.enabled !== false;
+    if(!configuration?.programs) return true;
+    return Boolean(configuration.programs[programKey] && configuration.programs[programKey].enabled !== false);
   }
 
   function getProgramLabel(configuration, programKey, options = {}) {
@@ -287,6 +289,14 @@
   }
 
   function applyFacilityLanguage(configuration) {
+    document.querySelectorAll("[data-facility-content]").forEach(element => {
+      const value = configuration.dashboard_content?.[element.dataset.facilityContent];
+      if (typeof value === "string" && value.trim()) element.textContent = value;
+    });
+    document.querySelectorAll("[data-facility-widget]").forEach(element => {
+      element.hidden = configuration.dashboard_content?.[element.dataset.facilityWidget] === false
+        || Boolean(element.dataset.facilityModule && !isModuleEnabled(configuration,element.dataset.facilityModule));
+    });
     document.querySelectorAll("[data-facility-program-label]").forEach(element => {
       element.textContent = getProgramLabel(
         configuration,

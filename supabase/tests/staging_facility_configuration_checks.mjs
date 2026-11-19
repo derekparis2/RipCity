@@ -95,7 +95,7 @@ assert(alphaOriginal.time_zone === "America/New_York", "existing facility receiv
 assert(alphaOriginal.status === "active", "existing facility remains active after configuration migration");
 assert(alphaOriginal.modules.length === 6, "existing facility receives every shipped module configuration");
 assert(alphaOriginal.modules.every((module) => module.enabled), "existing facility modules remain enabled by default");
-assert(alphaOriginal.programs.length === 2, "existing facility receives both supported member-program records");
+assert(alphaOriginal.programs.length >= 2, "existing facility retains its legacy programs alongside configurable programs");
 
 const coachOwnConfig = await rpc("get_facility_configuration", ordinaryCoach.token, {
   p_facility_id: ripCity.facility_id
