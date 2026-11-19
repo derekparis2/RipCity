@@ -68,6 +68,15 @@ staging application.
   Privacy catalog, append-only per-user acceptance evidence, mutually exclusive
   adult/minor age categories, and guarded status/acceptance RPCs. Apply this
   migration before deploying frontend assets that call either RPC.
+- `20261102120000_add_atomic_member_signup_completion.sql` replaces the three
+  separate member application-row writes with one authenticated, retry-safe
+  transaction. It completes interrupted signups without duplicating membership
+  or member-profile rows and must reach staging/production before the matching
+  auth frontend is deployed.
+- `20261104120000_preserve_announcement_author_names.sql` snapshots the posting
+  coach/admin display name on announcements so members see reliable attribution
+  without receiving broad access to staff profiles. Apply it before deploying
+  frontend assets that select `author_display_name`.
 - Future changes must use a later UTC timestamp and a descriptive name, such as
   `20260817090000_add_facility_timezone.sql`.
 

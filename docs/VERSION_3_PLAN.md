@@ -1,201 +1,342 @@
 # Rip City Version 3 Plan
 
-This document is the source of truth for work intentionally deferred beyond
-Version 2. V3 should begin only after V2 is released, Rip City has used it in
-real training, and the team has reviewed coach/member feedback.
+**Status: Active planning and development.** V2 is complete and deployed. New
+feature work belongs on branches created from `v3-development`; production
+fixes remain separate branches from `main`.
 
-V3 has two major goals:
+For the ordered work queue, dependencies, and suggested branch boundaries, see
+[`V3_BACKLOG.md`](V3_BACKLOG.md).
 
-1. Expand the platform for real multi-facility operation.
-2. Add the deeper baseball-development system built on top of the stable V2
-   workout, goal, leaderboard, and account foundations.
+V3 has three primary goals, in this product order:
 
-This is a product-direction plan, not yet an ordered implementation backlog.
-Before V3 work begins, convert approved sections into packages and branches the
-same way V2 uses `V2_BACKLOG.md`.
+1. Strengthen the sellable workout and performance product with max tracking,
+   percentage-based programming, and targeted improvements that directly help
+   facilities program and review training.
+2. Turn the proven Rip City application into a safely configurable platform
+   where Derek and Sam can create a second real facility without exposing or
+   mixing Rip City data.
+3. Add a deeper baseball-development system, beginning with hitting and
+   HitTrax/TrackMan data before throwing and arm-care work.
+
+The shipped V2 workout builder, exercise library, assignment, logging, and
+history workflows are stable foundations. V3 does not include a general
+workout/exercise rebuild, but targeted workout enhancements that increase the
+product's immediate value to facilities come before hitting-specific work.
+
+### V3 Release Sequence
+
+The first V3 production release is intentionally focused on sellable workout
+programming: complete strength maxes and percentage-based prescriptions, add
+the group/member programming calendar and reusable multi-week programs, verify
+the package in staging, and merge it through `v3-development` into `main`. Do
+not hold that release for routines, multi-facility tooling, or baseball
+features. Continue the remaining V3 backlog after the workout package is live
+and smoke-tested in production.
 
 ---
 
-## 1. Multi-Facility Platform Operations
+## 1. Workout And Performance Enhancements
 
-### Platform Owner
+### Strength Maxes And Percentage-Based Programming
 
-- Add a storable `platform_owner` role for Derek and any explicitly trusted
-  future operator.
-- Only platform owners can create facilities.
-- Platform-owner permissions must be enforced by RLS, not only hidden UI.
-- Do not create an automatic cross-facility private-data bypass.
-- Add an explicit, logged support mode before a platform owner can enter a
-  facility's private member context.
+Extend the stable workout builder and Testing Day system instead of creating a
+separate lifting workflow.
 
-### Multi-Facility Accounts
+- Store a member's max by exercise, date, unit, source, and verification state.
+- Keep directly tested or coach-entered maxes distinct from calculated
+  estimates and from a coach-selected training max.
+- Let coaches calculate an estimated max from a completed weight-and-reps set,
+  while recording the formula and original inputs used for the estimate.
+- Let coaches prescribe an exercise using a fixed load or a percentage of the
+  member's selected verified, estimated, or training max.
+- Show the resolved load for each member before assignment, flag members who
+  do not have the required max, and allow an explicit coach override.
+- Support facility-approved rounding rules so calculated loads match the
+  equipment available to the facility.
+- Snapshot the max, percentage, formula, and resolved load when a workout is
+  assigned. Later max changes must not rewrite historical prescriptions.
+- Allow approved Testing Day strength results to update max history and feed
+  progress charts or leaderboards only when a coach confirms them.
 
-- Allow legitimate coaches/admins to belong to more than one facility.
-- Keep ordinary members limited to one facility unless a future use case is
-  intentionally approved.
-- Let users select an active facility when they have multiple approved
-  memberships.
-- Store active facility context safely and evaluate every permission against
-  that selected membership.
-- Support different roles by facility, such as admin in one facility and coach
-  in another.
-- Never combine member lists, workouts, goals, notes, or reports across
-  facilities accidentally.
+Before implementation, decide which estimation formulas are supported, how a
+training max is defined, which max source is the default for programming, and
+which rounding increments each facility may use.
 
-### Facility Creation And Onboarding
+### Programming Calendar And Reusable Programs
 
-- Create a platform-owner facility setup workflow.
-- Configure facility name, slug, time zone, branding, terminology, modules,
-  member types, groups, and the first facility admin.
-- Provide a repeatable facility launch checklist and safe starter configuration.
-- Make adding a second real facility mostly configuration instead of custom
-  code.
-- Keep facility archive and recovery rules separate from hard deletion.
+Keep workout creation focused in the existing Workout Builder and place
+calendar, saved-workout, and reusable-program management on a dedicated
+Workout Planner page linked from the shared coach/admin navigation.
+
+- Make a month Calendar the primary saved-workout view while retaining
+  searchable Workout Library and Programs views on the same dedicated
+  Workout Planner page.
+- Let staff inspect a monthly schedule for either a group or an individual. An
+  individual schedule combines direct, inherited group, and facility-wide
+  assignments without displaying the same workout twice.
+- Let staff copy a week, a month, or any selected direct group/member workout
+  assignments to one or more destination dates and rosters. Show an exact
+  preview, block occupied dates instead of overwriting them, and deduplicate
+  overlapping destinations. Inherited group/facility work remains visible on
+  an individual calendar but cannot be accidentally duplicated as a direct
+  assignment. Copied workouts are independent editable records.
+- Let staff build reusable programs from saved workouts, choose each workout's
+  week and weekday, and launch the program to a group or individual.
+- Clone each launched program workout into a normal assignment while retaining
+  its program link. Editing a program updates every linked future workout that
+  has not been started, including its date and prescription. Past, started, and
+  completed workouts remain frozen historical snapshots. Independent calendar
+  copies never inherit this link.
+- Keep program creation, launch, archive, and calendar-copy operations facility
+  scoped and enforced by trusted database functions and RLS.
+- Let facility admins view every facility program and filter them by creating
+  coach. Ordinary coaches may see, edit, launch, and archive only programs they
+  created.
+- Preserve who created and assigned each workout. Independent calendar workouts
+  remain editable through the existing builder; linked program occurrences are
+  changed from the program so every affected future schedule stays consistent.
+- Coaches may inspect shared facility workouts, but may assign, unassign, or
+  delete only workouts they created. Facility admins may manage every workout
+  in their facility. Read-only calendar entries remain clearly visible without
+  showing selection or action controls that the current staff member cannot use.
+- Remember the selected calendar scope, roster, month, program filter, and
+  library filter across refreshes on the same device.
+
+The program week begins on Monday. Programs may span 1–52 weeks. Archived
+program definitions disappear from the active library while existing calendar
+and historical workout records remain available.
+
+### Daily Routines And Checklists
+
+Add morning, afternoon, and night routines as a focused extension of the habit
+system after the first workout release reaches production.
+
+- Let authorized staff create reusable routine templates with ordered checklist
+  items and a morning, afternoon, night, or custom time window.
+- Assign routines to groups or individual members while deduplicating members
+  who belong to more than one selected group.
+- Keep the member flow fast on mobile and show only the routine periods and
+  checklist items assigned to that member.
+- Preserve completion history instead of overwriting prior days.
+- Calculate routine dates, availability windows, streaks, and summaries using
+  the facility time zone.
+- Reuse habit scoring and attention rules where the meaning matches, but keep
+  routine completion distinguishable from the six core daily habits.
+- Allow facilities to disable routines without leaving inaccessible navigation
+  or background queries.
+
+### Advanced Testing And Performance History
+
+V2 already ships staff-created Testing Days, staff-only official result entry,
+member-own result visibility, calendar markers, correction, and ranked review.
+V3 extends that stable feature instead of rebuilding it.
+
+- Add approved multiple-attempt and best-result rules.
+- Add comparisons over time, absolute and percentage improvement, personal
+  records, richer charts, and consistent correction/audit history.
+- Give members a clear current-versus-previous result view while coaches can
+  compare an athlete across dates and review a test across the assigned roster.
+- Keep the member Training experience focused with two in-page views: Schedule
+  contains the workout calendar and upcoming Testing Days, while Performance
+  contains comparisons, records, and completed Testing Day history.
+- For the initial comparison view, define the earliest completed official
+  result as the baseline, the immediately preceding completed official result
+  as the prior result, and the best completed official result as the personal
+  record. Respect each test's higher- or lower-is-better direction when showing
+  improvement. Exclude `Not Tested`, absent, scheduled, text, and unranked
+  outcomes. A repeated value that ties the best still counts as matching the
+  member's PR.
+- Promote only coach-approved tests and lifts to leaderboards.
+- Reuse the shared metric catalog so Testing Day and hitting data do not become
+  unrelated reporting systems.
+
+---
+
+## 2. Multi-Facility Platform Operations
+
+### Platform Owners
+
+- Add a stored platform-level role for Derek and Sam only.
+- Only platform owners can create, configure, archive, or restore facilities.
+- Facility admins, coaches, and members remain scoped to one facility in the
+  V3 product. Supporting ordinary staff across multiple facilities is not a V3
+  requirement.
+- Platform-owner permissions must be enforced by database functions and RLS,
+  not only by hidden UI controls.
+- Platform ownership must not become an automatic private-data bypass. Any
+  future support access into a facility should be explicit, time-limited, and
+  logged.
+
+### Facility Creation And Isolation
+
+- Build a platform-owner workflow that creates a facility and its first admin.
+- Configure the facility name, slug, IANA time zone, branding, terminology,
+  enabled modules, member programs, starter groups, and initial admin.
+- Make facility creation transactional or safely resumable so a partial setup
+  cannot leave an unusable facility.
+- Keep every facility-owned row keyed to its facility and enforce that scope in
+  RLS and trusted database functions.
+- Verify a real second facility cannot read or change Rip City members,
+  profiles, groups, workouts, exercises, goals, habits, announcements, Testing
+  Days, results, leaderboards, or files.
+- Keep facility archive and recovery separate from permanent deletion.
+- Provide a repeatable launch checklist and safe starter configuration so a
+  second facility is configuration work, not a custom rebuild.
 
 ### Facility Configuration And Module Visibility
 
-- Build self-service facility settings rather than relying on custom code or
-  manual database edits.
-- Configure facility display name, logo, colors, terminology, supported member
-  types, and default groups.
-- Let each facility enable only the modules and member programs it uses,
-  including workouts, habits, goals, leaderboards, announcements, progress,
-  scheduling, and future payments.
-- Keep H2K and other program-specific experiences optional and prevent disabled
-  modules from appearing in member navigation or dashboards.
-- Keep coach/admin tools visually consistent while allowing member-facing
-  branding to reflect each facility.
-- Inventory and replace hardcoded Rip City/H2K assumptions before onboarding a
-  second real facility.
-- Add a trusted workflow for managing universal exercises and facility
-  overrides/hides.
+- Provide facility settings for display name, logo, colors, terminology,
+  supported member programs, default groups, and time zone.
+- Let each facility enable only the modules it uses, including workouts,
+  habits, goals, leaderboards, announcements, Testing Days, and future baseball
+  modules.
+- Prevent disabled modules from appearing in member navigation, dashboards,
+  direct page access, or data queries.
+- Keep coach/admin tools structurally consistent while member-facing branding
+  reflects the active facility.
+- Inventory and replace hardcoded Rip City and H2K assumptions before the
+  second real facility launches.
+- Keep universal exercises shared and immutable to facility staff. A facility
+  may add private exercises and eventually override or hide a universal item
+  without altering another facility or historical workouts.
 
 ### Facility Time And Date Rules
 
 - Give every facility one authoritative IANA time zone.
 - Store timestamps in UTC while calculating facility days, workout dates,
-  habit days, Monday-Sunday weeks, streaks, announcement visibility, and
-  leaderboard periods in the selected facility's time zone.
+  habit days, weeks, streaks, announcement visibility, and leaderboard periods
+  in the facility time zone.
 - Use shared facility-local date helpers instead of device-local assumptions.
-- Verify behavior for users outside the facility time zone and across
-  daylight-saving transitions.
+- Verify daylight-saving boundaries and users viewing the app from a different
+  time zone.
 
 ---
 
-## 2. Baseball Development System
+## 3. Baseball Development System
+
+### Hitting Data Foundation
+
+Hitting is the first baseball-specific V3 area and comes before throwing or arm
+care.
+
+- Define one source-neutral hitting metric catalog for measurements such as
+  exit velocity, launch angle, distance, hard-hit rate, bat speed, attack angle,
+  and facility-approved custom metrics.
+- Support HitTrax and TrackMan without making either vendor's field names the
+  application's permanent data model.
+- Start with the safest available ingestion method—manual entry or approved
+  CSV import—while official API access, export formats, costs, and terms are
+  confirmed with each vendor.
+- Preserve source, source event/session ID, observed time, unit, import time,
+  raw-source reference, verification state, and correction history.
+- Build a review step for athlete matching, units, duplicates, invalid rows,
+  and corrections before imported results become official.
+- Never scrape or automate a vendor system in a way its agreement does not
+  permit.
+
+### Hitting Development Experience
+
+- Show verified hitting results and trends on the member's baseball
+  development profile.
+- Let coaches review sessions, filter metrics, compare date ranges, and see
+  personal bests without exposing another facility's data.
+- Connect approved hitting metrics to goals, progress charts, Testing Day
+  history, and later leaderboards through the shared metric registry.
+- Keep coach-entered, imported, and member-entered data visibly distinct.
 
 ### Player Development Profile
 
-- Create a baseball-specific player card without making the shared member
-  profile baseball-only.
+- Add a baseball-specific player card without making the shared member profile
+  baseball-only.
 - Support position, secondary position, graduation year, school/team, physical
-  measurements, verified testing results, and development history.
+  measurements, verified results, goals, and development history.
 - Define which information is private, coach-visible, facility-visible, or
   intentionally shareable.
-
-### Testing And Evaluations
-
-- Let coaches create testing sessions containing selected tests and assigned
-  athletes/groups.
-- Provide a fast coach-entry mode so staff can enter results for many athletes
-  during a testing day.
-- Preserve test definitions, units, attempts, dates, evaluator identity, and
-  corrections.
-- Distinguish coach-entered verified results from member-entered training data.
-- Show progress over time and personal bests.
-- Allow approved testing metrics and specific lifts to become leaderboard
-  categories without exposing sensitive data.
-
-Potential tests include sprint times, jump measurements, strength lifts,
-throwing velocity, exit velocity, agility, mobility, and facility-defined
-custom tests. The exact first list requires Rip City coach approval.
-
-### Throwing And Arm Care
-
-- Add throwing-program creation, assignment, scheduling, and completion.
-- Add arm-care exercise/program tracking without duplicating the shared workout
-  engine unnecessarily.
-- Decide how workload, soreness/readiness, pitch counts, and recovery notes are
-  recorded and who can view them.
-- Treat medical or injury-related information as sensitive and define privacy,
-  retention, and disclaimer requirements before implementation.
 
 ### Coach Evaluations
 
 - Add structured evaluations with configurable categories and private coach
   notes.
-- Preserve evaluation history instead of overwriting prior assessments.
+- Preserve evaluation history rather than overwriting earlier assessments.
 - Decide whether athletes see all evaluations, selected summaries, or only
-  coach-published feedback.
+  explicitly published feedback.
+
+### Throwing And Arm Care
+
+This work follows the hitting foundation.
+
+- Add throwing-program creation, assignment, scheduling, and completion.
+- Add arm-care tracking without duplicating the shared workout engine.
+- Decide how workload, soreness/readiness, pitch counts, and recovery notes are
+  recorded and who may view them.
+- Treat medical or injury-related information as sensitive. Complete a separate
+  privacy, retention, consent, and disclaimer review before implementation.
 
 ### Recruiting And Showcase Information
 
 - Add recruiting/showcase fields only after privacy and sharing rules are
   approved.
-- Separate internal development data from intentionally public/shareable player
-  information.
-- Do not publish a player card or link without explicit authorization and clear
+- Separate internal development data from intentionally shareable player data.
+- Never publish a player card or link without explicit authorization and clear
   audience controls.
 
 ---
 
-## 3. Shared V3 Extensions
+## 4. Shared V3 Extensions
 
-- Add a private coach-note UI and generalized in-app notification/read-state
-  system on top of the focused V2 announcement slice.
-- Extend leaderboards to approved lifts and testing metrics.
-- Connect goals to verified test results where useful.
-- Add richer progress charts using stable V2 workout, habit, goal, and testing
-  history.
-- Consider email and push notifications after the in-app notification model is
-  proven.
-- Revisit parent/guardian access only after exact visibility and consent rules
+- Add private coach-note UI and a generalized in-app notification/read-state
+  system on top of V2 announcements.
+- Extend leaderboards only to approved lifts, tests, and hitting metrics.
+- Connect goals to verified results where useful.
+- Add richer progress charts using stable workout, habit, goal, Testing Day,
+  and hitting history.
+- Consider email and push after the in-app notification model is proven.
+- Revisit parent/guardian access only after exact consent and visibility rules
   are approved.
-- Add audit history for sensitive admin, support, evaluation, and verified-test
-  actions.
-- Add Testing Day multiple-attempt and best-result rules, comparisons over
-  time, richer charts, and approved testing-result leaderboard integration.
-  Official Testing Day entry remains coach/admin-only unless a later product
-  decision explicitly replaces that rule.
-- Add workout versioning and archive behavior, workout-to-habit automation,
-  and database-level deduplication for overlapping assignment targets.
+- Add audit history for sensitive facility setup, platform support,
+  evaluations, imports, and verified-result corrections.
 - Split the large shared stylesheet into ordered shared, component,
-  authentication, coach, and member stylesheets without changing the shipped
-  appearance.
+  authentication, coach, and member stylesheets as a behavior-neutral
+  maintenance package when it will not collide with active feature work.
 
 ---
 
-## 4. Required Foundation Before V3 Coding
+## 5. Required Safety Rules
 
-- V2 is released without unresolved production migration or data-preservation
-  problems.
-- Rip City coach/member feedback from real V2 use is documented.
-- Platform-owner and support-mode permissions are designed before migration SQL.
-- Multi-facility session context and RLS test cases are approved.
-- Baseball testing fields, units, result ownership, correction rules, and
-  privacy are decided with Rip City.
-- Medical/injury-related features receive a separate privacy and risk review.
-- Every V3 schema package has staging fixtures for at least two facilities and
-  direct allowed/denied RLS tests.
+- Every schema change starts as a timestamped repository migration, runs on
+  staging first, and receives focused allowed/denied tests.
+- Every facility-aware package uses at least two facility fixtures and proves
+  both permitted same-facility behavior and denied cross-facility behavior.
+- Only one shared staging schema migration package should be in flight at a
+  time unless Derek and Sam explicitly coordinate otherwise.
+- Real production data is never copied into staging.
+- Vendor imports require fake or approved sample files before implementation.
+- Sensitive medical, evaluation, recruiting, and support-mode features require
+  their privacy rules before code is merged.
+- Production remains on `main`; V3 feature branches merge through
+  `v3-development` and reach `main` only through a reviewed release.
 
 ---
 
-## 5. Open Product Decisions
+## 6. Open Product Decisions
 
-- Which baseball tests launch first?
-- Who can correct a verified result and how is the old value retained?
-- Which testing and lift metrics can members see on leaderboards?
-- What evaluation content is private to coaches versus visible to athletes?
+- Which HitTrax and TrackMan exports or APIs can Rip City provide and use?
+- Which hitting metrics should launch first and which may appear to members?
+- How should imported athletes be matched when vendor names or IDs differ?
+- Which Testing Day metrics may appear on member leaderboards?
+- What evaluation content is private versus athlete-visible?
 - What information may appear on a shareable player card?
-- Does support mode require a reason, time limit, facility approval, or all
-  three?
-- When should the first real facility after Rip City be onboarded?
+- What exact controls are required before Derek or Sam can enter a facility's
+  private support context?
+- Which facility should become the first real facility after Rip City?
 
 ---
 
-## 6. V3 Done Direction
+## 7. V3 Done Direction
 
-V3 is successful when a second real facility can be onboarded safely without
-custom rebuilding, legitimate multi-facility staff can switch context without
-data leakage, and Rip City can run approved baseball testing/development
-workflows while preserving privacy and historical accuracy.
+V3 is successful when the sellable workout product supports safe max-based
+percentage programming; members can use assigned routines and understand their
+Testing Day improvement; Derek or Sam can create and launch a second real
+facility without custom rebuilding or cross-facility data leakage; and Rip City
+can use an approved hitting-development workflow with trustworthy
+HitTrax/TrackMan data while preserving privacy, source history, and corrections.

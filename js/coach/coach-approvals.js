@@ -6,6 +6,7 @@
 
 let approvalAccess = null;
 let approvalMemberGroups = [];
+let approvalLoadInProgress = false;
 
 function showApprovalMessage(message, isError = false) {
   const element = document.getElementById("approval-message");
@@ -85,51 +86,59 @@ function renderApprovalGroupOptions(memberType) {
 }
 
 async function loadPendingUsers() {
-  const access = await requireApprovalCoachOrAdmin();
-  if (!access) return;
+  if (approvalLoadInProgress) return;
+  approvalLoadInProgress = true;
 
-  approvalAccess = access;
-  document.getElementById("coach-invite-panel")?.classList.toggle("hidden", !access.isAdmin);
-  document.getElementById("coach-management-panel")?.classList.toggle("hidden", !access.isAdmin);
-
-  const accessNote = document.getElementById("approval-access-note");
-  if (accessNote) {
-    accessNote.textContent = access.isAdmin
-      ? "Approve or reject new users before they can access the app."
-      : "Review pending signups here. A facility admin must approve, reject, deactivate, or reactivate an account.";
-  }
-
+  const refreshButton = document.getElementById("refresh-approvals-btn");
+  if (refreshButton) refreshButton.disabled = true;
   showApprovalMessage("Loading pending users...");
 
   try {
-    const [pendingResult, groupsResult] = await Promise.all([
-      db
-        .from("facility_members")
-        .select(`
-          id,
-          role,
-          status,
-          created_at,
-          profile:profiles!facility_members_profile_id_fkey (
+    const access = await requireApprovalCoachOrAdmin();
+    if (!access) return;
+
+    approvalAccess = access;
+    document.getElementById("coach-invite-panel")?.classList.toggle("hidden", !access.isAdmin);
+    document.getElementById("coach-management-panel")?.classList.toggle("hidden", !access.isAdmin);
+
+    const accessNote = document.getElementById("approval-access-note");
+    if (accessNote) {
+      accessNote.textContent = access.isAdmin
+        ? "Approve or reject new users before they can access the app."
+        : "Review pending signups here. A facility admin must approve, reject, deactivate, or reactivate an account.";
+    }
+
+    const [pendingResult, groupsResult] = await window.RipCityAccess.withTimeout(
+      Promise.all([
+        db
+          .from("facility_members")
+          .select(`
             id,
-            full_name,
-            email
-          ),
-          member_profile:member_profiles (
-            id,
-            member_type
-          )
-        `)
-        .eq("facility_id", access.membership.facility_id)
-        .eq("status", "pending")
-        .order("created_at", { ascending: false }),
-      db
-        .from("groups")
-        .select("id, name, member_type")
-        .eq("facility_id", access.membership.facility_id)
-        .in("member_type", ["athlete", "h2k", "both"])
-        .order("name", { ascending: true })
-    ]);
+            role,
+            status,
+            created_at,
+            profile:profiles!facility_members_profile_id_fkey (
+              id,
+              full_name,
+              email
+            ),
+            member_profile:member_profiles (
+              id,
+              member_type
+            )
+          `)
+          .eq("facility_id", access.membership.facility_id)
+          .eq("status", "pending")
+          .order("created_at", { ascending: false }),
+        db
+          .from("groups")
+          .select("id, name, member_type")
+          .eq("facility_id", access.membership.facility_id)
+          .in("member_type", ["athlete", "h2k", "both"])
+          .order("name", { ascending: true })
+      ]),
+      "Loading approvals took too long. Check your connection and try Refresh."
+    );
 
     if (pendingResult.error) throw pendingResult.error;
     if (groupsResult.error) throw groupsResult.error;
@@ -144,7 +153,15 @@ async function loadPendingUsers() {
     }
   } catch (error) {
     console.error(error);
-    showApprovalMessage(error.message || "Could not load pending users.", true);
+    showApprovalMessage(
+      error.code === "request_timeout"
+        ? "Approvals took too long to load. Check your connection, then use Refresh."
+        : error.message || "Could not load pending users. Use Refresh to try again.",
+      true
+    );
+  } finally {
+    approvalLoadInProgress = false;
+    if (refreshButton) refreshButton.disabled = false;
   }
 }
 
@@ -154,23 +171,26 @@ async function loadCoachStaff(access = approvalAccess) {
   showCoachManagementMessage("Loading coaches...");
 
   try {
-    const { data, error } = await db
-      .from("facility_members")
-      .select(`
-        id,
-        role,
-        status,
-        created_at,
-        profile:profiles!facility_members_profile_id_fkey (
+    const { data, error } = await window.RipCityAccess.withTimeout(
+      db
+        .from("facility_members")
+        .select(`
           id,
-          full_name,
-          email
-        )
-      `)
-      .eq("facility_id", access.membership.facility_id)
-      .eq("role", "coach")
-      .in("status", ["approved", "inactive"])
-      .order("created_at", { ascending: true });
+          role,
+          status,
+          created_at,
+          profile:profiles!facility_members_profile_id_fkey (
+            id,
+            full_name,
+            email
+          )
+        `)
+        .eq("facility_id", access.membership.facility_id)
+        .eq("role", "coach")
+        .in("status", ["approved", "inactive"])
+        .order("created_at", { ascending: true }),
+      "Loading coach access took too long."
+    );
 
     if (error) throw error;
 
@@ -472,7 +492,7 @@ async function handleApprovalLogout() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  loadPendingUsers();
+  void loadPendingUsers();
 
   document.getElementById("refresh-approvals-btn").addEventListener("click", loadPendingUsers);
   document.getElementById("create-coach-invite-btn").addEventListener("click", createCoachInvite);

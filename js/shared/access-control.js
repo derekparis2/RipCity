@@ -6,6 +6,22 @@
 // should be added separately with an explicit migration.
 
 (function () {
+  const DEFAULT_REQUEST_TIMEOUT_MS = 15000;
+
+  function withTimeout(request, message = "Rip City took too long to respond.", timeoutMs = DEFAULT_REQUEST_TIMEOUT_MS) {
+    let timeoutId;
+    const timeout = new Promise((resolve, reject) => {
+      timeoutId = window.setTimeout(() => {
+        const error = new Error(message);
+        error.code = "request_timeout";
+        reject(error);
+      }, timeoutMs);
+    });
+
+    return Promise.race([Promise.resolve(request), timeout])
+      .finally(() => window.clearTimeout(timeoutId));
+  }
+
   function getJoinedMemberships(profile) {
     return profile?.facility_members ||
       profile?.["facility_members!facility_members_profile_id_fkey"] ||
@@ -21,7 +37,10 @@
   }
 
   async function getSession() {
-    const { data, error } = await db.auth.getSession();
+    const { data, error } = await withTimeout(
+      db.auth.getSession(),
+      "Checking your session took too long. Check your connection and try again."
+    );
 
     if (error) throw error;
 
@@ -29,7 +48,10 @@
   }
 
   async function getCurrentLegalAcceptance() {
-    const { data, error } = await db.rpc("get_current_legal_acceptance");
+    const { data, error } = await withTimeout(
+      db.rpc("get_current_legal_acceptance"),
+      "Checking the current terms took too long. Check your connection and try again."
+    );
     if (error) throw error;
     if (!data?.length) throw new Error("Current legal documents are not configured.");
     return data[0];
@@ -49,19 +71,22 @@
       extraProfileColumns
     ].filter(Boolean).join(",");
 
-    const { data, error } = await db
-      .from("profiles")
-      .select(`
-        ${profileColumns},
-        facility_members:facility_members!facility_members_profile_id_fkey (
-          id,
-          role,
-          status,
-          facility_id
-        )
-      `)
-      .eq("id", userId)
-      .limit(1);
+    const { data, error } = await withTimeout(
+      db
+        .from("profiles")
+        .select(`
+          ${profileColumns},
+          facility_members:facility_members!facility_members_profile_id_fkey (
+            id,
+            role,
+            status,
+            facility_id
+          )
+        `)
+        .eq("id", userId)
+        .limit(1),
+      "Loading your account took too long. Check your connection and try again."
+    );
 
     if (error) throw error;
     if (!data?.length) throw new Error("Account profile could not be found.");
@@ -77,12 +102,21 @@
     return role === "admin";
   }
 
+  function isMemberRole(role) {
+    return role === "athlete" || role === "h2k_member";
+  }
+
+  function getHomeUrlForRole(role) {
+    return isCoachRole(role) ? "coach-dashboard.html" : "member-dashboard.html";
+  }
+
   async function requireApprovedAccess(options = {}) {
     const {
       allowRoles = null,
       onDeniedMessage = null,
       pendingUrl = "pending.html",
-      loginUrl = "login.html"
+      loginUrl = "login.html",
+      deniedUrl = null
     } = options;
 
     const session = await getSession();
@@ -108,6 +142,9 @@
 
     if (allowRoles && !allowRoles.includes(membership.role)) {
       if (onDeniedMessage) onDeniedMessage("You do not have permission to view this page.", true);
+      // RLS already prevents unauthorized data reads, but direct URL entry
+      // should never leave someone looking at the wrong role's empty shell.
+      window.location.replace(deniedUrl || getHomeUrlForRole(membership.role));
       return null;
     }
 
@@ -126,6 +163,13 @@
     return requireApprovedAccess({
       ...options,
       allowRoles: ["coach", "admin"]
+    });
+  }
+
+  async function requireMemberAccess(options = {}) {
+    return requireApprovedAccess({
+      ...options,
+      allowRoles: ["athlete", "h2k_member"]
     });
   }
 
@@ -150,7 +194,10 @@
     getSession,
     isAdminRole,
     isCoachRole,
+    isMemberRole,
     requireApprovedAccess,
-    requireCoachAccess
+    requireCoachAccess,
+    requireMemberAccess,
+    withTimeout
   };
 })();

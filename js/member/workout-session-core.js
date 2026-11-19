@@ -242,7 +242,7 @@ async function getWorkoutMemberProfile(facilityMemberId) {
 }
 
 async function requireApprovedWorkoutMember() {
-  return window.RipCityAccess.requireApprovedAccess();
+  return window.RipCityAccess.requireMemberAccess();
 }
 
 async function getMemberGroupIds(memberProfileId) {

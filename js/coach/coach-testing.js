@@ -19,6 +19,7 @@ let activeTestingResultDay = null;
 let testingResultMode = "athlete";
 let testingResultFocusId = null;
 let testingResultDrafts = new Map();
+let testingResultPriorChanges = new Map();
 let testingResultsReadOnly = false;
 let testingDayExpansionInitialized = false;
 const expandedTestingDayIds = new Set();
@@ -540,11 +541,32 @@ async function loadTestingDays() {
 
   if (error) throw error;
   testingDays = data || [];
+  renderTestingDayFilterOptions();
   if (!testingDayExpansionInitialized) {
     testingDays.filter(day => day.status !== "completed").forEach(day => expandedTestingDayIds.add(day.id));
     testingDayExpansionInitialized = true;
   }
   renderTestingDayList();
+}
+
+function renderTestingDayFilterOptions() {
+  const groupSelect = document.getElementById("testing-group-filter");
+  const creatorSelect = document.getElementById("testing-creator-filter");
+  const selectedGroup = groupSelect?.value || "all";
+  const selectedCreator = creatorSelect?.value || "all";
+
+  if (groupSelect) {
+    const usedGroupIds = new Set(testingDays.flatMap(day => (day.testing_day_groups || []).map(row => row.group_id)));
+    const groups = testingGroups.filter(group => usedGroupIds.has(group.id)).sort((a, b) => a.name.localeCompare(b.name));
+    groupSelect.innerHTML = `<option value="all">All groups</option>${groups.map(group => `<option value="${window.RipCityUI.attr(group.id)}">${window.RipCityUI.text(group.name)}</option>`).join("")}`;
+    groupSelect.value = usedGroupIds.has(selectedGroup) ? selectedGroup : "all";
+  }
+
+  if (creatorSelect) {
+    const creators = new Map(testingDays.map(day => [day.created_by, normalizeJoinedOne(day.creator)?.full_name || "Facility staff"]));
+    creatorSelect.innerHTML = `<option value="all">All staff</option>${[...creators.entries()].sort((a, b) => a[1].localeCompare(b[1])).map(([id, name]) => `<option value="${window.RipCityUI.attr(id)}">${window.RipCityUI.text(name)}</option>`).join("")}`;
+    creatorSelect.value = creators.has(selectedCreator) ? selectedCreator : "all";
+  }
 }
 
 function testingResultKey(testId, participantId) {
@@ -563,6 +585,7 @@ async function openTestingResults(day, { readOnly = false, memberProfileId = nul
     || day.testing_day_participants?.[0]?.id
     || null;
   testingResultDrafts = new Map();
+  testingResultPriorChanges = new Map();
   const testIds = (day.testing_day_tests || []).map(test => test.id);
   if (testIds.length) {
     const { data, error } = await db.from("testing_results")
@@ -574,6 +597,7 @@ async function openTestingResults(day, { readOnly = false, memberProfileId = nul
       { resultStatus: result.result_status || "recorded", numericValue: result.numeric_value ?? "", textValue: result.text_value ?? "", notes: result.notes || "" }
     ));
   }
+  if (readOnly) await loadTestingResultPriorChanges(day);
   document.getElementById("testing-results-title").textContent = day.name;
   document.getElementById("testing-results-subtitle").textContent = readOnly
     ? `${formatTestingDate(day.testing_date)} · Review by athlete or rank the recorded results by test.`
@@ -588,9 +612,57 @@ async function openTestingResults(day, { readOnly = false, memberProfileId = nul
   document.getElementById("testing-results-panel")?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
+async function loadTestingResultPriorChanges(day) {
+  const comparisonApi = window.RipCityTestingComparisons;
+  const participants = day.testing_day_participants || [];
+  const memberProfileIds = [...new Set(participants.map(participant => participant.member_profile_id).filter(Boolean))];
+  if (!comparisonApi || !memberProfileIds.length) return;
+
+  const { data, error } = await db.from("testing_day_participants")
+    .select(`
+      id,member_profile_id,participation_status,
+      testing_day:testing_days(
+        id,name,testing_date,status,
+        testing_day_tests(
+          id,name,unit,input_type,ranking_direction,
+          testing_results(id,testing_day_participant_id,result_status,numeric_value,recorded_at)
+        )
+      )
+    `)
+    .in("member_profile_id", memberProfileIds);
+  if (error) throw error;
+
+  const historyByMember = new Map();
+  (data || []).forEach(participation => {
+    if (!historyByMember.has(participation.member_profile_id)) historyByMember.set(participation.member_profile_id, []);
+    historyByMember.get(participation.member_profile_id).push(participation);
+  });
+
+  participants.forEach(participant => {
+    const comparisons = comparisonApi.build(historyByMember.get(participant.member_profile_id) || []);
+    (day.testing_day_tests || []).forEach(test => {
+      const comparison = comparisons.find(item => item.key === comparisonApi.getMetricKey(test));
+      const currentIndex = comparison?.observations.findIndex(observation => (
+        observation.dayId === day.id && observation.testId === test.id
+      )) ?? -1;
+      if (currentIndex < 1) return;
+
+      const current = comparison.observations[currentIndex];
+      const previous = comparison.observations[currentIndex - 1];
+      const improvement = comparisonApi.improvementBetween(current.value, previous.value, comparison.direction);
+      if (!Number.isFinite(improvement)) return;
+      testingResultPriorChanges.set(testingResultKey(test.id, participant.id), {
+        className: improvement > 0 ? "is-improved" : improvement < 0 ? "is-declined" : "is-unchanged",
+        label: `${comparisonApi.formatImprovement(improvement, test.unit || "")} vs prior`
+      });
+    });
+  });
+}
+
 function closeTestingResults() {
   activeTestingResultDay = null;
   testingResultDrafts = new Map();
+  testingResultPriorChanges = new Map();
   document.getElementById("testing-results-panel")?.classList.add("hidden");
 }
 
@@ -668,10 +740,16 @@ function renderTestingResultEntry() {
     const isAbsent = participant.participation_status === "did_not_participate";
     if (testingResultsReadOnly) {
       const canRank = testingResultMode === "test" && test.ranking_direction !== "none" && test.input_type !== "text" && !isAbsent && !isNotTested && draft.numericValue !== "" && draft.numericValue != null;
+      const priorChange = testingResultMode === "athlete" && !isAbsent && !isNotTested
+        ? testingResultPriorChanges.get(key)
+        : null;
       return `<article class="testing-result-review-row ${isNotTested ? "is-not-tested" : ""} ${isAbsent ? "is-absent" : ""}">
         ${testingResultMode === "test" ? `<span class="testing-result-rank">${canRank && rank ? `#${rank}` : "—"}</span>` : ""}
         <div><h4>${window.RipCityUI.text(testingResultMode === "athlete" ? test.name : testingParticipantName(participant))}</h4><p>${window.RipCityUI.text(testingResultMode === "athlete" ? (test.unit || test.input_type) : test.name)}</p></div>
-        <strong>${window.RipCityUI.text(isAbsent ? "Did not participate" : testingResultDisplay(test, draft))}</strong>
+        <div class="testing-result-review-value">
+          <strong>${window.RipCityUI.text(isAbsent ? "Did not participate" : testingResultDisplay(test, draft))}</strong>
+          ${priorChange ? `<small class="testing-result-prior-change ${priorChange.className}">${window.RipCityUI.text(priorChange.label)}</small>` : ""}
+        </div>
         ${draft.notes ? `<span class="testing-result-review-note">${window.RipCityUI.text(draft.notes)}</span>` : ""}
       </article>`;
     }
@@ -760,12 +838,17 @@ function renderTestingDayList() {
   if (!list) return;
   const search = document.getElementById("testing-day-search")?.value.trim().toLowerCase() || "";
   const status = document.getElementById("testing-status-filter")?.value || "all";
+  const groupId = document.getElementById("testing-group-filter")?.value || "all";
+  const creatorId = document.getElementById("testing-creator-filter")?.value || "all";
   const days = testingDays.filter(day => {
     const tests = (day.testing_day_tests || []).map(test => test.name).join(" ");
     const groups = (day.testing_day_groups || []).map(row => testingGroups.find(group => group.id === row.group_id)?.name || "").join(" ");
     const members = (day.testing_day_participants || []).map(testingParticipantName).join(" ");
     const date = `${day.testing_date} ${formatTestingDate(day.testing_date)}`;
-    return (status === "all" || day.status === status) && (!search || `${day.name} ${day.description || ""} ${date} ${groups} ${members} ${tests}`.toLowerCase().includes(search));
+    return (status === "all" || day.status === status) &&
+      (groupId === "all" || (day.testing_day_groups || []).some(row => row.group_id === groupId)) &&
+      (creatorId === "all" || day.created_by === creatorId) &&
+      (!search || `${day.name} ${day.description || ""} ${date} ${groups} ${members} ${tests}`.toLowerCase().includes(search));
   });
 
   if (!days.length) {
@@ -776,10 +859,10 @@ function renderTestingDayList() {
   list.innerHTML = days.map(day => {
     const tests = (day.testing_day_tests || []).sort((a, b) => a.test_order - b.test_order);
     const canEdit = ["draft", "scheduled"].includes(day.status);
-    const canDelete = ["draft", "cancelled"].includes(day.status);
     const totalOutcomes = tests.length * (day.testing_day_participants?.length || 0);
     const absentCount = (day.testing_day_participants || []).filter(participant => participant.participation_status === "did_not_participate").length;
     const savedOutcomes = tests.reduce((total, test) => total + (test.testing_results?.length || 0), 0) + (absentCount * tests.length);
+    const canRemove = ["draft", "scheduled", "cancelled"].includes(day.status) && savedOutcomes === 0;
     const expanded = expandedTestingDayIds.has(day.id);
     return `
       <article class="testing-day-card" data-testing-day-card="${window.RipCityUI.attr(day.id)}">
@@ -800,7 +883,7 @@ function renderTestingDayList() {
           ${day.status === "draft" ? `<button class="primary-btn small-inline-btn" type="button" data-testing-action="schedule">Schedule</button>` : ""}
           ${day.status === "scheduled" ? `<button class="outline-btn small-inline-btn danger-btn" type="button" data-testing-action="cancel">Cancel Day</button>` : ""}
           ${day.status === "cancelled" ? `<button class="outline-btn small-inline-btn" type="button" data-testing-action="reopen">Return to Draft</button>` : ""}
-          ${canDelete ? `<button class="outline-btn small-inline-btn danger-btn" type="button" data-testing-action="delete">Delete</button>` : ""}
+          ${canRemove ? `<button class="outline-btn small-inline-btn danger-btn" type="button" data-testing-action="remove">Remove Day</button>` : ""}
           </div>
         </div>
         <p class="testing-day-card-feedback hidden" data-testing-day-feedback aria-live="polite"></p>
@@ -841,8 +924,12 @@ async function handleTestingDayAction(button) {
   try {
     button.disabled = true;
     if (action === "finish") button.textContent = "Finishing...";
-    if (action === "delete") {
-      if (!window.confirm(`Delete ${day.name}? This is allowed only because it has no saved results.`)) return;
+    if (action === "remove") {
+      if (!window.confirm(`Remove ${day.name}? This permanently removes the Testing Day because it has no saved results.`)) return;
+      if (day.status === "scheduled") {
+        const { error: cancelError } = await db.rpc("set_testing_day_status", { p_testing_day_id: day.id, p_status: "cancelled" });
+        if (cancelError) throw cancelError;
+      }
       const { error } = await db.rpc("delete_testing_day", { p_testing_day_id: day.id });
       if (error) throw error;
       showTestingMessage("Testing Day deleted.");
@@ -988,6 +1075,8 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   document.getElementById("testing-day-search")?.addEventListener("input", renderTestingDayList);
   document.getElementById("testing-status-filter")?.addEventListener("change", renderTestingDayList);
+  document.getElementById("testing-group-filter")?.addEventListener("change", renderTestingDayList);
+  document.getElementById("testing-creator-filter")?.addEventListener("change", renderTestingDayList);
   document.getElementById("testing-day-list")?.addEventListener("click", event => {
     const button = event.target.closest("[data-testing-action]");
     if (button) handleTestingDayAction(button);

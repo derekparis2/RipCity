@@ -7,6 +7,10 @@ migrations do not live in this folder; they live in `supabase/migrations/`.
 
 - `diagnostics/` contains read-only audit, export, comparison, and verification
   tools. Review the target project before running a query.
+- `diagnostics/audit_signup_account_completeness.sql` lists Auth users, public
+  profiles, facility memberships, or member profiles left incomplete by an
+  interrupted signup. It is read-only and returns no rows when account setup is
+  complete.
 - `archive/applied/` preserves the component SQL files that were consolidated
   into the verified initial migration. Do not rerun them.
 - `archive/proposals/` preserves ideas that were never approved migrations.

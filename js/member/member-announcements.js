@@ -75,7 +75,7 @@
         </div>
         <p>${ui().text(announcement.body)}</p>
         <div class="member-announcement-footer">
-          <span class="member-announcement-sender">From ${ui().text(creator?.full_name || "Rip City Coach")}</span>
+          <span class="member-announcement-sender">From ${ui().text(announcement.author_display_name || creator?.full_name || "Coach")}</span>
           <button class="announcement-dismiss-button" type="button" ${dismissed
             ? `data-restore-announcement="${ui().attr(announcement.id)}">Restore`
             : `data-dismiss-announcement="${ui().attr(announcement.id)}">Dismiss`}
@@ -217,7 +217,7 @@
     });
 
     try {
-      const access = await window.RipCityAccess.requireApprovedAccess();
+      const access = await window.RipCityAccess.requireMemberAccess();
       if (!access) return;
       memberProfile = await window.RipCityAccess.getMemberProfileForMembership(access.membership.id);
 
@@ -229,6 +229,7 @@
           body,
           importance,
           publish_at,
+          author_display_name,
           creator:profiles!coach_announcements_created_by_fkey (full_name)
         `)
         .order("publish_at", { ascending: false });

@@ -16,6 +16,9 @@ function buildRecentWorkoutSelect(includeOptionalExerciseColumns = true) {
     estimated_minutes,
     created_by,
     created_at,
+    updated_at,
+    workout_kind,
+    source_workout_id,
     creator:profiles!workouts_created_by_fkey (
       id,
       full_name
@@ -64,18 +67,26 @@ function isMissingExerciseTemplateColumnError(error) {
 }
 
 async function fetchRecentWorkoutRows(includeOptionalExerciseColumns = true) {
-  return db
-    .from("workouts")
-    .select(buildRecentWorkoutSelect(includeOptionalExerciseColumns))
-    .eq("facility_id", workoutCoachAccess.membership.facility_id)
-    .order("created_at", { ascending: false })
-    .limit(8);
+  const rows = [];
+  const pageSize = 200;
+  for (let offset = 0; ; offset += pageSize) {
+    const { data, error } = await db
+      .from("workouts")
+      .select(buildRecentWorkoutSelect(includeOptionalExerciseColumns))
+      .eq("facility_id", workoutCoachAccess.membership.facility_id)
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
+      .range(offset, offset + pageSize - 1);
+    if (error) return { data: null, error };
+    rows.push(...(data || []));
+    if (!data || data.length < pageSize) return { data: rows, error: null };
+  }
 }
 
 async function loadRecentWorkouts() {
   const list = document.getElementById("recent-workouts-list");
 
-  list.innerHTML = `<div class="empty-state">Loading workouts...</div>`;
+  if (list) list.innerHTML = `<div class="empty-state">Loading workouts...</div>`;
 
   let { data, error } = await fetchRecentWorkoutRows(true);
 
@@ -87,19 +98,58 @@ async function loadRecentWorkouts() {
     console.error(error);
     recentWorkoutRows = [];
     renderRecentWorkouts();
-    list.innerHTML = `<div class="empty-state">Could not load workouts.</div>`;
+    if (list) list.innerHTML = `<div class="empty-state">Could not load workouts.</div>`;
     return;
   }
 
   recentWorkoutRows = data || [];
+  renderRecentWorkoutAssignerOptions();
   renderRecentWorkouts();
+  if (typeof renderProgrammingCalendar === "function") renderProgrammingCalendar();
+}
+
+function getReusableWorkoutRows() {
+  return recentWorkoutRows.filter(workout => !workout.workout_kind || workout.workout_kind === "saved");
+}
+
+function openWorkoutInBuilder(workout) {
+  if (!workout) return;
+
+  if (document.getElementById("workout-form")) {
+    loadWorkoutIntoBuilder(workout);
+    return;
+  }
+
+  window.location.href = `coach-workouts.html?template=${encodeURIComponent(workout.id)}`;
+}
+
+function renderRecentWorkoutAssignerOptions() {
+  const select = document.getElementById("recent-workout-assigner-filter");
+  if (!select) return;
+
+  const selectedValue = select.value || "all";
+  const staff = new Map();
+  getReusableWorkoutRows().forEach(workout => {
+    (workout.workout_assignments || []).forEach(assignment => {
+      if (assignment.assigned_by) {
+        staff.set(assignment.assigned_by, window.RipCityWorkoutData.getProfileName(assignment.assigner));
+      }
+    });
+  });
+
+  select.innerHTML = `<option value="all">All staff</option>${[...staff.entries()]
+    .sort((a, b) => a[1].localeCompare(b[1]))
+    .map(([id, name]) => `<option value="${window.RipCityUI.attr(id)}">${window.RipCityUI.text(name)}</option>`)
+    .join("")}`;
+  select.value = staff.has(selectedValue) ? selectedValue : "all";
 }
 
 function getRecentWorkoutFilters() {
   return {
     search: getInputValue("recent-workout-search").toLowerCase(),
     assignedDate: getInputValue("recent-workout-date-filter"),
-    targetType: getInputValue("recent-workout-target-filter") || "all"
+    targetType: getInputValue("recent-workout-target-filter") || "all",
+    assignerId: getInputValue("recent-workout-assigner-filter") || "all"
   };
 }
 
@@ -131,6 +181,11 @@ function workoutMatchesRecentFilters(workout, filters) {
     return false;
   }
 
+  if (filters.assignerId !== "all" &&
+      !assignments.some(row => row.assigned_by === filters.assignerId)) {
+    return false;
+  }
+
   return true;
 }
 
@@ -139,19 +194,20 @@ function renderRecentWorkouts() {
   const count = document.getElementById("recent-workouts-count");
   if (!list) return;
 
-  if (!recentWorkoutRows.length) {
+  const reusableWorkouts = getReusableWorkoutRows();
+  if (!reusableWorkouts.length) {
     if (count) count.textContent = "No workouts yet";
     list.innerHTML = `<div class="empty-state">No workouts created yet.</div>`;
     return;
   }
 
   const filters = getRecentWorkoutFilters();
-  const filteredWorkouts = recentWorkoutRows.filter(workout =>
+  const filteredWorkouts = reusableWorkouts.filter(workout =>
     workoutMatchesRecentFilters(workout, filters)
   );
 
   if (count) {
-    count.textContent = `${filteredWorkouts.length} of ${recentWorkoutRows.length} shown`;
+    count.textContent = `${filteredWorkouts.length} of ${reusableWorkouts.length} shown`;
   }
 
   if (!filteredWorkouts.length) {
@@ -161,6 +217,7 @@ function renderRecentWorkouts() {
 
   list.innerHTML = filteredWorkouts.map(workout => {
     const assignments = workout.workout_assignments || [];
+    const canManageAssignments = canManageWorkoutAssignments(workout);
     const targetLabels = assignments.map(getAssignmentTargetLabel);
     const targetLabel = targetLabels.length
       ? [...new Set(targetLabels)].join(", ")
@@ -186,18 +243,22 @@ function renderRecentWorkouts() {
         </div>
 
         <div class="recent-workout-actions">
-          <button class="outline-btn small-inline-btn" type="button" data-toggle-reassign-workout="${window.RipCityUI.attr(workout.id)}">
-            Assign Again
-          </button>
+          ${canManageAssignments ? `
+            <button class="outline-btn small-inline-btn" type="button" data-toggle-reassign-workout="${window.RipCityUI.attr(workout.id)}">
+              Assign Again
+            </button>
+          ` : ""}
           <button class="outline-btn small-inline-btn" type="button" data-load-workout-template="${window.RipCityUI.attr(workout.id)}">
             Load in Builder
           </button>
           <button class="outline-btn small-inline-btn" type="button" data-toggle-workout-edit="${window.RipCityUI.attr(workout.id)}">
             Edit Details
           </button>
-          <button class="outline-btn small-inline-btn danger-outline-btn" type="button" data-delete-workout="${window.RipCityUI.attr(workout.id)}">
-            Delete Workout
-          </button>
+          ${canManageAssignments ? `
+            <button class="outline-btn small-inline-btn danger-outline-btn" type="button" data-delete-workout="${window.RipCityUI.attr(workout.id)}">
+              Delete Workout
+            </button>
+          ` : ""}
         </div>
 
         <details class="recent-assignment-list">
@@ -212,9 +273,11 @@ function renderRecentWorkouts() {
                 <strong>${window.RipCityUI.text(formatDisplayDate(assignment.assigned_date))}</strong>
                 ${window.RipCityUI.text(getAssignmentTargetLabel(assignment))} · Assigned by ${window.RipCityUI.text(window.RipCityWorkoutData.getProfileName(assignment.assigner))}
               </span>
-              <button class="outline-btn small-inline-btn danger-outline-btn" type="button" data-remove-assignment="${window.RipCityUI.attr(assignment.id)}">
-                Remove Assignment
-              </button>
+              ${canManageAssignments ? `
+                <button class="outline-btn small-inline-btn danger-outline-btn" type="button" data-remove-assignment="${window.RipCityUI.attr(assignment.id)}">
+                  Remove Assignment
+                </button>
+              ` : ""}
             </div>
           `).join("") : `<div class="empty-state compact-empty-state">This workout is saved but not assigned to a date.</div>`}
           </div>
@@ -245,7 +308,7 @@ function renderRecentWorkouts() {
           </div>
         </form>
 
-        <div class="recent-reassign-card hidden" data-reassign-workout-card="${window.RipCityUI.attr(workout.id)}">
+        ${canManageAssignments ? `<div class="recent-reassign-card hidden" data-reassign-workout-card="${window.RipCityUI.attr(workout.id)}">
           <div>
             <strong>Assign this workout again</strong>
             <span>Reuse the same blocks and exercises for another date, group, or athlete.</span>
@@ -262,8 +325,14 @@ function renderRecentWorkouts() {
             </label>
 
             <label>
-              Assigned Date
-              <input type="date" value="${formatLocalDate(new Date())}" data-reuse-date="${window.RipCityUI.attr(workout.id)}" />
+              Assigned Dates
+              <span class="workout-date-input-row">
+                <input type="date" value="${formatLocalDate(new Date())}" data-reuse-date="${window.RipCityUI.attr(workout.id)}" />
+                <button class="outline-btn small-inline-btn" type="button" data-add-reuse-date="${window.RipCityUI.attr(workout.id)}">Add Date</button>
+              </span>
+              <span class="workout-selected-dates" data-reuse-selected-dates="${window.RipCityUI.attr(workout.id)}">
+                <span class="muted-small">One date selected unless you add more.</span>
+              </span>
             </label>
 
             <label data-reuse-group-field="${window.RipCityUI.attr(workout.id)}">
@@ -285,7 +354,7 @@ function renderRecentWorkouts() {
           <button class="outline-btn full-btn" type="button" data-assign-existing-workout="${window.RipCityUI.attr(workout.id)}">
             Assign Existing Workout
           </button>
-        </div>
+        </div>` : ""}
 
         <details class="workout-preview-details">
           <summary>
@@ -330,6 +399,10 @@ function renderRecentWorkouts() {
     });
   });
 
+  list.querySelectorAll("[data-add-reuse-date]").forEach(button => {
+    button.addEventListener("click", () => addExistingWorkoutDate(button.dataset.addReuseDate));
+  });
+
   list.querySelectorAll("[data-toggle-reassign-workout]").forEach(button => {
     button.addEventListener("click", () => {
       const panel = document.querySelector(`[data-reassign-workout-card="${button.dataset.toggleReassignWorkout}"]`);
@@ -349,7 +422,7 @@ function renderRecentWorkouts() {
   list.querySelectorAll("[data-load-workout-template]").forEach(button => {
     button.addEventListener("click", () => {
       const workout = recentWorkoutRows.find(row => row.id === button.dataset.loadWorkoutTemplate);
-      loadWorkoutIntoBuilder(workout);
+      openWorkoutInBuilder(workout);
     });
   });
 
@@ -377,6 +450,10 @@ function renderRecentWorkouts() {
 async function deleteWorkout(workoutId) {
   const workout = recentWorkoutRows.find(row => row.id === workoutId);
   if (!workout) return;
+  if (!canManageWorkoutAssignments(workout)) {
+    showWorkoutMessage("Only the workout creator or a facility admin can delete this workout.", true);
+    return;
+  }
 
   const assignmentCount = workout.workout_assignments?.length || 0;
   const confirmed = window.confirm(
