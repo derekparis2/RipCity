@@ -914,6 +914,8 @@
   --danger: #ff6b6b;
   --warning: #f7c948;
   --success: #7ee787;
+  --facility-primary: #69b7ff;
+  --facility-secondary: #f7f7f7;
 }
 
 body {
@@ -975,6 +977,29 @@ button:hover {
   width: 36px;
   height: 36px;
   object-fit: contain;
+}
+
+.facility-brand-initials {
+  color: var(--facility-secondary);
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  line-height: 1;
+}
+
+.auth-brand > .facility-brand-initials {
+  width: 52px;
+  height: 52px;
+  border: 1px solid var(--facility-primary);
+  background: #000;
+  display: grid;
+  place-items: center;
+}
+
+.auth-brand h1,
+.brand h1 {
+  color: var(--facility-secondary);
 }
 
 .brand h1,
@@ -11359,3 +11384,35 @@ details[open] > .compact-panel-summary > span:last-child::after {
 .program-launch-history li {
   color: var(--muted-text, #a7a7ad);
 }
+
+/* Facility visibility must override component display rules. */
+[hidden] { display: none !important; }
+
+/* Facility shells start neutral and reveal only verified branding. */
+html[data-facility-state="loading"] .auth-brand,
+html[data-facility-state="loading"] .brand,
+html[data-facility-state="loading"] [data-coach-nav],
+html[data-facility-state="loading"] [data-member-nav] { visibility:hidden; }
+html[data-facility-theme="slate"] { --bg:#111827; --surface:#1b2537; --surface-2:#253147; --border:#40516c; --text:#f1f5f9; --muted:#b3bfd1; }
+html[data-facility-theme="forest"] { --bg:#0d1815; --surface:#15241f; --surface-2:#20342b; --border:#3b5548; --text:#f1f7f3; --muted:#afc4b6; }
+.auth-brand h1, .brand h1 { color:var(--text); }
+html[data-facility-slug] .primary-btn { background:var(--accent); color:var(--accent-ink,#101114); border-color:var(--accent); }
+html[data-facility-slug] .eyebrow { color:var(--facility-primary); }
+html[data-facility-slug] .hero-card { border-left:3px solid var(--facility-primary); }
+html[data-facility-slug] .coach-nav-link.active,
+html[data-facility-slug] .nav-link.active { border-color:var(--facility-primary); background:var(--accent-soft); }
+.neutral-brand-mark { display:grid; place-items:center; width:54px; height:54px; flex-shrink:0; border:1px solid var(--border); border-radius:14px; background:var(--surface-2); color:var(--text); font-weight:800; font-size:22px; }
+
+:root { color-scheme:dark; }
+
+html[data-facility-theme] body { background:var(--bg); }
+html[data-facility-theme] .hero-card { background:linear-gradient(120deg,var(--surface-2),var(--surface)); }
+html[data-facility-theme] .member-sidebar { background:var(--surface); }
+.facility-brand-initials { color:var(--text); }
+
+/* Secondary color is a visible accent, never the only readable text color. */
+html[data-facility-slug] .h2k-header { border-bottom:3px solid var(--facility-secondary); padding-bottom:16px; }
+html[data-facility-slug] .member-sidebar { border-top:5px solid var(--facility-secondary); }
+html[data-facility-slug] .hero-card { border-bottom:3px solid var(--facility-secondary); }
+html[data-facility-slug] .outline-btn, html[data-facility-slug] .outline-link { border-color:var(--facility-secondary); }
+html[data-facility-slug] .coach-nav-link.active, html[data-facility-slug] .nav-link.active { box-shadow:inset 0 -3px var(--facility-secondary); }

@@ -25,7 +25,7 @@ assert.doesNotMatch(
 );
 assert.match(
   memberDashboard,
-  /const needsHabits = \["dashboard", "habits", "history"\]\.includes\(page\)/,
+  /const needsHabits = habitsEnabled && \["dashboard", "habits", "history"\]\.includes\(page\)/,
   "all member pages load shared habit data where needed"
 );
 assert.match(memberDashboard, /Habit Score/, "member weekly history uses shared habit scoring");

@@ -3,11 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rip City Signup</title>
+  <script src="js/shared/facility-shell.js?v=facility-ui-1&amp;review=facility-ui-3"></script>
+  <title>Facility Signup</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=signup-legal-2" />
+  <link rel="stylesheet" href="css/styles.css?v=signup-legal-2&amp;review=flexible-platform-2" />
 </head>
 <body class="auth-body">
   <main class="auth-page">
@@ -27,19 +28,7 @@
       </div>
 
       <form id="signup-form" class="auth-form">
-        <div class="member-type-grid" id="signup-member-type-grid">
-          <label class="member-type-card">
-            <input type="radio" name="member-type" value="athlete" checked>
-            <span>Athlete</span>
-            <small>Workouts, goals, progress, coach notes, and development tracking.</small>
-          </label>
-
-          <label class="member-type-card">
-            <input type="radio" name="member-type" value="h2k">
-            <span>H2K Member</span>
-            <small>Habit tracking, weekly score, training consistency, and accountability.</small>
-          </label>
-        </div>
+        <div class="member-type-grid" id="signup-member-type-grid"><p>Loading available member programs...</p></div>
 
         <div class="auth-grid">
           <div>
@@ -144,13 +133,13 @@
       <p class="auth-message" id="signup-message"></p>
 
       <p class="auth-footer">
-        Already have an account? <a href="login.html">Log in here</a>
+        Already have an account? <a id="signup-login-link" href="login.html">Log in here</a>
       </p>
     </section>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/shared/supabaseClient.js"></script>
-  <script src="js/auth/auth.js?v=auth-reliability-3"></script>
+  <script src="js/auth/auth.js?v=facility-admin-invites-1&amp;review=flexible-platform-2"></script>
 </body>
 </html>

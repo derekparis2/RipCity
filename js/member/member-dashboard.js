@@ -696,11 +696,16 @@ function isHabitCompleteForSelectedDate(habitId) {
 }
 
 function getMemberTypeLabel(profileTypeValue = currentMemberProfile?.member_type) {
+  if(currentAccess?.membership?.program_key) return window.RipCityAccess.getProgramLabel(currentAccess.facilityConfig,currentAccess.membership.program_key);
   const profileType = String(profileTypeValue || "").toLowerCase();
   const role = String(currentAccess?.membership?.role || "").toLowerCase();
 
-  if (profileType === "h2k" || role === "h2k_member") return "H2K Member";
-  if (profileType === "athlete" || role === "athlete") return "Athlete";
+  if (profileType === "h2k" || role === "h2k_member") {
+    return window.RipCityAccess.getProgramLabel(currentAccess?.facilityConfig, "h2k");
+  }
+  if (profileType === "athlete" || role === "athlete") {
+    return window.RipCityAccess.getProgramLabel(currentAccess?.facilityConfig, "athlete");
+  }
 
   return "Member";
 }
@@ -989,6 +994,7 @@ async function updateScores() {
 
 // Reloads selected-date logs, re-renders cards, and updates scores.
 async function refreshH2KDashboard() {
+  if (!window.RipCityAccess.isModuleEnabled(currentAccess?.facilityConfig, "habits")) return;
   // Habits and status are refreshed together so the dashboard state matches
   // the checkmark cards below.
   todayLogs = await loadHabitLogsForDate(currentMemberProfile.id, selectedHabitDate);
@@ -1007,7 +1013,7 @@ function showMemberWeeklyHistoryMessage(message, isError = false) {
 
 async function loadMemberWeeklyHistory() {
   const list = document.getElementById("member-weekly-history-list");
-  if (!list || !currentMemberProfile) return;
+  if (!list || !currentMemberProfile || !window.RipCityAccess.isModuleEnabled(currentAccess?.facilityConfig, "habits")) return;
 
   showMemberWeeklyHistoryMessage("Loading member history...");
 
@@ -1519,7 +1525,7 @@ function renderWorkoutCalendarRow(assignment) {
   const isFuture = assignment.assigned_date > today;
   const isToday = assignment.assigned_date === today;
   const status = getWorkoutCalendarStatus(summary, isFuture, isToday);
-  const actionLabel = isFuture ? "Preview" : isToday ? "Open Workout" : "Review";
+  const actionLabel = isFuture || isToday ? "Open Workout" : "Review";
 
   return `
     <article class="workout-history-card compact-workout-row">
@@ -1540,9 +1546,9 @@ function renderWorkoutCalendarRow(assignment) {
 }
 
 function getWorkoutCalendarStatus(summary, isFuture, isToday) {
-  if (isFuture) return "Scheduled";
   if (summary.isComplete) return "Complete";
   if (summary.completedSets > 0) return "In Progress";
+  if (isFuture) return "Scheduled";
   if (isToday) return "Ready";
   return "Not Started";
 }
@@ -1642,6 +1648,8 @@ async function initMemberPage() {
     if (!currentAccess) return;
 
     selectedHabitDate = getTodayString();
+    selectedWorkoutDate = selectedHabitDate;
+    workoutCalendarMonth = getMonthStart(parseAssignmentDate(selectedWorkoutDate));
     setMemberTypeText(getMemberTypeLabel());
     currentMemberProfile = await getMemberProfile(currentAccess.membership.id);
     updateMemberShell();
@@ -1649,15 +1657,17 @@ async function initMemberPage() {
     currentMemberGroupIds = await getCurrentMemberGroupIds(currentMemberProfile.id);
     applyMemberModuleVisibility();
 
-    const needsHabits = ["dashboard", "habits", "history"].includes(page);
-    const needsWorkoutHistory = ["dashboard", "training", "history"].includes(page);
+    const habitsEnabled = window.RipCityAccess.isModuleEnabled(currentAccess.facilityConfig, "habits");
+    const needsHabits = habitsEnabled && ["dashboard", "habits", "history"].includes(page);
+    const needsWorkoutHistory = ["dashboard", "training", "history"].includes(page)
+      && window.RipCityAccess.isModuleEnabled(currentAccess.facilityConfig, "workouts");
 
     if (needsHabits) {
       sharedHabits = await loadHabits(currentAccess.membership.facility_id);
     }
 
     if (needsWorkoutHistory) await loadWorkoutHistory();
-    if (["habits", "history"].includes(page)) await loadMemberWeeklyHistory();
+    if (habitsEnabled && ["habits", "history"].includes(page)) await loadMemberWeeklyHistory();
     if (page === "goals") await loadMemberGoals();
     if (page === "leaderboards") {
       await window.RipCityMemberLeaderboards.initialize({
@@ -1667,7 +1677,7 @@ async function initMemberPage() {
       });
     }
 
-    if (["dashboard", "habits"].includes(page)) {
+    if (habitsEnabled && ["dashboard", "habits"].includes(page)) {
       await refreshH2KDashboard();
     }
 

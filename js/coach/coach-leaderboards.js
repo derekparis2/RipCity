@@ -7,8 +7,7 @@ let leaderboardAccess = null;
 let leaderboardMembers = [];
 let leaderboardGroups = [];
 let leaderboardGroupMemberships = [];
-let h2kLeaderboardRows = [];
-let athleteLeaderboardRows = [];
+let programLeaderboardRows = {};
 let activeLeaderboardType = "h2k";
 const selectedLeaderboardMetric = {
   h2k: "fourWeekAverage",
@@ -28,6 +27,7 @@ async function loadLeaderboardMembers(facilityId) {
     .select(`
       id,
       role,
+      program_key,
       profile:profiles!facility_members_profile_id_fkey (
         full_name,
         email,
@@ -48,6 +48,7 @@ async function loadLeaderboardMembers(facilityId) {
     const memberProfile = window.RipCityWorkoutData.normalizeJoinedOne(row.member_profile);
     return {
       memberProfileId: memberProfile?.id,
+      programKey: row.program_key || memberProfile?.member_type,
       memberType: memberProfile?.member_type || (row.role === "h2k_member" ? "h2k" : "athlete"),
       name: row.profile?.full_name || "Unnamed Member",
       email: row.profile?.email || "",
@@ -59,7 +60,7 @@ async function loadLeaderboardMembers(facilityId) {
 async function loadLeaderboardGroups(facilityId) {
   const { data, error } = await db
     .from("groups")
-    .select("id, name, member_type")
+    .select("id, name, member_type, program_key")
     .eq("facility_id", facilityId)
     .order("name", { ascending: true });
 
@@ -126,7 +127,7 @@ function getOrderedMetricDefinitions() {
 
 function buildHabitRows(memberType, habitData, todayKey) {
   return leaderboardMembers
-    .filter(member => member.memberType === memberType)
+    .filter(member => member.programKey === memberType)
     .map(member => ({
       ...member,
       groupIds: getMemberGroupIds(member.memberProfileId),
@@ -143,12 +144,9 @@ function populateGroupFilter() {
   const select = document.getElementById("leaderboard-group-filter");
   if (!select) return;
   const currentValue = select.value;
-  const relevantGroups = leaderboardGroups.filter(group => {
-    if (!group.member_type) return true;
-    return activeLeaderboardType === "h2k"
-      ? group.member_type === "h2k"
-      : group.member_type === "athlete";
-  });
+  const profileType = leaderboardAccess?.facilityConfig?.programs?.[activeLeaderboardType]?.profile_type === "athlete" ? "athlete" : "h2k";
+  const relevantGroups = leaderboardGroups.filter(group => (!group.program_key || group.program_key === activeLeaderboardType)
+    && (!group.member_type || group.member_type === "both" || group.member_type === profileType));
 
   select.innerHTML = `
     <option value="all">All groups</option>
@@ -172,7 +170,7 @@ function populateMetricFilter() {
 function getRankedFilteredRows() {
   const groupId = document.getElementById("leaderboard-group-filter")?.value || "all";
   const search = document.getElementById("leaderboard-member-search")?.value.trim().toLowerCase() || "";
-  let rows = activeLeaderboardType === "h2k" ? h2kLeaderboardRows : athleteLeaderboardRows;
+  let rows = programLeaderboardRows[activeLeaderboardType] || [];
 
   if (groupId !== "all") {
     rows = rows.filter(row => row.groupIds.includes(groupId));
@@ -227,7 +225,6 @@ function renderLeaderboards() {
   const context = document.getElementById("leaderboard-context");
   if (!list) return;
   const rows = getRankedFilteredRows();
-  const isH2K = activeLeaderboardType === "h2k";
   const orderedMetrics = getOrderedMetricDefinitions();
   const selectedMetric = orderedMetrics[0];
 
@@ -236,7 +233,12 @@ function renderLeaderboards() {
   }
 
   if (!rows.length) {
-    list.innerHTML = `<div class="empty-state">No matching ${isH2K ? "H2K members" : "athletes"} yet.</div>`;
+    const programLabel = window.RipCityAccess.getProgramLabel(
+      window.RipCityFacility,
+      activeLeaderboardType,
+      { plural: true }
+    );
+    list.innerHTML = `<div class="empty-state">No matching ${window.RipCityUI.text(programLabel.toLowerCase())} yet.</div>`;
     return;
   }
 
@@ -271,6 +273,22 @@ function selectLeaderboardTab(type) {
   renderLeaderboards();
 }
 
+function selectInitialLeaderboardTab() {
+  const configuration = leaderboardAccess?.facilityConfig;
+  const programs = Object.values(configuration?.programs || {}).filter(program => program.enabled !== false);
+  const tabs = document.querySelector(".leaderboard-tabs");
+  if(tabs) {
+    tabs.replaceChildren();
+    programs.forEach(program=>{
+      const button=document.createElement("button");button.className="leaderboard-tab";button.type="button";button.setAttribute("role","tab");button.dataset.leaderboardTab=program.program_key;
+      button.textContent=`${program.display_name} Habits`;button.addEventListener("click",()=>selectLeaderboardTab(program.program_key));tabs.append(button);
+      selectedLeaderboardMetric[program.program_key] ||= "fourWeekAverage";
+    });
+  }
+  activeLeaderboardType = programs.some(program=>program.program_key===activeLeaderboardType) ? activeLeaderboardType : programs[0]?.program_key || "";
+  selectLeaderboardTab(activeLeaderboardType);
+}
+
 async function refreshLeaderboards() {
   showLeaderboardMessage("Loading facility leaderboards...");
 
@@ -288,8 +306,7 @@ async function refreshLeaderboards() {
       leaderboardMembers.map(member => member.memberProfileId)
     );
 
-    h2kLeaderboardRows = buildHabitRows("h2k", habitData, todayKey);
-    athleteLeaderboardRows = buildHabitRows("athlete", habitData, todayKey);
+    programLeaderboardRows=Object.fromEntries(Object.keys(leaderboardAccess.facilityConfig.programs).map(key=>[key,buildHabitRows(key,habitData,todayKey)]));
     populateGroupFilter();
     populateMetricFilter();
     renderLeaderboards();
@@ -307,6 +324,7 @@ async function initCoachLeaderboards() {
       onDeniedMessage: showLeaderboardMessage
     });
     if (!leaderboardAccess) return;
+    selectInitialLeaderboardTab();
     await refreshLeaderboards();
   } catch (error) {
     console.error(error);

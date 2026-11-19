@@ -46,9 +46,8 @@ assert.match(workoutSessionCore, /RipCityAccess\.requireMemberAccess/);
 assert.match(approvals, /approvalLoadInProgress/);
 assert.match(approvals, /Loading approvals took too long/);
 
-for (const page of [signupPage, loginPage]) {
-  assert.match(page, /auth\.js\?v=auth-reliability-3/);
-}
+assert.match(loginPage, /auth\.js\?v=auth-reliability-3/);
+assert.match(signupPage, /auth\.js\?v=facility-admin-invites-1/);
 assert.match(approvalsPage, /access-control\.js\?v=auth-reliability-3/);
 assert.match(approvalsPage, /coach-approvals\.js\?v=auth-reliability-1/);
 

@@ -52,6 +52,18 @@
     input.min = formatLocalDateTimeInput(new Date(Date.now() + 60_000));
   }
 
+  function applyProgramAudienceLabels() {
+    const select=document.getElementById("coach-announcement-audience");
+    if(!select) return;
+    document.getElementById("coach-announcement-athlete-audience")?.remove();
+    document.getElementById("coach-announcement-h2k-audience")?.remove();
+    select.querySelectorAll("[data-configured-program]").forEach(option=>option.remove());
+    Object.values(access.facilityConfig.programs || {}).filter(program=>program.enabled!==false).forEach(program=>{
+      const option=document.createElement("option");option.value=`program:${program.program_key}`;option.dataset.configuredProgram=program.program_key;
+      option.textContent=`Current ${program.plural_name}`;select.append(option);
+    });
+  }
+
   function renderTargetOptions() {
     const groupList = document.getElementById("coach-announcement-groups");
     const memberList = document.getElementById("coach-announcement-members");
@@ -80,7 +92,7 @@
                 <small>${ui().text(member.email)}</small>
               </span>
             </span>
-            <span class="announcement-member-type">${ui().text(member.type === "h2k" ? "H2K" : "Athlete")}</span>
+            <span class="announcement-member-type">${ui().text(window.RipCityAccess.getProgramLabel(window.RipCityFacility, member.programKey || member.type))}</span>
           </label>
         `).join("")
       : '<p class="announcement-option-empty">No approved members available.</p>';
@@ -163,8 +175,12 @@
 
   function audienceLabel(announcement) {
     if (announcement.audience_type === "facility") return "Entire facility";
-    if (announcement.audience_type === "athletes") return "All athletes";
-    if (announcement.audience_type === "h2k") return "All H2K members";
+    if (announcement.audience_type === "athletes") {
+      return `All ${window.RipCityAccess.getProgramLabel(window.RipCityFacility, "athlete", { plural: true })}`;
+    }
+    if (announcement.audience_type === "h2k") {
+      return `All ${window.RipCityAccess.getProgramLabel(window.RipCityFacility, "h2k", { plural: true })}`;
+    }
 
     const groupNames = (announcement.groupIds || [])
       .map(id => groups.find(group => group.id === id)?.name)
@@ -255,6 +271,7 @@
           id,
           role,
           profile:profiles!facility_members_profile_id_fkey (id, full_name, email),
+          program_key,
           member_profile:member_profiles (id, member_type)
         `)
         .eq("facility_id", access.facilityId)
@@ -290,6 +307,7 @@
           .join("")
           .slice(0, 2)
           .toUpperCase(),
+        programKey: row.program_key || memberProfile?.member_type,
         type: memberProfile?.member_type || (row.role === "h2k_member" ? "h2k" : "athlete")
       };
     }).filter(member => member.id).sort((a, b) => a.name.localeCompare(b.name));
@@ -364,6 +382,10 @@
       return;
     }
 
+    if(audienceType.startsWith("program:") && !members.some(member=>member.programKey===audienceType.slice(8))) {
+      showMessage("This program has no approved members to receive an announcement.",true);return;
+    }
+
     let expiresAt = null;
     if (expiresValue) {
       const expiration = new Date(expiresValue);
@@ -388,9 +410,9 @@
         announcement_title: title,
         announcement_body: body,
         announcement_importance: importance,
-        announcement_audience_type: audienceType,
-        target_group_ids: groupIds,
-        target_member_profile_ids: memberIds,
+        announcement_audience_type: audienceType.startsWith("program:") ? "targeted" : audienceType,
+        target_group_ids: audienceType.startsWith("program:") ? [] : groupIds,
+        target_member_profile_ids: audienceType.startsWith("program:") ? members.filter(member=>member.programKey===audienceType.slice(8)).map(member=>member.id) : memberIds,
         announcement_expires_at: expiresAt
       });
 
@@ -482,6 +504,8 @@
       setDefaultExpiration();
       access = await window.RipCityAccess.requireCoachAccess({ onDeniedMessage: showMessage });
       if (!access) return;
+      if (!window.RipCityAccess.isModuleEnabled(access.facilityConfig, "announcements")) return;
+      applyProgramAudienceLabels();
       await Promise.all([loadAudienceOptions(), loadAnnouncements()]);
     } catch (error) {
       console.error(error);

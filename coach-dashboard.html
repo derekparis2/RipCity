@@ -3,13 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="js/shared/facility-shell.js?v=facility-ui-1&amp;review=facility-ui-3"></script>
   <title>Coach Dashboard</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/styles.css?v=attention-habits-1" />
+  <link rel="stylesheet" href="css/styles.css?v=attention-habits-1&amp;review=flexible-platform-2" />
 </head>
 
 <body class="auth-body coach-dashboard-page">
@@ -32,8 +33,8 @@
     <section class="hero-card h2k-hero">
       <div>
         <p class="eyebrow">COACH DASHBOARD</p>
-        <h3>Track member consistency, habits, and accountability.</h3>
-        <p>
+        <h3 data-facility-content="coach_title">Track member consistency, habits, and accountability.</h3>
+        <p data-facility-content="coach_message">
           This page gives coaches a quick view of who is staying consistent,
           who logged today, and who may need attention.
         </p>
@@ -41,7 +42,7 @@
     </section>
 
     <section class="dashboard-grid h2k-dashboard-grid coach-dashboard-intro-grid">
-      <article class="panel feedback-panel coach-feedback-panel dashboard-feedback-panel">
+      <article class="panel feedback-panel coach-feedback-panel dashboard-feedback-panel" data-facility-widget="show_feedback">
         <div>
           <p class="eyebrow">BETA FEEDBACK</p>
           <h3>Tell us what to improve.</h3>
@@ -53,7 +54,7 @@
 
     </section>
 
-    <details class="panel coach-announcements-panel" id="coach-announcements-panel">
+    <details class="panel coach-announcements-panel" id="coach-announcements-panel" data-facility-module="announcements">
       <summary class="coach-announcement-summary">
         <div>
           <p class="eyebrow">COMMUNICATION</p>
@@ -74,8 +75,8 @@
           <label>Audience
             <select id="coach-announcement-audience">
               <option value="facility">Entire facility</option>
-              <option value="athletes">All athletes</option>
-              <option value="h2k">All H2K members</option>
+              <option id="coach-announcement-athlete-audience" value="athletes" data-facility-program="athlete">All athletes</option>
+              <option id="coach-announcement-h2k-audience" value="h2k" data-facility-program="h2k">All H2K members</option>
               <option value="targeted">Custom selection</option>
             </select>
           </label>
@@ -135,29 +136,31 @@
       <article class="stat-card">
         <span>Approved Members</span>
         <strong id="coach-total-members">0</strong>
-        <small>Athletes and H2K members</small>
+        <small>Approved facility members</small>
       </article>
 
-      <article class="stat-card">
-        <span>H2K Members</span>
+      <article class="stat-card hidden">
+        <span data-facility-program-label="h2k" data-label-form="plural">H2K Members</span>
         <strong id="coach-total-h2k-members">0</strong>
-        <small>Approved H2K members</small>
+        <small>Approved members</small>
       </article>
 
-      <article class="stat-card">
-        <span>Athletes</span>
+      <article class="stat-card hidden">
+        <span data-facility-program-label="athlete" data-label-form="plural">Athletes</span>
         <strong id="coach-total-athletes">0</strong>
-        <small>Approved athletes</small>
+        <small>Approved members</small>
       </article>
 
-      <article class="stat-card">
+      <article class="stat-card" data-facility-module="habits">
         <span>Needs Attention</span>
         <strong id="coach-needs-attention">0</strong>
         <small>Habit follow-up</small>
       </article>
     </section>
 
-    <section class="coach-attention-section">
+    <section class="stats-grid" id="facility-program-stats" aria-label="Members by program"></section>
+
+    <section class="coach-attention-section" data-facility-module="habits">
       <details class="panel coach-attention-panel" id="coach-attention-panel">
         <summary class="coach-attention-summary">
           <div>
@@ -180,8 +183,8 @@
               Program
               <select id="coach-attention-type-filter">
                 <option value="all">All members</option>
-                <option value="athlete">Athletes</option>
-                <option value="h2k">H2K members</option>
+                <option value="athlete" data-facility-program="athlete" data-facility-program-label="athlete" data-label-form="plural">Athletes</option>
+                <option value="h2k" data-facility-program="h2k" data-facility-program-label="h2k" data-label-form="plural">H2K members</option>
               </select>
             </label>
             <label>
@@ -201,7 +204,7 @@
       </details>
     </section>
 
-    <section class="dashboard-grid h2k-dashboard-grid coach-workout-review-section">
+    <section class="dashboard-grid h2k-dashboard-grid coach-workout-review-section" data-facility-module="workouts">
       <article class="panel coach-workout-review-panel">
         <div class="panel-heading">
           <div>
@@ -255,10 +258,10 @@
   <script src="js/shared/supabaseClient.js"></script>
   <script src="js/shared/ui-utils.js"></script>
   <script src="js/coach/coach-nav.js?v=program-creator-1"></script>
-  <script src="js/shared/access-control.js?v=auth-reliability-3"></script>
+  <script src="js/shared/access-control.js?v=auth-reliability-3&amp;review=flexible-platform-2"></script>
   <script src="js/shared/workout-data.js?v=workout-attribution-1"></script>
   <script src="js/shared/attention-rules.js?v=coach-attention-1"></script>
-  <script src="js/coach/coach-dashboard.js?v=attention-habits-1"></script>
-  <script src="js/coach/coach-announcements.js?v=announcement-attribution-1"></script>
+  <script src="js/coach/coach-dashboard.js?v=attention-habits-1&amp;review=flexible-platform-2"></script>
+  <script src="js/coach/coach-announcements.js?v=announcement-attribution-1&amp;review=flexible-platform-2"></script>
 </body>
 </html>

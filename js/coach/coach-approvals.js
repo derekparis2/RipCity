@@ -46,10 +46,15 @@ async function requireApprovalCoachOrAdmin() {
   });
 }
 
-function formatApprovalRole(role) {
+function formatApprovalRole(role, programKey) {
+  if(programKey) return window.RipCityAccess.getProgramLabel(approvalAccess.facilityConfig,programKey);
+  if (role === "h2k_member") {
+    return window.RipCityAccess.getProgramLabel(approvalAccess?.facilityConfig, "h2k");
+  }
+  if (role === "athlete") {
+    return window.RipCityAccess.getProgramLabel(approvalAccess?.facilityConfig, "athlete");
+  }
   const labels = {
-    h2k_member: "H2K Member",
-    athlete: "Athlete",
     coach: "Coach",
     admin: "Admin",
     parent: "Parent"
@@ -63,18 +68,22 @@ function getApprovalMemberProfile(user) {
   return user.member_profile || null;
 }
 
-function getApprovalGroupsForMemberType(memberType) {
+function getApprovalGroupsForMemberType(memberType, programKey) {
   return approvalMemberGroups.filter(group => (
-    group.member_type === memberType || group.member_type === "both"
+    (!group.program_key || group.program_key === programKey) && (group.member_type === memberType || group.member_type === "both")
   ));
 }
 
-function renderApprovalGroupOptions(memberType) {
-  const matchingGroups = getApprovalGroupsForMemberType(memberType);
-  const groupLabel = memberType === "h2k" ? "H2K" : "athlete";
+function renderApprovalGroupOptions(memberType, programKey) {
+  const matchingGroups = getApprovalGroupsForMemberType(memberType,programKey);
+  const groupLabel = window.RipCityAccess.getProgramLabel(
+    approvalAccess?.facilityConfig,
+    programKey || memberType,
+    { plural: true }
+  ).toLowerCase();
 
   if (!matchingGroups.length) {
-    return `<option value="">No ${groupLabel} groups available — create one in Roster</option>`;
+    return `<option value="">No ${window.RipCityUI.text(groupLabel)} groups available — create one in Roster</option>`;
   }
 
   return `
@@ -99,6 +108,7 @@ async function loadPendingUsers() {
 
     approvalAccess = access;
     document.getElementById("coach-invite-panel")?.classList.toggle("hidden", !access.isAdmin);
+    document.getElementById("admin-invite-panel")?.classList.toggle("hidden", !access.isAdmin);
     document.getElementById("coach-management-panel")?.classList.toggle("hidden", !access.isAdmin);
 
     const accessNote = document.getElementById("approval-access-note");
@@ -115,6 +125,7 @@ async function loadPendingUsers() {
           .select(`
             id,
             role,
+            program_key,
             status,
             created_at,
             profile:profiles!facility_members_profile_id_fkey (
@@ -132,7 +143,7 @@ async function loadPendingUsers() {
           .order("created_at", { ascending: false }),
         db
           .from("groups")
-          .select("id, name, member_type")
+          .select("id, name, member_type, program_key")
           .eq("facility_id", access.membership.facility_id)
           .in("member_type", ["athlete", "h2k", "both"])
           .order("name", { ascending: true })
@@ -311,15 +322,15 @@ function renderPendingUsers(users, access) {
           <h4>${window.RipCityUI.text(profile?.full_name, "Unnamed User")}</h4>
           <div class="pending-user-meta">
             <span>${window.RipCityUI.text(profile?.email, "No email")}</span>
-            <span>${window.RipCityUI.text(formatApprovalRole(user.role))}</span>
+            <span>${window.RipCityUI.text(formatApprovalRole(user.role, user.program_key))}</span>
             <span>Status: ${window.RipCityUI.text(user.status)}</span>
             ${!canDecide ? "<span>Facility-admin action required</span>" : ""}
           </div>
           ${canDecide && isGroupedMember ? `
             <label class="pending-user-group-control" for="approval-group-${window.RipCityUI.attr(user.id)}">
-              <span>Initial ${memberProfile.member_type === "h2k" ? "H2K" : "training"} group</span>
+              <span>Initial ${window.RipCityUI.text(window.RipCityAccess.getProgramLabel(approvalAccess?.facilityConfig, user.program_key || memberProfile.member_type))} group</span>
               <select id="approval-group-${window.RipCityUI.attr(user.id)}" data-approval-group="${window.RipCityUI.attr(user.id)}">
-                ${renderApprovalGroupOptions(memberProfile.member_type)}
+                ${renderApprovalGroupOptions(memberProfile.member_type, user.program_key)}
               </select>
             </label>
           ` : ""}
@@ -486,6 +497,32 @@ async function createCoachInvite() {
   }
 }
 
+async function createFacilityAdminInvite() {
+  const access = approvalAccess || await requireApprovalCoachOrAdmin();
+  if (!access?.isAdmin) return;
+  const button = document.getElementById("create-admin-invite-btn");
+  const message = document.getElementById("admin-invite-message");
+  button.disabled = true;
+  message.textContent = "Creating an administrator link...";
+  try {
+    const { data, error } = await db.rpc("create_facility_admin_invite", { p_facility_id: access.membership.facility_id });
+    if (error) throw error;
+    if (!data?.[0]?.invite_code) throw new Error("The admin invite could not be created.");
+    const url = new URL("signup.html", window.location.href);
+    url.searchParams.set("admin_invite", data[0].invite_code);
+    try {
+      await copyCoachInviteText(url.href);
+      message.textContent = "Admin signup link copied. It expires in seven days and requires approval.";
+    } catch {
+      message.textContent = `Copy this admin signup link: ${url.href}`;
+    }
+    message.classList.remove("error-message");
+  } catch (error) {
+    message.textContent = error.message || "Could not create the admin signup link.";
+    message.classList.add("error-message");
+  } finally { button.disabled = false; }
+}
+
 async function handleApprovalLogout() {
   await db.auth.signOut();
   window.location.href = "login.html";
@@ -496,5 +533,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("refresh-approvals-btn").addEventListener("click", loadPendingUsers);
   document.getElementById("create-coach-invite-btn").addEventListener("click", createCoachInvite);
+  document.getElementById("create-admin-invite-btn")?.addEventListener("click", createFacilityAdminInvite);
   document.getElementById("approval-logout-btn").addEventListener("click", handleApprovalLogout);
 });

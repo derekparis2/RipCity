@@ -7,8 +7,22 @@
 
 (function () {
   const DEFAULT_REQUEST_TIMEOUT_MS = 15000;
+  const SELECTED_FACILITY_KEY = "ripcity:selected-facility-id";
 
-  function withTimeout(request, message = "Rip City took too long to respond.", timeoutMs = DEFAULT_REQUEST_TIMEOUT_MS) {
+  const MODULE_REQUIREMENTS_BY_PAGE = {
+    "coach-workouts.html": ["workouts"],
+    "coach-programming.html": ["workouts"],
+    "coach-exercises.html": ["workouts"],
+    "workout-session.html": ["workouts"],
+    "coach-testing.html": ["testing_days"],
+    "coach-leaderboards.html": ["leaderboards"],
+    "member-habits.html": ["habits"],
+    "member-goals.html": ["goals"],
+    "member-leaderboards.html": ["leaderboards"],
+    "member-training.html": ["workouts", "testing_days"]
+  };
+
+  function withTimeout(request, message = "The app took too long to respond.", timeoutMs = DEFAULT_REQUEST_TIMEOUT_MS) {
     let timeoutId;
     const timeout = new Promise((resolve, reject) => {
       timeoutId = window.setTimeout(() => {
@@ -31,9 +45,32 @@
   function choosePrimaryMembership(profile) {
     const memberships = getJoinedMemberships(profile);
 
+    const selectedFacilityId = window.sessionStorage.getItem(SELECTED_FACILITY_KEY);
+    if (selectedFacilityId) {
+      const selectedMembership = memberships.find(row => (
+        row.facility_id === selectedFacilityId
+      ));
+      if (selectedMembership) return selectedMembership;
+      window.sessionStorage.removeItem(SELECTED_FACILITY_KEY);
+    }
+
     return memberships.find(row => row.status === "approved") ||
       memberships[0] ||
       null;
+  }
+
+  function selectFacility(facilityId) {
+    if (facilityId) window.sessionStorage.setItem(SELECTED_FACILITY_KEY, facilityId);
+    else window.sessionStorage.removeItem(SELECTED_FACILITY_KEY);
+  }
+
+  async function getCurrentUserIsPlatformOwner() {
+    const { data, error } = await withTimeout(
+      db.rpc("current_user_is_platform_owner"),
+      "Checking platform access took too long."
+    );
+    if (error) throw error;
+    return data === true;
   }
 
   async function getSession() {
@@ -80,6 +117,7 @@
             id,
             role,
             status,
+            program_key,
             facility_id
           )
         `)
@@ -110,6 +148,225 @@
     return isCoachRole(role) ? "coach-dashboard.html" : "member-dashboard.html";
   }
 
+  function normalizeFacilityConfiguration(configuration) {
+    if (!configuration || typeof configuration !== "object") return null;
+
+    const modules = Object.fromEntries(
+      (configuration.modules || []).map(module => [module.module_key, {
+        enabled: module.enabled !== false,
+        settings: module.settings || {}
+      }])
+    );
+    const programs = Object.fromEntries(
+      (configuration.programs || []).map(program => [program.program_key, program])
+    );
+
+    return {
+      ...configuration,
+      modules,
+      programs
+    };
+  }
+
+  function getMemberProgramKey(membership) {
+    return membership?.program_key || (membership?.role === "athlete" ? "athlete" : membership?.role === "h2k_member" ? "h2k" : null);
+  }
+
+  function getEffectiveFacilityConfiguration(configuration, membership) {
+    const key = getMemberProgramKey(membership);
+    if (!key) return configuration;
+    const overrides = configuration.programs?.[key]?.module_overrides || {};
+    return { ...configuration, modules: Object.fromEntries(Object.entries(configuration.modules).map(([moduleKey, module]) => [
+      moduleKey, { ...module, enabled: module.enabled !== false && overrides[moduleKey] !== false }
+    ])) };
+  }
+
+  function getFacilityInitials(name) {
+    return String(name || "Facility")
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map(word => word[0])
+      .join("")
+      .toUpperCase();
+  }
+
+  function applyFacilityBranding(configuration) {
+    if (!configuration) return;
+
+    document.documentElement.style.setProperty("--facility-primary", configuration.primary_color || "#69b7ff");
+    document.documentElement.style.setProperty("--facility-secondary", configuration.secondary_color || "#f7f7f7");
+    document.documentElement.dataset.facilitySlug = configuration.slug || "";
+    document.documentElement.dataset.facilityTheme = ["midnight", "slate", "forest"].includes(configuration.ui_theme) ? configuration.ui_theme : "midnight";
+    document.documentElement.dataset.facilityState = "ready";
+    const primary = configuration.primary_color || "#69b7ff";
+    document.documentElement.style.setProperty("--accent", primary);
+    if (/^#[0-9a-f]{6}$/i.test(primary)) {
+      const rgb = [1,3,5].map(offset => parseInt(primary.slice(offset, offset + 2), 16));
+      document.documentElement.style.setProperty("--accent-soft", `rgba(${rgb.join(",")}, .12)`);
+      const linear = rgb.map(value => { const channel = value / 255; return channel <= .04045 ? channel / 12.92 : ((channel + .055) / 1.055) ** 2.4; });
+      const luminance = linear[0] * .2126 + linear[1] * .7152 + linear[2] * .0722;
+      document.documentElement.style.setProperty("--accent-ink", luminance > .179 ? "#000000" : "#ffffff");
+    }
+
+    document.querySelectorAll(".auth-brand h1, .brand h1").forEach(element => {
+      element.textContent = String(configuration.name || "Facility").toUpperCase();
+    });
+
+    document.querySelectorAll(".auth-brand img, .brand-mark img").forEach(image => {
+      const parent = image.parentElement;
+      parent?.querySelector(".facility-brand-initials")?.remove();
+
+      if (configuration.logo_url) {
+        image.hidden = true;
+        image.onload = () => { image.hidden = false; };
+        image.onerror = () => { image.hidden = true; };
+        image.src = configuration.logo_url;
+        image.alt = `${configuration.name} logo`;
+        if (image.complete && image.naturalWidth > 0) image.hidden = false;
+        return;
+      }
+
+      // Preserve Rip City's bundled logo when its database configuration does
+      // not provide a hosted logo. Other facilities receive a text monogram
+      // until a logo URL is configured.
+      if (configuration.slug === "rip-city") {
+        image.src = "assets/rip-city-logo.png";
+        image.alt = `${configuration.name} logo`;
+        image.hidden = false;
+        return;
+      }
+
+      image.hidden = true;
+      const initials = document.createElement("span");
+      initials.className = "facility-brand-initials";
+      initials.textContent = getFacilityInitials(configuration.name);
+      initials.setAttribute("aria-label", configuration.name || "Facility");
+      parent?.prepend(initials);
+    });
+
+    if (/rip city/i.test(document.title)) {
+      document.title = document.title.replace(/rip city/ig, configuration.name || "Facility");
+    }
+  }
+
+  function isModuleEnabled(configuration, moduleKey) {
+    return configuration?.modules?.[moduleKey]?.enabled !== false;
+  }
+
+  function isProgramEnabled(configuration, programKey) {
+    if(!configuration?.programs) return true;
+    return Boolean(configuration.programs[programKey] && configuration.programs[programKey].enabled !== false);
+  }
+
+  function getProgramLabel(configuration, programKey, options = {}) {
+    const plural = Boolean(options.plural);
+    const defaults = programKey === "h2k"
+      ? { display_name: "H2K Member", plural_name: "H2K Members" }
+      : { display_name: "Athlete", plural_name: "Athletes" };
+    const program = configuration?.programs?.[programKey] || defaults;
+    return String(plural ? program.plural_name : program.display_name);
+  }
+
+  function getFacilityTerm(configuration, termKey, fallback = "") {
+    return String(configuration?.terminology?.[termKey] || fallback);
+  }
+
+  function getFacilityTimeZone(configuration = window.RipCityFacility) {
+    return configuration?.time_zone || "America/New_York";
+  }
+
+  function getFacilityDateKey(date = new Date(), configuration = window.RipCityFacility) {
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: getFacilityTimeZone(configuration),
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    }).formatToParts(date);
+    const values = Object.fromEntries(parts.map(part => [part.type, part.value]));
+
+    return `${values.year}-${values.month}-${values.day}`;
+  }
+
+  function applyFacilityLanguage(configuration) {
+    document.querySelectorAll("[data-facility-content]").forEach(element => {
+      const value = configuration.dashboard_content?.[element.dataset.facilityContent];
+      if (typeof value === "string" && value.trim()) element.textContent = value;
+    });
+    document.querySelectorAll("[data-facility-widget]").forEach(element => {
+      element.hidden = configuration.dashboard_content?.[element.dataset.facilityWidget] === false
+        || Boolean(element.dataset.facilityModule && !isModuleEnabled(configuration,element.dataset.facilityModule));
+    });
+    document.querySelectorAll("[data-facility-program-label]").forEach(element => {
+      element.textContent = getProgramLabel(
+        configuration,
+        element.dataset.facilityProgramLabel,
+        { plural: element.dataset.labelForm === "plural" }
+      );
+    });
+
+    document.querySelectorAll("[data-facility-term]").forEach(element => {
+      element.textContent = getFacilityTerm(
+        configuration,
+        element.dataset.facilityTerm,
+        element.textContent
+      );
+    });
+  }
+
+  function applyFacilityFeatureVisibility(configuration) {
+    document.querySelectorAll("[data-facility-module]").forEach(element => {
+      element.hidden = !isModuleEnabled(configuration, element.dataset.facilityModule);
+    });
+
+    document.querySelectorAll("[data-facility-modules]").forEach(element => {
+      const moduleKeys = String(element.dataset.facilityModules || "")
+        .split(/\s+/)
+        .filter(Boolean);
+      element.hidden = Boolean(moduleKeys.length) &&
+        !moduleKeys.some(moduleKey => isModuleEnabled(configuration, moduleKey));
+    });
+
+    document.querySelectorAll("[data-facility-program]").forEach(element => {
+      const enabled = isProgramEnabled(configuration, element.dataset.facilityProgram);
+      element.hidden = !enabled;
+      if (element instanceof HTMLOptionElement) {
+        element.disabled = !enabled;
+        if (!enabled && element.selected) element.selected = false;
+      }
+    });
+  }
+
+  function getRequiredModulesForCurrentPage() {
+    const page = window.location.pathname.split("/").pop() || "";
+    const normalizedPage = page.endsWith(".html") ? page : `${page}.html`;
+    return MODULE_REQUIREMENTS_BY_PAGE[normalizedPage] || [];
+  }
+
+  function currentPageHasEnabledModule(configuration) {
+    const requiredModules = getRequiredModulesForCurrentPage();
+    return !requiredModules.length || requiredModules.some(moduleKey => isModuleEnabled(configuration, moduleKey));
+  }
+
+  async function getFacilityConfiguration(facilityId) {
+    const { data, error } = await withTimeout(
+      db.rpc("get_facility_configuration", { p_facility_id: facilityId }),
+      "Loading facility settings took too long. Check your connection and try again."
+    );
+    if (error) throw error;
+    return normalizeFacilityConfiguration(data);
+  }
+
+  function publishFacilityConfiguration(configuration) {
+    window.RipCityFacility = configuration;
+    applyFacilityBranding(configuration);
+    applyFacilityFeatureVisibility(configuration);
+    applyFacilityLanguage(configuration);
+    window.dispatchEvent(new CustomEvent("ripcity:facility-config", {
+      detail: configuration
+    }));
+  }
+
   async function requireApprovedAccess(options = {}) {
     const {
       allowRoles = null,
@@ -136,6 +393,10 @@
     const membership = choosePrimaryMembership(profile);
 
     if (!membership || membership.status !== "approved") {
+      if (await getCurrentUserIsPlatformOwner()) {
+        window.location.replace("platform.html");
+        return null;
+      }
       window.location.href = pendingUrl;
       return null;
     }
@@ -148,6 +409,31 @@
       return null;
     }
 
+    const [storedFacilityConfig, isPlatformOwner] = await Promise.all([
+      getFacilityConfiguration(membership.facility_id),
+      getCurrentUserIsPlatformOwner()
+    ]);
+    if (!storedFacilityConfig || storedFacilityConfig.status !== "active") {
+      if (onDeniedMessage) onDeniedMessage("This facility is not currently active.", true);
+      window.location.replace("pending.html");
+      return null;
+    }
+
+    const programKey = getMemberProgramKey(membership);
+    if (programKey && storedFacilityConfig.programs?.[programKey]?.enabled === false) {
+      window.location.replace("pending.html");
+      return null;
+    }
+    const facilityConfig = getEffectiveFacilityConfiguration(storedFacilityConfig, membership);
+    window.RipCityPlatformOwner = isPlatformOwner;
+    publishFacilityConfiguration(facilityConfig);
+
+    if (!currentPageHasEnabledModule(facilityConfig)) {
+      if (onDeniedMessage) onDeniedMessage("This feature is not enabled for your facility.", true);
+      window.location.replace(getHomeUrlForRole(membership.role));
+      return null;
+    }
+
     return {
       session,
       profile,
@@ -155,7 +441,8 @@
       facilityId: membership.facility_id,
       isCoach: isCoachRole(membership.role),
       isAdmin: isAdminRole(membership.role),
-      isPlatformOwner: profile.global_role === "platform_owner"
+      isPlatformOwner,
+      facilityConfig
     };
   }
 
@@ -188,13 +475,26 @@
 
   window.RipCityAccess = {
     choosePrimaryMembership,
+    getEffectiveFacilityConfiguration,
+    selectFacility,
+    getCurrentUserIsPlatformOwner,
     getMemberProfileForMembership,
     getCurrentLegalAcceptance,
+    getFacilityConfiguration,
     getProfileWithMemberships,
     getSession,
     isAdminRole,
     isCoachRole,
     isMemberRole,
+    isModuleEnabled,
+    isProgramEnabled,
+    getProgramLabel,
+    getFacilityTerm,
+    getFacilityTimeZone,
+    getFacilityDateKey,
+    applyFacilityBranding,
+    applyFacilityFeatureVisibility,
+    applyFacilityLanguage,
     requireApprovedAccess,
     requireCoachAccess,
     requireMemberAccess,

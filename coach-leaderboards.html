@@ -3,11 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="js/shared/facility-shell.js?v=facility-ui-1&amp;review=facility-ui-3"></script>
   <title>Coach Leaderboards</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=ui-polish-4" />
+  <link rel="stylesheet" href="css/styles.css?v=ui-polish-4&amp;review=flexible-platform-2" />
   <link rel="stylesheet" href="css/coach-leaderboards.css?v=coach-leaderboards-3" />
 </head>
 
@@ -32,18 +33,18 @@
       <div>
         <p class="eyebrow">FACILITY PROGRESS</p>
         <h2>Consistency Leaderboards</h2>
-        <p>Compare consistent daily habits across each Rip City member program.</p>
+        <p>Compare consistent daily habits across each facility member program.</p>
       </div>
       <button class="outline-btn" id="refresh-leaderboards-btn" type="button">Refresh</button>
     </section>
 
     <section class="leaderboard-shell">
       <div class="leaderboard-tabs" role="tablist" aria-label="Leaderboard type">
-        <button class="leaderboard-tab active" type="button" role="tab" aria-selected="true" data-leaderboard-tab="h2k">
-          H2K Habits
+        <button class="leaderboard-tab active" type="button" role="tab" aria-selected="true" data-leaderboard-tab="h2k" data-facility-program="h2k">
+          <span data-facility-program-label="h2k">H2K Member</span> Habits
         </button>
-        <button class="leaderboard-tab" type="button" role="tab" aria-selected="false" data-leaderboard-tab="athlete">
-          Athlete Habits
+        <button class="leaderboard-tab" type="button" role="tab" aria-selected="false" data-leaderboard-tab="athlete" data-facility-program="athlete">
+          <span data-facility-program-label="athlete">Athlete</span> Habits
         </button>
       </div>
 
@@ -76,9 +77,9 @@
   <script src="js/shared/supabaseClient.js"></script>
   <script src="js/shared/ui-utils.js"></script>
   <script src="js/coach/coach-nav.js?v=program-creator-1"></script>
-  <script src="js/shared/access-control.js?v=auth-reliability-3"></script>
+  <script src="js/shared/access-control.js?v=auth-reliability-3&amp;review=flexible-platform-2"></script>
   <script src="js/shared/workout-data.js"></script>
   <script src="js/shared/leaderboard-metrics.js?v=member-leaderboards-1"></script>
-  <script src="js/coach/coach-leaderboards.js?v=member-leaderboards-1"></script>
+  <script src="js/coach/coach-leaderboards.js?v=member-leaderboards-1&amp;review=flexible-platform-2"></script>
 </body>
 </html>
