@@ -34,6 +34,7 @@ function buildRecentWorkoutSelect(includeOptionalExerciseColumns = true) {
           tempo,
           sets,
           reps,
+          percentage,
           rest_time,
           input_type,
           video_url,

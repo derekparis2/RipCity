@@ -368,9 +368,10 @@ function renderWorkoutStep(step, index, exerciseIndex, exerciseCount, blockIndex
   const label = getExerciseBlockLabel(step.exerciseIndex);
   const totalExerciseSets = Number(step.exercise.sets || 1);
   const setTarget = getSetTargetValue(step.exercise, step.setNumber);
+  const loadText = getSetLoadText(step.exercise, step.setNumber);
   const compactTarget = setTarget
-    ? `${setTarget.value}${step.exercise.is_unilateral ? " each side" : ""}`
-    : "Complete";
+    ? `${setTarget.value}${step.exercise.is_unilateral ? " each side" : ""}${loadText ? ` @ ${loadText}` : ""}`
+    : loadText || "Complete";
 
   return `
     <article class="session-step-card active session-block-tone-${blockIndex % 5}" data-session-step="${index}">
@@ -442,10 +443,14 @@ function renderBlockRounds(exercises) {
 
 function renderExerciseSetLogger(exercise, setNumber, stepIndex = null, options = {}) {
   const compactSummary = options.compactSummary === true;
+  const lifts = window.RipCityLiftMaxes;
+  const currentMax = memberExerciseMaxes.get(lifts.normalizeExerciseName(exercise.name));
+  const loadText = getSetLoadText(exercise, setNumber);
   const supportingDetails = [
     exercise.tempo ? `<span><strong>Tempo</strong>${window.RipCityUI.text(exercise.tempo)}</span>` : "",
     exercise.rest_time ? `<span><strong>Rest</strong>${window.RipCityUI.text(exercise.rest_time)}</span>` : "",
-    exercise.percentage ? `<span><strong>Load</strong>${window.RipCityUI.text(exercise.percentage)}</span>` : ""
+    loadText ? `<span><strong>Load</strong>${window.RipCityUI.text(loadText)}</span>` : "",
+    currentMax ? `<span><strong>Your Max</strong>${window.RipCityUI.text(lifts.formatWeight(currentMax))}</span>` : ""
   ].filter(Boolean).join("");
 
   return `
@@ -598,16 +603,23 @@ function renderInputsForExerciseType(exercise, existing, setNumber) {
 
     const weightValue = existing?.weight ?? previousWeight;
     const repsValue = existing?.reps_completed ?? previousReps;
+    const prescribedLoad = getSetLoadPrescription(exercise, setNumber)?.load;
+    const weightPlaceholder = prescribedLoad ? window.RipCityLiftMaxes.formatWeight(prescribedLoad) : "ex: 185";
+    const isMaxEffort = Boolean(existing?.is_max_effort);
+    const loggedPercent = window.RipCityLiftMaxes.calculatePercentOfMax(
+      existing?.weight,
+      memberExerciseMaxes.get(window.RipCityLiftMaxes.normalizeExerciseName(exercise.name))
+    );
 
     return `
       <div class="set-input-grid">
         <label>
-          Actual Weight
+          Actual Weight${loggedPercent ? ` <small>(${loggedPercent}% of max)</small>` : ""}
           <input
             type="number"
             class="set-weight-input"
             value="${window.RipCityUI.attr(weightValue)}"
-            placeholder="ex: 185"
+            placeholder="${window.RipCityUI.attr(weightPlaceholder)}"
           />
         </label>
 
@@ -621,6 +633,11 @@ function renderInputsForExerciseType(exercise, existing, setNumber) {
           />
         </label>
       </div>
+
+      <label class="set-complete-check set-max-effort-check">
+        <input type="checkbox" class="set-max-effort-input" ${isMaxEffort ? "checked" : ""} />
+        Max effort set (counts toward my max)
+      </label>
     `;
   }
 
