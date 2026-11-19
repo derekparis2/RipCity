@@ -121,16 +121,28 @@ function getSetLoadText(exercise, setNumber) {
 }
 
 async function loadMemberExerciseMaxes() {
-  const { data, error } = await db
-    .from("exercise_set_logs")
-    .select("weight, reps_completed, completed, is_max_effort, exercise:workout_exercises ( name )")
-    .eq("member_profile_id", workoutMemberProfile.id)
-    .eq("is_max_effort", true)
-    .eq("completed", true);
+  const data = [];
+  const pageSize = 1000;
+  let offset = 0;
 
-  if (error) {
-    console.warn("Could not load lift maxes.", error);
-    return new Map();
+  while (true) {
+    const { data: page, error } = await db
+      .from("exercise_set_logs")
+      .select("weight, reps_completed, completed, is_max_effort, exercise:workout_exercises ( name )")
+      .eq("member_profile_id", workoutMemberProfile.id)
+      .eq("is_max_effort", true)
+      .eq("completed", true)
+      .order("id", { ascending: true })
+      .range(offset, offset + pageSize - 1);
+
+    if (error) {
+      console.warn("Could not load lift maxes.", error);
+      return new Map();
+    }
+
+    if (!page?.length) break;
+    data.push(...page);
+    offset += page.length;
   }
 
   return window.RipCityLiftMaxes.computeMaxesByExercise(
