@@ -176,3 +176,7 @@ areas, add safe-area padding to save actions, and stack summary actions full wid
 Check on an actual phone with the keyboard open, including Finish with a current
 edit, drafts in another block, skipped sets, every set saved, and a failed request.
 The agent performed syntax/whitespace checks only, not browser or test execution.
+
+### Review adjustment: navigation and dashboard shortcuts
+
+At Derek’s request, restored the full staff tab list and removed the new pending-approval/follow-up shortcut strip, including its extra count query. The existing Approvals page and Needs Attention section remain available.

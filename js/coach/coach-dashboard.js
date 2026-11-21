@@ -1404,13 +1404,6 @@ function updateCoachAttentionStats(members, attentionRows) {
   document.getElementById("coach-total-h2k-members").textContent = h2kCount;
   document.getElementById("coach-total-athletes").textContent = athleteCount;
   document.getElementById("coach-needs-attention").textContent = attentionRows.length;
-  const followUp = document.getElementById("coach-follow-up-link");
-  if (followUp) {
-    followUp.hidden = !attentionRows.length || !window.RipCityAccess.isModuleEnabled(coachAccess.facilityConfig, "habits")
-      || Boolean(coachAccess.facilityConfig.appearance_settings?.coach_hidden?.includes("attention"));
-    followUp.textContent = `${attentionRows.length} member${attentionRows.length === 1 ? "" : "s"} need follow-up`;
-    followUp.onclick = () => { document.getElementById("coach-attention-panel").open = true; };
-  }
   document.getElementById("coach-attention-summary-count").textContent = attentionRows.length;
 }
 
@@ -1476,24 +1469,6 @@ function renderCoachAttentionList() {
   `).join("");
 }
 
-async function refreshCoachApprovalPriority() {
-  const link = document.getElementById("coach-pending-approvals");
-  if (!link) return;
-  try {
-    let query = db.from("facility_members").select("id", { count: "exact", head: true })
-      .eq("facility_id", coachAccess.membership.facility_id).eq("status", "pending");
-    if (!coachAccess.isAdmin) query = query.in("role", ["athlete", "h2k_member"]);
-    const { count, error } = await query;
-    if (error) throw error;
-    link.textContent = `${count || 0} pending approval${count === 1 ? "" : "s"}`;
-    link.hidden = !count;
-  } catch (error) {
-    console.error(error);
-    link.textContent = "Check pending approvals";
-    link.hidden = false;
-  }
-}
-
 // Loads everything for the coach dashboard.
 async function refreshCoachDashboard() {
   showCoachDashboardMessage("Loading coach dashboard...");
@@ -1506,7 +1481,7 @@ async function refreshCoachDashboard() {
       ? await loadHabitLogsForAttention(members.map(member => member.memberProfileId), todayKey)
       : [];
 
-    await Promise.all([refreshCoachWorkoutReview(), refreshCoachApprovalPriority()]);
+    await refreshCoachWorkoutReview();
     populateCoachAttentionGroupFilter();
     const attentionRows = buildCoachAttentionRows(members, habitLogs, todayKey);
 

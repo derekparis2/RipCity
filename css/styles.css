@@ -11420,17 +11420,6 @@ html[data-facility-slug] .coach-nav-link.active, html[data-facility-slug] .nav-l
 /* Program counts share the summary grid so configurable programs leave no empty columns. */
 .program-stat-cards { display: contents; }
 
-/* Keep frequent staff tools visible; secondary destinations share one disclosure. */
-.coach-nav-more { position:relative; }
-.coach-nav-more > summary { cursor:pointer; list-style:none; }
-.coach-nav-more > summary::-webkit-details-marker { display:none; }
-.coach-nav-more > summary::after { content:"⌄"; margin-left:8px; }
-.coach-nav-more-links { position:absolute; right:0; top:calc(100% + 8px); z-index:100; display:grid; gap:8px; min-width:210px; padding:10px; border:1px solid var(--border); border-radius:12px; background:var(--surface); box-shadow:0 12px 30px #0003; }
-.coach-nav-more:not([open]) .coach-nav-more-links { display:none; }
-.coach-nav-more-links .coach-nav-link { justify-content:flex-start; }
-.coach-priority-actions { display:none; }
-.coach-priority-actions:has(a:not([hidden])) { display:flex; gap:12px; flex-wrap:wrap; margin:20px 0; }
-.coach-priority-actions a { display:inline-flex; align-items:center; gap:8px; border-left:3px solid var(--facility-primary); }
 .empty-state :is(h3,p) { margin:0 0 12px; }
 .empty-state .outline-link { display:inline-flex; margin-top:10px; }
 .session-completion-summary { border:1px solid var(--border); border-left:4px solid var(--facility-primary); border-radius:12px; background:var(--surface-2); padding:20px; margin:18px 0; }
@@ -11440,11 +11429,6 @@ html[data-facility-slug] .coach-nav-link.active, html[data-facility-slug] .nav-l
 .set-log-row[data-dirty="true"] .set-log-title em { color:var(--text); }
 .session-demo-link { display:inline-flex; margin:10px 0; }
 [data-session-heading]:focus { outline:2px solid var(--facility-primary); outline-offset:4px; }
-@media(max-width:1040px) {
-  .coach-nav-more { grid-column:1 / -1; }
-  .coach-nav-more > summary { width:100%; }
-  .coach-nav-more-links { position:static; min-width:0; box-shadow:none; margin-top:8px; }
-}
 .session-skip-set-btn { width:fit-content; background:none; border:0; padding:10px 0; margin-top:8px; color:var(--muted); text-decoration:underline; text-underline-offset:3px; cursor:pointer; font:inherit; }
 .session-skip-set-btn:hover { color:var(--text); }
 
