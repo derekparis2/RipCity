@@ -146,7 +146,7 @@ function renderWorkoutSession() {
         <span class="session-saved-count">${getCompletedSetCount()}/${getTotalSetCount()} saved</span>
       </div>
 
-      <nav class="session-block-navigation" aria-label="Workout blocks">
+      <nav class="session-block-navigation" aria-label="Workout blocks"${blocks.length === 1 ? " hidden" : ""}>
         ${blocks.map((block, blockIndex) => {
           const firstStepIndex = getBlockStartStepIndex(block, steps);
           const progress = getBlockStepProgress(block, steps);
@@ -423,7 +423,7 @@ function renderWorkoutStep(step, index, exerciseIndex, exerciseCount, blockIndex
         <div class="session-current-summary">
           <p class="eyebrow">EXERCISE ${exerciseIndex + 1} OF ${exerciseCount} · SET ${step.setNumber} OF ${totalExerciseSets}</p>
           <h4 tabindex="-1" data-session-heading>${window.RipCityUI.text(step.exercise.name)}</h4>
-          <p>${window.RipCityUI.text(step.exercise.description, "No description added.")}</p>
+          ${step.exercise.description ? `<p>${window.RipCityUI.text(step.exercise.description)}</p>` : ""}
         </div>
         <div class="session-current-target">
           <span>Coach Target</span>
