@@ -143,6 +143,7 @@ function formatWeekRangeLabel(week) {
 
 function showCoachDashboardMessage(message, isError = false) {
   const element = document.getElementById("coach-dashboard-message");
+  if (window.AppFeedback) { window.AppFeedback.show(element, message, isError, { key: "coach-dashboard-message" }); return; }
   if (!element) return;
 
   element.textContent = message;
@@ -151,6 +152,7 @@ function showCoachDashboardMessage(message, isError = false) {
 
 function showCoachWorkoutReviewMessage(message, isError = false) {
   const element = document.getElementById("coach-workout-review-message");
+  if (window.AppFeedback) { window.AppFeedback.show(element, message, isError, { key: "coach-workout-review-message" }); return; }
   if (!element) return;
 
   element.textContent = message;
@@ -385,6 +387,7 @@ function renderCoachMemberList(rows) {
 
 function showCoachWeeklyHistoryMessage(message, isError = false) {
   const element = document.getElementById("coach-weekly-history-message");
+  if (window.AppFeedback) { window.AppFeedback.show(element, message, isError, { key: "coach-weekly-history-message" }); return; }
   if (!element) return;
 
   element.textContent = message;
@@ -1498,7 +1501,7 @@ async function refreshCoachDashboard() {
 
 // Logs out the coach/admin.
 async function logoutCoachDashboard() {
-  await db.auth.signOut();
+  if (!await window.AppFeedback.signOut()) return;
   window.location.href = "login.html";
 }
 

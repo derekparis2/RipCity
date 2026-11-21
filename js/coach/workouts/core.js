@@ -7,6 +7,7 @@
 
 function showWorkoutMessage(message, isError = false) {
   const element = document.getElementById("coach-workouts-message");
+  if (window.AppFeedback) { window.AppFeedback.show(element, message, isError, { key: "coach-workouts-message" }); return; }
   if (!element) return;
 
   element.textContent = message;

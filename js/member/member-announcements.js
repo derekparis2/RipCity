@@ -140,6 +140,7 @@
   async function restoreAnnouncement(announcementId) {
     if (dismissalInProgress || !memberProfile) return;
     dismissalInProgress = true;
+    window.AppFeedback?.dismiss("member-announcement-action");
 
     try {
       const { error } = await db
@@ -158,6 +159,7 @@
       renderAnnouncements();
     } catch (error) {
       console.error("Could not restore announcement:", error);
+      window.AppFeedback?.error("Could not restore the announcement. Please try again.", { key: "member-announcement-action" });
     } finally {
       dismissalInProgress = false;
     }
@@ -166,6 +168,7 @@
   async function dismissForToday(announcementId) {
     if (dismissalInProgress || !memberProfile) return;
     dismissalInProgress = true;
+    window.AppFeedback?.dismiss("member-announcement-action");
 
     try {
       const dismissedAt = new Date().toISOString();
@@ -184,6 +187,7 @@
       showUndo(announcementId);
     } catch (error) {
       console.error("Could not dismiss announcement:", error);
+      window.AppFeedback?.error("Could not dismiss the announcement. Please try again.", { key: "member-announcement-action" });
     } finally {
       dismissalInProgress = false;
     }
@@ -216,10 +220,12 @@
       if (undoAnnouncementId) restoreAnnouncement(undoAnnouncementId);
     });
 
+    let canShowAnnouncements = false;
     try {
       const access = await window.RipCityAccess.requireMemberAccess();
       if (!access) return;
       if (!window.RipCityAccess.isModuleEnabled(access.facilityConfig, "announcements")) return;
+      canShowAnnouncements = true;
       memberProfile = await window.RipCityAccess.getMemberProfileForMembership(access.membership.id);
 
       const { data, error } = await db
@@ -251,9 +257,12 @@
 
       renderAnnouncements();
     } catch (error) {
-      // Keep the dashboard usable before staging receives the migration.
       console.error("Could not load member announcements:", error);
-      panel.classList.add("hidden");
+      if (canShowAnnouncements) {
+        panel.classList.remove("hidden");
+        list.textContent = "Announcements could not be loaded. Reload this page to try again.";
+      }
+      window.AppFeedback?.error("Could not load announcements. Reload this page to try again.", { key: "member-announcement-load" });
     }
   }
 

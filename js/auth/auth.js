@@ -6,6 +6,7 @@ let signupAdminInvite = null;
 let signupFacility = null;
 let signupInProgress = false;
 let loginInProgress = false;
+let signupExpectedSessionUserId = null;
 const AUTH_REQUEST_TIMEOUT_MS = 15000;
 let currentAuthAttempt = null;
 
@@ -80,6 +81,7 @@ async function recoverAuthenticatedUser(expectedEmail = "") {
 
 function showMessage(elementId, message, isError = false) {
   const element = document.getElementById(elementId);
+  if (window.AppFeedback) { window.AppFeedback.show(element, message, isError, { key: elementId }); return; }
   if (!element) return;
 
   element.textContent = message;
@@ -463,17 +465,109 @@ async function loadAuthPageFacilityBranding(userId = "") {
   }
 }
 
-async function setupLoginPage() {
-  document.getElementById("login-form").addEventListener("submit", handleLogin);
-  document.getElementById("forgot-password-btn").addEventListener("click", handleForgotPassword);
-
-  try {
-    await loadLoginFacility();
-  } catch (error) {
-    // Facility branding is helpful context, but login must remain available if
-    // the public configuration lookup is temporarily unavailable.
-    console.warn("Could not load facility login branding.", error);
+function showSessionActions(page, user, allowRegistration = false) {
+  const form = document.getElementById(`${page}-form`);
+  let panel = document.getElementById(`${page}-session-actions`);
+  if (!panel) {
+    panel = document.createElement("div");
+    panel.id = `${page}-session-actions`;
+    panel.className = "auth-session-actions";
+    form.before(panel);
   }
+  panel.replaceChildren();
+  if (user) {
+    const identity = document.createElement("p");
+    identity.textContent = `You are already signed in as ${user.email || "your current account"}.`;
+    panel.append(identity);
+    const account = document.createElement("button");
+    account.type = "button"; account.className = "primary-btn full-btn";
+    account.textContent = "Go to my account";
+    account.addEventListener("click", async () => {
+      account.disabled = true;
+      try { await redirectByProfile(user.id, { preferPlatform: true }); }
+      catch (error) { showMessage(`${page}-message`, error.message || "Could not open your account. Try again.", true); }
+      finally { account.disabled = false; }
+    });
+    panel.append(account);
+    if (allowRegistration) {
+      const useAccount = document.createElement("button");
+      useAccount.type = "button"; useAccount.className = "outline-btn full-btn";
+      useAccount.textContent = "Continue registration with this account";
+      useAccount.addEventListener("click", async () => {
+        useAccount.disabled = true;
+        try {
+          const { data: profile, error } = await withAuthTimeout(db.from("profiles").select("email,full_name,username").eq("id", user.id).single(), "Loading your account took too long.");
+          if (error) throw error;
+          for (const [field, value] of [["email", user.email || profile.email], ["full-name", profile.full_name], ["username", profile.username]]) {
+            const input = document.getElementById(`signup-${field}`);
+            input.value = value || "";
+            input.readOnly = field === "email" || field === "username";
+          }
+          for (const field of ["password", "confirm-password"]) {
+            const input = document.getElementById(`signup-${field}`);
+            input.value = ""; input.required = false; input.disabled = true; input.parentElement.hidden = true;
+          }
+          signupExpectedSessionUserId = user.id;
+          panel.hidden = true;
+          await setupSignupPage(true);
+        } catch (error) { showMessage("signup-message", error.message || "Could not prepare registration.", true); }
+        finally { useAccount.disabled = false; }
+      });
+      panel.append(useAccount);
+    }
+  }
+  const signOut = document.createElement("button");
+  signOut.type = "button"; signOut.className = "outline-btn full-btn";
+  signOut.textContent = "Sign out and use another account";
+  signOut.addEventListener("click", async () => {
+    signOut.disabled = true;
+    try {
+      const { error } = await withAuthTimeout(db.auth.signOut(), "Signing out took too long. Try again.");
+      if (error) throw error;
+      window.location.reload(); // Retain facility-code and invitation parameters.
+    } catch (error) { showMessage(`${page}-message`, error.message || "Could not sign out. Try again.", true); }
+    finally { signOut.disabled = false; }
+  });
+  panel.append(signOut);
+  if (!user) {
+    const retry = document.createElement("button");
+    retry.type = "button"; retry.className = "outline-btn full-btn";
+    retry.textContent = "Retry account check";
+    retry.addEventListener("click", () => window.location.reload());
+    panel.append(retry);
+  }
+}
+
+async function setupLoginPage() {
+  const form = document.getElementById("login-form");
+  const recoveryFooter = document.getElementById("forgot-password-btn")?.closest(".auth-footer");
+  if (recoveryFooter) recoveryFooter.hidden = true;
+  form.hidden = true;
+  showMessage("login-message", "Checking your session...");
+  try {
+    const { data, error } = await withAuthTimeout(db.auth.getSession(), "Checking your session took too long.");
+    if (error) throw error;
+    if (data.session?.user) {
+      showSessionActions("login", data.session.user);
+      showMessage("login-message", "Already signed in. Opening your account...");
+      await redirectByProfile(data.session.user.id, { preferPlatform: true });
+      return;
+    }
+    form.hidden = false;
+    if (recoveryFooter) recoveryFooter.hidden = false;
+    showMessage("login-message", "");
+  } catch (error) {
+    showMessage("login-message", error.message || "Could not check your account. Try again or sign out.", true);
+    if (!document.getElementById("login-session-actions")) showSessionActions("login", null);
+    return;
+  }
+  if (!form.dataset.handlersBound) {
+    form.dataset.handlersBound = "true";
+    form.addEventListener("submit", handleLogin);
+    document.getElementById("forgot-password-btn").addEventListener("click", handleForgotPassword);
+  }
+  try { await loadLoginFacility(); }
+  catch (error) { console.warn("Could not load facility login branding.", error); }
 }
 
 function isEmailIdentifier(value) {
@@ -646,6 +740,11 @@ async function handleSignup(event) {
   let coachProfileReady = false;
 
   try {
+    if (signupExpectedSessionUserId) {
+      const { data, error } = await withAuthTimeout(db.auth.getSession(), "Checking the registration account took too long.");
+      if (error) throw error;
+      if (data.session?.user?.id !== signupExpectedSessionUserId) throw new Error("Your signed-in account changed. Reload this registration link before continuing.");
+    }
     if (!ageBracket || !legalTermsConfirmed) {
       showMessage("signup-message", "Choose your age confirmation and accept the Terms and Privacy Policy.", true);
       return;
@@ -914,7 +1013,7 @@ async function setupSetPasswordPage() {
 
 async function handlePendingLogout() {
   const loginUrl = getFacilityLoginUrl(getCurrentFacilitySlug());
-  await db.auth.signOut();
+  if (!await window.AppFeedback.signOut()) return;
   window.location.href = loginUrl;
 }
 
@@ -1025,7 +1124,7 @@ async function setupLegalConsentPage() {
   setupAgeChoiceReset();
   document.getElementById("legal-consent-logout").addEventListener("click", async () => {
     const loginUrl = getFacilityLoginUrl(getCurrentFacilitySlug());
-    await db.auth.signOut();
+    if (!await window.AppFeedback.signOut()) return;
     window.location.href = loginUrl;
   });
 
@@ -1174,7 +1273,27 @@ async function setupAdminSignupPage() {
   document.getElementById("signup-form").addEventListener("submit", handleSignup);
 }
 
-async function setupSignupPage() {
+async function setupSignupPage(sessionAcknowledged = false) {
+  const form = document.getElementById("signup-form");
+  form.hidden = true;
+  setSignupSubmitDisabled(true);
+  if (!sessionAcknowledged) {
+    showMessage("signup-message", "Checking your session...");
+    try {
+      const { data, error } = await withAuthTimeout(db.auth.getSession(), "Checking your session took too long.");
+      if (error) throw error;
+      if (data.session?.user) {
+        showSessionActions("signup", data.session.user, true);
+        showMessage("signup-message", "Choose whether to use your signed-in account or sign out before registering.");
+        return;
+      }
+    } catch (error) {
+      showMessage("signup-message", error.message || "Could not check your account. Try again.", true);
+      showSessionActions("signup", null);
+      return;
+    }
+  }
+  form.hidden = false;
   setupAgeChoiceReset();
   signupCoachInviteCode = getCoachInviteCodeFromUrl();
   signupAdminInviteCode = getAdminInviteCodeFromUrl();

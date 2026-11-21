@@ -262,6 +262,7 @@ function getGoalProgress(goal) {
 
 function showDetailMessage(message, isError = false) {
   const element = document.getElementById("coach-member-detail-message");
+  if (window.AppFeedback) { window.AppFeedback.show(element, message, isError, { key: "coach-member-detail-message" }); return; }
   element.textContent = message;
   element.classList.toggle("error-message", isError);
 }
@@ -572,7 +573,7 @@ async function init() {
 document.addEventListener("DOMContentLoaded", () => {
   initializeCoachMemberDetailViews();
   initializeDetailTestingComparisonControls();
-  document.getElementById("coach-member-detail-logout").addEventListener("click", async () => { await db.auth.signOut(); window.location.href = "login.html"; });
+  document.getElementById("coach-member-detail-logout").addEventListener("click", async () => { if (!await window.AppFeedback.signOut()) return; window.location.href = "login.html"; });
   document.getElementById("coach-goal-form").addEventListener("submit", saveCoachGoal);
   document.getElementById("coach-goal-cancel").addEventListener("click", resetCoachGoalForm);
   resetCoachGoalForm();

@@ -8,6 +8,7 @@ let exerciseLibraryVisibleLimit = 24;
 
 function showExerciseLibraryMessage(message, isError = false) {
   const element = document.getElementById("exercise-library-message");
+  if (window.AppFeedback) { window.AppFeedback.show(element, message, isError, { key: "exercise-library-message" }); return; }
   if (!element) return;
 
   element.textContent = message;

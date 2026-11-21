@@ -14,6 +14,7 @@ let workoutSessionMessageTimer = null;
 
 function showWorkoutSessionMessage(message, isError = false) {
   const element = document.getElementById("workout-session-message");
+  if (window.AppFeedback) { window.clearTimeout(workoutSessionMessageTimer); element?.classList.remove("session-message-toast"); window.AppFeedback.show(element, message, isError, { key: "workout-session-message" }); return; }
   if (!element) return;
 
   window.clearTimeout(workoutSessionMessageTimer);
@@ -23,6 +24,7 @@ function showWorkoutSessionMessage(message, isError = false) {
 }
 
 function showWorkoutSessionToast(message) {
+  window.AppFeedback?.dismiss("workout-session-message");
   const element = document.getElementById("workout-session-message");
   if (!element) return;
 

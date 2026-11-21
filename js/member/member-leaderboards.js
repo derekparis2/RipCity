@@ -6,6 +6,7 @@
 
   function showMessage(message, isError = false) {
     const element = document.getElementById("member-leaderboard-message");
+  if (window.AppFeedback) { window.AppFeedback.show(element, message, isError, { key: "member-leaderboard-message" }); return; }
     if (!element) return;
     element.textContent = message;
     element.classList.toggle("error-message", isError);

@@ -20,6 +20,7 @@
 
   function showMessage(message, isError = false) {
     const element = document.getElementById("coach-announcement-message");
+  if (window.AppFeedback) { window.AppFeedback.show(element, message, isError, { key: "coach-announcement-message" }); return; }
     if (!element) return;
 
     element.textContent = message;

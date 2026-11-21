@@ -18,6 +18,7 @@ const MAX_PROFILE_PICTURE_BYTES = 5 * 1024 * 1024;
 
 function showProfileMessage(message, isError = false) {
   const element = document.getElementById("profile-message");
+  if (window.AppFeedback) { window.AppFeedback.show(element, message, isError, { key: "profile-message" }); return; }
   if (!element) return;
 
   element.textContent = message;
@@ -461,7 +462,7 @@ async function saveProfile(event) {
 }
 
 async function logoutProfile() {
-  await db.auth.signOut();
+  if (!await window.AppFeedback.signOut()) return;
   window.location.href = "login.html";
 }
 

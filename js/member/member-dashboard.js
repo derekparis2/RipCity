@@ -155,7 +155,8 @@ function isTodayDate(dateKey) {
 
 // Shows messages on the H2K page.
 function showH2KMessage(message, isError = false) {
-  const element = document.getElementById("h2k-message");
+  const element = document.getElementById("h2k-message") || document.getElementById("member-page-message");
+  if (window.AppFeedback) { window.AppFeedback.show(element, message, isError, { key: "member-page" }); return; }
   if (!element) return;
 
   element.textContent = message;
@@ -190,6 +191,7 @@ async function loadHabits(facilityId) {
 
 function showMemberGoalsMessage(message, isError = false) {
   const element = document.getElementById("member-goals-message");
+  if (window.AppFeedback) { window.AppFeedback.show(element, message, isError, { key: "member-goals-message" }); return; }
   if (!element) return;
 
   element.textContent = message;
@@ -1005,6 +1007,7 @@ async function refreshH2KDashboard() {
 
 function showMemberWeeklyHistoryMessage(message, isError = false) {
   const element = document.getElementById("member-weekly-history-message");
+  if (window.AppFeedback) { window.AppFeedback.show(element, message, isError, { key: "member-weekly-history-message" }); return; }
   if (!element) return;
 
   element.textContent = message;
@@ -1166,6 +1169,7 @@ function applyMemberModuleVisibility() {
 
 function showTodayWorkoutMessage(message, isError = false) {
   const element = document.getElementById("today-workout-message");
+  if (window.AppFeedback) { window.AppFeedback.show(element, message, isError, { key: "today-workout-message" }); return; }
   if (!element) return;
 
   element.textContent = message;
@@ -1326,6 +1330,7 @@ function renderTodayWorkouts(assignments) {
 
 function showWorkoutHistoryMessage(message, isError = false) {
   const element = document.getElementById("workout-history-message");
+  if (window.AppFeedback) { window.AppFeedback.show(element, message, isError, { key: "workout-history-message" }); return; }
   if (!element) return;
 
   element.textContent = message;
@@ -1690,7 +1695,7 @@ async function initMemberPage() {
 
 // Logs out the current user.
 async function logoutH2K() {
-  await db.auth.signOut();
+  if (!await window.AppFeedback.signOut()) return;
   window.location.href = "login.html";
 }
 

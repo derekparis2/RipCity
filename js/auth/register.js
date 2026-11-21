@@ -9,7 +9,7 @@
     event.preventDefault();
     const request=++lookupRequest;
     const code=input.value.replace(/[^a-z0-9]/gi,'').toUpperCase();
-    next.hidden=true;message.textContent='Finding your facility...';
+    next.hidden=true;message.textContent='Finding your facility...';window.AppFeedback?.dismiss('registration-code');
     const button=form.querySelector('button');button.disabled=true;
     try {
       const {data,error}=await db.rpc('lookup_registration_facility',{p_code:code});
@@ -21,7 +21,7 @@
       next.textContent=`Continue to ${data.facility_name}`;next.hidden=false;
     } catch(error) {
       if(request!==lookupRequest) return;
-      message.textContent=error.message || 'Could not find your facility.';message.classList.add('error-message');
+      message.textContent=error.message || 'Could not find your facility.';message.classList.add('error-message');window.AppFeedback?.error(message.textContent,{key:'registration-code',element:message});
     } finally {button.disabled=false;}
   });
 })();

@@ -286,7 +286,7 @@ async function refreshWorkoutSession() {
 
 async function logoutWorkoutSession() {
   if (workoutSessionSaving || !confirmDiscardWorkoutDrafts()) return;
-  try { await db.auth.signOut(); }
+  try { if (!await window.AppFeedback.signOut()) return; }
   catch (error) { showWorkoutSessionMessage(error.message || "Could not log out.", true); return; }
   workoutSessionLeaving = true;
   window.location.href = "login.html";

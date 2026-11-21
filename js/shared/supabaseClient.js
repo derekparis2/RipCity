@@ -29,11 +29,13 @@ window.db = window.supabase.createClient(
 
 const signOutWithoutSupport = window.db.auth.signOut.bind(window.db.auth);
 window.db.auth.signOut = async function (...args) {
-  const { data: sessionData } = await window.db.auth.getSession();
+  const { data: sessionData, error: sessionError } = await window.db.auth.getSession();
+  if (sessionError) throw sessionError;
   if (sessionData?.session) {
     const { error } = await window.db.rpc("exit_platform_facility_admin");
     if (error) throw error;
   }
-  window.sessionStorage.removeItem("ripcity:selected-facility-id");
-  return signOutWithoutSupport(...args);
+  const result = await signOutWithoutSupport(...args);
+  if (!result?.error) window.sessionStorage.removeItem("ripcity:selected-facility-id");
+  return result;
 };

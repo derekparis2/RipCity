@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <script src="js/shared/facility-appearance.js?v=facility-styles-1"></script>
+  <script src="js/shared/facility-appearance.js?v=facility-styles-1&amp;errors=visible-feedback-1"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script src="js/shared/facility-shell.js?v=facility-ui-1&amp;review=facility-loading-5"></script>
+  <script src="js/shared/facility-shell.js?v=facility-ui-1&amp;review=facility-loading-5&amp;errors=visible-feedback-1"></script>
   <title>Coach Dashboard</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,10 +14,13 @@
   <link rel="stylesheet" href="css/styles.css?v=attention-habits-1&amp;review=platform-stats-3&amp;workflow=performance-2&amp;nav=full-tabs-1&amp;layout=outlined-tabs-5&amp;feedback=visible-errors-1" />
   <link rel="stylesheet" href="css/facility-styles.css?v=facility-styles-12&amp;workflow=performance-2" />
   <link rel="stylesheet" href="css/app-layout.css?v=consistent-spacing-4" />
+  <script src="js/shared/feedback.js?v=visible-errors-1"></script>
+  <link rel="stylesheet" href="css/feedback.css?v=visible-errors-1" />
 </head>
 
 <body class="auth-body coach-dashboard-page">
   <main class="app-shell coach-page">
+    <p id="coach-dashboard-message" class="auth-message" role="status" aria-live="polite"></p>
     <header class="h2k-header">
       <div class="auth-brand">
         <img src="assets/rip-city-logo.png" alt="Rip City logo">
@@ -195,7 +198,6 @@
           </div>
 
           <p id="coach-attention-results-count" class="coach-attention-results-count"></p>
-          <p id="coach-dashboard-message" class="auth-message"></p>
 
           <div id="coach-attention-list" class="coach-attention-list"></div>
         </div>
@@ -253,13 +255,13 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/shared/supabaseClient.js"></script>
-  <script src="js/shared/ui-utils.js"></script>
-  <script src="js/coach/coach-nav.js?v=program-creator-1&amp;navigation=facility-context-3&amp;workflow=performance-2&amp;nav=full-tabs-1&amp;shell=staff-profile-1"></script>
-  <script src="js/shared/access-control.js?v=auth-reliability-3&amp;review=platform-stats-3&amp;navigation=facility-context-3&amp;shell=staff-profile-1"></script>
-  <script src="js/shared/workout-data.js?v=workout-attribution-1"></script>
-  <script src="js/shared/attention-rules.js?v=coach-attention-1"></script>
-  <script src="js/coach/coach-dashboard.js?v=attention-habits-1&amp;review=platform-stats-3&amp;workflow=performance-2&amp;nav=full-tabs-1"></script>
-  <script src="js/coach/coach-announcements.js?v=announcement-attribution-1&amp;review=platform-stats-3"></script>
+  <script src="js/shared/supabaseClient.js?errors=visible-feedback-1"></script>
+  <script src="js/shared/ui-utils.js?errors=visible-feedback-1"></script>
+  <script src="js/coach/coach-nav.js?v=program-creator-1&amp;navigation=facility-context-3&amp;workflow=performance-2&amp;nav=full-tabs-1&amp;shell=staff-profile-1&amp;errors=visible-feedback-1"></script>
+  <script src="js/shared/access-control.js?v=auth-reliability-3&amp;review=platform-stats-3&amp;navigation=facility-context-3&amp;shell=staff-profile-1&amp;errors=visible-feedback-1"></script>
+  <script src="js/shared/workout-data.js?v=workout-attribution-1&amp;errors=visible-feedback-1"></script>
+  <script src="js/shared/attention-rules.js?v=coach-attention-1&amp;errors=visible-feedback-1"></script>
+  <script src="js/coach/coach-dashboard.js?v=attention-habits-1&amp;review=platform-stats-3&amp;workflow=performance-2&amp;nav=full-tabs-1&amp;errors=visible-feedback-1"></script>
+  <script src="js/coach/coach-announcements.js?v=announcement-attribution-1&amp;review=platform-stats-3&amp;errors=visible-feedback-1"></script>
 </body>
 </html>

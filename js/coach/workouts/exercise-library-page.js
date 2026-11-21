@@ -18,7 +18,7 @@ async function initCoachExerciseLibraryPage() {
 }
 
 async function logoutCoachExerciseLibrary() {
-  await db.auth.signOut();
+  if (!await window.AppFeedback.signOut()) return;
   window.location.href = "login.html";
 }
 

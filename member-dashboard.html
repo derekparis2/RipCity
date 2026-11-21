@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <script src="js/shared/facility-appearance.js?v=facility-styles-1"></script>
+  <script src="js/shared/facility-appearance.js?v=facility-styles-1&amp;errors=visible-feedback-1"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script src="js/shared/facility-shell.js?v=facility-ui-1&amp;review=facility-loading-5"></script>
+  <script src="js/shared/facility-shell.js?v=facility-ui-1&amp;review=facility-loading-5&amp;errors=visible-feedback-1"></script>
   <title>Member Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,6 +12,8 @@
   <link rel="stylesheet" href="css/styles.css?v=member-nav-fixed-1&amp;review=flexible-platform-2&amp;workflow=performance-2&amp;nav=full-tabs-1&amp;layout=outlined-tabs-5&amp;feedback=visible-errors-1" />
   <link rel="stylesheet" href="css/facility-styles.css?v=facility-styles-12&amp;workflow=performance-2" />
   <link rel="stylesheet" href="css/app-layout.css?v=consistent-spacing-4" />
+  <script src="js/shared/feedback.js?v=visible-errors-1"></script>
+  <link rel="stylesheet" href="css/feedback.css?v=visible-errors-1" />
 </head>
 
 <body class="auth-body member-dashboard-body" data-member-page="dashboard">
@@ -45,6 +47,7 @@
   </aside>
 
   <main class="app-shell main-content member-main-content">
+    <p id="member-page-message" class="auth-message" role="status" aria-live="polite"></p>
     <header class="topbar" id="member-dashboard-top">
       <div>
         <p class="eyebrow" id="member-dashboard-date">Member Dashboard</p>
@@ -155,13 +158,13 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/shared/supabaseClient.js"></script>
-  <script src="js/shared/ui-utils.js"></script>
-  <script src="js/shared/access-control.js?v=auth-reliability-3&amp;review=flexible-platform-2&amp;navigation=facility-context-3&amp;shell=staff-profile-1"></script>
-  <script src="js/shared/workout-data.js?v=workout-attribution-1"></script>
-  <script src="js/shared/leaderboard-metrics.js?v=member-leaderboards-1"></script>
-  <script src="js/member/member-nav.js?v=member-leaderboards-1&amp;navigation=facility-context-3"></script>
-  <script src="js/member/member-dashboard.js?v=member-role-guard-1&amp;review=flexible-platform-2&amp;workflow=performance-2"></script>
-  <script src="js/member/member-announcements.js?v=member-role-guard-1&amp;review=facility-ui-3"></script>
+  <script src="js/shared/supabaseClient.js?errors=visible-feedback-1"></script>
+  <script src="js/shared/ui-utils.js?errors=visible-feedback-1"></script>
+  <script src="js/shared/access-control.js?v=auth-reliability-3&amp;review=flexible-platform-2&amp;navigation=facility-context-3&amp;shell=staff-profile-1&amp;errors=visible-feedback-1"></script>
+  <script src="js/shared/workout-data.js?v=workout-attribution-1&amp;errors=visible-feedback-1"></script>
+  <script src="js/shared/leaderboard-metrics.js?v=member-leaderboards-1&amp;errors=visible-feedback-1"></script>
+  <script src="js/member/member-nav.js?v=member-leaderboards-1&amp;navigation=facility-context-3&amp;errors=visible-feedback-1"></script>
+  <script src="js/member/member-dashboard.js?v=member-role-guard-1&amp;review=flexible-platform-2&amp;workflow=performance-2&amp;errors=visible-feedback-1"></script>
+  <script src="js/member/member-announcements.js?v=member-role-guard-1&amp;review=facility-ui-3&amp;errors=visible-feedback-1"></script>
 </body>
 </html>

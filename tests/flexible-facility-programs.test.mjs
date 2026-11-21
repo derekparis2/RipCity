@@ -27,7 +27,7 @@ const input={value:'AB-123',addEventListener(type,handler){handlers['input:'+typ
 const next={hidden:true};const message={classList:{add(){},remove(){}}};
 const fields={'registration-code-form':{addEventListener(type,handler){handlers[type]=handler;},querySelector:()=>button},'registration-code':input,'registration-continue':next,'registration-code-message':message};
 let receivedCode;
-const registerCtx=vm.createContext({document:{getElementById:id=>fields[id]},encodeURIComponent,
+const registerCtx=vm.createContext({window:{},document:{getElementById:id=>fields[id]},encodeURIComponent,
  db:{rpc:async(name,args)=>{assert.equal(name,'lookup_registration_facility');receivedCode=args.p_code;return{data:{facility_name:'Example Facility'},error:null};}}});
 vm.runInContext(await readFile('js/auth/register.js','utf8'),registerCtx);
 await handlers.submit({preventDefault(){}});

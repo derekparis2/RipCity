@@ -11500,3 +11500,6 @@ html[data-profile-state="loading"] body.profile-body > :is(aside,main) { display
 html:not([data-profile-state="loading"]) .profile-loading { display:none; }
 
 .roster-group-card .group-delete-message { grid-column:1 / -1; width:100%; margin:10px 0 0; box-sizing:border-box; }
+
+.auth-session-actions { display:grid; gap:12px; margin:20px 0; }
+.auth-session-actions p { margin:0 0 4px; overflow-wrap:anywhere; color:var(--text); }

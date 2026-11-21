@@ -54,6 +54,7 @@ function createTestingClientId() {
 
 function showTestingMessage(message, isError = false) {
   const element = document.getElementById("testing-day-message");
+  if (window.AppFeedback) { window.AppFeedback.show(element, message, isError, { key: "testing-day-message" }); return; }
   if (!element) return;
   element.textContent = message;
   element.classList.toggle("error-message", isError);
@@ -956,6 +957,7 @@ async function handleTestingDayAction(button) {
     const message = action === "finish" && /Record a result, mark Not Tested, or mark the athlete absent/i.test(rawMessage)
       ? 'Finish every outcome first: enter a result, check "Did not complete" for a skipped test, or mark the athlete as not participating.'
       : rawMessage;
+    window.AppFeedback?.error(message, { key: "testing-day-action" });
     if (cardFeedback) {
       cardFeedback.textContent = message;
       cardFeedback.classList.remove("hidden");
@@ -1017,7 +1019,7 @@ async function initializeCoachTesting() {
     }
   } catch (error) {
     console.error(error);
-    const migrationMissing = error.code === "42P01" || /testing_days|save_testing_day/i.test(error.message || "");
+    const migrationMissing = ["42P01", "PGRST205", "PGRST202"].includes(error.code);
     showTestingMessage(migrationMissing ? "Testing Days are ready in code, but the Testing Day migration must be applied to this Supabase environment." : (error.message || "Could not load Testing Days."), true);
   }
 }
@@ -1116,7 +1118,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderTestingResultEntry();
   });
   document.getElementById("testing-logout-btn")?.addEventListener("click", async () => {
-    await db.auth.signOut();
+    if (!await window.AppFeedback.signOut()) return;
     window.location.href = "login.html";
   });
 

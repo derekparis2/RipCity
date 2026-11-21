@@ -55,11 +55,13 @@ function showRosterMessage(message, isError = false) {
   const element = document.getElementById("coach-roster-message");
   if (!element) return;
 
+  if (window.AppFeedback) { window.AppFeedback.show(element, message, isError, { key: "coach-roster-message", autoClose: /(?:created|deleted|saved|updated|deactivated|reactivated)\.$/i.test(message) }); return; }
   renderRosterActionMessage(element, message, isError, null, /(?:created|deleted|saved|updated|deactivated|reactivated)\.$/i.test(message));
 }
 
 function showRosterSignupLinkMessage(message, isError = false) {
   const element = document.getElementById("coach-signup-link-message");
+  if (window.AppFeedback) { window.AppFeedback.show(element, message, isError, { key: "coach-signup-link-message" }); return; }
   if (!element) return;
   element.textContent = message;
   element.classList.toggle("error-message", isError);
@@ -935,7 +937,7 @@ async function refreshRoster() {
 }
 
 async function logoutCoachRoster() {
-  await db.auth.signOut();
+  if (!await window.AppFeedback.signOut()) return;
   window.location.href = "login.html";
 }
 

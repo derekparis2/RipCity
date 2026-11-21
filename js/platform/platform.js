@@ -43,6 +43,7 @@
   const editPanel = document.getElementById("platform-edit-panel");
 
   function showMessage(text, isError = false) {
+  if (window.AppFeedback) { window.AppFeedback.show(message, text, isError, { key: "platform-message" }); return; }
     message.textContent = text || "";
     message.classList.toggle("error-message", isError);
   }
@@ -594,8 +595,8 @@
   document.getElementById("close-edit-facility-btn").addEventListener("click", () => editPanel.classList.add("hidden"));
   document.getElementById("refresh-platform-btn").addEventListener("click", () => loadFacilities().catch(error => showMessage(error.message, true)));
   document.getElementById("platform-logout-btn").addEventListener("click", async () => {
+    if (!await window.AppFeedback.signOut()) return;
     window.RipCityAccess.selectFacility(null);
-    await db.auth.signOut();
     window.location.href = "login.html";
   });
   list.addEventListener("click", event => {

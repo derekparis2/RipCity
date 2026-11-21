@@ -16,6 +16,7 @@ const selectedLeaderboardMetric = {
 
 function showLeaderboardMessage(message, isError = false) {
   const element = document.getElementById("leaderboard-message");
+  if (window.AppFeedback) { window.AppFeedback.show(element, message, isError, { key: "leaderboard-message" }); return; }
   if (!element) return;
   element.textContent = message;
   element.classList.toggle("error-message", isError);
@@ -351,7 +352,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   document.getElementById("refresh-leaderboards-btn")?.addEventListener("click", refreshLeaderboards);
   document.getElementById("leaderboard-logout-btn")?.addEventListener("click", async () => {
-    await db.auth.signOut();
+    if (!await window.AppFeedback.signOut()) return;
     window.location.href = "login.html";
   });
   initCoachLeaderboards();

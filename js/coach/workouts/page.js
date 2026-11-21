@@ -381,8 +381,8 @@ async function logoutCoachWorkouts() {
     return;
   }
 
+  if (!await window.AppFeedback.signOut()) return;
   workoutFormDirty = false;
-  await db.auth.signOut();
   window.location.href = "login.html";
 }
 

@@ -2,7 +2,7 @@
   const message = document.getElementById('facility-choice-message');
   const list = document.getElementById('facility-choice-list');
   document.getElementById('facility-choice-logout').addEventListener('click', async () => {
-    await db.auth.signOut();
+    if (!await window.AppFeedback.signOut()) return;
     window.location.href = 'login.html';
   });
   try {
@@ -34,5 +34,6 @@
   } catch (error) {
     message.textContent = error.message || 'Could not load your facilities.';
     message.classList.add('error-message');
+    window.AppFeedback?.error(message.textContent,{key:'facility-choice',element:message});
   }
 })();

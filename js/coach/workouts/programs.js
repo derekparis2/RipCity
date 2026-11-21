@@ -14,6 +14,7 @@ const PROGRAM_DAY_NAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday
 
 function showProgramsMessage(message, isError = false) {
   const element = document.getElementById("programs-message");
+  if (window.AppFeedback) { window.AppFeedback.show(element, message, isError, { key: "programs-message" }); return; }
   if (!element) return;
   element.textContent = message || "";
   element.classList.toggle("error-message", Boolean(isError));

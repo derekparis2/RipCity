@@ -10,6 +10,7 @@ let approvalLoadInProgress = false;
 
 function showApprovalMessage(message, isError = false) {
   const element = document.getElementById("approval-message");
+  if (window.AppFeedback) { window.AppFeedback.show(element, message, isError, { key: "approval-message" }); return; }
   if (!element) return;
 
   element.textContent = message;
@@ -18,6 +19,7 @@ function showApprovalMessage(message, isError = false) {
 
 function showCoachInviteMessage(message, isError = false) {
   const element = document.getElementById("coach-invite-message");
+  if (window.AppFeedback) { window.AppFeedback.show(element, message, isError, { key: "coach-invite-message" }); return; }
   if (!element) return;
 
   element.textContent = message;
@@ -26,6 +28,7 @@ function showCoachInviteMessage(message, isError = false) {
 
 function showCoachManagementMessage(message, isError = false) {
   const element = document.getElementById("coach-management-message");
+  if (window.AppFeedback) { window.AppFeedback.show(element, message, isError, { key: "coach-management-message" }); return; }
   if (!element) return;
 
   element.textContent = message;
@@ -504,6 +507,7 @@ async function createFacilityAdminInvite() {
   const message = document.getElementById("admin-invite-message");
   button.disabled = true;
   message.textContent = "Creating an administrator link...";
+  window.AppFeedback?.dismiss("admin-invite-message");
   try {
     const { data, error } = await db.rpc("create_facility_admin_invite", { p_facility_id: access.membership.facility_id });
     if (error) throw error;
@@ -520,11 +524,12 @@ async function createFacilityAdminInvite() {
   } catch (error) {
     message.textContent = error.message || "Could not create the admin signup link.";
     message.classList.add("error-message");
+    window.AppFeedback?.error(message.textContent, { key: "admin-invite-message", element: message });
   } finally { button.disabled = false; }
 }
 
 async function handleApprovalLogout() {
-  await db.auth.signOut();
+  if (!await window.AppFeedback.signOut()) return;
   window.location.href = "login.html";
 }
 

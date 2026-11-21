@@ -270,12 +270,13 @@ async function getAssignmentLogWarning(assignmentId) {
       .select("id", { count: "exact", head: true })
       .eq("workout_assignment_id", assignmentId);
 
-    if (error || !count) return "";
+    if (error) throw error;
+    if (!count) return "";
 
     return `Warning: this also removes ${count} saved set log${count === 1 ? "" : "s"} for this assignment.`;
   } catch (error) {
     console.error(error);
-    return "";
+    return "Warning: saved set logs could not be checked. Removing this assignment may also remove workout history.";
   }
 }
 

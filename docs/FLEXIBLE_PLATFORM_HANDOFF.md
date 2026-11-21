@@ -231,3 +231,59 @@ Member/sidebar pages reserve their navigation area; phone workout logging keeps
 its natural scrolling layout. Owner preview uses the same layout sheet.
 Compare staff tabs, staff/member Profile, member tabs, and Platform at the same
 viewport/zoom after deployment. No browser tests were performed by the agent.
+
+### Existing sessions on public auth pages
+
+Login checks the current session before enabling credentials. Signed-in users
+follow existing legal/owner/membership routing. Recovery links keep their earlier
+password-link handling. Signup/code/invite links require an explicit account
+choice when already signed in: open the current account, continue registration
+with it, or sign out and retain the link. Continuing registration pre-fills existing
+identity and does not ask for a replacement password; actual signup/invite claims
+still require the form and legal acknowledgement. A changed session blocks submit.
+
+Verify owner/staff/member/pending/multiple-facility destinations, logged-out login,
+recovery links, same-account signup/invites, different-account signout, expired
+sessions and routing failures. Added tests/auth-existing-session.test.mjs; only
+syntax/whitespace checks were run by the agent. No migration is needed.
+
+## Visible error feedback pass
+
+A shared feedback layer now displays persistent, dismissible errors at the top
+of the viewport without moving focus from the active input. Existing inline
+messages remain. Errors are keyed per feature so repeat failures update one
+notice; unrelated failures stay separate. An empty refresh does not erase an
+unacknowledged error. Retrying or a later success clears that feature's notice.
+The error area is bounded and scrollable on phones; its dismiss controls are 44px.
+
+Covered: auth, member startup/habits/history/goals/leaderboards, workout logging,
+Profile saves, member announcements/Testing Days, coach dashboard/review/approvals,
+roster member actions, workout/program/calendar/library actions, testing results,
+and Platform configuration. Group-local creation/deletion messages keep their
+existing visible local treatment and dismiss controls. Optional branding/cache
+failures remain console-only because they do not block account access.
+
+Concrete hidden paths fixed:
+- Every member page has a startup message target.
+- Dashboard-wide errors are outside the collapsed Needs Attention section.
+- Member Testing Days errors are outside the Schedule/Performance views and
+  errors no longer hide the module or broadly misclassify permissions as missing SQL.
+- Announcement dismiss/restore/load failures have user-visible feedback.
+- Sign-out errors are caught on all routes; failed logout does not navigate or
+  clear selected-facility state. Unsaved workout flags stay intact on failure.
+- Calendar action-permission failures are visible; unavailable saved-log counts
+  produce an explicit caution in assignment removal confirmation.
+
+Derek's checks: run the suite including tests/visible-feedback.test.mjs. On a phone,
+try failed member startup, habits/goals saves, announcement dismissal/undo, Testing
+Days loads, workout saves/Finish, and Profile saves. On desktop, reject workout/
+program/library/calendar saves/deletes/assignments, Testing Day result/participant
+actions, invite creation, member changes, and Platform configuration saves. Verify
+each error is visible without scrolling, input/drafts remain, × dismisses it, an
+empty background refresh does not erase it, and retry clears the matching notice.
+Simulate failed logout and confirm the current page/selected facility/drafts remain.
+Check enabled/disabled modules and collapsed panels do not conceal the errors.
+
+Only JavaScript syntax and whitespace checks were performed by the agent; tests
+were authored/updated but not executed. No SQL migration, live account changes,
+commit, push, or browser testing was performed in this pass.
