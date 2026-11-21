@@ -58,12 +58,7 @@ html[data-facility-style="community"] .member-page-links { gap:22px; }
 html[data-facility-style="community"] .member-announcements-panel { background:var(--surface-2); border-radius:var(--design-radius); padding:24px; }
 html:is([data-facility-style="clean"],[data-facility-style="community"]) .stats-grid { gap:20px; }
 html:is([data-facility-style="clean"],[data-facility-style="community"]) .stat-card strong { font-size:36px; }
-html:is([data-facility-style="clean"],[data-facility-style="community"]) :is(.coach-page,.member-main-content) { max-width:1440px; }
 [data-appearance-hidden] { display:none !important; }
-@media(min-width:1000px) {
-  html[data-facility-style="clean"] .coach-dashboard-page .coach-page { padding-inline:44px; }
-  html[data-facility-style="community"] .coach-dashboard-page .coach-page { max-width:1240px; }
-}
 @media(max-width:700px) {
   html:is([data-facility-style="clean"],[data-facility-style="community"]) .hero-card { padding:20px; }
   html:is([data-facility-style="clean"],[data-facility-style="community"]) .stats-grid { gap:10px; }

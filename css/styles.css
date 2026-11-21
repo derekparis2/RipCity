@@ -11444,3 +11444,46 @@ html[data-facility-slug] .coach-nav-link.active, html[data-facility-slug] .nav-l
   .workout-session-body .set-log-actions { padding-bottom:env(safe-area-inset-bottom,0px); }
   .session-finish-actions > * { display:flex; justify-content:center; align-items:center; width:100%; min-height:48px; }
 }
+
+/* One signed-in page shell, regardless of tab, role, or facility style. */
+:root { --app-page-width:1320px; --app-page-edge:16px; --app-page-top:32px; }
+body > :is(.coach-page,.approval-page,.h2k-page) {
+  width:min(var(--app-page-width),calc(100% - var(--app-page-edge) * 2));
+  max-width:var(--app-page-width);
+  min-width:0;
+  margin-inline:auto;
+  padding:var(--app-page-top) 0 60px;
+  box-sizing:border-box;
+}
+body > :is(.coach-page,.approval-page,.h2k-page) > * { min-width:0; }
+/* Member pages reserve the fixed sidebar, then use the same content width/gutters. */
+body.member-dashboard-body > main.member-main-content {
+  width:calc(100% - 280px);
+  max-width:none;
+  min-width:0;
+  margin:0 0 0 280px;
+  padding:var(--app-page-top) var(--app-page-edge) 60px;
+  box-sizing:border-box;
+}
+body.member-dashboard-body > main.member-main-content > * {
+  width:100%;
+  max-width:var(--app-page-width);
+  min-width:0;
+  margin-inline:auto;
+  box-sizing:border-box;
+}
+.workout-session-body .session-overview,
+.workout-session-body .session-step-shell { width:100%; max-width:none; }
+@media(max-width:700px) {
+  :root { --app-page-edge:9px; --app-page-top:12px; }
+  body > :is(.coach-page,.approval-page,.h2k-page) { padding-bottom:48px; }
+  body.member-dashboard-body > main.member-main-content {
+    width:100%; margin:0;
+    padding:var(--app-page-top) var(--app-page-edge) calc(94px + env(safe-area-inset-bottom));
+  }
+  body.member-dashboard-body .member-sidebar {
+    width:calc(100% - var(--app-page-edge) * 2);
+    margin-inline:auto;
+  }
+}
+@media(max-width:430px) { :root { --app-page-edge:7px; } }
