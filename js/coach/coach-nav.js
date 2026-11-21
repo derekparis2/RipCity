@@ -23,7 +23,7 @@ function initializeCoachNavigation(configuration = window.RipCityFacility) {
       return `
         <a
           class="coach-nav-link${isActive ? " active" : ""}"
-          href="${item.href}"
+          href="${window.RipCityAccess?.getFacilityPageUrl(item.href)?.replace(/&/g, "&amp;") || item.href}"
           ${isActive ? 'aria-current="page"' : ""}
         >${item.label}</a>
       `;

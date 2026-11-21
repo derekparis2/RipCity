@@ -45,23 +45,41 @@
   function choosePrimaryMembership(profile) {
     const memberships = getJoinedMemberships(profile);
 
-    const selectedFacilityId = window.sessionStorage.getItem(SELECTED_FACILITY_KEY);
+    const requestedFacilityId = new URLSearchParams(window.location.search).get("facility_id");
+    const selectedFacilityId = requestedFacilityId || window.sessionStorage.getItem(SELECTED_FACILITY_KEY);
     if (selectedFacilityId) {
       const selectedMembership = memberships.find(row => (
         row.facility_id === selectedFacilityId
       ));
-      if (selectedMembership) return selectedMembership;
-      window.sessionStorage.removeItem(SELECTED_FACILITY_KEY);
+      if (selectedMembership) {
+        selectFacility(selectedMembership.facility_id);
+        return selectedMembership;
+      }
+      // Never silently replace an explicitly selected facility with another one.
+      return null;
     }
 
-    return memberships.find(row => row.status === "approved") ||
-      memberships[0] ||
-      null;
+    const approved = memberships.filter(row => row.status === "approved");
+    if (approved.length > 1) return null;
+    const membership = approved[0] || memberships[0] || null;
+    if (membership) selectFacility(membership.facility_id);
+    return membership;
   }
 
   function selectFacility(facilityId) {
     if (facilityId) window.sessionStorage.setItem(SELECTED_FACILITY_KEY, facilityId);
     else window.sessionStorage.removeItem(SELECTED_FACILITY_KEY);
+  }
+
+  function getFacilityPageUrl(page) {
+    const facilityId = window.sessionStorage.getItem(SELECTED_FACILITY_KEY);
+    if (!facilityId) return page;
+    const url = new URL(page, window.location.href);
+    if (url.origin !== window.location.origin) return page;
+    const filename = url.pathname.split("/").pop();
+    if (!/^(coach-|member-|profile\.html$|workout-session\.html$)/.test(filename)) return page;
+    url.searchParams.set("facility_id", facilityId);
+    return `${url.pathname}${url.search}${url.hash}`;
   }
 
   async function getCurrentUserIsPlatformOwner() {
@@ -214,6 +232,8 @@
     });
 
     document.querySelectorAll(".auth-brand img, .brand-mark img").forEach(image => {
+      image.onload = null;
+      image.onerror = null;
       const parent = image.parentElement;
       parent?.querySelector(".facility-brand-initials")?.remove();
 
@@ -362,6 +382,9 @@
     applyFacilityBranding(configuration);
     applyFacilityFeatureVisibility(configuration);
     applyFacilityLanguage(configuration);
+    document.querySelectorAll("a[href]").forEach(link => {
+      link.setAttribute("href", getFacilityPageUrl(link.getAttribute("href")));
+    });
     window.dispatchEvent(new CustomEvent("ripcity:facility-config", {
       detail: configuration
     }));
@@ -391,6 +414,11 @@
 
     const profile = await getProfileWithMemberships(session.user.id, options.extraProfileColumns || "");
     const membership = choosePrimaryMembership(profile);
+
+    if (!membership && getJoinedMemberships(profile).some(row => row.status === "approved")) {
+      window.location.replace("facility-select.html");
+      return null;
+    }
 
     if (!membership || membership.status !== "approved") {
       if (await getCurrentUserIsPlatformOwner()) {
@@ -475,6 +503,7 @@
 
   window.RipCityAccess = {
     choosePrimaryMembership,
+    getFacilityPageUrl,
     getEffectiveFacilityConfiguration,
     selectFacility,
     getCurrentUserIsPlatformOwner,

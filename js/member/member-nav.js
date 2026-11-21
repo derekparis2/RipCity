@@ -57,7 +57,7 @@
       nav.innerHTML = visibleItems.map(item => `
         <a
           class="nav-link nav-link-anchor ${item.key === activePage ? "active" : ""}"
-          href="${item.href}"
+          href="${window.RipCityAccess?.getFacilityPageUrl(item.href)?.replace(/&/g, "&amp;") || item.href}"
           data-member-nav-key="${item.key}"
           ${item.key === activePage ? 'aria-current="page"' : ""}
         >
