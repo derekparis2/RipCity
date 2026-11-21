@@ -79,3 +79,44 @@ error if application fails; do not run partial repair statements.
 Dedicated domains, fees, and sales processes are outside this PR, per the agreed
 scope. No browser tests, live account changes, migrations, commits, or pushes were
 performed by the agent during this phase.
+
+## November 21 — owner-configured design styles
+
+New migration: `20261121190000_add_facility_style_customization.sql`, after
+`20261118120000`. Apply to staging before deploying the updated configuration
+form. This migration has not been applied or executed by the agent.
+
+Performance retains the existing design. Clean and Community are opt-in styles
+on the existing feature pages, with different typography, surfaces, card shapes,
+spacing, and navigation treatment. No existing facility is restyled automatically.
+The separate `appearance_settings` object defaults to `{}` (Performance/default
+background) and is guarded against non-owner changes, including direct writes.
+The existing config RPCs remain available; new overloads save appearance and the
+other configuration fields in the same transaction and record an audit event.
+
+Configure Facility adds a sample member/coach preview, background preference,
+explicit suggested-color button, and dashboard section visibility/order controls.
+Primary/secondary colors, logo, terminology, feature switches and welcome copy
+remain editable. Suggested colors never replace the saved colors automatically.
+The preview is a representative layout, not a live account or exact full-page
+screenshot. Feature access remains governed by the original module/security rules.
+Hiding a section does not revoke access to a feature; disable the feature instead.
+
+Derek's checks (not executed by the agent):
+
+- Apply the new migration; run the test suite, including
+  `tests/facility-appearance.test.mjs`, and the existing configuration scripts.
+- Verify Rip City's Performance/default setting looks the same as before.
+- In a fake facility, preview/save/reopen all three styles and background modes.
+  Confirm colors/logo/copy persist, and suggested colors change only on click.
+- Reorder/hide member and coach sections independently, reload the actual
+  dashboards, and confirm headers remain in place and data/actions still work.
+- Disable modules while showing their sections; disabled features must stay hidden.
+- Check real member/staff pages at desktop/mobile widths, including forms,
+  calendars, rosters, workout sessions, nav menus, and text contrast.
+- Confirm a facility admin/member cannot save appearance through the new RPCs
+  or directly change `facilities.appearance_settings`; a global owner can.
+- Check reload/navigation keeps the selected facility's style without a flash.
+
+Only JavaScript syntax and whitespace checks were run by the agent. No optional
+Performance redesigns, staging changes, commits, pushes, or browser QA were done.

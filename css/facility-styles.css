@@ -1,0 +1,71 @@
+/* Performance uses styles.css unchanged. All alternate-design rules are opt-in. */
+html[data-facility-style="clean"] {
+  color-scheme:light;
+  --bg:#f5f7fb; --surface:#ffffff; --surface-2:#edf1f8;
+  --text:#202b40; --muted:#596780; --border:#d8e0ec;
+  --design-radius:12px; --design-heading:"Inter",sans-serif;
+}
+html[data-facility-style="community"] {
+  color-scheme:light;
+  --bg:#f5f1e8; --surface:#fffcf6; --surface-2:#e9eddf;
+  --text:#3e3a30; --muted:#686659; --border:#d8d5c8;
+  --design-radius:24px; --design-heading:Georgia,serif;
+}
+html[data-facility-background="light"] {
+  color-scheme:light;
+  --bg:#f5f7fb; --surface:#ffffff; --surface-2:#edf1f8;
+  --text:#202b40; --muted:#596780; --border:#d8e0ec;
+}
+html[data-facility-style="community"][data-facility-background="light"] {
+  --bg:#f5f1e8; --surface:#fffcf6; --surface-2:#e9eddf;
+  --text:#3e3a30; --muted:#686659; --border:#d8d5c8;
+}
+html[data-facility-background="dark"] {
+  color-scheme:dark;
+  --bg:#111722; --surface:#1b2433; --surface-2:#253145;
+  --text:#f1f5f9; --muted:#bac6d7; --border:#43526b;
+}
+html[data-facility-style="community"][data-facility-background="dark"] {
+  --bg:#161d18; --surface:#202b23; --surface-2:#2b392d;
+  --text:#f3f4eb; --muted:#b9c4b4; --border:#495746;
+}
+html:is([data-facility-style="clean"],[data-facility-style="community"]) body {
+  background:var(--bg); color:var(--text); font-family:"Inter",sans-serif;
+}
+html:is([data-facility-style="clean"],[data-facility-style="community"]) :is(h1,h2,h3,h4,.stat-card strong) {
+  font-family:var(--design-heading); font-weight:600; text-transform:none; letter-spacing:-.025em; color:var(--text);
+}
+html[data-facility-style="community"] :is(h1,h2,h3,h4) { font-weight:400; }
+html:is([data-facility-style="clean"],[data-facility-style="community"]) :is(.panel,.hero-card,.stat-card,.exercise-card,.habit-card,.goal-card,.member-page-link-card,.roster-member-card,.auth-card,.program-card) {
+  background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:var(--design-radius); box-shadow:none;
+}
+html[data-facility-style="clean"] .hero-card { background:var(--surface); border-left:4px solid var(--facility-primary); }
+html[data-facility-style="community"] .hero-card { background:var(--surface-2); padding-block:32px; border:0; }
+html:is([data-facility-style="clean"],[data-facility-style="community"]) .hero-card h3 { font-size:clamp(26px,3vw,42px); line-height:1.2; }
+html:is([data-facility-style="clean"],[data-facility-style="community"]) .eyebrow { color:var(--muted); letter-spacing:.1em; }
+html:is([data-facility-style="clean"],[data-facility-style="community"]) .h2k-header { border-bottom:1px solid var(--border); padding-block:18px; }
+html:is([data-facility-style="clean"],[data-facility-style="community"]) .member-sidebar { background:var(--surface); border-color:var(--border); border-top:4px solid var(--facility-secondary); }
+html:is([data-facility-style="clean"],[data-facility-style="community"]) :is(.coach-nav-link,.nav-link) { border-radius:var(--design-radius); color:var(--muted); font-weight:500; text-transform:none; }
+html:is([data-facility-style="clean"],[data-facility-style="community"]) :is(.coach-nav-link.active,.nav-link.active) { background:var(--surface-2); color:var(--text); border-color:var(--border); box-shadow:inset 0 -3px var(--facility-primary); }
+html:is([data-facility-style="clean"],[data-facility-style="community"]) :is(.outline-btn,.outline-link,.secondary-btn) { background:var(--surface); color:var(--text); border:1px solid var(--border); border-bottom:3px solid var(--facility-secondary); border-radius:var(--design-radius); }
+html:is([data-facility-style="clean"],[data-facility-style="community"]) :is(.primary-btn,.primary-link) { background:var(--facility-primary); color:var(--accent-ink); border-color:var(--facility-primary); border-radius:var(--design-radius); }
+html:is([data-facility-style="clean"],[data-facility-style="community"]) :is(input:not([type="checkbox"]):not([type="radio"]):not([type="color"]),select,textarea) { background:var(--surface); color:var(--text); border-color:var(--border); }
+html:is([data-facility-style="clean"],[data-facility-style="community"]) :is(.training-view-switch,.coach-nav-links,.member-type-card,.mode-card,.user-card) { background:var(--surface); color:var(--text); border-color:var(--border); border-radius:var(--design-radius); }
+html:is([data-facility-style="clean"],[data-facility-style="community"]) :is(.training-view-button,.member-type-card span,.mode-card h3,.user-card strong) { color:var(--text); }
+html:is([data-facility-style="clean"],[data-facility-style="community"]) .training-view-button.is-active { background:var(--surface-2); color:var(--text); border-color:var(--facility-primary); }
+html[data-facility-style="clean"] .member-page-links { gap:14px; }
+html[data-facility-style="community"] .member-page-links { gap:22px; }
+html[data-facility-style="community"] .member-announcements-panel { background:var(--surface-2); border-radius:var(--design-radius); padding:24px; }
+html:is([data-facility-style="clean"],[data-facility-style="community"]) .stats-grid { gap:20px; }
+html:is([data-facility-style="clean"],[data-facility-style="community"]) .stat-card strong { font-size:36px; }
+html:is([data-facility-style="clean"],[data-facility-style="community"]) :is(.coach-page,.member-main-content) { max-width:1440px; }
+[data-appearance-hidden] { display:none !important; }
+@media(min-width:1000px) {
+  html[data-facility-style="clean"] .coach-dashboard-page .coach-page { padding-inline:44px; }
+  html[data-facility-style="community"] .coach-dashboard-page .coach-page { max-width:1240px; }
+}
+@media(max-width:700px) {
+  html:is([data-facility-style="clean"],[data-facility-style="community"]) .hero-card { padding:20px; }
+  html:is([data-facility-style="clean"],[data-facility-style="community"]) .stats-grid { gap:10px; }
+  html:is([data-facility-style="clean"],[data-facility-style="community"]) .stat-card strong { font-size:28px; }
+}

@@ -310,6 +310,7 @@ function getFacilityInitials(name) {
 function applyPublicFacilityBranding(configuration) {
   if (!configuration) return;
 
+  window.FacilityAppearance?.apply(configuration);
   const facilityName = configuration.facility_name || configuration.name || "Facility";
   const facilitySlug = configuration.facility_slug || configuration.slug || "";
   const logoUrl = configuration.logo_url || "";

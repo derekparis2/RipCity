@@ -88,6 +88,7 @@
       secondary_color: "#f7f7f7",
       time_zone: "America/New_York",
       ui_theme: "midnight",
+      appearance_settings: {},
       terminology: { ...DEFAULT_TERMINOLOGY },
       modules: Object.fromEntries(MODULES.map(([key]) => [key, { enabled: true, settings: {} }])),
       programs: {
@@ -143,10 +144,19 @@
 
         <section class="platform-config-section">
           <h4>Appearance</h4>
-          <label>Page Theme<select name="ui_theme">
+          <div class="form-row">
+            <label>Design style<select name="appearance_style">${[["performance","Performance — current Rip City layout"],["clean","Clean — airy and minimal"],["community","Community — warm and welcoming"]].map(([key,label])=>`<option value="${key}"${(config.appearance_settings?.style || "performance")===key?" selected":""}>${label}</option>`).join("")}</select></label>
+            <label>Background<select name="appearance_background">${[["default","Style default"],["light","Light"],["dark","Dark"]].map(([key,label])=>`<option value="${key}"${(config.appearance_settings?.background || "default")===key?" selected":""}>${label}</option>`).join("")}</select></label>
+          </div>
+          <label>Performance surface palette<select name="ui_theme">
             ${[["midnight", "Midnight"], ["slate", "Slate"], ["forest", "Forest"]].map(([key, label]) => `<option value="${key}"${config.ui_theme === key ? " selected" : ""}>${label}</option>`).join("")}
           </select></label>
-          <p class="platform-facility-meta">Themes set page surfaces. Your facility colors, logo, and terminology personalize each page.</p>
+          <p class="platform-facility-meta">Performance preserves the current layout. Clean and Community change typography, spacing, surfaces, and navigation styling. Your primary and secondary colors remain editable in every style.</p>
+          <button class="outline-btn" type="button" data-style-colors>Use selected style’s suggested colors</button>
+          <div class="platform-dashboard-editors"></div>
+          <div class="form-row"><label>Preview dashboard<select name="appearance_preview_role"><option value="member">Member</option><option value="coach">Coach / admin</option></select></label></div>
+          <p class="platform-facility-meta">Preview uses sample content. Module switches and section settings affect the preview; Save Configuration publishes the changes.</p>
+          <iframe class="platform-style-preview" title="Facility appearance preview" sandbox="allow-same-origin"></iframe>
         </section>
         <section class="platform-config-section">
           <h4>Modules</h4>
@@ -221,6 +231,7 @@
     const form = container.querySelector("form");
     form.facilityModuleSettings = structuredClone(config.modules);
     form.facilityProgramKeys = Object.keys(config.programs);
+    initializeAppearanceEditor(form, config);
     if (mode === "create") {
       const nameInput = form.elements.name;
       const slugInput = form.elements.slug;
@@ -261,12 +272,106 @@
       programs[key] = {program_key:key,display_name:"New Program",plural_name:"New Program Members",profile_type:"general",enabled:true,module_overrides:{}};
       renderForm(container, {...config, name:values.p_name, slug:mode === "create" ? values.p_slug : config.slug,
         logo_url:values.p_logo_url,primary_color:values.p_primary_color,secondary_color:values.p_secondary_color,
-        time_zone:values.p_time_zone,ui_theme:values.p_ui_theme,dashboard_content:values.p_dashboard_content,
+        time_zone:values.p_time_zone,ui_theme:values.p_ui_theme,dashboard_content:values.p_dashboard_content,appearance_settings:values.p_appearance_settings,
         terminology:values.p_terminology,modules:values.p_modules,programs}, mode);
     });
     form.addEventListener("change", syncProgramFeatureControls);
     syncProgramFeatureControls();
     form.addEventListener("submit", saveConfiguration);
+  }
+
+  function initializeAppearanceEditor(form, config) {
+    form.appearanceDraft = window.FacilityAppearance.normalize(config.appearance_settings);
+    const editor = form.querySelector(".platform-dashboard-editors");
+    const frame = form.querySelector(".platform-style-preview");
+    function renderSectionControls() {
+      editor.innerHTML = Object.entries(window.FacilityAppearance.sections).map(([role, sections]) => `
+        <div><h4>${role === "member" ? "Member" : "Coach / admin"} sections</h4><ol class="platform-section-order" data-section-role="${role}">
+          ${form.appearanceDraft[`${role}_order`].map((key, index, order) => `<li>
+            <label><input type="checkbox" data-section-key="${key}"${form.appearanceDraft[`${role}_hidden`].includes(key) ? "" : " checked"}>${escapeHtml(sections[key])}</label>
+            <button class="outline-btn" type="button" data-move="-1" data-key="${key}" aria-label="Move ${escapeHtml(sections[key])} up"${index === 0 ? " disabled" : ""}>↑</button>
+            <button class="outline-btn" type="button" data-move="1" data-key="${key}" aria-label="Move ${escapeHtml(sections[key])} down"${index === order.length - 1 ? " disabled" : ""}>↓</button>
+          </li>`).join("")}</ol></div>`).join("");
+    }
+    renderSectionControls();
+    editor.addEventListener("change", event => {
+      const input = event.target.closest("[data-section-key]");
+      if (!input) return;
+      const role = input.closest("[data-section-role]").dataset.sectionRole;
+      const key = input.dataset.sectionKey;
+      const hidden = new Set(form.appearanceDraft[`${role}_hidden`]);
+      if (input.checked) hidden.delete(key); else hidden.add(key);
+      form.appearanceDraft[`${role}_hidden`] = [...hidden];
+      updatePreview();
+    });
+    editor.addEventListener("click", event => {
+      const button = event.target.closest("[data-move]");
+      if (!button) return;
+      const role = button.closest("[data-section-role]").dataset.sectionRole;
+      const order = form.appearanceDraft[`${role}_order`];
+      const index = order.indexOf(button.dataset.key);
+      const next = index + Number(button.dataset.move);
+      if (next < 0 || next >= order.length) return;
+      [order[index], order[next]] = [order[next], order[index]];
+      renderSectionControls();
+      editor.querySelector(`[data-section-role="${role}"] [data-key="${button.dataset.key}"][data-move="${button.dataset.move}"]`)?.focus();
+      updatePreview();
+    });
+    form.querySelector("[data-style-colors]").addEventListener("click", () => {
+      const colors = { performance: ["#69b7ff", "#f7f7f7"], clean: ["#325ddb", "#b7c9f4"], community: ["#936047", "#8b9d78"] }[form.elements.appearance_style.value];
+      form.elements.primary_color.value = colors[0];
+      form.elements.secondary_color.value = colors[1];
+      updatePreview();
+    });
+    let pendingPreview;
+    function updatePreview() {
+      window.clearTimeout(pendingPreview);
+      pendingPreview = window.setTimeout(renderPreview, 100);
+    }
+    function renderPreview() {
+      const values = readPayload(form);
+      const role = form.elements.appearance_preview_role.value;
+      const sections = window.FacilityAppearance.sections[role];
+      const payload = {
+        ...config, name: values.p_name || "Your Facility", primary_color: values.p_primary_color,
+        secondary_color: values.p_secondary_color, ui_theme: values.p_ui_theme,
+        appearance_settings: values.p_appearance_settings, dashboard_content: values.p_dashboard_content
+      };
+      const modules = Object.fromEntries(values.p_modules.map(module => [module.module_key, module.enabled]));
+      const moduleFor = { announcements: "announcements", attention: "habits", workouts: "workouts", ...(role === "member" ? { scores: "habits" } : {}) };
+      const copy = values.p_dashboard_content;
+      const content = {
+        welcome: `<p class="eyebrow">${role === "member" ? "YOUR DAY" : "YOUR FACILITY"}</p><h3>${escapeHtml(copy[`${role}_title`] || (role === "member" ? "Welcome back, Jordan." : "Your coaching dashboard."))}</h3><p>${escapeHtml(copy[`${role}_message`] || "Everything you need for the day ahead.")}</p>`,
+        announcements: '<p class="eyebrow">ANNOUNCEMENTS</p><h3>Build a consistent week.</h3><p>Three sessions. One day at a time. Keep the momentum going.</p>',
+        feedback: '<h3>Tell us what to improve.</h3><p>Share feedback with your facility team.</p>',
+        scores: role === "member" ? '<div class="stat-card"><span>Weekly habit score</span><strong>82%</strong></div><div class="stat-card"><span>Workouts this week</span><strong>2</strong></div>' : '<div class="stat-card"><span>Approved members</span><strong>24</strong></div><div class="stat-card"><span>Needs attention</span><strong>3</strong></div>',
+        tools: '<h3>Your training and progress</h3><p>Workouts, habits, goals, and leaderboards.</p><button class="primary-btn" type="button" disabled>Open training</button>',
+        attention: '<h3>Needs attention</h3><p>Jordan Lee · Habit follow-up</p><button class="outline-btn" type="button" disabled>View member</button>',
+        workouts: '<h3>Workout review</h3><p>Lower body strength · 3 completed sessions</p>'
+      };
+      const markup = Object.keys(sections).map(key => {
+        let hidden = (moduleFor[key] && !modules[moduleFor[key]]) || (key === "feedback" && !copy.show_feedback) || (role === "member" && key === "scores" && !copy.show_scores);
+        return `<section class="${key === "welcome" ? "hero-card h2k-hero" : key === "scores" ? "stats-grid" : "panel"}" data-dashboard-role="${role}" data-dashboard-section="${key}"${hidden ? " hidden" : ""}>${content[key]}</section>`;
+      }).join("");
+      const stylesheet = new URL("css/styles.css?v=facility-styles-1", window.location.href).href;
+      const designStylesheet = new URL("css/facility-styles.css?v=facility-styles-1", window.location.href).href;
+      frame.onload = () => {
+        const doc = frame.contentDocument;
+        if (!doc) return;
+        const root = doc.documentElement;
+        root.dataset.facilitySlug = config.slug || "preview";
+        root.dataset.facilityTheme = values.p_ui_theme;
+        root.style.setProperty("--facility-primary", values.p_primary_color);
+        root.style.setProperty("--facility-secondary", values.p_secondary_color);
+        root.style.setProperty("--accent", values.p_primary_color);
+        root.style.setProperty("--accent-ink", window.FacilityAppearance.contrast(values.p_primary_color));
+        window.FacilityAppearance.apply(payload, doc);
+      };
+      frame.srcdoc = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="${escapeHtml(stylesheet)}"><link rel="stylesheet" href="${escapeHtml(designStylesheet)}"><style>body{min-height:0}.coach-page{width:100%;padding:20px}.panel{margin:20px 0}.stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.h2k-header{flex-wrap:wrap}.hero-card h3{font-size:30px}.coach-nav{display:flex;gap:12px;flex-wrap:wrap}.brand-preview{max-width:56px;max-height:56px;object-fit:contain}</style></head><body class="auth-body coach-dashboard-page"><main class="coach-page"><header class="h2k-header"><div class="auth-brand">${/^https?:\/\//i.test(values.p_logo_url) ? `<img class="brand-preview" src="${escapeHtml(values.p_logo_url)}" alt="Facility logo">` : ""}<div><h1>${escapeHtml(payload.name)}</h1><p>${role === "member" ? "Member" : "Coach / admin"} dashboard</p></div></div><nav class="coach-nav" aria-label="Preview navigation"><span class="coach-nav-link active">Dashboard</span>${modules.workouts ? '<span class="coach-nav-link">Training</span>' : ""}${modules.leaderboards ? '<span class="coach-nav-link">Leaderboards</span>' : ""}</nav></header>${markup}</main></body></html>`;
+    }
+    form.addEventListener("input", updatePreview);
+    form.addEventListener("change", updatePreview);
+    renderPreview();
   }
 
   function readPayload(form) {
@@ -279,6 +384,11 @@
       p_secondary_color: String(data.get("secondary_color") || "").trim(),
       p_time_zone: String(data.get("time_zone") || "").trim(),
       p_ui_theme: String(data.get("ui_theme") || "midnight"),
+      p_appearance_settings: {
+        ...window.FacilityAppearance.normalize(form.appearanceDraft),
+        style: String(data.get("appearance_style") || "performance"),
+        background: String(data.get("appearance_background") || "default")
+      },
       p_dashboard_content: {
         member_title: String(data.get("content_member_title") || "").trim(),
         member_message: String(data.get("content_member_message") || "").trim(),

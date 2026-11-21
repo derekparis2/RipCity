@@ -2,13 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <script src="js/shared/facility-appearance.js?v=facility-styles-1"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script src="js/shared/facility-shell.js?v=facility-ui-1&amp;review=facility-loading-4"></script>
+  <script src="js/shared/facility-shell.js?v=facility-ui-1&amp;review=facility-loading-5"></script>
   <title>Member Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css?v=member-nav-fixed-1&amp;review=flexible-platform-2" />
+  <link rel="stylesheet" href="css/facility-styles.css?v=facility-styles-1" />
 </head>
 
 <body class="auth-body member-dashboard-body" data-member-page="dashboard">
@@ -53,14 +55,14 @@
       </div>
     </header>
 
-    <section class="hero-card h2k-hero">
+    <section class="hero-card h2k-hero" data-dashboard-role="member" data-dashboard-section="welcome">
       <div>
         <p class="eyebrow">MEMBER DASHBOARD</p>
         <h3 data-facility-content="member_title">Your training, habits, goals, and progress in one place.</h3><p data-facility-content="member_message"></p>
       </div>
     </section>
 
-    <section class="member-announcements-panel hidden" id="member-announcements-panel" aria-labelledby="member-announcements-heading" data-facility-module="announcements">
+    <section class="member-announcements-panel hidden" data-dashboard-role="member" data-dashboard-section="announcements" id="member-announcements-panel" aria-labelledby="member-announcements-heading" data-facility-module="announcements">
       <div class="section-heading">
         <div>
           <p class="eyebrow">FROM YOUR COACHES</p>
@@ -70,7 +72,7 @@
       <div class="member-announcement-list" id="member-announcement-list"></div>
     </section>
 
-    <section class="dashboard-grid h2k-dashboard-grid">
+    <section class="dashboard-grid h2k-dashboard-grid" data-dashboard-role="member" data-dashboard-section="feedback">
       <article class="panel feedback-panel dashboard-feedback-panel" data-facility-widget="show_feedback">
         <div>
           <p class="eyebrow">BETA FEEDBACK</p>
@@ -87,7 +89,7 @@
       </article>
     </section>
 
-    <section class="stats-grid member-stats-grid" id="member-stats-section" data-facility-widget="show_scores" data-facility-module="habits">
+    <section class="stats-grid member-stats-grid" data-dashboard-role="member" data-dashboard-section="scores" id="member-stats-section" data-facility-widget="show_scores" data-facility-module="habits">
       <article class="stat-card">
         <span id="member-stat-one-label">Today’s Workouts</span>
         <strong><span id="today-score">0</span><span id="member-stat-one-suffix"></span></strong>
@@ -113,7 +115,7 @@
       </article>
     </section>
 
-    <section class="member-page-links" aria-label="Member tools">
+    <section data-dashboard-role="member" data-dashboard-section="tools" class="member-page-links" aria-label="Member tools">
       <a class="member-page-link-card" href="member-training.html" data-facility-modules="workouts testing_days">
         <span class="eyebrow">TRAINING</span>
         <strong>Open your calendar</strong>
@@ -155,10 +157,10 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/shared/supabaseClient.js"></script>
   <script src="js/shared/ui-utils.js"></script>
-  <script src="js/shared/access-control.js?v=auth-reliability-3&amp;review=flexible-platform-2&amp;navigation=facility-context-2"></script>
+  <script src="js/shared/access-control.js?v=auth-reliability-3&amp;review=flexible-platform-2&amp;navigation=facility-context-3"></script>
   <script src="js/shared/workout-data.js?v=workout-attribution-1"></script>
   <script src="js/shared/leaderboard-metrics.js?v=member-leaderboards-1"></script>
-  <script src="js/member/member-nav.js?v=member-leaderboards-1&amp;navigation=facility-context-2"></script>
+  <script src="js/member/member-nav.js?v=member-leaderboards-1&amp;navigation=facility-context-3"></script>
   <script src="js/member/member-dashboard.js?v=member-role-guard-1&amp;review=flexible-platform-2"></script>
   <script src="js/member/member-announcements.js?v=member-role-guard-1&amp;review=facility-ui-3"></script>
 </body>

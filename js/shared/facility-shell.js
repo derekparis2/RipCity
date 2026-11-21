@@ -7,6 +7,7 @@
       || window.sessionStorage.getItem("ripcity:selected-facility-id");
     const appearance = JSON.parse(window.sessionStorage.getItem("facility:appearance") || "null");
     if (!selected || appearance?.id !== selected) return;
+    window.FacilityAppearance?.apply({ appearance_settings: appearance.appearance, secondary_color: appearance.secondary });
     if (["midnight", "slate", "forest"].includes(appearance.theme)) {
       root.dataset.facilityTheme = appearance.theme;
     }

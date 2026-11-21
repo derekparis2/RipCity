@@ -19,6 +19,7 @@ const platformContext = vm.createContext({
 });
 const platformUnderTest = platform.slice(0, platform.indexOf('  document.getElementById("open-create-facility-btn")'))
   + 'window.testApi = { readPayload, normalizeConfig }; })();';
+vm.runInContext(await read('js/shared/facility-appearance.js'), platformContext);
 vm.runInContext(platformUnderTest, platformContext);
 const config = platformContext.window.testApi.normalizeConfig({ modules: [{ module_key: 'workouts', enabled: true, settings: { rounding: 5 } }] });
 const form = { facilityProgramKeys:["athlete","h2k"], elements: {content_show_feedback:{checked:true},content_show_scores:{checked:true}}, facilityModuleSettings: structuredClone(config.modules) };

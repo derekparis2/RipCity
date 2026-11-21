@@ -6,6 +6,7 @@ const element={classList:{add(){},remove(){}},addEventListener(){}};
 const values=new Map([['name','Example'],['ui_theme','slate'],['program_recovery_display','Recovery'],['program_recovery_plural','Recovery Members'],['program_recovery_profile_type','general']]);
 const ctx=vm.createContext({document:{getElementById:()=>element},window:{},structuredClone,
  FormData:class{get(key){return values.get(key)||'';}}});
+vm.runInContext(await readFile('js/shared/facility-appearance.js','utf8'),ctx);
 vm.runInContext(platform.slice(0,platform.indexOf('  document.getElementById("open-create-facility-btn")'))+'window.readPayload=readPayload;})();',ctx);
 const keys=['athlete','h2k','recovery'];
 const modules=['workouts','habits','goals','leaderboards','announcements','testing_days'];
