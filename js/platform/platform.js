@@ -354,7 +354,7 @@
         return `<section class="${key === "welcome" ? "hero-card h2k-hero" : key === "scores" ? "stats-grid" : "panel"}" data-dashboard-role="${role}" data-dashboard-section="${key}"${hidden ? " hidden" : ""}>${content[key]}</section>`;
       }).join("");
       const stylesheet = new URL("css/styles.css?v=facility-styles-1", window.location.href).href;
-      const designStylesheet = new URL("css/facility-styles.css?v=facility-styles-1", window.location.href).href;
+      const designStylesheet = new URL("css/facility-styles.css?v=facility-styles-3", window.location.href).href;
       frame.onload = () => {
         const doc = frame.contentDocument;
         if (!doc) return;
