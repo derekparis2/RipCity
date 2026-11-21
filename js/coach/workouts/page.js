@@ -182,6 +182,14 @@ async function saveWorkout(event) {
 
     showWorkoutMessage(programItemEdit ? "Saving changes to this program slot..." : occurrenceEdit ? "Saving changes to this occurrence..." : shouldAssign ? "Creating and assigning workout..." : "Saving workout draft...");
 
+    if (!occurrenceEdit && shouldAssign) {
+      const proposed = buildAssignmentRows({ workoutId: "pending", targetType, groupIds, memberProfileId, assignedDate, assignedDates });
+      if (!await confirmWorkoutAssignmentConflicts(proposed)) {
+        showWorkoutMessage("Assignment cancelled. Your workout edits are still here.");
+        return;
+      }
+    }
+
     // Only sync custom exercises after any assignment confirmation so canceling
     // the workflow never writes an exercise template by itself.
     const librarySync = await ensureWorkoutExercisesAreInLibrary(blocks);
@@ -373,8 +381,8 @@ async function logoutCoachWorkouts() {
     return;
   }
 
+  if (!await window.AppFeedback.signOut()) return;
   workoutFormDirty = false;
-  await db.auth.signOut();
   window.location.href = "login.html";
 }
 

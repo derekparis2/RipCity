@@ -2,16 +2,22 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <script src="js/shared/facility-appearance.js?v=facility-styles-1&amp;errors=visible-feedback-1"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="js/shared/facility-shell.js?v=facility-ui-1&amp;review=facility-loading-5&amp;errors=visible-feedback-1"></script>
   <title>Coach Approvals</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=ui-polish-4" />
+  <link rel="stylesheet" href="css/styles.css?v=ui-polish-4&amp;review=flexible-platform-2&amp;workflow=performance-2&amp;nav=full-tabs-1&amp;layout=outlined-tabs-5&amp;feedback=visible-errors-1" />
+  <link rel="stylesheet" href="css/facility-styles.css?v=facility-styles-12&amp;workflow=performance-2" />
+  <link rel="stylesheet" href="css/app-layout.css?v=consistent-spacing-4" />
+  <script src="js/shared/feedback.js?v=visible-errors-1"></script>
+  <link rel="stylesheet" href="css/feedback.css?v=visible-errors-1" />
 </head>
 
 <body class="auth-body">
-  <main class="approval-page">
+  <main class="app-shell approval-page">
     <header class="h2k-header">
       <div class="auth-brand">
         <img src="assets/rip-city-logo.png" alt="Rip City logo">
@@ -27,10 +33,10 @@
       </div>
     </header>
 
-    <section class="approval-header">
+    <section class="approval-header app-page-heading">
       <div>
-        <p class="eyebrow">COACH ADMIN</p>
-        <h2>Pending Approvals</h2>
+
+        <h2>Approvals</h2>
         <p id="approval-access-note">Loading account permissions...</p>
       </div>
     </section>
@@ -62,6 +68,15 @@
         </div>
       </details>
 
+      <details class="panel hidden approval-admin-tool" id="admin-invite-panel">
+        <summary class="compact-panel-summary"><span><span class="eyebrow">ADMIN ONLY</span><strong>Invite an Admin</strong></span><span aria-hidden="true">Open +</span></summary>
+        <div class="compact-panel-body">
+          <p>Create a single-use link for another administrator in this facility. It expires in seven days and requires approval.</p>
+          <button class="primary-btn" type="button" id="create-admin-invite-btn">Create &amp; Copy Admin Link</button>
+          <p id="admin-invite-message" class="auth-message" role="status" aria-live="polite"></p>
+        </div>
+      </details>
+
       <details class="panel hidden approval-admin-tool" id="coach-management-panel">
         <summary class="compact-panel-summary">
           <span><span class="eyebrow">ADMIN ONLY</span><strong>Coach Access</strong></span>
@@ -78,10 +93,10 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/shared/supabaseClient.js"></script>
-  <script src="js/shared/ui-utils.js"></script>
-  <script src="js/coach/coach-nav.js?v=program-creator-1"></script>
-  <script src="js/shared/access-control.js?v=auth-reliability-3"></script>
-  <script src="js/coach/coach-approvals.js?v=auth-reliability-1"></script>
+  <script src="js/shared/supabaseClient.js?errors=visible-feedback-1"></script>
+  <script src="js/shared/ui-utils.js?errors=visible-feedback-1"></script>
+  <script src="js/coach/coach-nav.js?v=program-creator-1&amp;navigation=facility-context-3&amp;workflow=performance-2&amp;nav=full-tabs-1&amp;shell=staff-profile-1&amp;errors=visible-feedback-1"></script>
+  <script src="js/shared/access-control.js?v=auth-reliability-3&amp;review=flexible-platform-2&amp;navigation=facility-context-3&amp;shell=staff-profile-1&amp;errors=visible-feedback-1"></script>
+  <script src="js/coach/coach-approvals.js?v=auth-reliability-1&amp;review=flexible-platform-2&amp;errors=visible-feedback-1"></script>
 </body>
 </html>

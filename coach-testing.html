@@ -2,17 +2,23 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <script src="js/shared/facility-appearance.js?v=facility-styles-1&amp;errors=visible-feedback-1"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="js/shared/facility-shell.js?v=facility-ui-1&amp;review=facility-loading-5&amp;errors=visible-feedback-1"></script>
   <title>Coach Testing Days</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=ui-polish-4" />
+  <link rel="stylesheet" href="css/styles.css?v=ui-polish-4&amp;review=flexible-platform-2&amp;workflow=performance-2&amp;nav=full-tabs-1&amp;layout=outlined-tabs-5&amp;feedback=visible-errors-1" />
+  <link rel="stylesheet" href="css/facility-styles.css?v=facility-styles-12&amp;workflow=performance-2" />
   <link rel="stylesheet" href="css/coach-testing.css?v=testing-days-7" />
+  <link rel="stylesheet" href="css/app-layout.css?v=consistent-spacing-4" />
+  <script src="js/shared/feedback.js?v=visible-errors-1"></script>
+  <link rel="stylesheet" href="css/feedback.css?v=visible-errors-1" />
 </head>
 
 <body class="auth-body coach-testing-page">
-  <main class="coach-page coach-workouts-page">
+  <main class="app-shell coach-page coach-workouts-page">
     <header class="h2k-header">
       <div class="auth-brand">
         <img src="assets/rip-city-logo.png" alt="Rip City logo">
@@ -24,11 +30,10 @@
       </div>
     </header>
 
-    <section class="hero-card h2k-hero testing-hero">
+    <section class="app-page-heading hero-card h2k-hero testing-hero">
       <div>
-        <p class="eyebrow">TESTING DAY BUILDER</p>
-        <h3>Build the test battery, choose the roster, and schedule the day.</h3>
-        <p>Create the Testing Day first, review the full plan, then save it as a draft or place it on the facility schedule.</p>
+        <h2>Testing Days</h2>
+        <p>Manage testing and record results.</p>
       </div>
     </section>
 
@@ -161,11 +166,11 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/shared/supabaseClient.js"></script>
-  <script src="js/shared/ui-utils.js"></script>
-  <script src="js/shared/testing-comparisons.js?v=testing-comparisons-1"></script>
-  <script src="js/shared/access-control.js?v=auth-reliability-3"></script>
-  <script src="js/coach/coach-nav.js?v=program-creator-1"></script>
-  <script src="js/coach/coach-testing.js?v=testing-days-14"></script>
+  <script src="js/shared/supabaseClient.js?errors=visible-feedback-1"></script>
+  <script src="js/shared/ui-utils.js?errors=visible-feedback-1"></script>
+  <script src="js/shared/testing-comparisons.js?v=testing-comparisons-1&amp;errors=visible-feedback-1"></script>
+  <script src="js/shared/access-control.js?v=auth-reliability-3&amp;review=flexible-platform-2&amp;navigation=facility-context-3&amp;shell=staff-profile-1&amp;errors=visible-feedback-1"></script>
+  <script src="js/coach/coach-nav.js?v=program-creator-1&amp;navigation=facility-context-3&amp;workflow=performance-2&amp;nav=full-tabs-1&amp;shell=staff-profile-1&amp;errors=visible-feedback-1"></script>
+  <script src="js/coach/coach-testing.js?v=testing-days-14&amp;errors=visible-feedback-1"></script>
 </body>
 </html>

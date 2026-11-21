@@ -7,6 +7,7 @@
 
 function showWorkoutMessage(message, isError = false) {
   const element = document.getElementById("coach-workouts-message");
+  if (window.AppFeedback) { window.AppFeedback.show(element, message, isError, { key: "coach-workouts-message" }); return; }
   if (!element) return;
 
   element.textContent = message;
@@ -81,7 +82,9 @@ function setTodayAsDefaultDate() {
   const dateInput = document.getElementById("workout-date");
   if (!dateInput) return;
 
-  dateInput.value = formatLocalDate(new Date());
+  dateInput.value = window.RipCityAccess?.getFacilityDateKey
+    ? window.RipCityAccess.getFacilityDateKey()
+    : formatLocalDate(new Date());
 }
 
 function setFieldValue(id, value) {

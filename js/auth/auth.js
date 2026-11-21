@@ -1,8 +1,12 @@
 const LEGAL_ACKNOWLEDGMENT_VERSION = "2026-10-25";
 let signupCoachInviteCode = "";
 let signupCoachInvite = null;
+let signupAdminInviteCode = "";
+let signupAdminInvite = null;
+let signupFacility = null;
 let signupInProgress = false;
 let loginInProgress = false;
+let signupExpectedSessionUserId = null;
 const AUTH_REQUEST_TIMEOUT_MS = 15000;
 let currentAuthAttempt = null;
 
@@ -77,6 +81,7 @@ async function recoverAuthenticatedUser(expectedEmail = "") {
 
 function showMessage(elementId, message, isError = false) {
   const element = document.getElementById(elementId);
+  if (window.AppFeedback) { window.AppFeedback.show(element, message, isError, { key: elementId }); return; }
   if (!element) return;
 
   element.textContent = message;
@@ -87,7 +92,7 @@ function withAuthTimeout(request, message, timeoutMs = AUTH_REQUEST_TIMEOUT_MS) 
   let timeoutId;
   const timeout = new Promise((resolve, reject) => {
     timeoutId = window.setTimeout(() => {
-      const error = new Error(message || "Rip City took too long to respond.");
+      const error = new Error(message || "The app took too long to respond.");
       error.code = "request_timeout";
       reject(error);
     }, timeoutMs);
@@ -111,7 +116,7 @@ function getAuthErrorMessage(error, fallbackMessage) {
   }
 
   if (code === "request_timeout") {
-    return "Rip City took too long to respond. Check your connection, then try again. Your first request may still have finished.";
+    return "The app took too long to respond. Check your connection, then try again. Your first request may still have finished.";
   }
 
   if (code === "invalid_credentials" || /invalid login credentials/i.test(message)) {
@@ -145,6 +150,7 @@ async function getCurrentUserProfile(userId) {
           id,
           role,
           status,
+          program_key,
           facility_id
         )
       `)
@@ -169,9 +175,30 @@ async function getCurrentLegalAcceptance() {
 
 function getLegalConsentUrl(nextPage = "") {
   const safeNext = String(nextPage || "").replace(/^\/+/, "");
-  return safeNext
-    ? `legal-consent.html?next=${encodeURIComponent(safeNext)}`
-    : "legal-consent.html";
+  const params = new URLSearchParams();
+  const facilitySlug = getCurrentFacilitySlug();
+  if (facilitySlug) params.set("facility", facilitySlug);
+  if (safeNext) params.set("next", safeNext);
+  const query = params.toString();
+  return `legal-consent.html${query ? `?${query}` : ""}`;
+}
+
+function chooseAuthMembership(memberships) {
+  const selectedId = window.sessionStorage.getItem("ripcity:selected-facility-id");
+  // Pending invited memberships take precedence until the destination approves.
+  return memberships.find(row => row.facility_id === selectedId) ||
+    memberships.find(row => row.status === "approved") || memberships[0] || null;
+}
+
+async function routePlatformOwnerWithoutFacility(membership) {
+  if (membership?.status === "approved") return false;
+  const { data: isOwner, error } = await withAuthTimeout(
+    db.rpc("current_user_is_platform_owner"), "Checking platform access took too long."
+  );
+  if (error) throw error;
+  if (!isOwner) return false;
+  window.location.replace("platform.html");
+  return true;
 }
 
 async function redirectByProfile(userId, options = {}) {
@@ -183,13 +210,24 @@ async function redirectByProfile(userId, options = {}) {
     }
   }
 
+  if (options.preferPlatform !== false) {
+    const { data: isOwner, error } = await withAuthTimeout(db.rpc("current_user_is_platform_owner"), "Checking platform access took too long.");
+    if (error) throw error;
+    if (isOwner) { window.location.href = "platform.html"; return; }
+  }
+
   const profile = await getCurrentUserProfile(userId);
   const memberships = profile.facility_members ||
     profile["facility_members!facility_members_profile_id_fkey"] || [];
-  const membership = memberships.find(row => row.status === "approved") || memberships[0];
+  if (memberships.filter(row => row.status === "approved").length > 1 && !window.sessionStorage.getItem("ripcity:selected-facility-id")) {
+    window.location.href = "facility-select.html";
+    return;
+  }
+  const membership = chooseAuthMembership(memberships);
 
+  if (await routePlatformOwnerWithoutFacility(membership)) return;
   if (!membership || membership.status !== "approved") {
-    window.location.href = "pending.html";
+    window.location.href = getFacilityPendingUrl();
     return;
   }
 
@@ -204,7 +242,7 @@ async function redirectByProfile(userId, options = {}) {
 }
 
 function getPasswordRedirectUrl() {
-  return `${window.location.origin}/set-password.html`;
+  return `${window.location.origin}/${getFacilityPageUrl("set-password.html")}`;
 }
 
 function getAuthLinkHash() {
@@ -225,6 +263,311 @@ function normalizeUsername(value) {
 
 function normalizeEmail(value) {
   return value.trim().toLowerCase();
+}
+
+function getSignupFacilitySlug() {
+  const params = new URLSearchParams(window.location.search);
+  return String(params.get("facility") || "").trim().toLowerCase();
+}
+
+function getCurrentFacilitySlug() {
+  return String(
+    document.documentElement.dataset.facilitySlug
+      || signupFacility?.facility_slug
+      || signupCoachInvite?.facility_slug
+      || signupAdminInvite?.facility_slug
+      || getSignupFacilitySlug()
+      || ""
+  ).trim().toLowerCase();
+}
+
+function getFacilityPageUrl(page, facilitySlug = getCurrentFacilitySlug()) {
+  if (!facilitySlug) return page;
+  const separator = page.includes("?") ? "&" : "?";
+  return `${page}${separator}facility=${encodeURIComponent(facilitySlug)}`;
+}
+
+function getFacilityPendingUrl(facilitySlug = getCurrentFacilitySlug()) {
+  return getFacilityPageUrl("pending.html", facilitySlug);
+}
+
+function getFacilityLoginUrl(facilitySlug) {
+  return "login.html";
+}
+
+function getFacilitySignupUrl(facilitySlug) {
+  return `signup.html?facility=${encodeURIComponent(facilitySlug || "rip-city")}`;
+}
+
+function getFacilityInitials(name) {
+  return String(name || "Facility")
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(word => word[0])
+    .join("")
+    .toUpperCase();
+}
+
+function applyPublicFacilityBranding(configuration) {
+  if (!configuration) return;
+
+  window.FacilityAppearance?.apply(configuration);
+  const facilityName = configuration.facility_name || configuration.name || "Facility";
+  const facilitySlug = configuration.facility_slug || configuration.slug || "";
+  const logoUrl = configuration.logo_url || "";
+
+  document.documentElement.style.setProperty("--facility-primary", configuration.primary_color || "#69b7ff");
+  document.documentElement.style.setProperty("--facility-secondary", configuration.secondary_color || "#f7f7f7");
+  document.documentElement.dataset.facilitySlug = facilitySlug;
+  const primary = configuration.primary_color || "#69b7ff";
+  document.documentElement.style.setProperty("--accent", primary);
+  if (/^#[0-9a-f]{6}$/i.test(primary)) {
+    const rgb = [1,3,5].map(offset => parseInt(primary.slice(offset, offset + 2), 16));
+    document.documentElement.style.setProperty("--accent-soft", `rgba(${rgb.join(",")}, .12)`);
+    const linear = rgb.map(value => { const channel = value / 255; return channel <= .04045 ? channel / 12.92 : ((channel + .055) / 1.055) ** 2.4; });
+    const luminance = linear[0] * .2126 + linear[1] * .7152 + linear[2] * .0722;
+    document.documentElement.style.setProperty("--accent-ink", luminance > .179 ? "#000000" : "#ffffff");
+  }
+
+  document.documentElement.dataset.facilityState = "ready";
+  document.documentElement.dataset.facilityTheme = ["midnight", "slate", "forest"].includes(configuration.ui_theme) ? configuration.ui_theme : "midnight";
+
+  document.querySelectorAll(".auth-brand h1").forEach(element => {
+    element.textContent = facilityName.toUpperCase();
+  });
+
+  document.querySelectorAll(".auth-brand img").forEach(image => {
+    const parent = image.parentElement;
+    parent?.querySelector(".facility-brand-initials")?.remove();
+
+    if (logoUrl) {
+      image.hidden = true;
+      image.onload = () => { image.hidden = false; };
+      image.onerror = () => { image.hidden = true; };
+      image.src = logoUrl;
+      image.alt = `${facilityName} logo`;
+      if (image.complete && image.naturalWidth > 0) image.hidden = false;
+      return;
+    }
+
+    if (facilitySlug === "rip-city") {
+      image.src = "assets/rip-city-logo.png";
+      image.alt = `${facilityName} logo`;
+      image.hidden = false;
+      return;
+    }
+
+    image.hidden = true;
+    const initials = document.createElement("span");
+    initials.className = "facility-brand-initials";
+    initials.textContent = getFacilityInitials(facilityName);
+    initials.setAttribute("aria-label", facilityName);
+    parent?.prepend(initials);
+  });
+
+  const pageTitles = {
+    login: "Login",
+    signup: "Signup",
+    pending: "Account Access",
+    "legal-consent": "Account Review",
+    "set-password": "Set Password",
+    "reset-password": "Reset Password"
+  };
+  document.title = `${facilityName} ${pageTitles[getCurrentPage()] || "Account"}`;
+}
+
+function getEnabledSignupPrograms() {
+  return (signupFacility?.programs || []).filter(program => program.enabled !== false);
+}
+
+function applySignupProgramConfiguration() {
+  const enabledPrograms = getEnabledSignupPrograms();
+  const container = document.getElementById("signup-member-type-grid");
+  container.replaceChildren();
+  enabledPrograms.forEach((program, index) => {
+    const card = document.createElement("label"); card.className = "member-type-card"; card.dataset.signupProgram = program.program_key;
+    const input = document.createElement("input"); input.type = "radio"; input.name = "member-type"; input.value = program.program_key; input.checked = index === 0;
+    input.addEventListener("change", handleSignupMemberTypeChange);
+    const name = document.createElement("span"); name.textContent = program.display_name;
+    const detail = document.createElement("small"); detail.textContent = program.profile_type === "athlete" ? "Athlete registration" : "Member registration";
+    card.append(input,name,detail); container.append(card);
+  });
+
+  const selected = document.querySelector("input[name='member-type']:checked:not(:disabled)");
+  if (!selected) {
+    const firstEnabled = document.querySelector("input[name='member-type']:not(:disabled)");
+    if (firstEnabled) firstEnabled.checked = true;
+  }
+}
+
+async function loadSignupFacility() {
+  const registrationCode = new URLSearchParams(window.location.search).get("code");
+  const { data, error } = await withAuthTimeout(
+    registrationCode ? db.rpc("lookup_registration_facility", {p_code:registrationCode}) : db.rpc("lookup_signup_facility", { p_facility_slug: getSignupFacilitySlug() }),
+    "Loading the signup facility took too long."
+  );
+  if (error) throw error;
+  if (!data) throw new Error("Ask your facility for a valid registration link.");
+
+  signupFacility = data;
+  applyPublicFacilityBranding(signupFacility);
+  applySignupProgramConfiguration();
+
+  const facilityName = signupFacility.facility_name || "the facility";
+  document.getElementById("signup-eyebrow").textContent = `JOIN ${facilityName.toUpperCase()}`;
+  document.getElementById("signup-description").textContent =
+    `After signing up, a ${facilityName} administrator will assign your training group and approve your account.`;
+  const loginLink = document.getElementById("signup-login-link");
+  if (loginLink) loginLink.href = getFacilityLoginUrl(signupFacility.facility_slug);
+}
+
+async function loadLoginFacility() {
+  // Login is intentionally neutral. Registration links carry facility context.
+  document.documentElement.dataset.facilityState = "ready";
+}
+
+async function loadSignedInFacilityBranding(userId) {
+  try {
+    const profile = await getCurrentUserProfile(userId);
+    const memberships = profile.facility_members ||
+      profile["facility_members!facility_members_profile_id_fkey"] || [];
+    const membership = chooseAuthMembership(memberships);
+    if (!membership?.facility_id) return false;
+
+    const { data: facility, error: facilityError } = await withAuthTimeout(
+      db.from("facilities").select("slug").eq("id", membership.facility_id).single(),
+      "Loading facility details took too long."
+    );
+    if (facilityError || !facility?.slug) return false;
+
+    const { data: configuration, error: configurationError } = await withAuthTimeout(
+      db.rpc("lookup_signup_facility", { p_facility_slug: facility.slug }),
+      "Loading facility details took too long."
+    );
+    if (configurationError || !configuration) return false;
+
+    applyPublicFacilityBranding(configuration);
+    return true;
+  } catch (error) {
+    console.warn("Could not load signed-in facility branding.", error);
+    return false;
+  }
+}
+
+async function loadAuthPageFacilityBranding(userId = "") {
+  if (userId && await loadSignedInFacilityBranding(userId)) return;
+  try {
+    await loadLoginFacility();
+  } catch (error) {
+    // Branding must never prevent account recovery or status checks.
+    console.warn("Could not load public facility branding.", error);
+  }
+}
+
+function showSessionActions(page, user, allowRegistration = false) {
+  const form = document.getElementById(`${page}-form`);
+  let panel = document.getElementById(`${page}-session-actions`);
+  if (!panel) {
+    panel = document.createElement("div");
+    panel.id = `${page}-session-actions`;
+    panel.className = "auth-session-actions";
+    form.before(panel);
+  }
+  panel.replaceChildren();
+  if (user) {
+    const identity = document.createElement("p");
+    identity.textContent = `You are already signed in as ${user.email || "your current account"}.`;
+    panel.append(identity);
+    const account = document.createElement("button");
+    account.type = "button"; account.className = "primary-btn full-btn";
+    account.textContent = "Go to my account";
+    account.addEventListener("click", async () => {
+      account.disabled = true;
+      try { await redirectByProfile(user.id, { preferPlatform: true }); }
+      catch (error) { showMessage(`${page}-message`, error.message || "Could not open your account. Try again.", true); }
+      finally { account.disabled = false; }
+    });
+    panel.append(account);
+    if (allowRegistration) {
+      const useAccount = document.createElement("button");
+      useAccount.type = "button"; useAccount.className = "outline-btn full-btn";
+      useAccount.textContent = "Continue registration with this account";
+      useAccount.addEventListener("click", async () => {
+        useAccount.disabled = true;
+        try {
+          const { data: profile, error } = await withAuthTimeout(db.from("profiles").select("email,full_name,username").eq("id", user.id).single(), "Loading your account took too long.");
+          if (error) throw error;
+          for (const [field, value] of [["email", user.email || profile.email], ["full-name", profile.full_name], ["username", profile.username]]) {
+            const input = document.getElementById(`signup-${field}`);
+            input.value = value || "";
+            input.readOnly = field === "email" || field === "username";
+          }
+          for (const field of ["password", "confirm-password"]) {
+            const input = document.getElementById(`signup-${field}`);
+            input.value = ""; input.required = false; input.disabled = true; input.parentElement.hidden = true;
+          }
+          signupExpectedSessionUserId = user.id;
+          panel.hidden = true;
+          await setupSignupPage(true);
+        } catch (error) { showMessage("signup-message", error.message || "Could not prepare registration.", true); }
+        finally { useAccount.disabled = false; }
+      });
+      panel.append(useAccount);
+    }
+  }
+  const signOut = document.createElement("button");
+  signOut.type = "button"; signOut.className = "outline-btn full-btn";
+  signOut.textContent = "Sign out and use another account";
+  signOut.addEventListener("click", async () => {
+    signOut.disabled = true;
+    try {
+      const { error } = await withAuthTimeout(db.auth.signOut(), "Signing out took too long. Try again.");
+      if (error) throw error;
+      window.location.reload(); // Retain facility-code and invitation parameters.
+    } catch (error) { showMessage(`${page}-message`, error.message || "Could not sign out. Try again.", true); }
+    finally { signOut.disabled = false; }
+  });
+  panel.append(signOut);
+  if (!user) {
+    const retry = document.createElement("button");
+    retry.type = "button"; retry.className = "outline-btn full-btn";
+    retry.textContent = "Retry account check";
+    retry.addEventListener("click", () => window.location.reload());
+    panel.append(retry);
+  }
+}
+
+async function setupLoginPage() {
+  const form = document.getElementById("login-form");
+  const recoveryFooter = document.getElementById("forgot-password-btn")?.closest(".auth-footer");
+  if (recoveryFooter) recoveryFooter.hidden = true;
+  form.hidden = true;
+  showMessage("login-message", "Checking your session...");
+  try {
+    const { data, error } = await withAuthTimeout(db.auth.getSession(), "Checking your session took too long.");
+    if (error) throw error;
+    if (data.session?.user) {
+      showSessionActions("login", data.session.user);
+      showMessage("login-message", "Already signed in. Opening your account...");
+      await redirectByProfile(data.session.user.id, { preferPlatform: true });
+      return;
+    }
+    form.hidden = false;
+    if (recoveryFooter) recoveryFooter.hidden = false;
+    showMessage("login-message", "");
+  } catch (error) {
+    showMessage("login-message", error.message || "Could not check your account. Try again or sign out.", true);
+    if (!document.getElementById("login-session-actions")) showSessionActions("login", null);
+    return;
+  }
+  if (!form.dataset.handlersBound) {
+    form.dataset.handlersBound = "true";
+    form.addEventListener("submit", handleLogin);
+    document.getElementById("forgot-password-btn").addEventListener("click", handleForgotPassword);
+  }
+  try { await loadLoginFacility(); }
+  catch (error) { console.warn("Could not load facility login branding.", error); }
 }
 
 function isEmailIdentifier(value) {
@@ -262,7 +605,7 @@ async function getSignupUser({ email, password, fullName, allowExistingAccount, 
     const sessionUser = sessionData.session?.user;
     if (sessionUser) {
       if (normalizeEmail(sessionUser.email || "") !== normalizeEmail(email)) {
-        throw new Error("Log out of the current account before using this coach invite.");
+        throw new Error("Log out of the current account before using this staff invite.");
       }
 
       const { data: updatedUserData, error: updateUserError } = await withAuthTimeout(
@@ -367,14 +710,16 @@ async function handleSignup(event) {
   showMessage("signup-message", "Creating your account...");
 
   const isCoachSignup = Boolean(signupCoachInviteCode);
+  const isAdminSignup = Boolean(signupAdminInviteCode);
+  const isStaffSignup = isCoachSignup || isAdminSignup;
   const fullName = document.getElementById("signup-full-name").value.trim();
   const email = document.getElementById("signup-email").value.trim();
   const username = normalizeUsername(document.getElementById("signup-username").value);
   const password = document.getElementById("signup-password").value;
   const confirmPassword = document.getElementById("signup-confirm-password").value;
-  const memberType = isCoachSignup
+  const memberType = isStaffSignup
     ? null
-    : document.querySelector("input[name='member-type']:checked").value;
+    : document.querySelector("input[name='member-type']:checked:not(:disabled)")?.value;
 
   const sport = document.getElementById("signup-sport").value.trim();
   const position = document.getElementById("signup-position").value.trim();
@@ -395,6 +740,11 @@ async function handleSignup(event) {
   let coachProfileReady = false;
 
   try {
+    if (signupExpectedSessionUserId) {
+      const { data, error } = await withAuthTimeout(db.auth.getSession(), "Checking the registration account took too long.");
+      if (error) throw error;
+      if (data.session?.user?.id !== signupExpectedSessionUserId) throw new Error("Your signed-in account changed. Reload this registration link before continuing.");
+    }
     if (!ageBracket || !legalTermsConfirmed) {
       showMessage("signup-message", "Choose your age confirmation and accept the Terms and Privacy Policy.", true);
       return;
@@ -421,14 +771,19 @@ async function handleSignup(event) {
     ) {
       showMessage(
         "signup-message",
-        "That username belongs to an existing Rip City profile. Log in to that account or choose another username.",
+        "That username belongs to an existing profile. Log in to that account or choose another username.",
         true
       );
       return;
     }
 
-    if (isCoachSignup && !signupCoachInvite) {
-      showMessage("signup-message", "This coach invite is invalid, expired, or has already been used.", true);
+    if (isStaffSignup && !(isAdminSignup ? signupAdminInvite : signupCoachInvite)) {
+      showMessage("signup-message", "This staff invite is invalid, expired, or has already been used.", true);
+      return;
+    }
+
+    if (!isStaffSignup && (!signupFacility || !memberType)) {
+      showMessage("signup-message", "This facility is not currently accepting member signups.", true);
       return;
     }
 
@@ -466,21 +821,25 @@ async function handleSignup(event) {
     ));
     if (legalAcceptanceError) throw legalAcceptanceError;
 
-    if (isCoachSignup) {
+    if (isStaffSignup) {
       await ensureSignupProfile({ user, email, fullName, username });
       coachProfileReady = true;
 
+      const claimRpc = isAdminSignup ? "claim_platform_admin_invite" : "claim_coach_invite";
+      const claimArgs = isAdminSignup
+        ? { claim_invite_code: signupAdminInviteCode }
+        : { claim_invite_code: signupCoachInviteCode };
       const { data: claimedInvite, error: claimError } = await withAuthTimeout(
-        db.rpc("claim_coach_invite", {
-          claim_invite_code: signupCoachInviteCode
-        }),
-        "Claiming the coach invite took too long."
+        db.rpc(claimRpc, claimArgs),
+        "Claiming the staff invite took too long."
       );
 
       if (claimError) throw claimError;
-      if (!claimedInvite?.length) throw new Error("The coach invite could not be claimed.");
+      if (!claimedInvite?.length) throw new Error("The staff invite could not be claimed.");
 
-      window.location.href = "pending.html";
+      const inviteConfiguration = isAdminSignup ? signupAdminInvite : signupCoachInvite;
+      window.sessionStorage.setItem("ripcity:selected-facility-id", claimedInvite[0].facility_id);
+      window.location.href = getFacilityPendingUrl(inviteConfiguration.facility_slug);
       return;
     }
 
@@ -493,26 +852,28 @@ async function handleSignup(event) {
         p_position: position || null,
         p_school: school || null,
         p_graduation_year: graduationYear ? Number(graduationYear) : null,
-        p_body_weight: bodyWeight ? Number(bodyWeight) : null
+        p_body_weight: bodyWeight ? Number(bodyWeight) : null,
+        p_facility_slug: signupFacility.facility_slug,
+        p_registration_code: new URLSearchParams(window.location.search).get("code") || null
       }),
-      "Finishing the Rip City account took too long."
+      "Finishing the facility account took too long."
     ));
 
     if (completionError) throw completionError;
-    if (!completedSignup?.length) throw new Error("The Rip City account could not be completed.");
+    if (!completedSignup?.length) throw new Error("The facility account could not be completed.");
 
     if (completedSignup[0].membership_status === "pending") {
-      window.location.href = "pending.html";
+      window.location.href = getFacilityPendingUrl(signupFacility.facility_slug);
       return;
     }
 
     await redirectByProfile(user.id);
   } catch (error) {
     console.error(error);
-    if (isCoachSignup && coachProfileReady) {
+    if (isStaffSignup && coachProfileReady) {
       showMessage(
         "signup-message",
-        "Your account was saved, but this coach link could not be claimed. Ask the facility administrator for a new link, then use this same email, username, and password.",
+        "Your account was saved, but this staff link could not be claimed. Ask for a new link, then use this same email, username, and password.",
         true
       );
       return;
@@ -559,7 +920,7 @@ async function handleLogin(event) {
       data = { user: recoveredUser };
     }
 
-    await runAuthStage("load-destination", () => redirectByProfile(data.user.id));
+    await runAuthStage("load-destination", () => redirectByProfile(data.user.id, { preferPlatform: true }));
   } catch (error) {
     console.error(error);
     showMessage(
@@ -621,7 +982,7 @@ async function handleSetPassword(event) {
     const { data, error } = await db.auth.updateUser({ password });
     if (error) throw error;
 
-    showMessage("set-password-message", "Password saved. Taking you to Rip City...");
+    showMessage("set-password-message", "Password saved. Taking you to your account...");
     await redirectByProfile(data.user.id);
   } catch (error) {
     console.error(error);
@@ -635,10 +996,12 @@ async function setupSetPasswordPage() {
   try {
     const { data } = await db.auth.getSession();
 
+    await loadAuthPageFacilityBranding(data.session?.user?.id);
+
     if (!data.session?.user) {
       showMessage("set-password-message", "This password setup link is expired. Use Forgot password from the login page to send a new one.", true);
     } else {
-      showMessage("set-password-message", "Create a password for your Rip City account.");
+      showMessage("set-password-message", "Create a password for your account.");
     }
   } catch (error) {
     console.error(error);
@@ -649,14 +1012,16 @@ async function setupSetPasswordPage() {
 }
 
 async function handlePendingLogout() {
-  await db.auth.signOut();
-  window.location.href = "login.html";
+  const loginUrl = getFacilityLoginUrl(getCurrentFacilitySlug());
+  if (!await window.AppFeedback.signOut()) return;
+  window.location.href = loginUrl;
 }
 
 function updateSignupMemberTypeFields() {
-  const selected = document.querySelector("input[name='member-type']:checked").value;
+  const selected = document.querySelector("input[name='member-type']:checked:not(:disabled)")?.value || "";
   const athleteFields = document.querySelectorAll(".athlete-only");
-  const isAthlete = selected === "athlete";
+  const program = signupFacility?.programs?.find(program => program.program_key === selected);
+  const isAthlete = program ? program.profile_type === "athlete" : selected === "athlete";
 
   athleteFields.forEach(field => {
     field.classList.toggle("hidden", !isAthlete);
@@ -697,7 +1062,7 @@ async function continueAfterLegalAcceptance(userId) {
     window.location.href = nextPage;
     return;
   }
-  await redirectByProfile(userId, { skipLegalCheck: true });
+  await redirectByProfile(userId, { skipLegalCheck: true, preferPlatform: true });
 }
 
 async function handleLegalConsent(event) {
@@ -745,7 +1110,7 @@ async function handleLegalConsent(event) {
     });
     if (metadataError) console.warn("Legal acceptance was saved, but Auth metadata was not refreshed.", metadataError);
 
-    showMessage("legal-consent-message", "Acceptance saved. Returning to Rip City...");
+    showMessage("legal-consent-message", "Acceptance saved. Returning to your account...");
     await continueAfterLegalAcceptance(sessionData.session.user.id);
   } catch (error) {
     console.error(error);
@@ -758,17 +1123,20 @@ async function handleLegalConsent(event) {
 async function setupLegalConsentPage() {
   setupAgeChoiceReset();
   document.getElementById("legal-consent-logout").addEventListener("click", async () => {
-    await db.auth.signOut();
-    window.location.href = "login.html";
+    const loginUrl = getFacilityLoginUrl(getCurrentFacilitySlug());
+    if (!await window.AppFeedback.signOut()) return;
+    window.location.href = loginUrl;
   });
 
   try {
     const { data: sessionData, error: sessionError } = await db.auth.getSession();
     if (sessionError) throw sessionError;
     if (!sessionData.session?.user) {
-      window.location.href = "login.html";
+      window.location.href = getFacilityLoginUrl(getCurrentFacilitySlug());
       return;
     }
+
+    await loadAuthPageFacilityBranding(sessionData.session.user.id);
 
     const legalStatus = await getCurrentLegalAcceptance();
     document.getElementById("legal-terms-link").href = legalStatus.terms_path;
@@ -803,9 +1171,9 @@ function applySignupTypeFromUrl() {
   const params = new URLSearchParams(window.location.search);
   const type = String(params.get("type") || "").toLowerCase();
 
-  if (!["athlete", "h2k"].includes(type)) return;
+  if (!signupFacility?.programs?.some(program => program.program_key === type && program.enabled !== false)) return;
 
-  const input = document.querySelector(`input[name='member-type'][value='${type}']`);
+  const input = [...document.querySelectorAll("input[name='member-type']:not(:disabled)")].find(input => input.value === type);
   if (!input) return;
 
   input.checked = true;
@@ -817,14 +1185,20 @@ function getCoachInviteCodeFromUrl() {
   return String(params.get("coach_invite") || "").trim();
 }
 
+function getAdminInviteCodeFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  return String(params.get("admin_invite") || "").trim();
+}
+
 function setSignupSubmitDisabled(disabled) {
   const button = document.querySelector("#signup-form button[type='submit']");
   if (button) button.disabled = disabled;
 }
 
-function applyCoachSignupLayout() {
-  document.getElementById("signup-eyebrow").textContent = "JOIN COACHING STAFF";
-  document.getElementById("signup-title").textContent = "Create Coach Account";
+function applyStaffSignupLayout(role = "coach") {
+  const isAdmin = role === "admin";
+  document.getElementById("signup-eyebrow").textContent = isAdmin ? "JOIN FACILITY LEADERSHIP" : "JOIN COACHING STAFF";
+  document.getElementById("signup-title").textContent = isAdmin ? "Create Administrator Account" : "Create Coach Account";
   document.getElementById("signup-member-type-grid").classList.add("hidden");
 
   document.querySelectorAll(".athlete-only, .member-only").forEach(section => {
@@ -837,19 +1211,22 @@ function applyCoachSignupLayout() {
 }
 
 async function setupCoachSignupPage() {
-  applyCoachSignupLayout();
+  applyStaffSignupLayout("coach");
   setSignupSubmitDisabled(true);
   showMessage("signup-message", "Checking coach invite...");
 
   try {
-    const { data, error } = await db.rpc("lookup_coach_invite", {
+    const { data, error } = await db.rpc("lookup_coach_invite_configuration", {
       lookup_invite_code: signupCoachInviteCode
     });
 
     if (error) throw error;
-    if (!data?.length) throw new Error("This coach invite is invalid, expired, or has already been used.");
+    if (!data) throw new Error("This coach invite is invalid, expired, or has already been used.");
 
-    signupCoachInvite = data[0];
+    signupCoachInvite = data;
+    applyPublicFacilityBranding(signupCoachInvite);
+    const loginLink = document.getElementById("signup-login-link");
+    if (loginLink) loginLink.href = getFacilityLoginUrl(signupCoachInvite.facility_slug);
     document.getElementById("signup-description").textContent =
       `Create your coach account for ${signupCoachInvite.facility_name}. A facility administrator must approve it before you receive access.`;
     showMessage("signup-message", "");
@@ -865,19 +1242,87 @@ async function setupCoachSignupPage() {
   document.getElementById("signup-form").addEventListener("submit", handleSignup);
 }
 
-async function setupSignupPage() {
+async function setupAdminSignupPage() {
+  applyStaffSignupLayout("admin");
+  setSignupSubmitDisabled(true);
+  showMessage("signup-message", "Checking administrator invite...");
+
+  try {
+    const { data, error } = await db.rpc("lookup_platform_admin_invite_configuration", {
+      lookup_invite_code: signupAdminInviteCode
+    });
+    if (error) throw error;
+    if (!data) throw new Error("This administrator invite is invalid, expired, or has already been used.");
+
+    signupAdminInvite = data;
+    applyPublicFacilityBranding(signupAdminInvite);
+    const loginLink = document.getElementById("signup-login-link");
+    if (loginLink) loginLink.href = getFacilityLoginUrl(signupAdminInvite.facility_slug);
+    document.getElementById("signup-description").textContent =
+      `Create your administrator account for ${signupAdminInvite.facility_name}. An existing facility administrator or platform owner must approve it before you receive access.`;
+    showMessage("signup-message", "");
+    setSignupSubmitDisabled(false);
+  } catch (error) {
+    console.error(error);
+    signupAdminInvite = null;
+    document.getElementById("signup-description").textContent =
+      "Ask your facility administrator or a platform owner for a new administrator signup link.";
+    showMessage("signup-message", error.message || "Could not verify this administrator invite.", true);
+  }
+
+  document.getElementById("signup-form").addEventListener("submit", handleSignup);
+}
+
+async function setupSignupPage(sessionAcknowledged = false) {
+  const form = document.getElementById("signup-form");
+  form.hidden = true;
+  setSignupSubmitDisabled(true);
+  if (!sessionAcknowledged) {
+    showMessage("signup-message", "Checking your session...");
+    try {
+      const { data, error } = await withAuthTimeout(db.auth.getSession(), "Checking your session took too long.");
+      if (error) throw error;
+      if (data.session?.user) {
+        showSessionActions("signup", data.session.user, true);
+        showMessage("signup-message", "Choose whether to use your signed-in account or sign out before registering.");
+        return;
+      }
+    } catch (error) {
+      showMessage("signup-message", error.message || "Could not check your account. Try again.", true);
+      showSessionActions("signup", null);
+      return;
+    }
+  }
+  form.hidden = false;
   setupAgeChoiceReset();
   signupCoachInviteCode = getCoachInviteCodeFromUrl();
+  signupAdminInviteCode = getAdminInviteCodeFromUrl();
+
+  if (signupAdminInviteCode) {
+    await setupAdminSignupPage();
+    return;
+  }
 
   if (signupCoachInviteCode) {
     await setupCoachSignupPage();
     return;
   }
 
-  setupMemberTypeToggle();
-  applySignupTypeFromUrl();
+  setSignupSubmitDisabled(true);
+  showMessage("signup-message", "Loading facility signup...");
 
-  updateSignupMemberTypeFields();
+  try {
+    await loadSignupFacility();
+    setupMemberTypeToggle();
+    applySignupTypeFromUrl();
+    updateSignupMemberTypeFields();
+    showMessage("signup-message", "");
+    setSignupSubmitDisabled(false);
+  } catch (error) {
+    console.error(error);
+    signupFacility = null;
+    showMessage("signup-message", error.message || "Could not load this facility signup.", true);
+  }
 
   document.getElementById("signup-form").addEventListener("submit", handleSignup);
 }
@@ -888,33 +1333,53 @@ async function setupPendingPage() {
   try {
     const { data } = await db.auth.getSession();
     if (!data.session?.user) {
-      window.location.href = "login.html";
+      window.location.href = getFacilityLoginUrl(getCurrentFacilitySlug());
       return;
     }
 
+    await loadAuthPageFacilityBranding(data.session.user.id);
+
     const legalStatus = await getCurrentLegalAcceptance();
     if (!legalStatus.accepted) {
-      window.location.href = getLegalConsentUrl("pending.html");
+      window.location.href = getLegalConsentUrl(getFacilityPendingUrl());
       return;
     }
 
     const profile = await getCurrentUserProfile(data.session.user.id);
     const memberships = profile.facility_members ||
       profile["facility_members!facility_members_profile_id_fkey"] || [];
-    const membership = memberships.find(row => row.status === "approved") || memberships[0] || null;
+    const membership = chooseAuthMembership(memberships) || null;
 
+    if (await routePlatformOwnerWithoutFacility(membership)) return;
+    let facilityUnavailable = false;
     if (membership?.status === "approved") {
+      const { data: configuration, error } = await withAuthTimeout(
+        db.rpc("get_facility_configuration", { p_facility_id: membership.facility_id }),
+        "Loading facility status took too long."
+      );
+      if (error) throw error;
+      const key = membership.program_key || (membership.role === "athlete" ? "athlete" : membership.role === "h2k_member" ? "h2k" : null);
+      const memberProgram = (configuration?.programs || []).find(program => program.program_key === key);
+      facilityUnavailable = !configuration || configuration.status !== "active" || memberProgram?.enabled === false;
+    }
+
+    if (membership?.status === "approved" && !facilityUnavailable) {
       await redirectByProfile(profile.id);
       return;
     }
 
     const statusContent = {
+      facility_unavailable: {
+        eyebrow: "FACILITY UNAVAILABLE",
+        title: "Facility Inactive",
+        description: "Your facility or member program is not currently active. Contact your facility administrator for help."
+      },
       pending: {
         eyebrow: "AWAITING APPROVAL",
         title: membership?.role === "coach" ? "Coach Approval Pending" : "Account Approval Pending",
         description: membership?.role === "coach"
           ? "Your coach account was created successfully. A facility administrator must approve it before you can access coaching tools."
-          : "Your account was created successfully. A facility coach or administrator must approve it before you can access the app."
+          : "Your account was created successfully. A facility administrator must approve it before you can access the app."
       },
       rejected: {
         eyebrow: "ACCESS NOT APPROVED",
@@ -932,7 +1397,7 @@ async function setupPendingPage() {
         description: "This account is not connected to a facility. Contact a facility administrator for help."
       }
     };
-    const content = statusContent[membership?.status] || statusContent.none;
+    const content = statusContent[facilityUnavailable ? "facility_unavailable" : membership?.status] || statusContent.none;
 
     document.title = content.title;
     document.getElementById("account-status-eyebrow").textContent = content.eyebrow;
@@ -960,8 +1425,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    document.getElementById("login-form").addEventListener("submit", handleLogin);
-    document.getElementById("forgot-password-btn").addEventListener("click", handleForgotPassword);
+    setupLoginPage();
   }
 
   if (currentPage === "set-password" || currentPage === "reset-password") {

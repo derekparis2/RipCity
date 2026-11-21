@@ -2,14 +2,20 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <script src="js/shared/facility-appearance.js?v=facility-styles-1&amp;errors=visible-feedback-1"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="js/shared/facility-shell.js?v=facility-ui-1&amp;review=facility-loading-5&amp;errors=visible-feedback-1"></script>
   <title>Member Training</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=member-nav-fixed-1" />
+  <link rel="stylesheet" href="css/styles.css?v=member-nav-fixed-1&amp;review=flexible-platform-2&amp;workflow=performance-2&amp;nav=full-tabs-1&amp;layout=outlined-tabs-5&amp;feedback=visible-errors-1" />
+  <link rel="stylesheet" href="css/facility-styles.css?v=facility-styles-12&amp;workflow=performance-2" />
   <link rel="stylesheet" href="css/member-testing.css?v=training-views-1" />
   <link rel="stylesheet" href="css/testing-comparisons.css?v=comparison-cards-2" />
+  <link rel="stylesheet" href="css/app-layout.css?v=consistent-spacing-4" />
+  <script src="js/shared/feedback.js?v=visible-errors-1"></script>
+  <link rel="stylesheet" href="css/feedback.css?v=visible-errors-1" />
 </head>
 <body class="auth-body member-dashboard-body member-feature-page" data-member-page="training">
   <aside class="sidebar member-sidebar">
@@ -19,17 +25,19 @@
     <div class="user-card"><div class="avatar" id="member-avatar">RC</div><div><strong id="member-sidebar-name">Member</strong><span class="h2k-band-badge hidden" id="member-band-color">No Band</span><span class="member-role-pending" id="member-sidebar-role">Approved</span></div></div>
   </aside>
 
-  <main class="main-content member-main-content member-feature-main">
+  <main class="app-shell main-content member-main-content member-feature-main">
+    <p id="member-page-message" class="auth-message" role="status" aria-live="polite"></p>
     <header class="topbar"><div><p class="eyebrow" id="member-dashboard-date">TRAINING</p><h2 id="member-training-page-title">Training Calendar</h2></div><div class="topbar-actions"><button class="outline-btn" id="h2k-logout-btn">Log Out</button></div></header>
-    <section class="hero-card h2k-hero member-feature-hero"><div><p class="eyebrow" id="member-training-hero-eyebrow">YOUR SCHEDULE</p><h3 id="member-training-hero-title">Every assigned workout, organized by day.</h3><p id="member-training-hero-description">Select a date to open, preview, or review a workout.</p></div></section>
+    <section class="app-page-intro hero-card h2k-hero member-feature-hero"><div><p class="eyebrow" id="member-training-hero-eyebrow">YOUR SCHEDULE</p><h3 id="member-training-hero-title">Every assigned workout, organized by day.</h3><p id="member-training-hero-description">Select a date to open, preview, or review a workout.</p></div></section>
 
-    <nav class="training-view-switch" aria-label="Training views">
+    <p class="auth-message" id="member-testing-message" role="status" aria-live="polite"></p>
+    <nav class="training-view-switch" aria-label="Training views" hidden>
       <button type="button" class="training-view-button is-active" data-training-view="schedule" aria-selected="true">Schedule</button>
-      <button type="button" class="training-view-button" data-training-view="performance" aria-selected="false">Performance</button>
+      <button type="button" class="training-view-button" data-training-view="performance" data-facility-module="testing_days" aria-selected="false">Performance</button>
     </nav>
 
     <div class="training-view" data-training-view-panel="schedule">
-      <section class="panel training-calendar-panel future-workouts-panel member-page-panel" id="training-calendar-panel">
+      <section class="panel training-calendar-panel future-workouts-panel member-page-panel" id="training-calendar-panel" data-facility-module="workouts">
         <div class="panel-heading"><div><p class="eyebrow">SCHEDULE</p><h3>Training Calendar</h3></div><p id="workout-history-message" class="auth-message" aria-live="polite"></p></div>
         <div class="training-calendar-layout">
           <div id="future-workout-list" class="future-calendar training-calendar"><div class="empty-state">Loading assigned workouts...</div></div>
@@ -37,7 +45,7 @@
         </div>
       </section>
 
-      <section class="panel member-testing-panel member-page-panel" id="member-testing-schedule-panel">
+      <section class="panel member-testing-panel member-page-panel" id="member-testing-schedule-panel" data-facility-module="testing_days">
         <div class="panel-heading">
           <div><p class="eyebrow">PERFORMANCE TESTING</p><h3>Upcoming Testing Days</h3></div>
           <span class="member-testing-count" id="member-testing-upcoming-count">0 upcoming</span>
@@ -49,14 +57,13 @@
       </section>
     </div>
 
-    <div class="training-view hidden" data-training-view-panel="performance">
+    <div class="training-view hidden" data-training-view-panel="performance" data-facility-module="testing_days">
       <section class="panel member-testing-panel member-page-panel" id="member-testing-panel">
         <div class="panel-heading">
           <div><p class="eyebrow">PERFORMANCE HISTORY</p><h3>Testing Progress</h3></div>
           <span class="member-testing-count" id="member-testing-count">0 completed</span>
         </div>
         <p class="member-testing-intro">Track official results, improvement, and personal records over time.</p>
-        <p class="auth-message" id="member-testing-message" aria-live="polite"></p>
         <section class="testing-comparison-section" aria-labelledby="member-testing-progress-title">
         <div class="testing-comparison-heading">
           <div><p class="eyebrow">IMPROVEMENT OVER TIME</p><h4 id="member-testing-progress-title">Performance Progress</h4></div>
@@ -83,14 +90,14 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/shared/supabaseClient.js"></script>
-  <script src="js/shared/ui-utils.js"></script>
-  <script src="js/shared/access-control.js?v=auth-reliability-3"></script>
-  <script src="js/shared/workout-data.js?v=workout-attribution-1"></script>
-  <script src="js/shared/leaderboard-metrics.js?v=member-leaderboards-1"></script>
-  <script src="js/shared/testing-comparisons.js?v=comparison-list-1"></script>
-  <script src="js/member/member-nav.js?v=member-leaderboards-1"></script>
-  <script src="js/member/member-dashboard.js?v=member-role-guard-1"></script>
-  <script src="js/member/member-testing-days.js?v=comparison-list-1"></script>
+  <script src="js/shared/supabaseClient.js?errors=visible-feedback-1"></script>
+  <script src="js/shared/ui-utils.js?errors=visible-feedback-1"></script>
+  <script src="js/shared/access-control.js?v=auth-reliability-3&amp;review=flexible-platform-2&amp;navigation=facility-context-3&amp;shell=staff-profile-1&amp;errors=visible-feedback-1"></script>
+  <script src="js/shared/workout-data.js?v=workout-attribution-1&amp;errors=visible-feedback-1"></script>
+  <script src="js/shared/leaderboard-metrics.js?v=member-leaderboards-1&amp;errors=visible-feedback-1"></script>
+  <script src="js/shared/testing-comparisons.js?v=comparison-list-1&amp;errors=visible-feedback-1"></script>
+  <script src="js/member/member-nav.js?v=member-leaderboards-1&amp;navigation=facility-context-3&amp;errors=visible-feedback-1"></script>
+  <script src="js/member/member-dashboard.js?v=member-role-guard-1&amp;review=flexible-platform-2&amp;workflow=performance-2&amp;errors=visible-feedback-1"></script>
+  <script src="js/member/member-testing-days.js?v=comparison-list-1&amp;review=single-training-view-2&amp;errors=visible-feedback-1"></script>
 </body>
 </html>

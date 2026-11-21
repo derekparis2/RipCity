@@ -155,7 +155,8 @@ function isTodayDate(dateKey) {
 
 // Shows messages on the H2K page.
 function showH2KMessage(message, isError = false) {
-  const element = document.getElementById("h2k-message");
+  const element = document.getElementById("h2k-message") || document.getElementById("member-page-message");
+  if (window.AppFeedback) { window.AppFeedback.show(element, message, isError, { key: "member-page" }); return; }
   if (!element) return;
 
   element.textContent = message;
@@ -190,6 +191,7 @@ async function loadHabits(facilityId) {
 
 function showMemberGoalsMessage(message, isError = false) {
   const element = document.getElementById("member-goals-message");
+  if (window.AppFeedback) { window.AppFeedback.show(element, message, isError, { key: "member-goals-message" }); return; }
   if (!element) return;
 
   element.textContent = message;
@@ -696,11 +698,16 @@ function isHabitCompleteForSelectedDate(habitId) {
 }
 
 function getMemberTypeLabel(profileTypeValue = currentMemberProfile?.member_type) {
+  if(currentAccess?.membership?.program_key) return window.RipCityAccess.getProgramLabel(currentAccess.facilityConfig,currentAccess.membership.program_key);
   const profileType = String(profileTypeValue || "").toLowerCase();
   const role = String(currentAccess?.membership?.role || "").toLowerCase();
 
-  if (profileType === "h2k" || role === "h2k_member") return "H2K Member";
-  if (profileType === "athlete" || role === "athlete") return "Athlete";
+  if (profileType === "h2k" || role === "h2k_member") {
+    return window.RipCityAccess.getProgramLabel(currentAccess?.facilityConfig, "h2k");
+  }
+  if (profileType === "athlete" || role === "athlete") {
+    return window.RipCityAccess.getProgramLabel(currentAccess?.facilityConfig, "athlete");
+  }
 
   return "Member";
 }
@@ -989,6 +996,7 @@ async function updateScores() {
 
 // Reloads selected-date logs, re-renders cards, and updates scores.
 async function refreshH2KDashboard() {
+  if (!window.RipCityAccess.isModuleEnabled(currentAccess?.facilityConfig, "habits")) return;
   // Habits and status are refreshed together so the dashboard state matches
   // the checkmark cards below.
   todayLogs = await loadHabitLogsForDate(currentMemberProfile.id, selectedHabitDate);
@@ -999,6 +1007,7 @@ async function refreshH2KDashboard() {
 
 function showMemberWeeklyHistoryMessage(message, isError = false) {
   const element = document.getElementById("member-weekly-history-message");
+  if (window.AppFeedback) { window.AppFeedback.show(element, message, isError, { key: "member-weekly-history-message" }); return; }
   if (!element) return;
 
   element.textContent = message;
@@ -1007,7 +1016,7 @@ function showMemberWeeklyHistoryMessage(message, isError = false) {
 
 async function loadMemberWeeklyHistory() {
   const list = document.getElementById("member-weekly-history-list");
-  if (!list || !currentMemberProfile) return;
+  if (!list || !currentMemberProfile || !window.RipCityAccess.isModuleEnabled(currentAccess?.facilityConfig, "habits")) return;
 
   showMemberWeeklyHistoryMessage("Loading member history...");
 
@@ -1160,6 +1169,7 @@ function applyMemberModuleVisibility() {
 
 function showTodayWorkoutMessage(message, isError = false) {
   const element = document.getElementById("today-workout-message");
+  if (window.AppFeedback) { window.AppFeedback.show(element, message, isError, { key: "today-workout-message" }); return; }
   if (!element) return;
 
   element.textContent = message;
@@ -1231,7 +1241,7 @@ function renderTodayWorkouts(assignments) {
   if (!assignments.length) {
     container.innerHTML = `
       <div class="empty-state">
-        No workout assigned for today.
+        <p>No workout assigned for today.</p><a class="outline-link" href="${window.RipCityUI.attr(window.RipCityAccess.getFacilityPageUrl("member-training.html"))}">View Training Calendar</a>
       </div>
     `;
     return;
@@ -1268,7 +1278,7 @@ function renderTodayWorkouts(assignments) {
               <span>${window.RipCityUI.text(assignment.assigned_date)}</span>
             </div>
 
-            <a class="primary-link workout-open-link" href="workout-session.html?assignment=${window.RipCityUI.attr(assignment.id)}">
+            <a class="primary-link workout-open-link" href="${window.RipCityUI.attr(window.RipCityAccess.getFacilityPageUrl(`workout-session.html?assignment=${encodeURIComponent(assignment.id)}`))}">
               Open Workout
             </a>
           </div>
@@ -1320,6 +1330,7 @@ function renderTodayWorkouts(assignments) {
 
 function showWorkoutHistoryMessage(message, isError = false) {
   const element = document.getElementById("workout-history-message");
+  if (window.AppFeedback) { window.AppFeedback.show(element, message, isError, { key: "workout-history-message" }); return; }
   if (!element) return;
 
   element.textContent = message;
@@ -1519,7 +1530,7 @@ function renderWorkoutCalendarRow(assignment) {
   const isFuture = assignment.assigned_date > today;
   const isToday = assignment.assigned_date === today;
   const status = getWorkoutCalendarStatus(summary, isFuture, isToday);
-  const actionLabel = isFuture ? "Preview" : isToday ? "Open Workout" : "Review";
+  const actionLabel = summary.isComplete ? "Review Workout" : summary.completedSets > 0 ? "Continue Workout" : "Open Workout";
 
   return `
     <article class="workout-history-card compact-workout-row">
@@ -1531,7 +1542,7 @@ function renderWorkoutCalendarRow(assignment) {
           <small>Assigned by ${window.RipCityUI.text(window.RipCityWorkoutData.getAssignmentAssignerName(assignment))}</small>
         </div>
 
-        <a class="outline-link workout-open-link" href="workout-session.html?assignment=${window.RipCityUI.attr(assignment.id)}">
+        <a class="outline-link workout-open-link" href="${window.RipCityUI.attr(window.RipCityAccess.getFacilityPageUrl(`workout-session.html?assignment=${encodeURIComponent(assignment.id)}`))}">
           ${window.RipCityUI.text(actionLabel)}
         </a>
       </div>
@@ -1540,9 +1551,9 @@ function renderWorkoutCalendarRow(assignment) {
 }
 
 function getWorkoutCalendarStatus(summary, isFuture, isToday) {
-  if (isFuture) return "Scheduled";
   if (summary.isComplete) return "Complete";
   if (summary.completedSets > 0) return "In Progress";
+  if (isFuture) return "Scheduled";
   if (isToday) return "Ready";
   return "Not Started";
 }
@@ -1642,6 +1653,8 @@ async function initMemberPage() {
     if (!currentAccess) return;
 
     selectedHabitDate = getTodayString();
+    selectedWorkoutDate = selectedHabitDate;
+    workoutCalendarMonth = getMonthStart(parseAssignmentDate(selectedWorkoutDate));
     setMemberTypeText(getMemberTypeLabel());
     currentMemberProfile = await getMemberProfile(currentAccess.membership.id);
     updateMemberShell();
@@ -1649,15 +1662,17 @@ async function initMemberPage() {
     currentMemberGroupIds = await getCurrentMemberGroupIds(currentMemberProfile.id);
     applyMemberModuleVisibility();
 
-    const needsHabits = ["dashboard", "habits", "history"].includes(page);
-    const needsWorkoutHistory = ["dashboard", "training", "history"].includes(page);
+    const habitsEnabled = window.RipCityAccess.isModuleEnabled(currentAccess.facilityConfig, "habits");
+    const needsHabits = habitsEnabled && ["dashboard", "habits", "history"].includes(page);
+    const needsWorkoutHistory = ["dashboard", "training", "history"].includes(page)
+      && window.RipCityAccess.isModuleEnabled(currentAccess.facilityConfig, "workouts");
 
     if (needsHabits) {
       sharedHabits = await loadHabits(currentAccess.membership.facility_id);
     }
 
     if (needsWorkoutHistory) await loadWorkoutHistory();
-    if (["habits", "history"].includes(page)) await loadMemberWeeklyHistory();
+    if (habitsEnabled && ["habits", "history"].includes(page)) await loadMemberWeeklyHistory();
     if (page === "goals") await loadMemberGoals();
     if (page === "leaderboards") {
       await window.RipCityMemberLeaderboards.initialize({
@@ -1667,7 +1682,7 @@ async function initMemberPage() {
       });
     }
 
-    if (["dashboard", "habits"].includes(page)) {
+    if (habitsEnabled && ["dashboard", "habits"].includes(page)) {
       await refreshH2KDashboard();
     }
 
@@ -1680,7 +1695,7 @@ async function initMemberPage() {
 
 // Logs out the current user.
 async function logoutH2K() {
-  await db.auth.signOut();
+  if (!await window.AppFeedback.signOut()) return;
   window.location.href = "login.html";
 }
 

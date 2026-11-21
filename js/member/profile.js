@@ -18,6 +18,7 @@ const MAX_PROFILE_PICTURE_BYTES = 5 * 1024 * 1024;
 
 function showProfileMessage(message, isError = false) {
   const element = document.getElementById("profile-message");
+  if (window.AppFeedback) { window.AppFeedback.show(element, message, isError, { key: "profile-message" }); return; }
   if (!element) return;
 
   element.textContent = message;
@@ -121,9 +122,10 @@ function updateProfilePreview() {
 
   const program = profileAccess?.isCoach
     ? (profileAccess.membership.role === "admin" ? "Admin" : "Coach")
-    : currentMemberProfile?.member_type === "h2k"
-      ? "H2K Member"
-      : "Athlete";
+    : window.RipCityAccess.getProgramLabel(
+      profileAccess?.facilityConfig,
+      profileAccess?.membership?.program_key || (currentMemberProfile?.member_type === "h2k" ? "h2k" : "athlete")
+    );
   const bandBadge = document.getElementById("preview-h2k-band");
 
   document.getElementById("preview-name").textContent = fullName;
@@ -156,17 +158,39 @@ function getProfileMemberTypeLabel() {
     return profileAccess.membership.role === "admin" ? "Admin" : "Coach";
   }
 
+  if(profileAccess?.membership?.program_key) return window.RipCityAccess.getProgramLabel(profileAccess.facilityConfig,profileAccess.membership.program_key);
   const profileType = String(currentMemberProfile?.member_type || "").toLowerCase();
   const role = String(profileAccess?.membership?.role || "").toLowerCase();
 
-  if (profileType === "h2k" || role === "h2k_member") return "H2K Member";
-  if (profileType === "athlete" || role === "athlete") return "Athlete";
+  if (profileType === "h2k" || role === "h2k_member") {
+    return window.RipCityAccess.getProgramLabel(profileAccess?.facilityConfig, "h2k");
+  }
+  if (profileType === "athlete" || role === "athlete") {
+    return window.RipCityAccess.getProgramLabel(profileAccess?.facilityConfig, "athlete");
+  }
 
   return "Member";
 }
 
 function updateProfileShellNav() {
   const isCoach = Boolean(profileAccess?.isCoach);
+  const coachHeader = document.getElementById("profile-coach-header");
+  const memberHeader = document.getElementById("profile-member-header");
+  const sidebar = document.querySelector(".member-sidebar");
+  const main = document.querySelector("main");
+  if (coachHeader) coachHeader.hidden = !isCoach;
+  if (memberHeader) memberHeader.hidden = isCoach;
+  if (sidebar) sidebar.hidden = isCoach;
+  document.body.classList.toggle("member-dashboard-body", !isCoach);
+  document.body.classList.toggle("coach-profile-body", isCoach);
+  for (const name of ["main-content", "member-main-content"]) main?.classList.toggle(name, !isCoach);
+  main?.classList.toggle("coach-page", isCoach);
+  const logout = document.getElementById("profile-logout-btn");
+  const target = isCoach
+    ? coachHeader?.querySelector(".coach-session-actions") || coachHeader?.querySelector(".h2k-header-actions")
+    : memberHeader?.querySelector(".topbar-actions");
+  if (logout && target && logout.parentElement !== target) target.append(logout);
+  if (isCoach) window.initializeCoachNavigation?.(profileAccess.facilityConfig);
   const isH2K = currentMemberProfile?.member_type === "h2k";
   const subtitle = document.getElementById("profile-brand-subtitle");
   const programLabel = document.getElementById("profile-program-label");
@@ -194,7 +218,12 @@ function updateProfileShellNav() {
   if (pageHeading) pageHeading.textContent = isCoach ? "Coach Profile" : "Member Profile";
   if (editorHeading) editorHeading.textContent = isCoach ? "Coach Info" : "Member Info";
   document.title = isCoach ? "Coach Profile" : "Member Profile";
-  if (heroHeading) heroHeading.textContent = isCoach ? "Build your Rip City coach profile." : "Build your Rip City profile.";
+  const facilityName = profileAccess?.facilityConfig?.name || "your facility";
+  if (heroHeading) {
+    heroHeading.textContent = isCoach
+      ? `Build your ${facilityName} coach profile.`
+      : `Build your ${facilityName} profile.`;
+  }
   if (heroDescription) {
     heroDescription.textContent = isCoach
       ? "Keep your account and profile details current for your facility."
@@ -433,7 +462,7 @@ async function saveProfile(event) {
 }
 
 async function logoutProfile() {
-  await db.auth.signOut();
+  if (!await window.AppFeedback.signOut()) return;
   window.location.href = "login.html";
 }
 
@@ -451,10 +480,18 @@ async function initProfilePage() {
 
     updateProfileShellNav();
     fillProfileForm();
+    document.documentElement.dataset.profileState = "ready";
     showProfileMessage("");
   } catch (error) {
     console.error(error);
     showProfileMessage(error.message || "Could not load profile.", true);
+    const loadingMessage = document.getElementById("profile-loading-message");
+    if (loadingMessage) {
+      loadingMessage.textContent = error.message || "Could not load profile. Please try again.";
+      loadingMessage.parentElement.setAttribute("role", "alert");
+    }
+    const retry = document.getElementById("profile-loading-retry");
+    if (retry) retry.hidden = false;
   }
 }
 

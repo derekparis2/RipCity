@@ -1,0 +1,88 @@
+/* Shared signed-in page geometry. Load after page and facility styles. */
+:root { --app-page-width:1320px; --app-page-edge:16px; --app-page-top:24px; --app-section-gap:22px; --app-panel-padding:24px; }
+body.auth-body > main.app-shell {
+  width:min(var(--app-page-width),calc(100% - var(--app-page-edge) * 2));
+  max-width:var(--app-page-width); min-width:0; margin:0 auto;
+  padding:var(--app-page-top) 0 60px; box-sizing:border-box;
+}
+body.auth-body:not(.workout-session-body) > main.app-shell { display:flex; flex-direction:column; gap:var(--app-section-gap); }
+body.auth-body > main.app-shell > * { min-width:0; margin-block:0; box-sizing:border-box; }
+body.auth-body > main.app-shell > .auth-message:empty { display:none; }
+body.auth-body > main.app-shell > :is(.panel,details.panel) { padding:var(--app-panel-padding); }
+body.auth-body > main.app-shell > .h2k-header { margin:0; padding:8px 0 16px; }
+body.auth-body > main.app-shell > .app-page-heading { margin:0; padding:22px var(--app-panel-padding); min-height:0; }
+body.auth-body > main.app-shell > .app-page-intro { margin:0; padding:18px var(--app-panel-padding); min-height:0; }
+/* The sidebar takes fixed space; member content uses the same interior rhythm. */
+body.auth-body.member-dashboard-body > main.app-shell {
+  width:calc(100% - 280px); max-width:none; margin:0 0 0 280px;
+  padding:var(--app-page-top) var(--app-page-edge) 60px;
+}
+body.auth-body.member-dashboard-body > main.app-shell > * { width:100%; max-width:var(--app-page-width); margin-inline:auto; }
+@media(max-width:700px) {
+  :root { --app-page-edge:9px; --app-page-top:12px; --app-section-gap:16px; --app-panel-padding:16px; }
+  body.auth-body > main.app-shell { padding-bottom:48px; }
+  body.auth-body > main.app-shell > .app-page-heading { padding:18px var(--app-panel-padding); }
+  body.auth-body > main.app-shell > .app-page-intro { padding:16px; }
+  body.auth-body.member-dashboard-body > main.app-shell {
+    width:100%; margin:0; padding:var(--app-page-top) var(--app-page-edge) calc(94px + env(safe-area-inset-bottom));
+  }
+  body.auth-body.member-dashboard-body .member-sidebar { width:calc(100% - var(--app-page-edge) * 2); margin-inline:auto; }
+  /* Logging remains a natural scrolling workspace, with room for bottom tabs. */
+  body.auth-body.workout-session-body > main.app-shell {
+    width:calc(100% - var(--app-page-edge) * 2); height:auto; min-height:0;
+    padding:8px 0 calc(102px + env(safe-area-inset-bottom));
+  }
+  body.auth-body.workout-session-body > main.app-shell > .h2k-header { margin:0 0 12px; padding:6px 2px; }
+}
+@media(max-width:430px) { :root { --app-page-edge:7px; } }
+body.auth-body > main.app-shell > :is(.dashboard-grid,.approval-admin-tools):not(:has(> :not([hidden]):not(.hidden))) { display:none; }
+.workout-session-body .session-overview,
+.workout-session-body .session-step-shell { width:100%; max-width:none; }
+
+/* Block selection is one scrollable strip; items never collapse to slivers. */
+.workout-session-body.session-logging-mode .session-step-shell,
+.workout-session-body.session-logging-mode .session-step-list { min-width:0; max-width:100%; }
+.workout-session-body.session-logging-mode .session-block-navigation {
+  display:flex; flex-wrap:nowrap; gap:8px; width:100%; max-width:100%; min-width:0;
+  overflow-x:auto; overflow-y:hidden; padding:2px 0 8px; box-sizing:border-box;
+  scroll-snap-type:x proximity; -webkit-overflow-scrolling:touch;
+}
+.workout-session-body.session-logging-mode .session-block-nav {
+  flex:0 0 148px; width:148px; min-width:148px; max-width:148px;
+  padding:10px 12px; box-sizing:border-box; scroll-snap-align:start;
+}
+.workout-session-body.session-logging-mode .session-block-nav :is(span,strong,small) { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+@media(max-width:700px) {
+  .workout-session-body.session-logging-mode .session-block-nav { flex-basis:120px; width:120px; min-width:120px; max-width:120px; padding:8px 10px; }
+}
+/* The heading receives focus for screen readers, but is not an editable field. */
+.workout-session-body h4[data-session-heading]:focus { outline:none; }
+
+/* Desktop staff header: branding/actions first, full navigation second. */
+@media(min-width:1041px) {
+  body.auth-body > main.app-shell > .h2k-header:has([data-coach-nav]) {
+    display:grid; grid-template-columns:minmax(0,1fr) auto; grid-template-rows:auto auto;
+    align-items:center; gap:12px 20px;
+  }
+  .app-shell > .h2k-header:has([data-coach-nav]) > .auth-brand {
+    grid-column:1; grid-row:1; min-width:0; display:flex; align-items:center;
+  }
+  .app-shell > .h2k-header:has([data-coach-nav]) .auth-brand > div { min-width:0; }
+  .app-shell > .h2k-header:has([data-coach-nav]) .auth-brand h1 { font-size:clamp(24px,2.2vw,32px); line-height:1.15; overflow-wrap:anywhere; }
+  .app-shell > .h2k-header:has([data-coach-nav]) .auth-brand p { white-space:nowrap; }
+  .app-shell > .h2k-header:has([data-coach-nav]) .auth-brand img,
+  .app-shell > .h2k-header:has([data-coach-nav]) .auth-brand > .facility-brand-initials { width:48px; height:48px; flex:0 0 48px; }
+  .app-shell > .h2k-header:has([data-coach-nav]) > .h2k-header-actions { display:contents; }
+  .app-shell > .h2k-header:has([data-coach-nav]) .h2k-header-actions > [data-coach-nav] { grid-column:1 / -1; grid-row:2; width:100%; min-width:0; }
+  .app-shell > .h2k-header:has([data-coach-nav]) .coach-session-actions { grid-column:2; grid-row:1; justify-self:end; }
+  .app-shell > .h2k-header [data-coach-nav] .coach-nav-links { display:flex; flex-wrap:wrap; width:100%; gap:8px; }
+  .app-shell > .h2k-header [data-coach-nav] .coach-nav-link { white-space:nowrap; }
+}
+
+/* The testing grid sits inside a workspace; do not stack its old top margin with the page gap. */
+.app-shell > .testing-workspace > .testing-builder-grid { margin-block:0; }
+.dismissible-message { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+.dismissible-message > span { min-width:0; overflow-wrap:anywhere; }
+.message-dismiss-btn { flex:0 0 36px; display:inline-grid; place-items:center; width:36px; min-height:36px; padding:0; border:1px solid var(--border); border-radius:8px; background:var(--surface); color:var(--text); font:inherit; font-size:24px; cursor:pointer; }
+.message-dismiss-btn:focus-visible { outline:2px solid var(--facility-primary); outline-offset:2px; }
+@media(pointer:coarse) { .message-dismiss-btn { flex-basis:44px; width:44px; min-height:44px; } }

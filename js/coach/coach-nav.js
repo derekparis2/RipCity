@@ -1,27 +1,51 @@
 const coachNavigationItems = [
   { key: "dashboard", label: "Dashboard", href: "coach-dashboard.html" },
   { key: "roster", label: "Roster", href: "coach-roster.html" },
-  { key: "workouts", label: "Workout Builder", href: "coach-workouts.html" },
-  { key: "programming", label: "Workout Planner", href: "coach-programming.html?view=programs" },
-  { key: "testing", label: "Testing Days", href: "coach-testing.html" },
-  { key: "leaderboards", label: "Leaderboards", href: "coach-leaderboards.html" },
+  { key: "workouts", label: "Workout Builder", href: "coach-workouts.html", module: "workouts" },
+  { key: "programming", label: "Workout Planner", href: "coach-programming.html?view=programs", module: "workouts" },
+  { key: "testing", label: "Testing Days", href: "coach-testing.html", module: "testing_days" },
+  { key: "leaderboards", label: "Leaderboards", href: "coach-leaderboards.html", module: "leaderboards" },
   { key: "approvals", label: "Approvals", href: "coach-approvals.html" },
   { key: "profile", label: "Profile", href: "profile.html" },
 ];
 
-function initializeCoachNavigation() {
+function initializeCoachNavigation(configuration = window.RipCityFacility) {
   document.querySelectorAll("[data-coach-nav]").forEach((nav) => {
     const activeKey = nav.dataset.coachNav;
-    const links = coachNavigationItems.map((item) => {
+    const visibleItems = coachNavigationItems.filter(item => (
+      !item.module || configuration?.modules?.[item.module]?.enabled !== false
+    ));
+    const actions = nav.closest(".h2k-header-actions");
+    if (actions) {
+      let sessionActions = actions.querySelector(".coach-session-actions");
+      if (!sessionActions) {
+        sessionActions = document.createElement("div");
+        sessionActions.className = "coach-session-actions";
+        const logout = actions.querySelector("button:not(.coach-nav-toggle)");
+        if (logout) sessionActions.append(logout);
+        actions.append(sessionActions);
+      }
+      let exit = sessionActions.querySelector("[data-exit-admin]");
+      if (window.RipCityPlatformOwner && !exit) {
+        exit = document.createElement("a");
+        exit.className = "outline-link";
+        exit.dataset.exitAdmin = "true";
+        exit.href = "platform.html";
+        exit.textContent = "Exit Admin Mode";
+        sessionActions.prepend(exit);
+      } else if (!window.RipCityPlatformOwner) exit?.remove();
+    }
+    const renderLink = (item) => {
       const isActive = item.key === activeKey;
       return `
         <a
           class="coach-nav-link${isActive ? " active" : ""}"
-          href="${item.href}"
+          href="${window.RipCityAccess?.getFacilityPageUrl(item.href)?.replace(/&/g, "&amp;") || item.href}"
           ${isActive ? 'aria-current="page"' : ""}
         >${item.label}</a>
       `;
-    }).join("");
+    };
+    const links = visibleItems.map(renderLink).join("");
 
     nav.innerHTML = `
       <button
@@ -41,18 +65,32 @@ function initializeCoachNavigation() {
       toggle.textContent = isOpen ? "Close" : "Menu";
     });
 
-    document.addEventListener("click", (event) => {
-      if (!nav.classList.contains("open") || nav.contains(event.target)) return;
-      nav.classList.remove("open");
-      toggle?.setAttribute("aria-expanded", "false");
-      toggle?.setAttribute("aria-label", "Open coach navigation");
-      if (toggle) toggle.textContent = "Menu";
-    });
+    if (!nav.dataset.dismissBound) {
+      nav.dataset.dismissBound = "true";
+      const closeNavigation = () => {
+        nav.classList.remove("open");
+        const currentToggle = nav.querySelector(".coach-nav-toggle");
+        currentToggle?.setAttribute("aria-expanded", "false");
+        currentToggle?.setAttribute("aria-label", "Open coach navigation");
+        if (currentToggle) currentToggle.textContent = "Menu";
+      };
+      document.addEventListener("click", event => { if (!nav.contains(event.target)) closeNavigation(); });
+      nav.addEventListener("keydown", event => {
+        if (event.key !== "Escape") return;
+        const wasOpen = nav.classList.contains("open");
+        closeNavigation();
+        if (wasOpen) nav.querySelector(".coach-nav-toggle")?.focus();
+      });
+    }
   });
 }
 
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initializeCoachNavigation);
+  document.addEventListener("DOMContentLoaded", () => initializeCoachNavigation());
 } else {
   initializeCoachNavigation();
 }
+
+window.addEventListener("ripcity:facility-config", event => {
+  initializeCoachNavigation(event.detail);
+});

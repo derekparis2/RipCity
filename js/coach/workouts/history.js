@@ -196,7 +196,7 @@ function renderRecentWorkouts() {
   const reusableWorkouts = getReusableWorkoutRows();
   if (!reusableWorkouts.length) {
     if (count) count.textContent = "No workouts yet";
-    list.innerHTML = `<div class="empty-state">No workouts created yet.</div>`;
+    list.innerHTML = `<div class="empty-state">Your Workout Library is empty. <a class="outline-link" href="${window.RipCityUI.attr(window.RipCityAccess.getFacilityPageUrl("coach-workouts.html#workout-details-step"))}">Create your first workout</a></div>`;
     return;
   }
 
@@ -210,7 +210,7 @@ function renderRecentWorkouts() {
   }
 
   if (!filteredWorkouts.length) {
-    list.innerHTML = `<div class="empty-state">No created workouts match those filters.</div>`;
+    list.innerHTML = `<div class="empty-state">No workouts match these filters. Clear the search or choose a different filter.</div>`;
     return;
   }
 
@@ -326,7 +326,7 @@ function renderRecentWorkouts() {
             <label>
               Assigned Dates
               <span class="workout-date-input-row">
-                <input type="date" value="${formatLocalDate(new Date())}" data-reuse-date="${window.RipCityUI.attr(workout.id)}" />
+                <input type="date" value="${window.RipCityAccess?.getFacilityDateKey?.() || formatLocalDate(new Date())}" data-reuse-date="${window.RipCityUI.attr(workout.id)}" />
                 <button class="outline-btn small-inline-btn" type="button" data-add-reuse-date="${window.RipCityUI.attr(workout.id)}">Add Date</button>
               </span>
               <span class="workout-selected-dates" data-reuse-selected-dates="${window.RipCityUI.attr(workout.id)}">

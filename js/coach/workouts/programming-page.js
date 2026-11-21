@@ -1,5 +1,5 @@
 async function logoutCoachProgramming() {
-  await db.auth.signOut();
+  if (!await window.AppFeedback.signOut()) return;
   window.location.href = "login.html";
 }
 

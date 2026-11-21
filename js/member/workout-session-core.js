@@ -14,6 +14,7 @@ let workoutSessionMessageTimer = null;
 
 function showWorkoutSessionMessage(message, isError = false) {
   const element = document.getElementById("workout-session-message");
+  if (window.AppFeedback) { window.clearTimeout(workoutSessionMessageTimer); element?.classList.remove("session-message-toast"); window.AppFeedback.show(element, message, isError, { key: "workout-session-message" }); return; }
   if (!element) return;
 
   window.clearTimeout(workoutSessionMessageTimer);
@@ -23,6 +24,7 @@ function showWorkoutSessionMessage(message, isError = false) {
 }
 
 function showWorkoutSessionToast(message) {
+  window.AppFeedback?.dismiss("workout-session-message");
   const element = document.getElementById("workout-session-message");
   if (!element) return;
 
@@ -132,7 +134,7 @@ function findPreviousWeightForExercise(exerciseId, setNumber) {
     )
     .sort((a, b) => Number(b.set_number) - Number(a.set_number));
 
-  return previousLogs[0]?.weight || "";
+  return previousLogs[0]?.weight ?? "";
 }
 
 function findPreviousRepsForExercise(exerciseId, setNumber) {
@@ -144,7 +146,7 @@ function findPreviousRepsForExercise(exerciseId, setNumber) {
     )
     .sort((a, b) => Number(b.set_number) - Number(a.set_number));
 
-  return previousLogs[0]?.reps_completed || "";
+  return previousLogs[0]?.reps_completed ?? "";
 }
 
 function getExerciseBlockLabel(index) {
@@ -256,4 +258,77 @@ async function loadExistingSetLogs(assignmentId) {
   if (error) throw error;
 
   return data || [];
+}
+
+// Drafts stay in this page only; navigating between sets never throws away edits.
+const workoutSetDrafts = new Map();
+let workoutSessionSaving = false;
+let workoutSessionLeaving = false;
+const workoutDraftFields = [".set-weight-input", ".set-reps-input", ".set-band-input", ".set-time-input", ".set-distance-input", ".set-difficulty-input", ".set-note-input", ".set-completed-input"];
+function getSetDraftKey(row) { return `${row.dataset.exerciseId}:${row.dataset.setNumber}`; }
+function captureWorkoutSetDraft(row) {
+  if (!row || row.dataset.dirty !== "true") return;
+  workoutSetDrafts.set(getSetDraftKey(row), Object.fromEntries(workoutDraftFields.map(selector => {
+    const input = row.querySelector(selector);
+    return [selector, input ? { value: input.value, checked: input.checked, invalid: input.validity ? !input.validity.valid : false } : null];
+  })));
+}
+function captureCurrentWorkoutDrafts() {
+  document.querySelectorAll(".set-log-row").forEach(captureWorkoutSetDraft);
+}
+function restoreWorkoutSetDrafts() {
+  document.querySelectorAll(".set-log-row").forEach(row => {
+    const draft = workoutSetDrafts.get(getSetDraftKey(row));
+    if (draft) {
+      for (const [selector, value] of Object.entries(draft)) {
+        const input = row.querySelector(selector);
+        if (!input || !value) continue;
+        input.value = value.value;
+        if (input.type === "checkbox") input.checked = value.checked;
+      }
+      row.dataset.dirty = "true";
+      const status = row.querySelector(".set-log-title em");
+      if (status) status.textContent = "Unsaved changes";
+    }
+    row.addEventListener("input", () => {
+      row.dataset.dirty = "true";
+      captureWorkoutSetDraft(row);
+      const status = row.querySelector(".set-log-title em");
+      if (status) status.textContent = "Unsaved changes";
+      syncWorkoutNextButton(row);
+    });
+    row.addEventListener("change", () => {
+      row.dataset.dirty = "true";
+      captureWorkoutSetDraft(row);
+      syncWorkoutNextButton(row);
+    });
+    syncWorkoutNextButton(row);
+  });
+}
+function clearWorkoutSetDraft(row) {
+  workoutSetDrafts.delete(getSetDraftKey(row));
+  row.dataset.dirty = "false";
+}
+function setWorkoutSaveBusy(busy) {
+  workoutSessionSaving = busy;
+  const container = document.getElementById("workout-session-container");
+  container?.setAttribute("aria-busy", String(busy));
+  document.querySelectorAll("#workout-session-container button, #workout-session-container input, #workout-session-container select, #workout-session-container textarea, #refresh-session-btn, #finish-workout-btn").forEach(control => {
+    if (busy) { control.dataset.wasDisabled = String(control.disabled); control.disabled = true; }
+    else if (control.dataset.wasDisabled !== undefined) {
+      control.disabled = control.dataset.wasDisabled === "true";
+      delete control.dataset.wasDisabled;
+    }
+  });
+}
+function confirmDiscardWorkoutDrafts() {
+  captureCurrentWorkoutDrafts();
+  return !workoutSetDrafts.size || window.confirm("Discard unsaved workout changes? Saved sets will stay saved.");
+}
+
+function getWorkoutDemoUrl(value) {
+  try {
+    const url = new URL(String(value || ""));
+    return url.protocol === "https:" ? url.href : "";
+  } catch { return ""; }
 }

@@ -262,6 +262,7 @@ function getGoalProgress(goal) {
 
 function showDetailMessage(message, isError = false) {
   const element = document.getElementById("coach-member-detail-message");
+  if (window.AppFeedback) { window.AppFeedback.show(element, message, isError, { key: "coach-member-detail-message" }); return; }
   element.textContent = message;
   element.classList.toggle("error-message", isError);
 }
@@ -304,7 +305,7 @@ function renderDetailMember() {
     <div class="coach-member-profile-overview">
       <div class="coach-member-detail-heading">
         ${window.RipCityUI.avatarMarkup(detailMember.profile?.full_name, safeProfilePictureUrl, "roster-avatar")}
-        <div><p class="eyebrow">${window.RipCityUI.text(profile.member_type === "h2k" ? "H2K MEMBER" : "ATHLETE")}</p><h2>${window.RipCityUI.text(detailMember.profile?.full_name, "Unnamed Member")}</h2><p>${window.RipCityUI.text(detailMember.profile?.email)}</p></div>
+        <div><p class="eyebrow">${window.RipCityUI.text(window.RipCityAccess.getProgramLabel(window.RipCityFacility, detailMember.program_key || profile.member_type).toUpperCase())}</p><h2>${window.RipCityUI.text(detailMember.profile?.full_name, "Unnamed Member")}</h2><p>${window.RipCityUI.text(detailMember.profile?.email)}</p></div>
       </div>
       <div class="member-goal-meta"><span>${window.RipCityUI.text(groups.join(", ") || "No groups")}</span>${profile.h2k_band_color ? `<span>${window.RipCityUI.text(`${profile.h2k_band_color} Band`)}</span>` : ""}</div>
       ${detailMember.profile?.bio ? `<p class="coach-member-profile-bio">${window.RipCityUI.text(detailMember.profile.bio)}</p>` : ""}
@@ -527,7 +528,7 @@ async function loadMember() {
   if (!membershipId) throw new Error("Choose a member from the roster first.");
 
   const { data, error } = await db.from("facility_members").select(`
-    id, facility_id, role, status,
+    id, facility_id, role, status, program_key,
     profile:profiles!facility_members_profile_id_fkey (id, full_name, email, profile_picture_url, username, bio, birthday),
     member_profile:member_profiles (id, member_type, h2k_band_color, sport, position, school, graduation_year, height, body_weight, training_focus, favorite_lift)
   `).eq("id", membershipId).eq("facility_id", detailAccess.membership.facility_id).single();
@@ -572,7 +573,7 @@ async function init() {
 document.addEventListener("DOMContentLoaded", () => {
   initializeCoachMemberDetailViews();
   initializeDetailTestingComparisonControls();
-  document.getElementById("coach-member-detail-logout").addEventListener("click", async () => { await db.auth.signOut(); window.location.href = "login.html"; });
+  document.getElementById("coach-member-detail-logout").addEventListener("click", async () => { if (!await window.AppFeedback.signOut()) return; window.location.href = "login.html"; });
   document.getElementById("coach-goal-form").addEventListener("submit", saveCoachGoal);
   document.getElementById("coach-goal-cancel").addEventListener("click", resetCoachGoalForm);
   resetCoachGoalForm();

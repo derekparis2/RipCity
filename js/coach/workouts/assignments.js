@@ -270,12 +270,13 @@ async function getAssignmentLogWarning(assignmentId) {
       .select("id", { count: "exact", head: true })
       .eq("workout_assignment_id", assignmentId);
 
-    if (error || !count) return "";
+    if (error) throw error;
+    if (!count) return "";
 
     return `Warning: this also removes ${count} saved set log${count === 1 ? "" : "s"} for this assignment.`;
   } catch (error) {
     console.error(error);
-    return "";
+    return "Warning: saved set logs could not be checked. Removing this assignment may also remove workout history.";
   }
 }
 
@@ -306,8 +307,10 @@ function updateRecentAssignmentControls(workoutId) {
   }
 }
 
+let existingWorkoutAssignmentInProgress = false;
+
 async function assignExistingWorkout(workout) {
-  if (!workout) return;
+  if (!workout || existingWorkoutAssignmentInProgress) return;
   if (!canManageWorkoutAssignments(workout)) {
     showWorkoutMessage("Only the workout creator or a facility admin can assign this workout.", true);
     return;
@@ -354,7 +357,12 @@ async function assignExistingWorkout(workout) {
 
   showWorkoutMessage("Assigning existing workout...");
 
+  existingWorkoutAssignmentInProgress = true;
   try {
+    if (!await confirmWorkoutAssignmentConflicts(rowsToInsert)) {
+      showWorkoutMessage("Assignment cancelled.");
+      return;
+    }
     const { error } = await db
       .from("workout_assignments")
       .insert(rowsToInsert);
@@ -366,7 +374,7 @@ async function assignExistingWorkout(workout) {
   } catch (error) {
     console.error(error);
     showWorkoutMessage(error.message || "Could not assign existing workout.", true);
-  }
+  } finally { existingWorkoutAssignmentInProgress = false; }
 }
 
 function getExistingWorkoutDates(workoutId) {
@@ -422,3 +430,39 @@ function getAssignmentTargetLabel(assignment) {
 // ----------------------------
 // Logout / init
 // ----------------------------
+
+function workoutAssignmentTargetsOverlap(left, right, memberships) {
+  if (left.target_type === "facility" || right.target_type === "facility") return true;
+  if (left.target_type === right.target_type) {
+    if (left.target_type === "member") return left.target_member_profile_id === right.target_member_profile_id;
+    if (left.target_group_id === right.target_group_id) return true;
+  }
+  const memberIds = target => target.target_type === "member"
+    ? new Set([target.target_member_profile_id])
+    : new Set(memberships.filter(row => row.group_id === target.target_group_id).map(row => row.member_profile_id));
+  const leftMembers = memberIds(left);
+  return [...memberIds(right)].some(id => leftMembers.has(id));
+}
+
+async function confirmWorkoutAssignmentConflicts(proposed) {
+  if (!proposed.length) return true;
+  const dates = [...new Set(proposed.map(row => row.assigned_date))];
+  const existing = [];
+  // Read the current calendar rather than the possibly stale library cache.
+  for (let offset = 0; ; offset += 500) {
+    const { data, error } = await db.from("workout_assignments")
+      .select("id,assigned_date,target_type,target_group_id,target_member_profile_id,target_facility_id,workout:workouts!inner(facility_id,title)")
+      .eq("workout.facility_id", workoutCoachAccess.membership.facility_id)
+      .in("assigned_date", dates).order("id").range(offset, offset + 499);
+    if (error) throw error;
+    existing.push(...(data || []));
+    if ((data || []).length < 500) break;
+  }
+  if (!existing.length) return true;
+  const memberships = await loadAssignableGroupMemberships(availableMembers.map(member => member.memberProfileId));
+  const conflicts = existing.filter(row => proposed.some(next => next.assigned_date === row.assigned_date
+    && workoutAssignmentTargetsOverlap(next, row, memberships)));
+  if (!conflicts.length) return true;
+  const examples = [...new Set(conflicts.map(row => `${formatDisplayDate(row.assigned_date)}: ${row.workout?.title || "Assigned workout"}`))];
+  return window.confirm(`Workout already scheduled: the selected roster or one or more members already have a workout on these dates.\n\n${examples.slice(0, 6).join("\n")}${examples.length > 6 ? `\n…and ${examples.length - 6} more` : ""}\n\nAssign another workout anyway? Existing assignments will stay on the calendar.`);
+}

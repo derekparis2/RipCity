@@ -47,16 +47,23 @@ function updateSetStats() {
   if (mobileTotal) mobileTotal.textContent = total;
   if (progressLabel) progressLabel.textContent = progressPercent;
   if (progressFill) progressFill.style.width = `${progressPercent}%`;
+  document.querySelector(".session-progress-bar")?.setAttribute("aria-valuenow", String(progressPercent));
 }
 
 function renderWorkoutSession() {
+  captureCurrentWorkoutDrafts();
   const container = document.getElementById("workout-session-container");
   const workout = workoutAssignment.workout;
   const steps = getWorkoutSessionSteps(workout);
   const blocks = getWorkoutSessionBlocks(workout);
 
+  const finishButton = document.getElementById("finish-workout-btn");
+  if (finishButton) {
+    finishButton.disabled = !steps.length;
+    finishButton.hidden = workoutSessionView === "summary";
+  }
   if (!steps.length) {
-    container.innerHTML = `<div class="empty-state">This workout has no blocks yet.</div>`;
+    container.innerHTML = `<div class="empty-state"><h3>This workout isn’t ready yet.</h3><p>Your coach needs to add exercises before you can log it.</p><a class="outline-link" href="${window.RipCityUI.attr(window.RipCityAccess.getFacilityPageUrl("member-training.html"))}">Back to Training Calendar</a></div>`;
     return;
   }
 
@@ -65,15 +72,36 @@ function renderWorkoutSession() {
     steps.length - 1
   );
 
-  document.body.classList.toggle("session-overview-mode", workoutSessionView === "overview");
+  document.body.classList.toggle("session-overview-mode", workoutSessionView !== "logging");
   document.body.classList.toggle("session-logging-mode", workoutSessionView === "logging");
+
+  if (workoutSessionView === "summary") {
+    const complete = steps.filter(isStepComplete).length;
+    const remaining = steps.length - complete;
+    const next = steps.findIndex(step => !isStepComplete(step));
+    container.innerHTML = `<section class="session-finish-summary" aria-labelledby="session-finish-title">
+      <p class="eyebrow">WORKOUT SUMMARY</p>
+      <h2 id="session-finish-title" tabindex="-1">${remaining ? "Finished for now" : "Workout complete"}</h2>
+      <p>${complete} of ${steps.length} sets complete.</p>
+      <p>${remaining ? `${remaining} set${remaining === 1 ? " is" : "s are"} still incomplete. Your entered results are saved, and you can return to finish later.` : "All your sets are saved. Nice work."}</p>
+      <div class="session-finish-actions">
+        <a class="primary-link" href="${window.RipCityUI.attr(window.RipCityAccess.getFacilityPageUrl("member-training.html"))}">Back to Training Calendar</a>
+        <button class="outline-btn" type="button" data-resume-finished>${remaining ? "Continue Workout" : "Review Sets"}</button>
+      </div>
+    </section>`;
+    container.querySelector("[data-resume-finished]")?.addEventListener("click", () => goToSessionStep(next >= 0 ? next : 0));
+    document.getElementById("session-finish-title")?.focus({ preventScroll: true });
+    updateSetStats();
+    return;
+  }
 
   if (workoutSessionView === "overview") {
     container.innerHTML = renderWorkoutOverview(workout, blocks, steps);
 
     document.querySelector("[data-start-session]")?.addEventListener("click", () => {
+      const draftStep = steps.findIndex(step => workoutSetDrafts.has(`${step.exercise.id}:${step.setNumber}`));
       const firstIncompleteStep = steps.findIndex(step => !isStepComplete(step));
-      goToSessionStep(firstIncompleteStep >= 0 ? firstIncompleteStep : 0);
+      goToSessionStep(draftStep >= 0 ? draftStep : firstIncompleteStep >= 0 ? firstIncompleteStep : 0);
     });
 
     document.querySelectorAll("[data-start-block-index]").forEach(button => {
@@ -108,8 +136,8 @@ function renderWorkoutSession() {
       <div class="session-step-topbar">
         <button class="session-overview-return" type="button" data-session-overview>
           <span aria-hidden="true">←</span>
-          <span class="session-overview-return-desktop">Workout Preview</span>
-          <span class="session-overview-return-mobile">Preview</span>
+          <span class="session-overview-return-desktop">Workout Overview</span>
+          <span class="session-overview-return-mobile">Overview</span>
         </button>
         <div class="session-active-block-title">
           <p class="eyebrow">BLOCK ${activeBlockIndex + 1} OF ${blocks.length}</p>
@@ -118,7 +146,7 @@ function renderWorkoutSession() {
         <span class="session-saved-count">${getCompletedSetCount()}/${getTotalSetCount()} saved</span>
       </div>
 
-      <nav class="session-block-navigation" aria-label="Workout blocks">
+      <nav class="session-block-navigation" aria-label="Workout blocks"${blocks.length === 1 ? " hidden" : ""}>
         ${blocks.map((block, blockIndex) => {
           const firstStepIndex = getBlockStartStepIndex(block, steps);
           const progress = getBlockStepProgress(block, steps);
@@ -146,7 +174,7 @@ function renderWorkoutSession() {
 
   document.querySelectorAll(".save-set-btn").forEach(button => {
     button.addEventListener("click", () => {
-      saveSetLog(button.dataset.exerciseId, Number(button.dataset.setNumber));
+      finishWorkoutSession();
     });
   });
 
@@ -164,12 +192,25 @@ function renderWorkoutSession() {
     });
   });
 
+  document.querySelectorAll("[data-session-skip-index]").forEach(button => {
+    button.addEventListener("click", () => {
+      goToSessionStep(Number(button.dataset.sessionSkipIndex));
+      showWorkoutSessionToast("Skipped for now. This set is still unsaved.");
+    });
+  });
+
   document.querySelectorAll(".session-next-step-btn").forEach(button => {
     button.addEventListener("click", () => {
       saveCurrentSetAndGoToStep(Number(button.dataset.nextStepIndex));
     });
   });
 
+  const blockNav = container.querySelector(".session-block-navigation");
+  const activeTab = blockNav?.querySelector(".session-block-nav.active");
+  if (blockNav && activeTab) {
+    blockNav.scrollLeft = Math.max(0, activeTab.offsetLeft - blockNav.offsetLeft - (blockNav.clientWidth - activeTab.offsetWidth) / 2);
+  }
+  restoreWorkoutSetDrafts();
   updateSetStats();
 }
 
@@ -188,6 +229,8 @@ function getBlockStepProgress(block, steps) {
 }
 
 function getBlockStartStepIndex(block, steps) {
+  const draftStep = steps.findIndex(step => step.block.id === block.id && workoutSetDrafts.has(`${step.exercise.id}:${step.setNumber}`));
+  if (draftStep >= 0) return draftStep;
   const firstIncompleteStepIndex = steps.findIndex(step =>
     step.block.id === block.id && !isStepComplete(step)
   );
@@ -206,7 +249,7 @@ function renderWorkoutOverview(workout, blocks, steps) {
     <section class="session-overview">
       <div class="session-overview-heading">
         <div>
-          <p class="eyebrow">WORKOUT PREVIEW</p>
+          <p class="eyebrow">WORKOUT OVERVIEW</p>
           <h2>${window.RipCityUI.text(workout.title)}</h2>
           <p>${window.RipCityUI.text(workout.description, "Review the blocks, then start when you are ready.")}</p>
         </div>
@@ -216,6 +259,8 @@ function renderWorkoutOverview(workout, blocks, steps) {
         </div>
       </div>
 
+      ${complete === total && !workoutSetDrafts.size ? `<div class="session-completion-summary" role="status"><h3>All ${total} sets saved</h3><p>Your results are saved. You can review or edit any set below.</p><a class="outline-link" href="${window.RipCityUI.attr(window.RipCityAccess.getFacilityPageUrl("member-training.html"))}">Back to Training Calendar</a></div>` : ""}
+      ${workoutSetDrafts.size ? `<p class="session-draft-notice" role="status">You have unsaved edits. Open the set to save them before leaving this page.</p>` : ""}
       <div class="session-overview-meta">
         <span><small>Focus</small><strong>${window.RipCityUI.text(workout.focus, "Workout")}</strong></span>
         <span><small>Estimated</small><strong>${window.RipCityUI.text(workout.estimated_minutes ? `${workout.estimated_minutes} min` : "—")}</strong></span>
@@ -279,7 +324,7 @@ function renderWorkoutOverview(workout, blocks, steps) {
 
       <div class="session-overview-actions">
         <button class="primary-btn" type="button" data-start-session>
-          ${hasProgress && complete < total ? "Continue Workout" : complete === total ? "Review Workout" : "Start Workout"}
+          ${workoutSetDrafts.size ? "Continue Unsaved Edits" : hasProgress && complete < total ? "Continue Workout" : complete === total ? "Review Workout" : "Start Workout"}
         </button>
       </div>
     </section>
@@ -326,6 +371,7 @@ function isStepComplete(step) {
 }
 
 function goToSessionStep(stepIndex) {
+  if (workoutSessionSaving) return;
   const workout = workoutAssignment?.workout;
   if (!workout) return;
 
@@ -335,12 +381,13 @@ function goToSessionStep(stepIndex) {
   currentSessionStepIndex = Math.min(Math.max(stepIndex, 0), steps.length - 1);
   updateWorkoutSessionHistory(isEnteringLogging ? "push" : "replace");
   renderWorkoutSession();
+  document.querySelector("[data-session-heading]")?.focus({ preventScroll: true });
   scrollWorkoutSessionViewIntoPlace();
 }
 
 function scrollWorkoutSessionViewIntoPlace() {
   window.requestAnimationFrame(() => {
-    if (workoutSessionView === "overview") {
+    if (workoutSessionView !== "logging") {
       window.scrollTo({ top: 0, left: 0, behavior: "auto" });
       return;
     }
@@ -353,6 +400,8 @@ function scrollWorkoutSessionViewIntoPlace() {
 }
 
 function goToSessionOverview() {
+  if (workoutSessionSaving) return;
+  captureCurrentWorkoutDrafts();
   if (window.history.state?.ripCityWorkoutSessionView === "logging") {
     window.history.back();
     return;
@@ -378,8 +427,8 @@ function renderWorkoutStep(step, index, exerciseIndex, exerciseCount, blockIndex
         <span class="round-exercise-label">${label}</span>
         <div class="session-current-summary">
           <p class="eyebrow">EXERCISE ${exerciseIndex + 1} OF ${exerciseCount} · SET ${step.setNumber} OF ${totalExerciseSets}</p>
-          <h4>${window.RipCityUI.text(step.exercise.name)}</h4>
-          <p>${window.RipCityUI.text(step.exercise.description, "No description added.")}</p>
+          <h4 tabindex="-1" data-session-heading>${window.RipCityUI.text(step.exercise.name)}</h4>
+          ${step.exercise.description ? `<p>${window.RipCityUI.text(step.exercise.description)}</p>` : ""}
         </div>
         <div class="session-current-target">
           <span>Coach Target</span>
@@ -475,6 +524,7 @@ function renderExerciseSetLogger(exercise, setNumber, stepIndex = null, options 
         </div>
       ` : ""}
 
+      ${getWorkoutDemoUrl(exercise.video_url) ? `<a class="outline-link session-demo-link" href="${window.RipCityUI.attr(getWorkoutDemoUrl(exercise.video_url))}" target="_blank" rel="noopener noreferrer">Watch exercise demo ↗</a>` : ""}
       <div class="set-log-list">
         ${renderSetLogger(exercise, setNumber, stepIndex)}
       </div>
@@ -486,7 +536,7 @@ function renderSetLogger(exercise, setNumber, stepIndex = null) {
   const existing = findExistingLog(exercise.id, setNumber);
   const completed = existing?.completed || false;
   const showNoteInput = exercise.input_type !== "custom";
-  const showCompletedInput = exercise.input_type === "completion";
+  const showCompletedInput = !exercise.input_type || exercise.input_type === "completion";
   const hasStepperActions = Number.isInteger(stepIndex);
   const totalSteps = hasStepperActions
     ? getWorkoutSessionSteps(workoutAssignment.workout).length
@@ -502,13 +552,14 @@ function renderSetLogger(exercise, setNumber, stepIndex = null) {
       class="set-log-row ${completed ? "set-complete" : ""}"
       data-exercise-id="${window.RipCityUI.attr(exercise.id)}"
       data-set-number="${window.RipCityUI.attr(setNumber)}"
+      data-input-type="${window.RipCityUI.attr(exercise.input_type || "completion")}"
     >
       <div class="set-log-title">
         <div>
           <span>Set ${setNumber}</span>
           <strong>Your Result</strong>
         </div>
-        <em>${completed ? "Saved" : "Not saved"}</em>
+        <em>${completed ? "Saved" : existing ? "Partial result saved" : "Not saved"}</em>
       </div>
 
       <div class="set-log-required-fields">
@@ -572,7 +623,7 @@ function renderSetLogger(exercise, setNumber, stepIndex = null) {
             type="button"
             data-next-step-index="${stepIndex + 1}"
           >
-            Save & Next
+            Next
           </button>
         ` : `
           <button
@@ -581,7 +632,7 @@ function renderSetLogger(exercise, setNumber, stepIndex = null) {
             data-exercise-id="${window.RipCityUI.attr(exercise.id)}"
             data-set-number="${window.RipCityUI.attr(setNumber)}"
           >
-            ${hasStepperActions ? "Save Final Set" : "Save Set"}
+            ${hasStepperActions ? "Finish Workout" : "Save Set"}
           </button>
         `}
       </div>
@@ -605,9 +656,9 @@ function renderInputsForExerciseType(exercise, existing, setNumber) {
           Actual Weight
           <input
             type="number"
-            class="set-weight-input"
+            class="set-weight-input" min="0" step="any" inputmode="decimal"
             value="${window.RipCityUI.attr(weightValue)}"
-            placeholder="ex: 185"
+            placeholder="0 for bodyweight"
           />
         </label>
 
@@ -615,8 +666,8 @@ function renderInputsForExerciseType(exercise, existing, setNumber) {
           Actual Reps${exercise.is_unilateral ? " (Each Side)" : ""}
           <input
             type="number"
-            class="set-reps-input"
-            value="${window.RipCityUI.attr(repsValue || "")}"
+            class="set-reps-input" min="0" step="1" inputmode="numeric"
+            value="${window.RipCityUI.attr(repsValue ?? "")}"
             placeholder="${window.RipCityUI.attr(setTarget || "reps")}"
           />
         </label>
@@ -644,8 +695,8 @@ function renderInputsForExerciseType(exercise, existing, setNumber) {
           Actual Reps${exercise.is_unilateral ? " (Each Side)" : ""}
           <input
             type="number"
-            class="set-reps-input"
-            value="${window.RipCityUI.attr(repsValue || "")}"
+            class="set-reps-input" min="0" step="1" inputmode="numeric"
+            value="${window.RipCityUI.attr(repsValue ?? "")}"
             placeholder="${window.RipCityUI.attr(setTarget || "reps")}"
           />
         </label>

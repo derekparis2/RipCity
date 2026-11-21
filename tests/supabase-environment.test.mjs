@@ -14,7 +14,7 @@ function loadClient(hostname) {
     supabase: {
       createClient(url, publishableKey) {
         createdWith = { url, publishableKey };
-        return { url };
+        return { url, auth: { signOut: async () => ({ error: null }) } };
       },
     },
   };

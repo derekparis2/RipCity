@@ -1,0 +1,20 @@
+/* Persistent errors stay above phone keyboards/navigation without taking focus. */
+#app-error-notices {
+  position:fixed; z-index:1000; top:max(12px,env(safe-area-inset-top)); left:50%; transform:translateX(-50%);
+  display:grid; gap:8px; width:min(680px,calc(100% - 24px)); max-height:40dvh; overflow:auto;
+  padding:3px; box-sizing:border-box; pointer-events:none;
+}
+#app-error-notices[hidden] { display:none; }
+#app-error-notices .app-error-notice {
+  display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding:12px 14px;
+  border:1px solid var(--border,#555); border-left:4px solid var(--danger,#b42332);
+  border-radius:12px; background:var(--surface,#171719); color:var(--text,#f7f7f7);
+  box-shadow:0 6px 24px #0003; pointer-events:auto; font-size:14px; line-height:1.45;
+}
+#app-error-notices .app-error-notice > span { min-width:0; overflow-wrap:anywhere; }
+#app-error-notices .app-error-close {
+  display:grid; place-items:center; flex:0 0 44px; width:44px; min-height:44px; padding:0;
+  border:1px solid var(--border,#555); border-radius:8px; background:var(--surface-2,#202124);
+  color:var(--text,#f7f7f7); font:inherit; font-size:24px; cursor:pointer;
+}
+#app-error-notices .app-error-close:focus-visible { outline:2px solid var(--facility-primary,#69b7ff); outline-offset:2px; }

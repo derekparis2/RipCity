@@ -2,12 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <script src="js/shared/facility-appearance.js?v=facility-styles-1&amp;errors=visible-feedback-1"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="js/shared/facility-shell.js?v=facility-ui-1&amp;review=facility-loading-5&amp;errors=visible-feedback-1"></script>
   <title>Member Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=member-nav-fixed-1" />
+  <link rel="stylesheet" href="css/styles.css?v=member-nav-fixed-1&amp;review=flexible-platform-2&amp;workflow=performance-2&amp;nav=full-tabs-1&amp;layout=outlined-tabs-5&amp;feedback=visible-errors-1" />
+  <link rel="stylesheet" href="css/facility-styles.css?v=facility-styles-12&amp;workflow=performance-2" />
+  <link rel="stylesheet" href="css/app-layout.css?v=consistent-spacing-4" />
+  <script src="js/shared/feedback.js?v=visible-errors-1"></script>
+  <link rel="stylesheet" href="css/feedback.css?v=visible-errors-1" />
 </head>
 
 <body class="auth-body member-dashboard-body" data-member-page="dashboard">
@@ -40,7 +46,8 @@
     </div>
   </aside>
 
-  <main class="main-content member-main-content">
+  <main class="app-shell main-content member-main-content">
+    <p id="member-page-message" class="auth-message" role="status" aria-live="polite"></p>
     <header class="topbar" id="member-dashboard-top">
       <div>
         <p class="eyebrow" id="member-dashboard-date">Member Dashboard</p>
@@ -52,14 +59,13 @@
       </div>
     </header>
 
-    <section class="hero-card h2k-hero">
+    <section class="app-page-heading hero-card h2k-hero" data-dashboard-role="member" data-dashboard-section="welcome">
       <div>
-        <p class="eyebrow">MEMBER DASHBOARD</p>
-        <h3>Your training, habits, goals, and progress in one place.</h3>
+        <h2>Dashboard</h2><p>Your training and progress at a glance.</p><p class="dashboard-welcome-line" data-facility-content="member_title"></p><p class="dashboard-welcome-message" data-facility-content="member_message"></p>
       </div>
     </section>
 
-    <section class="member-announcements-panel hidden" id="member-announcements-panel" aria-labelledby="member-announcements-heading">
+    <section class="member-announcements-panel hidden" data-dashboard-role="member" data-dashboard-section="announcements" id="member-announcements-panel" aria-labelledby="member-announcements-heading" data-facility-module="announcements">
       <div class="section-heading">
         <div>
           <p class="eyebrow">FROM YOUR COACHES</p>
@@ -69,8 +75,8 @@
       <div class="member-announcement-list" id="member-announcement-list"></div>
     </section>
 
-    <section class="dashboard-grid h2k-dashboard-grid">
-      <article class="panel feedback-panel dashboard-feedback-panel">
+    <section class="dashboard-grid h2k-dashboard-grid" data-dashboard-role="member" data-dashboard-section="feedback">
+      <article class="panel feedback-panel dashboard-feedback-panel" data-facility-widget="show_feedback">
         <div>
           <p class="eyebrow">BETA FEEDBACK</p>
           <h3>Tell us what to improve.</h3>
@@ -86,7 +92,7 @@
       </article>
     </section>
 
-    <section class="stats-grid member-stats-grid" id="member-stats-section">
+    <section class="stats-grid member-stats-grid" data-dashboard-role="member" data-dashboard-section="scores" id="member-stats-section" data-facility-widget="show_scores" data-facility-module="habits">
       <article class="stat-card">
         <span id="member-stat-one-label">Today’s Workouts</span>
         <strong><span id="today-score">0</span><span id="member-stat-one-suffix"></span></strong>
@@ -112,30 +118,30 @@
       </article>
     </section>
 
-    <section class="member-page-links" aria-label="Member tools">
-      <a class="member-page-link-card" href="member-training.html">
+    <section data-dashboard-role="member" data-dashboard-section="tools" class="member-page-links" aria-label="Member tools">
+      <a class="member-page-link-card" href="member-training.html" data-facility-modules="workouts testing_days">
         <span class="eyebrow">TRAINING</span>
         <strong>Open your calendar</strong>
         <span>Review assigned workouts and continue logging.</span>
       </a>
-      <a class="member-page-link-card" href="member-habits.html">
+      <a class="member-page-link-card" href="member-habits.html" data-facility-module="habits">
         <span class="eyebrow">DAILY HABITS</span>
         <strong>Track today’s habits</strong>
         <span>Check in and keep your current streak moving.</span>
       </a>
-      <a class="member-page-link-card" href="member-leaderboards.html">
+      <a class="member-page-link-card" href="member-leaderboards.html" data-facility-module="leaderboards">
         <span class="eyebrow">LEADERBOARDS</span>
         <strong>See the Top 5</strong>
         <span>Compare habit consistency with members in your program.</span>
       </a>
-      <a class="member-page-link-card" href="member-goals.html">
+      <a class="member-page-link-card" href="member-goals.html" data-facility-module="goals">
         <span class="eyebrow">GOALS</span>
         <strong>Update your goals</strong>
         <span>Add check-ins and keep the next target in view.</span>
       </a>
     </section>
 
-    <section class="member-dismissed-announcements hidden" id="member-dismissed-announcements-panel">
+    <section class="member-dismissed-announcements hidden" id="member-dismissed-announcements-panel" data-facility-module="announcements">
       <details>
         <summary>
           <span>Dismissed announcements</span>
@@ -152,13 +158,13 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/shared/supabaseClient.js"></script>
-  <script src="js/shared/ui-utils.js"></script>
-  <script src="js/shared/access-control.js?v=auth-reliability-3"></script>
-  <script src="js/shared/workout-data.js?v=workout-attribution-1"></script>
-  <script src="js/shared/leaderboard-metrics.js?v=member-leaderboards-1"></script>
-  <script src="js/member/member-nav.js?v=member-leaderboards-1"></script>
-  <script src="js/member/member-dashboard.js?v=member-role-guard-1"></script>
-  <script src="js/member/member-announcements.js?v=member-role-guard-1"></script>
+  <script src="js/shared/supabaseClient.js?errors=visible-feedback-1"></script>
+  <script src="js/shared/ui-utils.js?errors=visible-feedback-1"></script>
+  <script src="js/shared/access-control.js?v=auth-reliability-3&amp;review=flexible-platform-2&amp;navigation=facility-context-3&amp;shell=staff-profile-1&amp;errors=visible-feedback-1"></script>
+  <script src="js/shared/workout-data.js?v=workout-attribution-1&amp;errors=visible-feedback-1"></script>
+  <script src="js/shared/leaderboard-metrics.js?v=member-leaderboards-1&amp;errors=visible-feedback-1"></script>
+  <script src="js/member/member-nav.js?v=member-leaderboards-1&amp;navigation=facility-context-3&amp;errors=visible-feedback-1"></script>
+  <script src="js/member/member-dashboard.js?v=member-role-guard-1&amp;review=flexible-platform-2&amp;workflow=performance-2&amp;errors=visible-feedback-1"></script>
+  <script src="js/member/member-announcements.js?v=member-role-guard-1&amp;review=facility-ui-3&amp;errors=visible-feedback-1"></script>
 </body>
 </html>

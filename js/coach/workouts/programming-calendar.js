@@ -225,12 +225,14 @@ async function refreshProgrammingActionStates(assignments) {
     });
     if (request !== programmingActionStateRequest) return;
     if (error) throw error;
+    window.AppFeedback?.dismiss("calendar-action-check");
     programmingActionStates = new Map((data || []).map(row => [row.assignment_id, row]));
     renderProgrammingCalendar();
   } catch (error) {
     if (request !== programmingActionStateRequest) return;
     console.error(error);
     programmingActionStateKey = "";
+    window.AppFeedback?.error("Could not check calendar editing permissions. Reload the calendar to try again.", { key: "calendar-action-check" });
   }
 }
 

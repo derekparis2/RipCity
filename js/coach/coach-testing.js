@@ -54,6 +54,7 @@ function createTestingClientId() {
 
 function showTestingMessage(message, isError = false) {
   const element = document.getElementById("testing-day-message");
+  if (window.AppFeedback) { window.AppFeedback.show(element, message, isError, { key: "testing-day-message" }); return; }
   if (!element) return;
   element.textContent = message;
   element.classList.toggle("error-message", isError);
@@ -188,7 +189,7 @@ function renderTestingGroups(selectedIds = [...selectedTestingGroupIds]) {
 
   list.innerHTML = testingGroups.map(group => `
     <label class="assignment-checkbox-chip">
-      <span><strong>${window.RipCityUI.text(group.name)}</strong><small>${window.RipCityUI.text(group.member_type === "h2k" ? "H2K" : group.member_type)}</small></span>
+      <span><strong>${window.RipCityUI.text(group.name)}</strong><small>${window.RipCityUI.text(group.member_type === "both" ? "All programs" : window.RipCityAccess.getProgramLabel(window.RipCityFacility, group.member_type))}</small></span>
       <input data-testing-group type="checkbox" value="${window.RipCityUI.attr(group.id)}" ${selected.has(group.id) ? "checked" : ""} />
     </label>
   `).join("");
@@ -215,7 +216,7 @@ function renderTestingMembers(selectedIds = [...selectedTestingMemberIds]) {
       <label class="assignment-checkbox-chip">
         <span>
           <strong>${window.RipCityUI.text(member.name)}</strong>
-          <small>${window.RipCityUI.text(member.memberType === "h2k" ? "H2K" : "Athlete")}${groups.length ? ` · ${window.RipCityUI.text(groups.join(", "))}` : " · No group"}</small>
+          <small>${window.RipCityUI.text(window.RipCityAccess.getProgramLabel(window.RipCityFacility, member.memberType))}${groups.length ? ` · ${window.RipCityUI.text(groups.join(", "))}` : " · No group"}</small>
         </span>
         <input data-testing-member type="checkbox" value="${window.RipCityUI.attr(member.id)}" ${selected.has(member.id) ? "checked" : ""} />
       </label>
@@ -242,7 +243,7 @@ function updateTestingRosterSummary() {
   if (roster) roster.innerHTML = rosterMarkup;
   if (outline) {
     outline.innerHTML = members.length
-      ? members.map(member => `<div class="testing-outline-item"><strong>${window.RipCityUI.text(member.name)}</strong><span>${window.RipCityUI.text(member.memberType === "h2k" ? "H2K" : "Athlete")}</span></div>`).join("")
+      ? members.map(member => `<div class="testing-outline-item"><strong>${window.RipCityUI.text(member.name)}</strong><span>${window.RipCityUI.text(window.RipCityAccess.getProgramLabel(window.RipCityFacility, member.memberType))}</span></div>`).join("")
       : `<span class="muted-small">No participants selected.</span>`;
   }
   renderTestingBuilderReview();
@@ -956,6 +957,7 @@ async function handleTestingDayAction(button) {
     const message = action === "finish" && /Record a result, mark Not Tested, or mark the athlete absent/i.test(rawMessage)
       ? 'Finish every outcome first: enter a result, check "Did not complete" for a skipped test, or mark the athlete as not participating.'
       : rawMessage;
+    window.AppFeedback?.error(message, { key: "testing-day-action" });
     if (cardFeedback) {
       cardFeedback.textContent = message;
       cardFeedback.classList.remove("hidden");
@@ -1017,7 +1019,7 @@ async function initializeCoachTesting() {
     }
   } catch (error) {
     console.error(error);
-    const migrationMissing = error.code === "42P01" || /testing_days|save_testing_day/i.test(error.message || "");
+    const migrationMissing = ["42P01", "PGRST205", "PGRST202"].includes(error.code);
     showTestingMessage(migrationMissing ? "Testing Days are ready in code, but the Testing Day migration must be applied to this Supabase environment." : (error.message || "Could not load Testing Days."), true);
   }
 }
@@ -1116,7 +1118,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderTestingResultEntry();
   });
   document.getElementById("testing-logout-btn")?.addEventListener("click", async () => {
-    await db.auth.signOut();
+    if (!await window.AppFeedback.signOut()) return;
     window.location.href = "login.html";
   });
 

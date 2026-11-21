@@ -17,9 +17,12 @@ it, paste it into documentation, or reuse it for production/personal accounts.
 | `alphaadmin@example.com` | Test Facility Alpha | Admin | Approved | Second-facility administration |
 | `alphacoach@example.com` | Test Facility Alpha | Coach | Approved | Second-facility coaching workflows |
 | `alphaathlete@example.com` | Test Facility Alpha | Athlete | Approved | Second-facility member isolation |
+| `rcplatform@example.com` | Rip City + platform | Platform owner / Admin | Approved | Platform operations and Rip City admin-mode testing |
+| `alphaplatform@example.com` | Test Facility Alpha + platform | Platform owner / Admin | Approved | Second platform identity and Alpha admin-mode testing |
 
-Future multi-facility and platform-owner test scenarios belong to
-`VERSION_3_PLAN.md`. Do not add a platform-owner identity to the V2 fixture.
+The two platform identities are added by the separate V3 fixture and are not
+part of the immutable V2 nine-account seed. Existing `rcadmin` and
+`alphaadmin` accounts remain ordinary facility admins.
 
 Status: all nine Auth identities were created, auto-confirmed, and connected to
 their application profiles/memberships in Rip City Staging on 2026-08-28. The
@@ -63,6 +66,8 @@ without requiring a multi-facility V2 account.
 ## Safety Rules
 
 - Use these accounts only against the staging Supabase project.
+- Platform-owner accounts must remain dedicated test identities; never reuse
+  the emails or credentials in production.
 - Keep all profile, workout, goal, note, and upload content obviously fake.
 - Use no uploaded videos and few or no profile pictures.
 - Do not give these credentials to outside testers.

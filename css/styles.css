@@ -914,6 +914,8 @@
   --danger: #ff6b6b;
   --warning: #f7c948;
   --success: #7ee787;
+  --facility-primary: #69b7ff;
+  --facility-secondary: #f7f7f7;
 }
 
 body {
@@ -975,6 +977,29 @@ button:hover {
   width: 36px;
   height: 36px;
   object-fit: contain;
+}
+
+.facility-brand-initials {
+  color: var(--facility-secondary);
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  line-height: 1;
+}
+
+.auth-brand > .facility-brand-initials {
+  width: 52px;
+  height: 52px;
+  border: 1px solid var(--facility-primary);
+  background: #000;
+  display: grid;
+  place-items: center;
+}
+
+.auth-brand h1,
+.brand h1 {
+  color: var(--facility-secondary);
 }
 
 .brand h1,
@@ -11359,3 +11384,122 @@ details[open] > .compact-panel-summary > span:last-child::after {
 .program-launch-history li {
   color: var(--muted-text, #a7a7ad);
 }
+
+/* Facility visibility must override component display rules. */
+[hidden] { display: none !important; }
+
+/* Facility shells start neutral and reveal only verified branding. */
+html[data-facility-state="loading"] .auth-brand,
+html[data-facility-state="loading"] .brand,
+html[data-facility-state="loading"] [data-coach-nav],
+html[data-facility-state="loading"] [data-member-nav] { visibility:hidden; }
+html[data-facility-theme="slate"] { --bg:#111827; --surface:#1b2537; --surface-2:#253147; --border:#40516c; --text:#f1f5f9; --muted:#b3bfd1; }
+html[data-facility-theme="forest"] { --bg:#0d1815; --surface:#15241f; --surface-2:#20342b; --border:#3b5548; --text:#f1f7f3; --muted:#afc4b6; }
+.auth-brand h1, .brand h1 { color:var(--text); }
+html[data-facility-slug] .primary-btn { background:var(--accent); color:var(--accent-ink,#101114); border-color:var(--accent); }
+html[data-facility-slug] .eyebrow { color:var(--facility-primary); }
+html[data-facility-slug] .hero-card { border-left:3px solid var(--facility-primary); }
+html[data-facility-slug] .coach-nav-link.active,
+html[data-facility-slug] .nav-link.active { border-color:var(--facility-primary); background:var(--accent-soft); }
+.neutral-brand-mark { display:grid; place-items:center; width:54px; height:54px; flex-shrink:0; border:1px solid var(--border); border-radius:14px; background:var(--surface-2); color:var(--text); font-weight:800; font-size:22px; }
+
+:root { color-scheme:dark; }
+
+html[data-facility-theme] body { background:var(--bg); }
+html[data-facility-theme] .hero-card { background:linear-gradient(120deg,var(--surface-2),var(--surface)); }
+html[data-facility-theme] .member-sidebar { background:var(--surface); }
+.facility-brand-initials { color:var(--text); }
+
+/* Secondary color is a visible accent, never the only readable text color. */
+html[data-facility-slug] .h2k-header { border-bottom:3px solid var(--facility-secondary); padding-bottom:16px; }
+html[data-facility-slug] .member-sidebar { border-top:5px solid var(--facility-secondary); }
+html[data-facility-slug] .hero-card { border-bottom:3px solid var(--facility-secondary); }
+html[data-facility-slug] .outline-btn, html[data-facility-slug] .outline-link { border-color:var(--facility-secondary); }
+html[data-facility-slug] .coach-nav-link.active, html[data-facility-slug] .nav-link.active { box-shadow:inset 0 -3px var(--facility-secondary); }
+
+/* Program counts share the summary grid so configurable programs leave no empty columns. */
+.program-stat-cards { display: contents; }
+
+.empty-state :is(h3,p) { margin:0 0 12px; }
+.empty-state .outline-link { display:inline-flex; margin-top:10px; }
+.session-completion-summary { border:1px solid var(--border); border-left:4px solid var(--facility-primary); border-radius:12px; background:var(--surface-2); padding:20px; margin:18px 0; }
+.session-completion-summary h3 { margin:0 0 8px; }
+.session-completion-summary .outline-link { display:inline-flex; margin-top:12px; }
+.session-draft-notice { color:var(--text); padding:12px 0; }
+.set-log-row[data-dirty="true"] .set-log-title em { color:var(--text); }
+.session-demo-link { display:inline-flex; margin:10px 0; }
+.session-skip-set-btn { width:fit-content; background:none; border:0; padding:10px 0; margin-top:8px; color:var(--muted); text-decoration:underline; text-underline-offset:3px; cursor:pointer; font:inherit; }
+.session-skip-set-btn:hover { color:var(--text); }
+
+.session-finish-summary { padding:clamp(18px,4vw,36px); background:var(--surface); border:1px solid var(--border); border-radius:16px; }
+.session-finish-summary h2 { margin:10px 0 16px; }
+.session-finish-summary p { color:var(--muted); }
+.session-finish-actions { display:flex; flex-wrap:wrap; gap:12px; margin-top:24px; }
+@media(max-width:700px) {
+  .workout-session-page .session-header-actions { display:flex; flex-wrap:wrap; width:100%; gap:10px; }
+  .workout-session-page .session-header-actions > button { flex:1 1 120px; min-height:48px; }
+  .workout-session-body .set-log-row :is(input,select,textarea) { font-size:16px; min-height:44px; }
+  .workout-session-body .set-log-row input[type="checkbox"] { min-height:24px; width:24px; height:24px; }
+  .workout-session-body .set-log-actions { padding-bottom:env(safe-area-inset-bottom,0px); }
+  .session-finish-actions > * { display:flex; justify-content:center; align-items:center; width:100%; min-height:48px; }
+}
+
+/* Compact working-page headings replace oversized marketing banners. */
+body .app-page-heading {
+  display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap;
+  gap:16px; min-height:0; padding:22px 24px; margin:0 0 22px;
+  background:var(--surface); border:1px solid var(--border); border-radius:14px;
+}
+body .app-page-heading > div { min-width:0; max-width:none; }
+body .app-page-heading h2 {
+  margin:0 0 6px; font-family:"Inter",sans-serif;
+  font-size:clamp(24px,2.4vw,32px); line-height:1.2; font-weight:700;
+  text-transform:none; letter-spacing:-.025em; color:var(--text);
+}
+body .app-page-heading p { margin:0; max-width:72ch; color:var(--muted); line-height:1.5; }
+body .app-page-heading .dashboard-welcome-line { margin-top:12px; font-weight:600; color:var(--text); }
+body .app-page-heading .dashboard-welcome-message { margin-top:4px; }
+body .app-page-heading :is(.dashboard-welcome-line,.dashboard-welcome-message):empty { display:none; }
+@media(min-width:1041px) {
+  .h2k-header:has([data-coach-nav]) { gap:16px; padding-block:12px; margin-bottom:22px; }
+  .h2k-header:has([data-coach-nav]) .auth-brand h1 { font-size:clamp(24px,2.2vw,32px); line-height:1.15; }
+  .h2k-header:has([data-coach-nav]) .auth-brand img,
+  .h2k-header:has([data-coach-nav]) .auth-brand > .facility-brand-initials { width:48px; height:48px; }
+  .h2k-header [data-coach-nav] .coach-nav-links { gap:6px 18px; background:transparent; border-radius:0; }
+  .h2k-header [data-coach-nav] .coach-nav-link { min-height:42px; padding:10px 2px; border:0; border-bottom:2px solid transparent; border-radius:0; background:transparent; box-shadow:none; color:var(--muted); font-weight:600; }
+  .h2k-header [data-coach-nav] .coach-nav-link:hover { color:var(--text); background:transparent; }
+  .h2k-header [data-coach-nav] .coach-nav-link.active { color:var(--text); border-bottom-color:var(--facility-primary); background:transparent; box-shadow:none; }
+}
+@media(max-width:700px) { body .app-page-heading { padding:18px; gap:12px; } }
+
+.coach-session-actions { display:flex; align-items:center; flex-wrap:wrap; gap:10px; }
+.coach-profile-body { padding-bottom:0; }
+[data-dashboard-section="feedback"]:has(> [data-facility-widget="show_feedback"][hidden]) { display:none; }
+@media(min-width:1041px) {
+  .h2k-header:has([data-coach-nav]) { gap:12px; }
+  .h2k-header:has([data-coach-nav]) .h2k-header-actions > .coach-session-actions { grid-column:2; grid-row:1; justify-self:end; }
+  .h2k-header [data-coach-nav] .coach-nav-links { gap:8px; }
+  .h2k-header [data-coach-nav] .coach-nav-link {
+    min-height:44px; padding:11px 14px; font-size:15px; font-weight:600;
+    border:1px solid var(--border); border-radius:10px; background:transparent; color:var(--muted); box-shadow:none;
+  }
+  .h2k-header [data-coach-nav] .coach-nav-link:hover { color:var(--text); border-color:var(--text); }
+  .h2k-header [data-coach-nav] .coach-nav-link.active { background:var(--surface-2); color:var(--text); border:1px solid var(--facility-primary); box-shadow:none; }
+}
+
+.form-action-message { margin:0 0 12px; padding:12px 14px; border:1px solid var(--border); border-radius:10px; background:var(--surface-2); color:var(--text); font-weight:600; }
+.form-action-message.error-message { border-left:4px solid var(--danger); color:var(--text); }
+.form-action-message:focus { outline:2px solid var(--danger); outline-offset:3px; }
+
+/* Profile waits for its verified role before revealing either navigation shell. */
+html[data-profile-state="loading"] body.profile-body { display:block; }
+html[data-profile-state="loading"] body.profile-body > :is(aside,main) { display:none !important; }
+.profile-loading { width:min(1320px,calc(100% - 32px)); margin:32px auto; padding:20px; background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:12px; box-sizing:border-box; }
+.profile-loading p { margin:0; }
+.profile-loading a { display:inline-flex; margin-top:14px; }
+html:not([data-profile-state="loading"]) .profile-loading { display:none; }
+
+.roster-group-card .group-delete-message { grid-column:1 / -1; width:100%; margin:10px 0 0; box-sizing:border-box; }
+
+.auth-session-actions { display:grid; gap:12px; margin:20px 0; }
+.auth-session-actions p { margin:0 0 4px; overflow-wrap:anywhere; color:var(--text); }

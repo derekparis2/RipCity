@@ -22,16 +22,46 @@ const H2K_BAND_COLORS = [
   "Red"
 ];
 
+const rosterMessageTimers = new WeakMap();
+function renderRosterActionMessage(element, text, isError = false, onDismiss = null, autoClose = false) {
+  window.clearTimeout(rosterMessageTimers.get(element));
+  element.replaceChildren();
+  element.hidden = !text;
+  element.classList.toggle("error-message", isError);
+  element.classList.toggle("dismissible-message", isError && Boolean(text));
+  element.setAttribute("role", isError ? "alert" : "status");
+  element.setAttribute("aria-live", isError ? "assertive" : "polite");
+  if (!text) return;
+  const copy = document.createElement("span");
+  copy.textContent = text;
+  element.append(copy);
+  if (isError) {
+    const dismiss = document.createElement("button");
+    dismiss.type = "button";
+    dismiss.className = "message-dismiss-btn";
+    dismiss.setAttribute("aria-label", "Dismiss error");
+    dismiss.textContent = "×";
+    dismiss.addEventListener("click", () => {
+      renderRosterActionMessage(element, "");
+      onDismiss?.();
+    });
+    element.append(dismiss);
+  } else if (autoClose) {
+    rosterMessageTimers.set(element, window.setTimeout(() => renderRosterActionMessage(element, ""), 4500));
+  }
+}
+
 function showRosterMessage(message, isError = false) {
   const element = document.getElementById("coach-roster-message");
   if (!element) return;
 
-  element.textContent = message;
-  element.classList.toggle("error-message", isError);
+  if (window.AppFeedback) { window.AppFeedback.show(element, message, isError, { key: "coach-roster-message", autoClose: /(?:created|deleted|saved|updated|deactivated|reactivated)\.$/i.test(message) }); return; }
+  renderRosterActionMessage(element, message, isError, null, /(?:created|deleted|saved|updated|deactivated|reactivated)\.$/i.test(message));
 }
 
 function showRosterSignupLinkMessage(message, isError = false) {
   const element = document.getElementById("coach-signup-link-message");
+  if (window.AppFeedback) { window.AppFeedback.show(element, message, isError, { key: "coach-signup-link-message" }); return; }
   if (!element) return;
   element.textContent = message;
   element.classList.toggle("error-message", isError);
@@ -40,7 +70,55 @@ function showRosterSignupLinkMessage(message, isError = false) {
 function buildRosterSignupLink(type) {
   const signupUrl = new URL("signup.html", window.location.href);
   signupUrl.searchParams.set("type", type);
+  const facilitySlug = rosterAccess?.facilityConfig?.slug;
+  const code = rosterAccess?.facilityConfig?.registration_code;
+  if (code) signupUrl.searchParams.set("code",code);
+  else if (facilitySlug) signupUrl.searchParams.set("facility", facilitySlug);
   return signupUrl.href;
+}
+
+function applyRosterProgramConfiguration() {
+  const programs = rosterAccess?.facilityConfig?.programs || {};
+
+  const getProgram = key => programs[key] || {enabled:false,display_name:"Member",plural_name:"Members"};
+  const links = document.getElementById("roster-registration-links");
+  if(links) {
+    links.replaceChildren();
+    for(const program of Object.values(programs).filter(program=>program.enabled !== false)) {
+      const button=document.createElement("button");button.type="button";button.className="outline-btn";
+      button.textContent=`Copy ${program.display_name} Link`; button.addEventListener("click",()=>copyRosterSignupLink(program.program_key));links.append(button);
+    }
+    const code=document.getElementById("roster-registration-code");if(code) code.textContent=rosterAccess.facilityConfig.registration_code || "Unavailable";
+  }
+  for(const id of ["roster-type-filter","new-group-member-type"]) {
+    const select=document.getElementById(id);if(!select) continue;
+    const previous=select.value;select.replaceChildren();
+    const all=document.createElement("option");all.value=id==="roster-type-filter"?"all":"both";all.textContent="All programs";select.append(all);
+    for(const program of Object.values(programs)) {
+      if(program.enabled === false && id!=="roster-type-filter") continue;
+      const option=document.createElement("option");option.value=program.program_key;option.textContent=program.plural_name;select.append(option);
+    }
+    if([...select.options].some(option=>option.value===previous)) select.value=previous;
+  }
+
+  document.querySelectorAll("[data-program-label]").forEach(element => {
+    const program = getProgram(element.dataset.programLabel);
+    const form = element.dataset.programLabelForm || "plural";
+    element.textContent = form === "singular" ? program.display_name : program.plural_name;
+  });
+
+  document.querySelectorAll("option[data-program-option]").forEach(option => {
+    const program = getProgram(option.dataset.programOption);
+    option.textContent = program.plural_name;
+    option.disabled = program.enabled === false;
+    option.hidden = program.enabled === false;
+  });
+
+  const groupMemberType = document.getElementById("new-group-member-type");
+  if (groupMemberType?.selectedOptions[0]?.disabled) {
+    const firstEnabled = [...groupMemberType.options].find(option => !option.disabled);
+    if (firstEnabled) groupMemberType.value = firstEnabled.value;
+  }
 }
 
 async function copyRosterSignupLink(type) {
@@ -62,7 +140,8 @@ async function copyRosterSignupLink(type) {
       if (!copied) throw new Error("Copy failed");
     }
 
-    showRosterSignupLinkMessage(`${type === "h2k" ? "H2K" : "Athlete"} signup link copied.`);
+    const program = rosterAccess?.facilityConfig?.programs?.[type];
+    showRosterSignupLinkMessage(`${program?.display_name || (type === "h2k" ? "H2K" : "Athlete")} signup link copied.`);
   } catch (error) {
     console.error(error);
     showRosterSignupLinkMessage(`Copy this link: ${link}`, true);
@@ -74,13 +153,16 @@ function normalizeMemberProfile(member) {
 }
 
 function formatMemberType(memberType) {
-  return memberType === "h2k" ? "H2K" : "Athlete";
+  return window.RipCityAccess.getProgramLabel(
+    rosterAccess?.facilityConfig,
+    memberType
+  );
 }
 
 function formatRole(role) {
   const labels = {
-    athlete: "Athlete",
-    h2k_member: "H2K Member",
+    athlete: window.RipCityAccess.getProgramLabel(rosterAccess?.facilityConfig, "athlete"),
+    h2k_member: window.RipCityAccess.getProgramLabel(rosterAccess?.facilityConfig, "h2k"),
     coach: "Coach",
     admin: "Admin",
     parent: "Parent"
@@ -89,8 +171,8 @@ function formatRole(role) {
   return labels[role] || role;
 }
 
-function groupSupportsMember(group, memberType) {
-  return group.member_type === "both" || group.member_type === memberType;
+function groupSupportsMember(group, memberType, programKey) {
+  return (!group.program_key || group.program_key === programKey) && (group.member_type === "both" || group.member_type === memberType);
 }
 
 function getMemberGroupIds(memberProfileId) {
@@ -173,7 +255,7 @@ function getFilteredMembers() {
       memberProfile?.school
     ].filter(Boolean).join(" ").toLowerCase();
 
-    if (typeFilter !== "all" && member.memberType !== typeFilter) return false;
+    if (typeFilter !== "all" && member.programKey !== typeFilter) return false;
     if (statusFilter !== "all" && member.status !== statusFilter) return false;
     if (groupFilter !== "all" && !groupIds.includes(groupFilter)) return false;
     if (search && !searchText.includes(search)) return false;
@@ -197,6 +279,7 @@ function buildRosterMemberSelect(includeBandColor = true) {
     id,
     role,
     status,
+    program_key,
     created_at,
     profile:profiles!facility_members_profile_id_fkey (
       id,
@@ -255,6 +338,7 @@ async function loadRosterMembers(facilityId) {
       profileId: member.profile?.id,
       memberProfileId: memberProfile?.id,
       memberType: memberProfile?.member_type || (member.role === "h2k_member" ? "h2k" : "athlete"),
+      programKey: member.program_key || memberProfile?.member_type,
       role: member.role,
       status: member.status,
       name: member.profile?.full_name || "Unnamed Member",
@@ -289,6 +373,11 @@ async function loadRosterGroupMemberships(memberProfileIds) {
 }
 
 function updateRosterStats() {
+  const programStats=document.getElementById("facility-program-stats");
+  if(programStats) programStats.innerHTML=Object.values(rosterAccess?.facilityConfig?.programs || {}).filter(program=>program.enabled!==false).map(program=>
+    `<article class="stat-card"><span>${window.RipCityUI.text(program.plural_name)}</span><strong>${rosterMembers.filter(member=>member.programKey===program.program_key).length}</strong><small>Facility members</small></article>`
+  ).join("");
+
   const ungrouped = rosterMembers.filter(member => !getMemberGroupIds(member.memberProfileId).length);
 
   document.getElementById("roster-total-members").textContent = rosterMembers.length;
@@ -326,7 +415,7 @@ function renderGroupList() {
       <article class="roster-group-card">
         <div>
           <strong>${window.RipCityUI.text(group.name)}</strong>
-          <span>${window.RipCityUI.text(group.group_type)} · ${window.RipCityUI.text(group.member_type)}</span>
+          <span>${window.RipCityUI.text(group.group_type)} · ${window.RipCityUI.text(group.program_key ? formatMemberType(group.program_key) : "All programs")}</span>
         </div>
         <div class="roster-group-card-actions">
           <b>${count}</b>
@@ -340,12 +429,13 @@ function renderGroupList() {
             </button>
           ` : `<span class="muted-small">Removal restricted</span>`}
         </div>
+        <p class="form-action-message group-delete-message" data-group-delete-message role="status" aria-live="polite" tabindex="-1" hidden></p>
       </article>
     `;
   }).join("");
 
   list.querySelectorAll("[data-delete-roster-group]").forEach(button => {
-    button.addEventListener("click", () => deleteRosterGroup(button.dataset.deleteRosterGroup));
+    button.addEventListener("click", () => deleteRosterGroup(button.dataset.deleteRosterGroup, button));
   });
 }
 
@@ -373,6 +463,16 @@ function renderRosterMembers() {
     renderRosterMembers();
   });
 
+  document.querySelectorAll("[data-change-member-program]").forEach(button=>button.addEventListener("click",async()=>{
+    const membershipId=button.dataset.changeMemberProgram;
+    const key=document.querySelector(`[data-member-program="${membershipId}"]`)?.value;
+    if(!confirm("Change this member's program? Their saved results remain intact. Incompatible program groups must be removed first.")) return;
+    button.disabled=true;
+    try {
+      const {error}=await db.rpc("change_member_facility_program",{p_membership_id:membershipId,p_program_key:key});
+      if(error) throw error; await refreshRoster();showRosterMessage("Member program updated.");
+    } catch(error){showRosterMessage(error.message,true);button.disabled=false;}
+  }));
   document.querySelectorAll("[data-roster-group-toggle]").forEach(input => {
     input.addEventListener("change", () => markMemberGroupChanges(input.dataset.memberProfileId));
   });
@@ -449,7 +549,7 @@ function renderRosterMemberCard(member) {
   const memberProfile = member.memberProfile || {};
   const memberGroups = getMemberGroups(member.memberProfileId);
   const groupIds = new Set(memberGroups.map(group => group.id));
-  const compatibleGroups = rosterGroups.filter(group => groupSupportsMember(group, member.memberType));
+  const compatibleGroups = rosterGroups.filter(group => groupSupportsMember(group, member.memberType, member.programKey));
   const meta = [
     formatRole(member.role),
     member.status,
@@ -480,7 +580,7 @@ function renderRosterMemberCard(member) {
         <div>
           <div class="roster-member-heading">
             <h4>${window.RipCityUI.text(member.name)}</h4>
-            <span class="status-pill">${window.RipCityUI.text(formatMemberType(member.memberType))}</span>
+            <span class="status-pill">${window.RipCityUI.text(formatMemberType(member.programKey))}</span>
             ${member.memberType === "h2k" ? `
               <span class="h2k-band-badge">${window.RipCityUI.text(memberProfile.h2k_band_color ? `${memberProfile.h2k_band_color} Band` : "No Band")}</span>
             ` : ""}
@@ -525,6 +625,8 @@ function renderRosterMemberCard(member) {
         </div>
 
         ${member.memberType === "h2k" ? renderH2KBandEditor(member) : ""}
+        ${rosterAccess?.isAdmin ? `<div class="form-row"><label>Member program<select data-member-program="${window.RipCityUI.attr(member.facilityMemberId)}">${Object.values(rosterAccess.facilityConfig.programs).filter(program=>program.enabled!==false || program.program_key===member.programKey).map(program=>`<option value="${window.RipCityUI.attr(program.program_key)}"${program.program_key===member.programKey?" selected":""}>${window.RipCityUI.text(program.display_name)}</option>`).join("")}</select></label><button class="outline-btn" type="button" data-change-member-program="${window.RipCityUI.attr(member.facilityMemberId)}">Change Program</button></div>` : ""}
+
 
         <div class="roster-group-checkboxes">
           ${compatibleGroups.length ? compatibleGroups.map(group => `
@@ -646,17 +748,28 @@ async function saveMemberGroupChanges(memberProfileId) {
   }
 }
 
-async function deleteRosterGroup(groupId) {
+async function deleteRosterGroup(groupId, button) {
+  if (button?.disabled) return;
   const group = rosterGroups.find(item => item.id === groupId);
   if (!group) return;
+  const message = button?.closest(".roster-group-card")?.querySelector("[data-group-delete-message]");
+  const showDeleteMessage = (text, isError = false) => {
+    if (!message) { showRosterMessage(text, isError); return; }
+    renderRosterActionMessage(message, text, isError, () => button?.focus());
+    if (isError) {
+      message.scrollIntoView({ block: "nearest", behavior: "auto" });
+      message.focus({ preventScroll: true });
+    }
+  };
   if (!canManageRosterGroup(group)) {
-    showRosterMessage("Only the coach who created this group or a facility administrator can delete it.", true);
+    showDeleteMessage("Only the coach who created this group or a facility administrator can delete it.", true);
     return;
   }
 
   const memberCount = rosterGroupMemberships.filter(row => row.group_id === groupId).length;
 
-  showRosterMessage("Checking group before delete...");
+  if (button) button.disabled = true;
+  showDeleteMessage("Checking group before delete...");
 
   try {
     const { data: assignments, error: assignmentError } = await db
@@ -670,7 +783,7 @@ async function deleteRosterGroup(groupId) {
     // Group-targeted assignments cascade on delete, so block deletion when
     // workout history still points at this group.
     if ((assignments || []).length) {
-      showRosterMessage("This group has workout assignments. Remove or reassign those workouts before deleting the group.", true);
+      showDeleteMessage("This group has workout assignments. Remove or reassign those workouts before deleting the group.", true);
       return;
     }
 
@@ -679,7 +792,7 @@ async function deleteRosterGroup(groupId) {
       : `Delete ${group.name}?`;
 
     if (!confirm(confirmText)) {
-      showRosterMessage("");
+      showDeleteMessage("");
       return;
     }
 
@@ -695,7 +808,9 @@ async function deleteRosterGroup(groupId) {
     showRosterMessage("Group deleted.");
   } catch (error) {
     console.error(error);
-    showRosterMessage(error.message || "Could not delete group.", true);
+    showDeleteMessage(error.code === "23503" ? "This group still has members or linked records. Remove its member assignments and related records before deleting it." : error.message || "Could not delete group. Try again.", true);
+  } finally {
+    if (button) button.disabled = false;
   }
 }
 
@@ -734,19 +849,42 @@ async function setRosterMemberStatus(facilityMemberId, nextStatus) {
   }
 }
 
+function showCreateGroupMessage(message, isError = false, nameError = false) {
+  const element = document.getElementById("create-group-message");
+  if (!element) return;
+  renderRosterActionMessage(element, message, isError, () => {
+    const input = document.getElementById("new-group-name");
+    input?.removeAttribute("aria-invalid");
+    input?.focus();
+  }, message === "Group created.");
+  const nameInput = document.getElementById("new-group-name");
+  if (nameInput) {
+    if (nameError) nameInput.setAttribute("aria-invalid", "true");
+    else nameInput.removeAttribute("aria-invalid");
+  }
+  if (isError) {
+    nameInput?.scrollIntoView({ block: "center", behavior: "auto" });
+    nameInput?.focus({ preventScroll: true });
+  }
+}
+
 async function createRosterGroup(event) {
   event.preventDefault();
 
+  const submit = event.currentTarget.querySelector('button[type="submit"]');
+  if (submit.disabled) return;
   const name = document.getElementById("new-group-name").value.trim();
   const groupType = document.getElementById("new-group-type").value;
   const memberType = document.getElementById("new-group-member-type").value;
 
   if (!name) {
-    showRosterMessage("Group name is required.", true);
+    showCreateGroupMessage("Group name is required.", true, true);
     return;
   }
 
-  showRosterMessage("Creating group...");
+  submit.disabled = true;
+  submit.textContent = "Creating...";
+  showCreateGroupMessage("Creating group...");
 
   try {
     const { error } = await db
@@ -755,7 +893,8 @@ async function createRosterGroup(event) {
         facility_id: rosterAccess.membership.facility_id,
         name,
         group_type: groupType,
-        member_type: memberType,
+        member_type: "both",
+        program_key: memberType === "both" ? null : memberType,
         created_by: rosterAccess.profile.id
       });
 
@@ -763,10 +902,13 @@ async function createRosterGroup(event) {
 
     document.getElementById("create-group-form").reset();
     await refreshRoster();
-    showRosterMessage("Group created.");
+    showCreateGroupMessage("Group created.");
   } catch (error) {
     console.error(error);
-    showRosterMessage(error.message || "Could not create group.", true);
+    showCreateGroupMessage(error.code === "23505" ? "A group with this name already exists. Choose a different name." : error.message || "Could not create group. Try again.", true, error.code === "23505");
+  } finally {
+    submit.disabled = false;
+    submit.textContent = "Create Group";
   }
 }
 
@@ -795,7 +937,7 @@ async function refreshRoster() {
 }
 
 async function logoutCoachRoster() {
-  await db.auth.signOut();
+  if (!await window.AppFeedback.signOut()) return;
   window.location.href = "login.html";
 }
 
@@ -806,6 +948,7 @@ async function initCoachRosterPage() {
     rosterAccess = await requireRosterCoachAccess();
     if (!rosterAccess) return;
 
+    applyRosterProgramConfiguration();
     await refreshRoster();
   } catch (error) {
     console.error(error);
@@ -822,6 +965,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("refresh-roster-btn").addEventListener("click", refreshRoster);
   document.getElementById("create-group-form").addEventListener("submit", createRosterGroup);
+  document.getElementById("new-group-name").addEventListener("input", () => {
+    const name = document.getElementById("new-group-name");
+    if (name.hasAttribute("aria-invalid")) showCreateGroupMessage("");
+  });
   document.getElementById("coach-roster-logout-btn").addEventListener("click", logoutCoachRoster);
 
   ["roster-type-filter", "roster-status-filter", "roster-group-filter", "roster-search"].forEach(id => {

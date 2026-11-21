@@ -74,12 +74,15 @@ function formatLocalDate(date) {
 }
 
 function getTodayString() {
-  return formatLocalDate(new Date());
+  return window.RipCityAccess?.getFacilityDateKey
+    ? window.RipCityAccess.getFacilityDateKey()
+    : formatLocalDate(new Date());
 }
 
 // Gets Monday of current week.
 function getStartOfWeekDate() {
-  const today = new Date();
+  const [year, month, date] = getTodayString().split("-").map(Number);
+  const today = new Date(year, month - 1, date, 12);
   const day = today.getDay();
   const diff = today.getDate() - day + (day === 0 ? -6 : 1);
   return new Date(today.getFullYear(), today.getMonth(), diff);
@@ -140,6 +143,7 @@ function formatWeekRangeLabel(week) {
 
 function showCoachDashboardMessage(message, isError = false) {
   const element = document.getElementById("coach-dashboard-message");
+  if (window.AppFeedback) { window.AppFeedback.show(element, message, isError, { key: "coach-dashboard-message" }); return; }
   if (!element) return;
 
   element.textContent = message;
@@ -148,6 +152,7 @@ function showCoachDashboardMessage(message, isError = false) {
 
 function showCoachWorkoutReviewMessage(message, isError = false) {
   const element = document.getElementById("coach-workout-review-message");
+  if (window.AppFeedback) { window.AppFeedback.show(element, message, isError, { key: "coach-workout-review-message" }); return; }
   if (!element) return;
 
   element.textContent = message;
@@ -197,6 +202,7 @@ async function loadApprovedH2KMembers(facilityId) {
       created_at,
       role,
       status,
+      program_key,
       profile:profiles!facility_members_profile_id_fkey (
         id,
         full_name,
@@ -381,6 +387,7 @@ function renderCoachMemberList(rows) {
 
 function showCoachWeeklyHistoryMessage(message, isError = false) {
   const element = document.getElementById("coach-weekly-history-message");
+  if (window.AppFeedback) { window.AppFeedback.show(element, message, isError, { key: "coach-weekly-history-message" }); return; }
   if (!element) return;
 
   element.textContent = message;
@@ -419,7 +426,7 @@ function renderCoachWeeklyMemberResults() {
       ${window.RipCityUI.avatarMarkup(member.name, member.profilePictureUrl, "coach-review-avatar")}
       <span>
         <strong>${window.RipCityUI.text(member.name)}</strong>
-        <small>${window.RipCityUI.text(formatMemberTypeLabel(member.memberType))} · ${window.RipCityUI.text(member.email)}</small>
+        <small>${window.RipCityUI.text(formatMemberTypeLabel(member.programKey || member.memberType))} · ${window.RipCityUI.text(member.email)}</small>
       </span>
     </button>
   `).join("");
@@ -458,7 +465,7 @@ async function refreshCoachWeeklyHistory() {
     selectedMemberElement.innerHTML = `
       <span class="eyebrow">SELECTED MEMBER</span>
       <strong>${window.RipCityUI.text(selectedMember.name)}</strong>
-      <small>${window.RipCityUI.text(formatMemberTypeLabel(selectedMember.memberType))} · ${window.RipCityUI.text(selectedMember.email)}</small>
+      <small>${window.RipCityUI.text(formatMemberTypeLabel(selectedMember.programKey || selectedMember.memberType))} · ${window.RipCityUI.text(selectedMember.email)}</small>
     `;
   }
 
@@ -645,6 +652,7 @@ async function loadApprovedFacilityMembers(facilityId) {
       created_at,
       role,
       status,
+      program_key,
       profile:profiles!facility_members_profile_id_fkey (
         id,
         full_name,
@@ -672,6 +680,7 @@ async function loadApprovedFacilityMembers(facilityId) {
       facilityMemberId: member.id,
       memberProfileId: memberProfile?.id,
       memberType: memberProfile?.member_type || member.role,
+      programKey: member.program_key || memberProfile?.member_type,
       name: member.profile?.full_name || "Unnamed Member",
       email: member.profile?.email || "",
       profilePictureUrl: member.profile?.profile_picture_url || "",
@@ -722,7 +731,7 @@ async function loadRecentWorkoutAssignmentsForCoach(facilityId) {
 }
 
 function formatMemberTypeLabel(memberType) {
-  return memberType === "h2k" ? "H2K" : "Athlete";
+  return window.RipCityAccess.getProgramLabel(window.RipCityFacility, memberType);
 }
 
 function getMemberCompletionStatus(member) {
@@ -937,7 +946,7 @@ function getFilteredWorkoutReviewRows(rows, searchTerm) {
 
 async function refreshCoachWorkoutReview() {
   const list = document.getElementById("coach-workout-review-list");
-  if (!list || !coachAccess) return;
+  if (!list || !coachAccess || !window.RipCityAccess.isModuleEnabled(coachAccess.facilityConfig, "workouts")) return;
 
   showCoachWorkoutReviewMessage("Loading workout completion...");
 
@@ -1027,7 +1036,7 @@ function renderCoachWorkoutReview() {
   const row = getSelectedCoachReviewRow();
 
   if (!row) {
-    list.innerHTML = `<div class="empty-state">No assigned workouts match your search.</div>`;
+    list.innerHTML = `<div class="empty-state">${coachWorkoutReviewRows.length ? "No assigned workouts match your search. Try a different date or clear your search." : `No workouts assigned yet. <a href="${window.RipCityUI.attr(window.RipCityAccess.getFacilityPageUrl("coach-programming.html?view=calendar"))}">Open Workout Planner</a> to schedule your first workout.`}</div>`;
     return;
   }
 
@@ -1354,7 +1363,7 @@ function buildCoachAttentionRows(members, habitLogs, todayKey) {
       groupIds,
       groupNames,
       reason: "No habit tracking for 3 consecutive days",
-      detail: `${formatMemberTypeLabel(member.memberType)} habit follow-up`
+      detail: `${formatMemberTypeLabel(member.programKey || member.memberType)} habit follow-up`
     } : null;
   }).filter(Boolean).sort((a, b) => {
     return a.memberType.localeCompare(b.memberType) || a.name.localeCompare(b.name);
@@ -1362,6 +1371,13 @@ function buildCoachAttentionRows(members, habitLogs, todayKey) {
 }
 
 function populateCoachAttentionGroupFilter() {
+  const typeSelect=document.getElementById("coach-attention-type-filter");
+  if(typeSelect) {
+    const previous=typeSelect.value;
+    typeSelect.innerHTML=`<option value="all">All programs</option>`+Object.values(coachAccess.facilityConfig.programs).map(program=>`<option value="${window.RipCityUI.attr(program.program_key)}">${window.RipCityUI.text(program.plural_name)}</option>`).join("");
+    if([...typeSelect.options].some(option=>option.value===previous)) typeSelect.value=previous;
+  }
+
   const select = document.getElementById("coach-attention-group-filter");
   if (!select) return;
 
@@ -1379,6 +1395,11 @@ function populateCoachAttentionGroupFilter() {
 }
 
 function updateCoachAttentionStats(members, attentionRows) {
+  const programStats=document.getElementById("facility-program-stats");
+  if(programStats) programStats.innerHTML=Object.values(coachAccess?.facilityConfig?.programs || {}).filter(program=>program.enabled!==false).map(program=>
+    `<article class="stat-card"><span>${window.RipCityUI.text(program.plural_name)}</span><strong>${members.filter(member=>member.programKey===program.program_key).length}</strong><small>Facility members</small></article>`
+  ).join("");
+
   const h2kCount = members.filter(member => member.memberType === "h2k").length;
   const athleteCount = members.filter(member => member.memberType === "athlete").length;
 
@@ -1402,7 +1423,7 @@ function renderCoachAttentionList() {
       .join(" ")
       .toLowerCase();
     const matchesSearch = !search || searchableText.includes(search);
-    const matchesType = memberType === "all" || row.memberType === memberType;
+    const matchesType = memberType === "all" || row.programKey === memberType;
     const matchesGroup = groupId === "all" ||
       (groupId === "ungrouped" ? !row.groupIds.length : row.groupIds.includes(groupId));
     return matchesSearch && matchesType && matchesGroup;
@@ -1459,10 +1480,9 @@ async function refreshCoachDashboard() {
     const facilityId = coachAccess.membership.facility_id;
     const todayKey = getTodayString();
     const members = await loadApprovedFacilityMembers(facilityId);
-    const habitLogs = await loadHabitLogsForAttention(
-      members.map(member => member.memberProfileId),
-      todayKey
-    );
+    const habitLogs = window.RipCityAccess.isModuleEnabled(coachAccess.facilityConfig, "habits")
+      ? await loadHabitLogsForAttention(members.map(member => member.memberProfileId), todayKey)
+      : [];
 
     await refreshCoachWorkoutReview();
     populateCoachAttentionGroupFilter();
@@ -1481,7 +1501,7 @@ async function refreshCoachDashboard() {
 
 // Logs out the coach/admin.
 async function logoutCoachDashboard() {
-  await db.auth.signOut();
+  if (!await window.AppFeedback.signOut()) return;
   window.location.href = "login.html";
 }
 

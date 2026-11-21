@@ -24,7 +24,7 @@ assert.match(controller, /db\.rpc\("get_member_habit_leaderboard"/, "browser rea
 assert.match(controller, /previous four completed Monday–Sunday weeks/, "rolling-average guidance explains its actual date window");
 assert.doesNotMatch(controller, /\.from\("habit_logs"\)/, "member browser never downloads facility-wide habit logs");
 assert.doesNotMatch(controller, /\.from\("facility_members"\)/, "member browser never downloads the facility roster");
-assert.match(controller, /All \$\{programLabel\}/, "the full-program scope is labeled by member program");
+assert.match(controller, /All \$\{window\.RipCityUI\.text\(programLabel\)\}/, "the full-program scope is labeled by member program");
 assert.match(nav, /key: "leaderboards"/, "leaderboards replace History in the main member navigation");
 assert.doesNotMatch(nav, /key: "history"/, "History is not a main member navigation destination");
 assert.match(habits, /id="member-weekly-history-list"/, "weekly habit history now lives on the Habits page");

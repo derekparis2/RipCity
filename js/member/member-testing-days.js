@@ -26,7 +26,10 @@ const memberTrainingViewCopy = {
 };
 
 function setMemberTrainingView(view) {
-  const nextView = memberTrainingViewCopy[view] ? view : "schedule";
+  const testingEnabled = window.RipCityAccess?.isModuleEnabled(window.RipCityFacility, "testing_days") !== false;
+  const viewSwitch = document.querySelector(".training-view-switch");
+  if (viewSwitch) viewSwitch.hidden = !window.RipCityFacility || !testingEnabled;
+  const nextView = memberTrainingViewCopy[view] && (view !== "performance" || testingEnabled) ? view : "schedule";
   activeMemberTrainingView = nextView;
   document.querySelectorAll("[data-training-view-panel]").forEach(panel => {
     panel.classList.toggle("hidden", panel.dataset.trainingViewPanel !== nextView);
@@ -50,6 +53,7 @@ function setMemberTrainingView(view) {
 
 function showMemberTestingMessage(message, isError = false) {
   const element = document.getElementById("member-testing-message");
+  if (window.AppFeedback) { window.AppFeedback.show(element, message, isError, { key: "member-testing-message" }); return; }
   if (!element) return;
   element.textContent = message;
   element.classList.toggle("error-message", isError);
@@ -237,6 +241,7 @@ async function initializeMemberTestingDays() {
   try {
     const access = await window.RipCityAccess.requireMemberAccess();
     if (!access || !["athlete", "h2k_member"].includes(access.membership.role)) return;
+    if (!window.RipCityAccess.isModuleEnabled(access.facilityConfig, "testing_days")) return;
     const memberProfile = await window.RipCityAccess.getMemberProfileForMembership(access.membership.id);
 
     const { data, error } = await db.from("testing_day_participants")
@@ -267,11 +272,9 @@ async function initializeMemberTestingDays() {
     renderMemberTestingDays();
   } catch (error) {
     console.error(error);
-    const migrationMissing = error.code === "42P01" || /testing_day/i.test(error.message || "");
-    if (migrationMissing) {
-      panel.classList.add("hidden");
-      schedulePanel.classList.add("hidden");
-      return;
+    for (const id of ["member-testing-list", "member-testing-upcoming-list"]) {
+      const list = document.getElementById(id);
+      if (list) list.textContent = "Testing Days could not be loaded. Reload this page to try again.";
     }
     showMemberTestingMessage(error.message || "Could not load Testing Days.", true);
   }
@@ -296,3 +299,5 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   initializeMemberTestingDays();
 });
+
+window.addEventListener("ripcity:facility-config", () => setMemberTrainingView(activeMemberTrainingView));

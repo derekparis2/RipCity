@@ -1,10 +1,12 @@
 (function () {
   let memberProfile = null;
   let memberType = "athlete";
+  let memberProgramKey = "athlete";
   let ownGroups = [];
 
   function showMessage(message, isError = false) {
     const element = document.getElementById("member-leaderboard-message");
+  if (window.AppFeedback) { window.AppFeedback.show(element, message, isError, { key: "member-leaderboard-message" }); return; }
     if (!element) return;
     element.textContent = message;
     element.classList.toggle("error-message", isError);
@@ -113,18 +115,27 @@
       metric.innerHTML = metricDefinitions().map(item => `<option value="${window.RipCityUI.attr(item.key)}">${window.RipCityUI.text(item.label)}</option>`).join("");
     }
     if (scope) {
-      const programLabel = memberType === "h2k" ? "H2K" : "Athletes";
+      const programLabel = window.RipCityAccess.getProgramLabel(
+        window.RipCityFacility,
+        memberProgramKey,
+        { plural: true }
+      );
       scope.innerHTML = `
-        <option value="">All ${programLabel}</option>
+        <option value="">All ${window.RipCityUI.text(programLabel)}</option>
         ${ownGroups.map(group => `<option value="${window.RipCityUI.attr(group.id)}">${window.RipCityUI.text(group.name)}</option>`).join("")}
       `;
     }
   }
 
   function updateContext() {
-    const label = memberType === "h2k" ? "H2K" : "Athlete";
+    const label = window.RipCityAccess.getProgramLabel(window.RipCityFacility, memberProgramKey);
+    const pluralLabel = window.RipCityAccess.getProgramLabel(
+      window.RipCityFacility,
+      memberProgramKey,
+      { plural: true }
+    );
     const scope = document.getElementById("member-leaderboard-scope");
-    const scopeLabel = scope?.selectedOptions?.[0]?.textContent || `All ${label}s`;
+    const scopeLabel = scope?.selectedOptions?.[0]?.textContent || `All ${pluralLabel}`;
     const metric = selectedMetric();
     const explanations = {
       fourWeekAverage: "Average weekly habit points across the previous four completed Monday–Sunday weeks.",
@@ -154,8 +165,9 @@
     showMessage("");
   }
 
-  async function initialize({ profile }) {
+  async function initialize({ profile, access }) {
     memberProfile = profile;
+    memberProgramKey = access?.membership?.program_key || profile?.member_type || "athlete";
     memberType = profile?.member_type === "h2k" ? "h2k" : "athlete";
     await loadGroups();
     populateControls();

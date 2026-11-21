@@ -1,0 +1,247 @@
+/* Performance uses styles.css unchanged. All alternate-design rules are opt-in. */
+html[data-facility-style="clean"] {
+  color-scheme:light;
+  --bg:#f5f7fb; --surface:#ffffff; --surface-2:#edf1f8;
+  --text:#202b40; --muted:#596780; --border:#d8e0ec;
+  --design-radius:12px; --design-heading:"Inter",sans-serif;
+}
+html[data-facility-style="community"] {
+  color-scheme:light;
+  --bg:#f5f1e8; --surface:#fffcf6; --surface-2:#e9eddf;
+  --text:#3e3a30; --muted:#686659; --border:#d8d5c8;
+  --design-radius:24px; --design-heading:Georgia,serif;
+}
+html[data-facility-background="light"] {
+  color-scheme:light;
+  --bg:#f5f7fb; --surface:#ffffff; --surface-2:#edf1f8;
+  --text:#202b40; --muted:#596780; --border:#d8e0ec;
+}
+html[data-facility-style="community"][data-facility-background="light"] {
+  --bg:#f5f1e8; --surface:#fffcf6; --surface-2:#e9eddf;
+  --text:#3e3a30; --muted:#686659; --border:#d8d5c8;
+}
+html[data-facility-background="dark"] {
+  color-scheme:dark;
+  --bg:#111722; --surface:#1b2433; --surface-2:#253145;
+  --text:#f1f5f9; --muted:#bac6d7; --border:#43526b;
+}
+html[data-facility-style="community"][data-facility-background="dark"] {
+  --bg:#161d18; --surface:#202b23; --surface-2:#2b392d;
+  --text:#f3f4eb; --muted:#b9c4b4; --border:#495746;
+}
+html:is([data-facility-style="clean"],[data-facility-style="community"]) body {
+  background:var(--bg); color:var(--text); font-family:"Inter",sans-serif;
+}
+html:is([data-facility-style="clean"],[data-facility-style="community"]) :is(h1,h2,h3,h4,.stat-card strong) {
+  font-family:var(--design-heading); font-weight:600; text-transform:none; letter-spacing:-.025em; color:var(--text);
+}
+html[data-facility-style="community"] :is(h1,h2,h3,h4) { font-weight:400; }
+html:is([data-facility-style="clean"],[data-facility-style="community"]) :is(.panel,.hero-card,.stat-card,.exercise-card,.habit-card,.goal-card,.member-page-link-card,.roster-member-card,.auth-card,.program-card) {
+  background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:var(--design-radius); box-shadow:none;
+}
+html[data-facility-style="clean"] .hero-card { background:var(--surface); border-left:4px solid var(--facility-primary); }
+html[data-facility-style="community"] .hero-card { background:var(--surface-2); padding-block:32px; border:0; }
+html:is([data-facility-style="clean"],[data-facility-style="community"]) .hero-card h3 { font-size:clamp(26px,3vw,42px); line-height:1.2; }
+html:is([data-facility-style="clean"],[data-facility-style="community"]) .eyebrow { color:var(--muted); letter-spacing:.1em; }
+html:is([data-facility-style="clean"],[data-facility-style="community"]) .h2k-header { border-bottom:1px solid var(--border); padding-block:18px; }
+html:is([data-facility-style="clean"],[data-facility-style="community"]) .member-sidebar { background:var(--surface); border-color:var(--border); border-top:4px solid var(--facility-secondary); }
+html:is([data-facility-style="clean"],[data-facility-style="community"]) :is(.coach-nav-link,.nav-link) { border-radius:var(--design-radius); color:var(--muted); font-weight:500; text-transform:none; }
+html:is([data-facility-style="clean"],[data-facility-style="community"]) :is(.coach-nav-link.active,.nav-link.active) { background:var(--surface-2); color:var(--text); border-color:var(--border); box-shadow:inset 0 -3px var(--facility-primary); }
+html:is([data-facility-style="clean"],[data-facility-style="community"]) :is(.outline-btn,.outline-link,.secondary-btn) { background:var(--surface); color:var(--text); border:1px solid var(--border); border-bottom:3px solid var(--facility-secondary); border-radius:var(--design-radius); }
+html:is([data-facility-style="clean"],[data-facility-style="community"]) :is(.primary-btn,.primary-link) { background:var(--facility-primary); color:var(--accent-ink); border-color:var(--facility-primary); border-radius:var(--design-radius); }
+html:is([data-facility-style="clean"],[data-facility-style="community"]) :is(input:not([type="checkbox"]):not([type="radio"]):not([type="color"]),select,textarea) { background:var(--surface); color:var(--text); border-color:var(--border); }
+html:is([data-facility-style="clean"],[data-facility-style="community"]) :is(.training-view-switch,.coach-nav-links,.member-type-card,.mode-card,.user-card) { background:var(--surface); color:var(--text); border-color:var(--border); border-radius:var(--design-radius); }
+html:is([data-facility-style="clean"],[data-facility-style="community"]) :is(.training-view-button,.member-type-card span,.mode-card h3,.user-card strong) { color:var(--text); }
+html:is([data-facility-style="clean"],[data-facility-style="community"]) .training-view-button.is-active { background:var(--surface-2); color:var(--text); border-color:var(--facility-primary); }
+html[data-facility-style="clean"] .member-page-links { gap:14px; }
+html[data-facility-style="community"] .member-page-links { gap:22px; }
+html[data-facility-style="community"] .member-announcements-panel { background:var(--surface-2); border-radius:var(--design-radius); padding:24px; }
+html:is([data-facility-style="clean"],[data-facility-style="community"]) .stats-grid { gap:20px; }
+html:is([data-facility-style="clean"],[data-facility-style="community"]) .stat-card strong { font-size:36px; }
+[data-appearance-hidden] { display:none !important; }
+@media(max-width:700px) {
+  html:is([data-facility-style="clean"],[data-facility-style="community"]) .hero-card { padding:20px; }
+  html:is([data-facility-style="clean"],[data-facility-style="community"]) .stats-grid { gap:10px; }
+  html:is([data-facility-style="clean"],[data-facility-style="community"]) .stat-card strong { font-size:28px; }
+}
+
+/* Small Performance refinements retain its typography, palette and page structure. */
+html[data-facility-style="performance"] .h2k-header { border-bottom:1px solid var(--border); }
+html[data-facility-style="performance"] .hero-card { border-bottom:1px solid var(--border); }
+html[data-facility-style="performance"] .member-sidebar { border-top:2px solid var(--facility-secondary); }
+html[data-facility-style="performance"] :is(.outline-btn,.outline-link) { border-color:var(--border); }
+html[data-facility-style="performance"] :is(.outline-btn,.outline-link):hover { border-color:var(--facility-primary); }
+html[data-facility-style="performance"] :is(.coach-nav-link.active,.nav-link.active) { box-shadow:inset 0 -2px var(--facility-primary); }
+html[data-facility-style="performance"] :is(.primary-btn,.outline-btn,.primary-link,.outline-link) { min-height:44px; border-radius:10px; }
+html[data-facility-style="performance"] :is(.panel,.stat-card,.member-page-link-card) { border-radius:16px; }
+
+/* Workout components must use the same surfaces as the selected design. */
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) :is(.auth-brand > .facility-brand-initials,.brand-mark) { background:var(--surface-2);color:var(--text);border-color:var(--border); }
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) .h2k-header-actions :is(.outline-btn,.outline-link) { box-shadow:none;border-bottom:1px solid var(--border); }
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) .workout-session-body :is(.session-overview,.session-overview-block,.session-step-card,.set-log-row,.session-save-card,.session-round-card,.session-exercise-card) { background:var(--surface);color:var(--text);border-color:var(--border);border-radius:var(--design-radius,14px); }
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) .workout-session-body :is(.session-step-topbar,.session-overview-meta > span,.session-primary-target,.session-current-target,.session-coach-note) { background:var(--surface-2);color:var(--text);border-color:var(--border); }
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) .workout-session-body .session-step-card > .session-current-exercise > .session-exercise-card { background:transparent;border:0; }
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) .workout-session-body :is(.session-overview-block,.session-step-card) { border-top-color:var(--facility-secondary); }
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) .workout-session-body :is(.session-overview-block-heading span,.session-overview-block-heading em,.session-active-block-title .eyebrow,.session-current-context .eyebrow,.session-primary-target span) { color:var(--muted); }
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) .workout-session-body :is(.session-overview-progress strong,.session-overview-meta strong,.session-overview-exercise-list span,.session-overview-exercise-list strong,.session-current-target strong) { color:var(--text); }
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) .workout-session-body .session-current-context .round-exercise-label { background:var(--facility-primary);color:var(--accent-ink); }
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) .workout-session-body .session-block-nav { background:var(--surface);color:var(--text);border-color:var(--border); }
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) .workout-session-body .session-block-nav.active { background:var(--surface-2);border-color:var(--facility-primary);box-shadow:none; }
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) .workout-session-body.session-logging-mode .set-log-actions { background:var(--surface); }
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) .workout-session-body .set-log-row.set-complete { background:var(--surface-2);border-color:var(--success); }
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) .workout-session-body .set-complete .set-log-title em { background:var(--surface);color:var(--success);border-color:var(--success); }
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) .workout-session-body #workout-session-message.session-message-toast { background:var(--surface);color:var(--text);border-color:var(--success);box-shadow:0 6px 20px #0002; }
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) .workout-session-body .session-coach-note strong { color:var(--text); }
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) .workout-session-body :is(.session-overview-block .outline-btn,.session-overview-return) { background:var(--surface);color:var(--text);border:1px solid var(--border);box-shadow:none; }
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]):not([data-facility-background="dark"]) { --success:#287042; --warning:#835912; --danger:#b42332; }
+html:is([data-facility-style="clean"],[data-facility-style="community"])[data-facility-background="dark"] { --success:#8ed5a3; --warning:#e3bd72; --danger:#ff929c; }
+
+/* Builder, library, and program pickers share the alternate-design palette. */
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) :is(.workout-builder-step,.workout-block-card,.exercise-builder-card,.workout-outline-panel,.exercise-template-suggestions,.exercise-library-card,.program-workout-results,.builder-more-menu-popover) { background:var(--surface);color:var(--text);border-color:var(--border);box-shadow:none; }
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) :is(.workout-builder-step.is-collapsed,.workout-block-card.is-collapsed,.workout-builder-review,.workout-outline-block,.program-selected-workout,.program-workout-results button,.exercise-template-suggestion,.exercise-details,.exercise-template-edit-form) { background:var(--surface-2);color:var(--text);border-color:var(--border); }
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) :is(.workout-builder-step-heading > span,.workout-outline-block > span:first-child,.exercise-row-label) { background:var(--text);color:var(--bg); }
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) #workout-blocks-step { border-color:var(--border);box-shadow:inset 3px 0 var(--facility-primary); }
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) :is(.workout-block-card:not(.is-collapsed),.workout-outline-block:hover,.builder-more-menu[open] summary) { border-color:var(--facility-primary);color:var(--text); }
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) .builder-drag-handle { background:var(--surface-2);color:var(--muted);border-color:var(--border); }
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) :is(.builder-drag-handle:hover,.builder-drag-handle:focus-visible) { color:var(--text);border-color:var(--facility-primary); }
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) :is(.builder-more-menu-popover button:hover,.program-workout-results button:hover,.program-workout-results button:focus-visible,.exercise-template-suggestion:hover) { background:var(--surface-2);color:var(--text);border-color:var(--facility-primary); }
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) :is(.program-selected-workout a,.program-workout-results button strong,.exercise-template-suggestion strong) { color:var(--text); }
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) :is(.program-workout-results button small,.exercise-template-suggestion small,.block-summary-meta span) { color:var(--muted); }
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) .builder-more-menu-popover .destructive-action { color:var(--danger); }
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) .workout-builder-review-blocks > div { border-color:var(--border); }
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) .workout-date-chip { background:var(--surface-2);color:var(--text);border-color:var(--border); }
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) .coach-workouts-page :is(.primary-btn,.primary-link):hover { background:var(--facility-primary);color:var(--accent-ink);filter:brightness(.95); }
+
+/* Unilateral toggles use the current surface in both Builder and Exercise Library. */
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) .exercise-unilateral-toggle {
+  background:var(--surface); border-color:var(--border); color:var(--text) !important;
+}
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) .exercise-unilateral-toggle:has(input:checked) {
+  background:var(--surface-2); border-color:var(--facility-primary); color:var(--text) !important;
+}
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) .exercise-unilateral-toggle input { accent-color:var(--facility-primary); }
+.exercise-unilateral-toggle:focus-within { outline:2px solid var(--facility-primary); outline-offset:3px; }
+
+/* Initials always use a matched foreground/surface pair, independent of brand colors. */
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) :is(.avatar,.profile-avatar,.leaderboard-avatar,.coach-review-avatar,.roster-avatar):not(.has-image) {
+  background:var(--surface-2); color:var(--text); border:1px solid var(--border);
+}
+
+html[data-facility-style] body .app-page-heading { min-height:0; padding:22px 24px; background:var(--surface); border:1px solid var(--border); border-radius:14px; }
+html[data-facility-style] body .app-page-heading h2 { font-size:clamp(24px,2.4vw,32px); line-height:1.2; }
+@media(min-width:1041px) {
+  html[data-facility-style] .h2k-header:has([data-coach-nav]) { padding-block:12px; }
+  html[data-facility-style] .h2k-header [data-coach-nav] .coach-nav-links { background:transparent; border-radius:0; }
+  html[data-facility-style] .h2k-header [data-coach-nav] .coach-nav-link { background:transparent; border:0; border-bottom:2px solid transparent; border-radius:0; box-shadow:none; }
+  html[data-facility-style] .h2k-header [data-coach-nav] .coach-nav-link.active { color:var(--text); border-bottom-color:var(--facility-primary); background:transparent; box-shadow:none; }
+}
+@media(max-width:700px) { html[data-facility-style] body .app-page-heading { padding:18px; } }
+
+/* Member tabs already name the page in the top bar; keep the supporting intro small. */
+html[data-facility-style] body .app-page-intro { min-height:0; padding:18px 22px; background:var(--surface); border:1px solid var(--border); }
+html[data-facility-style] body .app-page-intro h3 { font-size:clamp(20px,2vw,24px); line-height:1.3; margin:0 0 6px; text-transform:none; }
+html[data-facility-style] body .app-page-intro .eyebrow { display:none; }
+@media(max-width:700px) { html[data-facility-style] body .app-page-intro { padding:16px; } }
+
+/* Outlined desktop tabs stay consistent across all facility styles. */
+@media(min-width:1041px) {
+  html[data-facility-style] .h2k-header:has([data-coach-nav]) { padding-block:8px; gap:12px; }
+  html[data-facility-style] .h2k-header [data-coach-nav] .coach-nav-links { gap:8px; }
+  html[data-facility-style] .h2k-header [data-coach-nav] .coach-nav-link { min-height:44px; padding:11px 14px; font-size:15px; font-weight:600; border:1px solid var(--border); border-radius:10px; background:transparent; color:var(--muted); box-shadow:none; }
+  html[data-facility-style] .h2k-header [data-coach-nav] .coach-nav-link:hover { color:var(--text); border-color:var(--text); }
+  html[data-facility-style] .h2k-header [data-coach-nav] .coach-nav-link.active { background:var(--surface-2); color:var(--text); border:1px solid var(--facility-primary); box-shadow:none; }
+}
+
+/* Other facilities' phone navigation follows the page palette, not Rip City's dark bar. */
+@media(max-width:700px) {
+  html[data-facility-slug]:not([data-facility-slug="rip-city"]) .member-shell-nav {
+    background:var(--surface); color:var(--text); border-color:var(--border); box-shadow:0 -4px 18px #0002;
+  }
+  html[data-facility-slug]:not([data-facility-slug="rip-city"]) .member-shell-nav .nav-link {
+    background:transparent; color:var(--muted); border:1px solid transparent; box-shadow:none;
+  }
+  html[data-facility-slug]:not([data-facility-slug="rip-city"]) .member-shell-nav .nav-link.active {
+    background:var(--surface-2); color:var(--text); border-color:var(--border); box-shadow:inset 0 -2px var(--facility-primary);
+  }
+  html[data-facility-slug]:not([data-facility-slug="rip-city"]) .member-shell-nav .mobile-nav-icon {
+    background:transparent; color:inherit; border-color:var(--border);
+  }
+  html[data-facility-slug]:not([data-facility-slug="rip-city"]) .member-shell-nav .nav-link.active .mobile-nav-icon {
+    background:var(--text); color:var(--bg); border-color:var(--text);
+  }
+}
+
+/* Calendar day details use a matched surface and foreground in alternate designs. */
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) .training-calendar-day {
+  background:var(--surface); color:var(--text); border-color:var(--border);
+}
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) .training-calendar-day-heading .eyebrow { color:var(--muted); }
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) .training-calendar-day-heading strong { color:var(--text); }
+
+/* Phone workout sessions use natural page scrolling instead of nested full-height panels. */
+@media(max-width:700px) {
+  html[data-facility-style] .workout-session-body .workout-session-page {
+    display:block; height:auto; min-height:0;
+    padding:8px 0 calc(102px + env(safe-area-inset-bottom));
+  }
+  html[data-facility-style] .workout-session-body .h2k-header {
+    display:flex; justify-content:flex-start; align-items:center; min-height:0;
+    gap:10px; padding:6px 2px; margin:0 0 12px; border:0;
+  }
+  html[data-facility-style] .workout-session-body .h2k-header .auth-brand { min-width:0; gap:10px; }
+  html[data-facility-style] .workout-session-body .h2k-header .auth-brand > div { min-width:0; }
+  html[data-facility-style] .workout-session-body .h2k-header .auth-brand h1 {
+    font-size:19px; line-height:1.2; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  html[data-facility-style] .workout-session-body .h2k-header .auth-brand p { margin:2px 0 0; font-size:12px; }
+  html[data-facility-style] .workout-session-body .h2k-header .auth-brand img,
+  html[data-facility-style] .workout-session-body .h2k-header .auth-brand > .facility-brand-initials {
+    width:36px; height:36px; flex:0 0 36px; font-size:17px; border-radius:8px;
+  }
+  html[data-facility-style] .workout-session-body .h2k-header-actions { display:none; }
+  html[data-facility-style] .workout-session-body :is(.dashboard-grid,.workout-session-panel,.workout-session-container,.session-step-shell,.session-step-list,.session-step-card,.set-log-list,.set-log-row) {
+    height:auto; min-height:0; max-height:none; overflow:visible;
+  }
+  html[data-facility-style] .workout-session-body .workout-session-panel { padding:0; border:0; background:transparent; box-shadow:none; }
+  html[data-facility-style] .workout-session-body .workout-session-container { margin-top:0; gap:12px; }
+  html[data-facility-style] .workout-session-body .session-overview { padding:14px; gap:14px; box-shadow:none; border-radius:16px; }
+  html[data-facility-style] .workout-session-body .session-overview-heading { grid-template-columns:minmax(0,1fr) auto; gap:12px; padding-bottom:12px; }
+  html[data-facility-style] .workout-session-body .session-overview-heading h2 { font-size:26px; line-height:1.15; letter-spacing:-.02em; overflow-wrap:anywhere; }
+  html[data-facility-style] .workout-session-body .session-overview-heading .eyebrow { font-size:10px; }
+  html[data-facility-style] .workout-session-body .session-overview-heading p:not(.eyebrow) { font-size:13px; line-height:1.45; }
+  html[data-facility-style] .workout-session-body .session-overview-progress { min-width:0; max-width:64px; }
+  html[data-facility-style] .workout-session-body .session-overview-progress strong { font-size:24px; line-height:1.15; }
+  html[data-facility-style] .workout-session-body .session-overview-progress span { font-size:10px; line-height:1.3; }
+  html[data-facility-style] .workout-session-body .session-overview-meta { gap:8px; grid-template-columns:repeat(2,minmax(0,1fr)); }
+  html[data-facility-style] .workout-session-body .session-overview-meta > span { padding:10px; border-radius:10px; min-width:0; }
+  html[data-facility-style] .workout-session-body .session-overview-meta strong { font-size:13px; line-height:1.4; overflow-wrap:anywhere; }
+  html[data-facility-style] .workout-session-body .session-overview-block { padding:12px; border-radius:12px; }
+  html[data-facility-style] .workout-session-body .session-overview-block-heading h3 { font-size:22px; line-height:1.2; }
+  html[data-facility-style] .workout-session-body .session-overview-exercise-list { margin-block:12px; }
+  html[data-facility-style] .workout-session-body .session-overview-actions { position:static; padding:0; margin:0; box-shadow:none; background:transparent; }
+  html[data-facility-style] .workout-session-body :is(.session-overview-actions .primary-btn,.set-log-actions .primary-btn) { min-height:48px; padding:12px 16px; font-size:16px; box-shadow:none; }
+  html[data-facility-style] .workout-session-body .session-step-shell { gap:10px; }
+  html[data-facility-style] .workout-session-body .session-step-topbar { padding:10px; gap:10px; border-radius:12px; }
+  html[data-facility-style] .workout-session-body .session-active-block-title h3 { font-size:18px; line-height:1.2; }
+  html[data-facility-style] .workout-session-body .session-step-card { padding:12px; border-radius:14px; }
+  html[data-facility-style] .workout-session-body .session-current-context { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:10px; }
+  html[data-facility-style] .workout-session-body .session-current-context .round-exercise-label { display:none; }
+  html[data-facility-style] .workout-session-body .session-current-summary .eyebrow { font-size:10px; letter-spacing:.03em; }
+  html[data-facility-style] .workout-session-body .session-current-summary h4 { font-size:22px; line-height:1.2; margin:4px 0; overflow-wrap:anywhere; }
+  html[data-facility-style] .workout-session-body .session-current-summary > p:last-child { font-size:12px; }
+  html[data-facility-style] .workout-session-body .session-current-target { min-width:0; padding:8px 10px; }
+  html[data-facility-style] .workout-session-body .session-current-target span { font-size:10px; color:var(--muted); }
+  html[data-facility-style] .workout-session-body .session-current-target strong { font-size:18px; color:var(--text); }
+  html[data-facility-style] .workout-session-body .set-log-row { padding:12px; gap:12px; border-radius:12px; }
+  html[data-facility-style] .workout-session-body .set-log-title strong { font-size:18px; }
+  html[data-facility-style] .workout-session-body .set-log-title em { font-size:10px; padding:6px 8px; background:var(--surface-2); color:var(--muted); border-color:var(--border); }
+  html[data-facility-style] .workout-session-body .set-log-row.set-complete .set-log-title em { color:var(--success); }
+  html[data-facility-style] .workout-session-body .set-log-row label { font-size:12px; gap:6px; }
+  html[data-facility-style] .workout-session-body .set-log-row :is(input,select,textarea) { min-height:46px; font-size:16px; }
+  html[data-facility-style] .workout-session-body .set-log-row input[type="checkbox"] { min-height:24px; width:24px; height:24px; }
+  html[data-facility-style] .workout-session-body .set-log-optional summary { min-height:44px; font-size:13px; }
+  html[data-facility-style] .workout-session-body .session-skip-set-btn { font-size:13px; min-height:44px; margin:0; padding:8px 0; }
+  html[data-facility-style] .workout-session-body .set-log-actions {
+    position:static; inset:auto; margin:0; padding:0; background:transparent; box-shadow:none;
+  }
+}

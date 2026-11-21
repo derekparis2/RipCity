@@ -2,18 +2,25 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <script src="js/shared/facility-appearance.js?v=facility-styles-1&amp;errors=visible-feedback-1"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="js/shared/facility-shell.js?v=facility-ui-1&amp;review=facility-loading-5&amp;errors=visible-feedback-1"></script>
   <title>Coach Dashboard</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/styles.css?v=attention-habits-1" />
+  <link rel="stylesheet" href="css/styles.css?v=attention-habits-1&amp;review=platform-stats-3&amp;workflow=performance-2&amp;nav=full-tabs-1&amp;layout=outlined-tabs-5&amp;feedback=visible-errors-1" />
+  <link rel="stylesheet" href="css/facility-styles.css?v=facility-styles-12&amp;workflow=performance-2" />
+  <link rel="stylesheet" href="css/app-layout.css?v=consistent-spacing-4" />
+  <script src="js/shared/feedback.js?v=visible-errors-1"></script>
+  <link rel="stylesheet" href="css/feedback.css?v=visible-errors-1" />
 </head>
 
 <body class="auth-body coach-dashboard-page">
-  <main class="coach-page">
+  <main class="app-shell coach-page">
+    <p id="coach-dashboard-message" class="auth-message" role="status" aria-live="polite"></p>
     <header class="h2k-header">
       <div class="auth-brand">
         <img src="assets/rip-city-logo.png" alt="Rip City logo">
@@ -29,19 +36,15 @@
       </div>
     </header>
 
-    <section class="hero-card h2k-hero">
+    <section class="app-page-heading hero-card h2k-hero" data-dashboard-role="coach" data-dashboard-section="welcome">
       <div>
-        <p class="eyebrow">COACH DASHBOARD</p>
-        <h3>Track member consistency, habits, and accountability.</h3>
-        <p>
-          This page gives coaches a quick view of who is staying consistent,
-          who logged today, and who may need attention.
-        </p>
+        <h2>Dashboard</h2>
+        <p>Your facility at a glance.</p><p class="dashboard-welcome-line" data-facility-content="coach_title"></p><p class="dashboard-welcome-message" data-facility-content="coach_message"></p>
       </div>
     </section>
 
-    <section class="dashboard-grid h2k-dashboard-grid coach-dashboard-intro-grid">
-      <article class="panel feedback-panel coach-feedback-panel dashboard-feedback-panel">
+    <section class="dashboard-grid h2k-dashboard-grid coach-dashboard-intro-grid" data-dashboard-role="coach" data-dashboard-section="feedback">
+      <article class="panel feedback-panel coach-feedback-panel dashboard-feedback-panel" data-facility-widget="show_feedback">
         <div>
           <p class="eyebrow">BETA FEEDBACK</p>
           <h3>Tell us what to improve.</h3>
@@ -53,7 +56,7 @@
 
     </section>
 
-    <details class="panel coach-announcements-panel" id="coach-announcements-panel">
+    <details class="panel coach-announcements-panel" data-dashboard-role="coach" data-dashboard-section="announcements" id="coach-announcements-panel" data-facility-module="announcements">
       <summary class="coach-announcement-summary">
         <div>
           <p class="eyebrow">COMMUNICATION</p>
@@ -74,8 +77,8 @@
           <label>Audience
             <select id="coach-announcement-audience">
               <option value="facility">Entire facility</option>
-              <option value="athletes">All athletes</option>
-              <option value="h2k">All H2K members</option>
+              <option id="coach-announcement-athlete-audience" value="athletes" data-facility-program="athlete">All athletes</option>
+              <option id="coach-announcement-h2k-audience" value="h2k" data-facility-program="h2k">All H2K members</option>
               <option value="targeted">Custom selection</option>
             </select>
           </label>
@@ -131,33 +134,34 @@
       </div>
     </details>
 
-    <section class="stats-grid">
+    <section class="stats-grid" data-dashboard-role="coach" data-dashboard-section="scores">
       <article class="stat-card">
         <span>Approved Members</span>
         <strong id="coach-total-members">0</strong>
-        <small>Athletes and H2K members</small>
+        <small>Approved facility members</small>
       </article>
 
-      <article class="stat-card">
-        <span>H2K Members</span>
+      <article class="stat-card hidden">
+        <span data-facility-program-label="h2k" data-label-form="plural">H2K Members</span>
         <strong id="coach-total-h2k-members">0</strong>
-        <small>Approved H2K members</small>
+        <small>Approved members</small>
       </article>
 
-      <article class="stat-card">
-        <span>Athletes</span>
+      <article class="stat-card hidden">
+        <span data-facility-program-label="athlete" data-label-form="plural">Athletes</span>
         <strong id="coach-total-athletes">0</strong>
-        <small>Approved athletes</small>
+        <small>Approved members</small>
       </article>
 
-      <article class="stat-card">
+      <article class="stat-card" data-facility-module="habits">
         <span>Needs Attention</span>
         <strong id="coach-needs-attention">0</strong>
         <small>Habit follow-up</small>
       </article>
+      <div class="program-stat-cards" id="facility-program-stats"></div>
     </section>
 
-    <section class="coach-attention-section">
+    <section class="coach-attention-section" data-dashboard-role="coach" data-dashboard-section="attention" data-facility-module="habits">
       <details class="panel coach-attention-panel" id="coach-attention-panel">
         <summary class="coach-attention-summary">
           <div>
@@ -180,8 +184,8 @@
               Program
               <select id="coach-attention-type-filter">
                 <option value="all">All members</option>
-                <option value="athlete">Athletes</option>
-                <option value="h2k">H2K members</option>
+                <option value="athlete" data-facility-program="athlete" data-facility-program-label="athlete" data-label-form="plural">Athletes</option>
+                <option value="h2k" data-facility-program="h2k" data-facility-program-label="h2k" data-label-form="plural">H2K members</option>
               </select>
             </label>
             <label>
@@ -194,14 +198,13 @@
           </div>
 
           <p id="coach-attention-results-count" class="coach-attention-results-count"></p>
-          <p id="coach-dashboard-message" class="auth-message"></p>
 
           <div id="coach-attention-list" class="coach-attention-list"></div>
         </div>
       </details>
     </section>
 
-    <section class="dashboard-grid h2k-dashboard-grid coach-workout-review-section">
+    <section class="dashboard-grid h2k-dashboard-grid coach-workout-review-section" data-dashboard-role="coach" data-dashboard-section="workouts" data-facility-module="workouts">
       <article class="panel coach-workout-review-panel">
         <div class="panel-heading">
           <div>
@@ -252,13 +255,13 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/shared/supabaseClient.js"></script>
-  <script src="js/shared/ui-utils.js"></script>
-  <script src="js/coach/coach-nav.js?v=program-creator-1"></script>
-  <script src="js/shared/access-control.js?v=auth-reliability-3"></script>
-  <script src="js/shared/workout-data.js?v=workout-attribution-1"></script>
-  <script src="js/shared/attention-rules.js?v=coach-attention-1"></script>
-  <script src="js/coach/coach-dashboard.js?v=attention-habits-1"></script>
-  <script src="js/coach/coach-announcements.js?v=announcement-attribution-1"></script>
+  <script src="js/shared/supabaseClient.js?errors=visible-feedback-1"></script>
+  <script src="js/shared/ui-utils.js?errors=visible-feedback-1"></script>
+  <script src="js/coach/coach-nav.js?v=program-creator-1&amp;navigation=facility-context-3&amp;workflow=performance-2&amp;nav=full-tabs-1&amp;shell=staff-profile-1&amp;errors=visible-feedback-1"></script>
+  <script src="js/shared/access-control.js?v=auth-reliability-3&amp;review=platform-stats-3&amp;navigation=facility-context-3&amp;shell=staff-profile-1&amp;errors=visible-feedback-1"></script>
+  <script src="js/shared/workout-data.js?v=workout-attribution-1&amp;errors=visible-feedback-1"></script>
+  <script src="js/shared/attention-rules.js?v=coach-attention-1&amp;errors=visible-feedback-1"></script>
+  <script src="js/coach/coach-dashboard.js?v=attention-habits-1&amp;review=platform-stats-3&amp;workflow=performance-2&amp;nav=full-tabs-1&amp;errors=visible-feedback-1"></script>
+  <script src="js/coach/coach-announcements.js?v=announcement-attribution-1&amp;review=platform-stats-3&amp;errors=visible-feedback-1"></script>
 </body>
 </html>

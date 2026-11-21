@@ -45,6 +45,26 @@ they are intentionally revisited.
 - Creating a facility must not grant a silent cross-facility private-data
   bypass. Any future support access by Derek or Sam must be explicit and
   auditable.
+- Platform owners enter a facility's admin experience through an explicit
+  facility-scoped admin mode. Entering and leaving that mode must be audited;
+  platform ownership alone must not silently expose every facility's private
+  member data.
+- Creating a facility is one trusted transaction: it creates the facility,
+  validates and stores its configuration, records the audit event, and grants
+  the creating platform owner an explicit approved admin membership. A failed
+  step rolls the entire operation back.
+- Facility setup metadata is changed only through audited platform-owner
+  operations. Facility admins can manage their own members and coaching work,
+  but cannot change platform-level branding, timezone, terminology, programs,
+  modules, or lifecycle state.
+- Existing facilities start with all shipped modules and both current member
+  programs (`athlete` and `h2k`) enabled so configuration migrations do not
+  remove current behavior. Disabling a module hides availability later; it
+  does not delete that facility's historical data.
+- Protected pages load their own approved facility configuration at runtime.
+  Facility branding is applied from that configuration, disabled modules are
+  removed from navigation and dashboard entry points, and direct visits to a
+  disabled feature return the user to the correct facility home page.
 
 ## Signup Links
 
@@ -52,6 +72,12 @@ they are intentionally revisited.
   link and send it to prospective members.
 - Athlete, H2K, and general member links remain reusable and may be sent in a
   group email.
+- Every member signup link identifies its destination facility by slug. The
+  public signup lookup exposes only safe branding and enabled-program labels;
+  it does not expose private facility configuration or member data.
+- A member signup is completed only inside the active facility named by that
+  link. An account that already belongs to another facility cannot use member
+  signup to silently create a second facility membership.
 - Coach links are created only by facility admins, expire after seven days,
   and are single-use. Claiming one creates a pending coach membership that an
   admin in the invited facility must approve.
