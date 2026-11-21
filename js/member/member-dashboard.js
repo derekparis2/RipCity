@@ -1237,7 +1237,7 @@ function renderTodayWorkouts(assignments) {
   if (!assignments.length) {
     container.innerHTML = `
       <div class="empty-state">
-        No workout assigned for today.
+        <p>No workout assigned for today.</p><a class="outline-link" href="${window.RipCityUI.attr(window.RipCityAccess.getFacilityPageUrl("member-training.html"))}">View Training Calendar</a>
       </div>
     `;
     return;
@@ -1274,7 +1274,7 @@ function renderTodayWorkouts(assignments) {
               <span>${window.RipCityUI.text(assignment.assigned_date)}</span>
             </div>
 
-            <a class="primary-link workout-open-link" href="workout-session.html?assignment=${window.RipCityUI.attr(assignment.id)}">
+            <a class="primary-link workout-open-link" href="${window.RipCityUI.attr(window.RipCityAccess.getFacilityPageUrl(`workout-session.html?assignment=${encodeURIComponent(assignment.id)}`))}">
               Open Workout
             </a>
           </div>
@@ -1525,7 +1525,7 @@ function renderWorkoutCalendarRow(assignment) {
   const isFuture = assignment.assigned_date > today;
   const isToday = assignment.assigned_date === today;
   const status = getWorkoutCalendarStatus(summary, isFuture, isToday);
-  const actionLabel = isFuture || isToday ? "Open Workout" : "Review";
+  const actionLabel = summary.isComplete ? "Review Workout" : summary.completedSets > 0 ? "Continue Workout" : "Open Workout";
 
   return `
     <article class="workout-history-card compact-workout-row">
@@ -1537,7 +1537,7 @@ function renderWorkoutCalendarRow(assignment) {
           <small>Assigned by ${window.RipCityUI.text(window.RipCityWorkoutData.getAssignmentAssignerName(assignment))}</small>
         </div>
 
-        <a class="outline-link workout-open-link" href="workout-session.html?assignment=${window.RipCityUI.attr(assignment.id)}">
+        <a class="outline-link workout-open-link" href="${window.RipCityUI.attr(window.RipCityAccess.getFacilityPageUrl(`workout-session.html?assignment=${encodeURIComponent(assignment.id)}`))}">
           ${window.RipCityUI.text(actionLabel)}
         </a>
       </div>

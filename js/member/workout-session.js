@@ -29,7 +29,7 @@ function buildLogRowFromSetRow(row) {
     logRow.band_color !== null ||
     logRow.time_value !== null ||
     logRow.distance_value !== null ||
-    logRow.athlete_note !== null;
+    (row.dataset.inputType === "custom" && logRow.athlete_note !== null);
 
   // Any entered result should count as completed even if the checkbox was missed.
   if (hasActualData) {
@@ -39,8 +39,34 @@ function buildLogRowFromSetRow(row) {
   return logRow;
 }
 
+function validateWorkoutSetRow(row) {
+  for (const input of row.querySelectorAll("input, select, textarea")) {
+    if (input.checkValidity && !input.checkValidity()) {
+      input.reportValidity();
+      throw new Error("Check the highlighted result before saving.");
+    }
+  }
+  const type = row.dataset.inputType;
+  const required = {
+    weight_reps: [".set-weight-input", ".set-reps-input"],
+    band_color: [".set-reps-input"], time: [".set-time-input"],
+    distance: [".set-distance-input"], custom: [".set-note-input"]
+  }[type] || [];
+  for (const selector of required) {
+    if (!hasValue(selector, row)) {
+      row.querySelector(selector)?.focus();
+      throw new Error("Enter your result before saving. Use 0 for bodyweight or zero reps when appropriate.");
+    }
+  }
+  if (type === "completion" && !isChecked(".set-completed-input", row)) {
+    row.querySelector(".set-completed-input")?.focus();
+    throw new Error("Mark this set completed before saving.");
+  }
+  return buildLogRowFromSetRow(row);
+}
+
 async function saveSetRow(row) {
-  const logRow = buildLogRowFromSetRow(row);
+  const logRow = validateWorkoutSetRow(row);
 
   const { error } = await db
     .from("exercise_set_logs")
@@ -51,9 +77,11 @@ async function saveSetRow(row) {
   if (error) throw error;
 
   existingSetLogs = await loadExistingSetLogs(workoutAssignment.id);
+  clearWorkoutSetDraft(row);
 }
 
 async function saveSetLog(exerciseId, setNumber) {
+  if (workoutSessionSaving) return;
   const row = document.querySelector(
     `.set-log-row[data-exercise-id="${exerciseId}"][data-set-number="${setNumber}"]`
   );
@@ -63,20 +91,29 @@ async function saveSetLog(exerciseId, setNumber) {
     return;
   }
 
+  captureWorkoutSetDraft(row);
   showWorkoutSessionMessage("Saving set...");
-
   try {
+    validateWorkoutSetRow(row);
+    setWorkoutSaveBusy(true);
     await saveSetRow(row);
+    const steps = getWorkoutSessionSteps(workoutAssignment.workout);
+    if (currentSessionStepIndex === steps.length - 1) {
+      workoutSessionView = workoutSetDrafts.size ? "overview" : "summary";
+      updateWorkoutSessionHistory("replace");
+    }
     renderWorkoutSession();
+    scrollWorkoutSessionViewIntoPlace();
 
     showWorkoutSessionToast("Set saved");
   } catch (error) {
     console.error(error);
     showWorkoutSessionMessage(error.message || "Could not save set.", true);
-  }
+  } finally { setWorkoutSaveBusy(false); }
 }
 
 async function saveCurrentSetAndGoToStep(stepIndex) {
+  if (workoutSessionSaving) return;
   const activeStep = document.querySelector(".session-step-card.active");
   const row = activeStep?.querySelector(".set-log-row");
 
@@ -85,19 +122,52 @@ async function saveCurrentSetAndGoToStep(stepIndex) {
     return;
   }
 
+  captureWorkoutSetDraft(row);
   showWorkoutSessionMessage("Saving set...");
-
   try {
+    validateWorkoutSetRow(row);
+    setWorkoutSaveBusy(true);
     await saveSetRow(row);
+    setWorkoutSaveBusy(false);
     goToSessionStep(stepIndex);
     showWorkoutSessionToast("Set saved");
   } catch (error) {
     console.error(error);
     showWorkoutSessionMessage(error.message || "Could not save set.", true);
-  }
+  } finally { setWorkoutSaveBusy(false); }
+}
+
+async function finishWorkoutSession() {
+  if (workoutSessionSaving || !workoutAssignment) return;
+  captureCurrentWorkoutDrafts();
+  const row = document.querySelector(".session-step-card.active .set-log-row");
+  try {
+    if (row?.dataset.dirty === "true") validateWorkoutSetRow(row);
+    setWorkoutSaveBusy(true);
+    showWorkoutSessionMessage("Saving workout progress...");
+    if (row?.dataset.dirty === "true") await saveSetRow(row);
+    else existingSetLogs = await loadExistingSetLogs(workoutAssignment.id);
+    if (workoutSetDrafts.size) {
+      const steps = getWorkoutSessionSteps(workoutAssignment.workout);
+      const index = steps.findIndex(step => workoutSetDrafts.has(`${step.exercise.id}:${step.setNumber}`));
+      setWorkoutSaveBusy(false);
+      if (index >= 0) goToSessionStep(index);
+      showWorkoutSessionMessage("Save or clear the remaining unsaved edits before finishing.", true);
+      return;
+    }
+    workoutSessionView = "summary";
+    updateWorkoutSessionHistory("replace");
+    renderWorkoutSession();
+    scrollWorkoutSessionViewIntoPlace();
+    showWorkoutSessionMessage("");
+  } catch (error) {
+    console.error(error);
+    showWorkoutSessionMessage(error.message || "Could not finish. Your edits are still here; try again.", true);
+  } finally { setWorkoutSaveBusy(false); }
 }
 
 async function saveAllSetLogs() {
+  if (workoutSessionSaving) return;
   const setRows = Array.from(document.querySelectorAll(".set-log-row"));
 
   if (!setRows.length) {
@@ -108,7 +178,8 @@ async function saveAllSetLogs() {
   showWorkoutSessionMessage("Saving all sets...");
 
   try {
-    const logRows = setRows.map(row => buildLogRowFromSetRow(row));
+    const logRows = setRows.map(row => validateWorkoutSetRow(row));
+    setWorkoutSaveBusy(true);
 
     const { error } = await db
       .from("exercise_set_logs")
@@ -119,16 +190,20 @@ async function saveAllSetLogs() {
     if (error) throw error;
 
     existingSetLogs = await loadExistingSetLogs(workoutAssignment.id);
+    setRows.forEach(clearWorkoutSetDraft);
     renderWorkoutSession();
 
     showWorkoutSessionToast("All sets saved");
   } catch (error) {
     console.error(error);
     showWorkoutSessionMessage(error.message || "Could not save all sets.", true);
-  }
+  } finally { setWorkoutSaveBusy(false); }
 }
 
 async function refreshWorkoutSession() {
+  if (workoutSessionSaving || !confirmDiscardWorkoutDrafts()) return;
+  workoutSetDrafts.clear();
+  document.querySelectorAll(".set-log-row").forEach(row => { row.dataset.dirty = "false"; });
   showWorkoutSessionMessage("Loading workout...");
 
   try {
@@ -164,7 +239,10 @@ async function refreshWorkoutSession() {
 }
 
 async function logoutWorkoutSession() {
-  await db.auth.signOut();
+  if (workoutSessionSaving || !confirmDiscardWorkoutDrafts()) return;
+  try { await db.auth.signOut(); }
+  catch (error) { showWorkoutSessionMessage(error.message || "Could not log out.", true); return; }
+  workoutSessionLeaving = true;
   window.location.href = "login.html";
 }
 
@@ -213,6 +291,7 @@ function updateWorkoutSessionHistory(method = "replace") {
 }
 
 function handleWorkoutSessionHistory(event) {
+  if (workoutSessionSaving) { updateWorkoutSessionHistory("replace"); return; }
   if (!workoutAssignment || !event.state?.ripCityWorkoutSessionView) return;
 
   workoutSessionView = event.state.ripCityWorkoutSessionView;
@@ -246,8 +325,16 @@ async function initWorkoutSessionPage() {
 document.addEventListener("DOMContentLoaded", () => {
   initWorkoutSessionPage();
 
+  document.getElementById("finish-workout-btn")?.addEventListener("click", finishWorkoutSession);
   document.getElementById("refresh-session-btn")?.addEventListener("click", refreshWorkoutSession);
   document.getElementById("workout-session-logout-btn")?.addEventListener("click", logoutWorkoutSession);
 });
 
 window.addEventListener("popstate", handleWorkoutSessionHistory);
+window.addEventListener("beforeunload", event => {
+  if (workoutSessionLeaving) return;
+  if (workoutSessionSaving || workoutSetDrafts.size) {
+    event.preventDefault();
+    event.returnValue = "";
+  }
+});

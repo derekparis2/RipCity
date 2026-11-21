@@ -120,3 +120,59 @@ Derek's checks (not executed by the agent):
 
 Only JavaScript syntax and whitespace checks were run by the agent. No optional
 Performance redesigns, staging changes, commits, pushes, or browser QA were done.
+
+## Performance polish and member workout flow
+
+No migration is needed for this pass. Performance keeps its existing fonts,
+palette and page structure, with quieter secondary accents and consistent card
+and button shapes. Staff navigation now puts secondary destinations under More.
+The dashboard links directly to pending approvals and habit follow-ups; empty
+workout-library and assignment screens explain the next action.
+
+Member sessions keep unsaved drafts in page memory while switching sets, blocks,
+or overview. Drafts are not durable offline storage: leaving/reloading the page
+can discard them, so browser unload and explicit refresh/logout warn first.
+Save & Next validates results, blocks overlapping writes, and retains edits on
+failure. Weight accepts non-negative decimals (0 for bodyweight); reps accept
+non-negative whole numbers. Completion-only exercises need the completion check.
+Members may skip a set for now without falsely recording it completed. Prior-set
+zero weights/reps are preserved. The last save returns to overview; the completed
+summary appears only when every set is saved and no drafts remain. HTTPS exercise
+demo links open separately. Calendar actions distinguish Open, Continue, Review.
+
+Derek's checks (not executed by the agent):
+
+- Run the suite, including `tests/member-workout-flow.test.mjs`.
+- Verify desktop/mobile More navigation, active secondary page, Escape/outside
+  dismissal, enabled-module filtering, and facility-preserving links/new tabs.
+- As coach and admin, check pending approval counts and follow-up links. Disabled
+  habits must not expose habit actions; verify empty-library and calendar links.
+- Start/continue/review a workout from the calendar, including an early workout.
+- Type a result, move Previous/block/overview, and return. Try refresh/logout and
+  cancel; edits should remain. Browser reload/leave should warn while unsaved.
+- Save bodyweight 0, decimal weight, and zero reps. Reject missing/negative values,
+  fractional reps and unchecked completion sets. Check band/time/distance/custom
+  result types, notes/difficulty, and round-by-round prefilled previous results.
+- Double-click Save, simulate a failed request, retry, and check exactly one set
+  record and accurate saved progress. Inputs/navigation should recover on failure.
+- Skip sets, save the final set, resume remaining sets, and verify the completed
+  summary appears only after everything is saved. Check demo links if configured.
+- Check phone keyboard, save-button visibility, focus movement, and small screens.
+
+Only syntax/whitespace checks were run in this pass. No migration, live data,
+browser testing, test execution, commit, or push was performed by the agent.
+
+### Finish Workout and phone follow-up
+
+Finish Workout is available in the session header; the final-set action is Save &
+Finish Workout. Finish saves an edited current set, redirects to any other drafts
+that still need saving, then opens a summary of saved and unlogged sets. It does
+not create a separate finished status or mark unlogged sets completed. Members
+can continue a partial workout later through the calendar. Errors stay in the
+session and release the save lock. No migration is needed.
+
+Phone-specific updates increase input text to 16px, enlarge input/button touch
+areas, add safe-area padding to save actions, and stack summary actions full width.
+Check on an actual phone with the keyboard open, including Finish with a current
+edit, drafts in another block, skipped sets, every set saved, and a failed request.
+The agent performed syntax/whitespace checks only, not browser or test execution.

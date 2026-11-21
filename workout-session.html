@@ -12,8 +12,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/styles.css?v=member-nav-fixed-1&amp;review=flexible-platform-2" />
-  <link rel="stylesheet" href="css/facility-styles.css?v=facility-styles-1" />
+  <link rel="stylesheet" href="css/styles.css?v=member-nav-fixed-1&amp;review=flexible-platform-2&amp;workflow=performance-2" />
+  <link rel="stylesheet" href="css/facility-styles.css?v=facility-styles-1&amp;workflow=performance-2" />
 </head>
 
 <body class="auth-body workout-session-body">
@@ -28,7 +28,7 @@
       </div>
 
       <div class="h2k-header-actions">
-        <a class="outline-link" href="member-dashboard.html">Dashboard</a>
+        <a class="outline-link" href="member-training.html">Training Calendar</a>
         <a class="outline-link" href="profile.html">Profile</a>
         <button class="outline-btn" id="workout-session-logout-btn">Log Out</button>
       </div>
@@ -38,17 +38,17 @@
 
     <section class="hero-card h2k-hero workout-session-hero">
       <div>
-        <p class="eyebrow">TODAY'S WORKOUT</p>
+        <p class="eyebrow">YOUR ASSIGNED WORKOUT</p>
         <h3 id="session-workout-title">Loading workout...</h3>
         <p id="session-workout-description">
-          Log your actual work for each set. Coach targets are shown as the goal.
+          Enter your results and choose Save & Next. Each saved set stays saved, even if you finish later.
         </p>
       </div>
 
       <div class="session-save-card">
         <span>Session Progress</span>
         <strong><span id="session-progress-percent">0</span>%</strong>
-        <div class="progress-bar session-progress-bar">
+        <div class="progress-bar session-progress-bar" role="progressbar" aria-label="Saved workout sets" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
           <div id="session-progress-fill"></div>
         </div>
       </div>
@@ -85,11 +85,12 @@
         <div class="panel-heading">
           <div>
             <p class="eyebrow">LOG WORKOUT</p>
-            <h3>Blocks & Exercises</h3>
+            <h3>Your Workout</h3>
           </div>
 
           <div class="session-header-actions">
             <button class="outline-btn" id="refresh-session-btn">Refresh</button>
+            <button class="primary-btn" id="finish-workout-btn" type="button" disabled>Finish Workout</button>
           </div>
         </div>
 
@@ -109,8 +110,8 @@
   <script src="js/shared/access-control.js?v=auth-reliability-3&amp;review=flexible-platform-2&amp;navigation=facility-context-3"></script>
   <script src="js/shared/workout-data.js?v=workout-attribution-1"></script>
   <script src="js/member/member-nav.js?v=member-leaderboards-1&amp;navigation=facility-context-3"></script>
-  <script src="js/member/workout-session-core.js?v=member-role-guard-1"></script>
-  <script src="js/member/workout-session-render.js?v=workout-attribution-1"></script>
-  <script src="js/member/workout-session.js?v=workout-attribution-1&amp;review=flexible-platform-2"></script>
+  <script src="js/member/workout-session-core.js?v=member-role-guard-1&amp;workflow=performance-2"></script>
+  <script src="js/member/workout-session-render.js?v=workout-attribution-1&amp;workflow=performance-2"></script>
+  <script src="js/member/workout-session.js?v=workout-attribution-1&amp;review=flexible-platform-2&amp;workflow=performance-2"></script>
 </body>
 </html>

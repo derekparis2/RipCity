@@ -69,3 +69,13 @@ html:is([data-facility-style="clean"],[data-facility-style="community"]) :is(.co
   html:is([data-facility-style="clean"],[data-facility-style="community"]) .stats-grid { gap:10px; }
   html:is([data-facility-style="clean"],[data-facility-style="community"]) .stat-card strong { font-size:28px; }
 }
+
+/* Small Performance refinements retain its typography, palette and page structure. */
+html[data-facility-style="performance"] .h2k-header { border-bottom:1px solid var(--border); }
+html[data-facility-style="performance"] .hero-card { border-bottom:1px solid var(--border); }
+html[data-facility-style="performance"] .member-sidebar { border-top:2px solid var(--facility-secondary); }
+html[data-facility-style="performance"] :is(.outline-btn,.outline-link) { border-color:var(--border); }
+html[data-facility-style="performance"] :is(.outline-btn,.outline-link):hover { border-color:var(--facility-primary); }
+html[data-facility-style="performance"] :is(.coach-nav-link.active,.nav-link.active) { box-shadow:inset 0 -2px var(--facility-primary); }
+html[data-facility-style="performance"] :is(.primary-btn,.outline-btn,.primary-link,.outline-link) { min-height:44px; border-radius:10px; }
+html[data-facility-style="performance"] :is(.panel,.stat-card,.member-page-link-card) { border-radius:16px; }

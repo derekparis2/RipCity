@@ -196,7 +196,7 @@ function renderRecentWorkouts() {
   const reusableWorkouts = getReusableWorkoutRows();
   if (!reusableWorkouts.length) {
     if (count) count.textContent = "No workouts yet";
-    list.innerHTML = `<div class="empty-state">No workouts created yet.</div>`;
+    list.innerHTML = `<div class="empty-state">Your Workout Library is empty. <a class="outline-link" href="${window.RipCityUI.attr(window.RipCityAccess.getFacilityPageUrl("coach-workouts.html#workout-details-step"))}">Create your first workout</a></div>`;
     return;
   }
 
@@ -210,7 +210,7 @@ function renderRecentWorkouts() {
   }
 
   if (!filteredWorkouts.length) {
-    list.innerHTML = `<div class="empty-state">No created workouts match those filters.</div>`;
+    list.innerHTML = `<div class="empty-state">No workouts match these filters. Clear the search or choose a different filter.</div>`;
     return;
   }
 
