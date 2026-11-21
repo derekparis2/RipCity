@@ -27,6 +27,8 @@ const memberTrainingViewCopy = {
 
 function setMemberTrainingView(view) {
   const testingEnabled = window.RipCityAccess?.isModuleEnabled(window.RipCityFacility, "testing_days") !== false;
+  const viewSwitch = document.querySelector(".training-view-switch");
+  if (viewSwitch) viewSwitch.hidden = !window.RipCityFacility || !testingEnabled;
   const nextView = memberTrainingViewCopy[view] && (view !== "performance" || testingEnabled) ? view : "schedule";
   activeMemberTrainingView = nextView;
   document.querySelectorAll("[data-training-view-panel]").forEach(panel => {
