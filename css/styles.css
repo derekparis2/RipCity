@@ -11416,3 +11416,6 @@ html[data-facility-slug] .member-sidebar { border-top:5px solid var(--facility-s
 html[data-facility-slug] .hero-card { border-bottom:3px solid var(--facility-secondary); }
 html[data-facility-slug] .outline-btn, html[data-facility-slug] .outline-link { border-color:var(--facility-secondary); }
 html[data-facility-slug] .coach-nav-link.active, html[data-facility-slug] .nav-link.active { box-shadow:inset 0 -3px var(--facility-secondary); }
+
+/* Program counts share the summary grid so configurable programs leave no empty columns. */
+.program-stat-cards { display: contents; }

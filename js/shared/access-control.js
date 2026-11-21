@@ -227,6 +227,16 @@
       document.documentElement.style.setProperty("--accent-ink", luminance > .179 ? "#000000" : "#ffffff");
     }
 
+    // Cache presentation only; access and feature settings still come from the server.
+    try {
+      const properties = ["--facility-primary", "--facility-secondary", "--accent", "--accent-soft", "--accent-ink"];
+      window.sessionStorage.setItem("facility:appearance", JSON.stringify({
+        id: configuration.id,
+        theme: document.documentElement.dataset.facilityTheme,
+        colors: Object.fromEntries(properties.map(key => [key, document.documentElement.style.getPropertyValue(key)]))
+      }));
+    } catch { /* Appearance caching is optional when storage is unavailable. */ }
+
     document.querySelectorAll(".auth-brand h1, .brand h1").forEach(element => {
       element.textContent = String(configuration.name || "Facility").toUpperCase();
     });

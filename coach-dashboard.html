@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script src="js/shared/facility-shell.js?v=facility-ui-1&amp;review=facility-ui-3"></script>
+  <script src="js/shared/facility-shell.js?v=facility-ui-1&amp;review=facility-loading-4"></script>
   <title>Coach Dashboard</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/styles.css?v=attention-habits-1&amp;review=flexible-platform-2" />
+  <link rel="stylesheet" href="css/styles.css?v=attention-habits-1&amp;review=platform-stats-3" />
 </head>
 
 <body class="auth-body coach-dashboard-page">
@@ -156,9 +156,8 @@
         <strong id="coach-needs-attention">0</strong>
         <small>Habit follow-up</small>
       </article>
+      <div class="program-stat-cards" id="facility-program-stats"></div>
     </section>
-
-    <section class="stats-grid" id="facility-program-stats" aria-label="Members by program"></section>
 
     <section class="coach-attention-section" data-facility-module="habits">
       <details class="panel coach-attention-panel" id="coach-attention-panel">
@@ -257,11 +256,11 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/shared/supabaseClient.js"></script>
   <script src="js/shared/ui-utils.js"></script>
-  <script src="js/coach/coach-nav.js?v=program-creator-1&amp;navigation=facility-context-1"></script>
-  <script src="js/shared/access-control.js?v=auth-reliability-3&amp;review=flexible-platform-2&amp;navigation=facility-context-1"></script>
+  <script src="js/coach/coach-nav.js?v=program-creator-1&amp;navigation=facility-context-2"></script>
+  <script src="js/shared/access-control.js?v=auth-reliability-3&amp;review=platform-stats-3&amp;navigation=facility-context-2"></script>
   <script src="js/shared/workout-data.js?v=workout-attribution-1"></script>
   <script src="js/shared/attention-rules.js?v=coach-attention-1"></script>
-  <script src="js/coach/coach-dashboard.js?v=attention-habits-1&amp;review=flexible-platform-2"></script>
-  <script src="js/coach/coach-announcements.js?v=announcement-attribution-1&amp;review=flexible-platform-2"></script>
+  <script src="js/coach/coach-dashboard.js?v=attention-habits-1&amp;review=platform-stats-3"></script>
+  <script src="js/coach/coach-announcements.js?v=announcement-attribution-1&amp;review=platform-stats-3"></script>
 </body>
 </html>
