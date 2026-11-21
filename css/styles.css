@@ -11498,3 +11498,5 @@ html[data-profile-state="loading"] body.profile-body > :is(aside,main) { display
 .profile-loading p { margin:0; }
 .profile-loading a { display:inline-flex; margin-top:14px; }
 html:not([data-profile-state="loading"]) .profile-loading { display:none; }
+
+.roster-group-card .group-delete-message { grid-column:1 / -1; width:100%; margin:10px 0 0; box-sizing:border-box; }

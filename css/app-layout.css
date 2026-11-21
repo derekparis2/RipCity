@@ -57,3 +57,24 @@ body.auth-body > main.app-shell > :is(.dashboard-grid,.approval-admin-tools):not
 }
 /* The heading receives focus for screen readers, but is not an editable field. */
 .workout-session-body h4[data-session-heading]:focus { outline:none; }
+
+/* Desktop staff header: branding/actions first, full navigation second. */
+@media(min-width:1041px) {
+  body.auth-body > main.app-shell > .h2k-header:has([data-coach-nav]) {
+    display:grid; grid-template-columns:minmax(0,1fr) auto; grid-template-rows:auto auto;
+    align-items:center; gap:12px 20px;
+  }
+  .app-shell > .h2k-header:has([data-coach-nav]) > .auth-brand {
+    grid-column:1; grid-row:1; min-width:0; display:flex; align-items:center;
+  }
+  .app-shell > .h2k-header:has([data-coach-nav]) .auth-brand > div { min-width:0; }
+  .app-shell > .h2k-header:has([data-coach-nav]) .auth-brand h1 { font-size:clamp(24px,2.2vw,32px); line-height:1.15; overflow-wrap:anywhere; }
+  .app-shell > .h2k-header:has([data-coach-nav]) .auth-brand p { white-space:nowrap; }
+  .app-shell > .h2k-header:has([data-coach-nav]) .auth-brand img,
+  .app-shell > .h2k-header:has([data-coach-nav]) .auth-brand > .facility-brand-initials { width:48px; height:48px; flex:0 0 48px; }
+  .app-shell > .h2k-header:has([data-coach-nav]) > .h2k-header-actions { display:contents; }
+  .app-shell > .h2k-header:has([data-coach-nav]) .h2k-header-actions > [data-coach-nav] { grid-column:1 / -1; grid-row:2; width:100%; min-width:0; }
+  .app-shell > .h2k-header:has([data-coach-nav]) .coach-session-actions { grid-column:2; grid-row:1; justify-self:end; }
+  .app-shell > .h2k-header [data-coach-nav] .coach-nav-links { display:flex; flex-wrap:wrap; width:100%; gap:8px; }
+  .app-shell > .h2k-header [data-coach-nav] .coach-nav-link { white-space:nowrap; }
+}

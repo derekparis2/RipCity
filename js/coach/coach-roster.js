@@ -399,12 +399,13 @@ function renderGroupList() {
             </button>
           ` : `<span class="muted-small">Removal restricted</span>`}
         </div>
+        <p class="form-action-message group-delete-message" data-group-delete-message role="status" aria-live="polite" tabindex="-1" hidden></p>
       </article>
     `;
   }).join("");
 
   list.querySelectorAll("[data-delete-roster-group]").forEach(button => {
-    button.addEventListener("click", () => deleteRosterGroup(button.dataset.deleteRosterGroup));
+    button.addEventListener("click", () => deleteRosterGroup(button.dataset.deleteRosterGroup, button));
   });
 }
 
@@ -717,17 +718,31 @@ async function saveMemberGroupChanges(memberProfileId) {
   }
 }
 
-async function deleteRosterGroup(groupId) {
+async function deleteRosterGroup(groupId, button) {
+  if (button?.disabled) return;
   const group = rosterGroups.find(item => item.id === groupId);
   if (!group) return;
+  const message = button?.closest(".roster-group-card")?.querySelector("[data-group-delete-message]");
+  const showDeleteMessage = (text, isError = false) => {
+    if (!message) { showRosterMessage(text, isError); return; }
+    message.textContent = text;
+    message.hidden = !text;
+    message.classList.toggle("error-message", isError);
+    message.setAttribute("role", isError ? "alert" : "status");
+    if (isError) {
+      message.scrollIntoView({ block: "nearest", behavior: "auto" });
+      message.focus({ preventScroll: true });
+    }
+  };
   if (!canManageRosterGroup(group)) {
-    showRosterMessage("Only the coach who created this group or a facility administrator can delete it.", true);
+    showDeleteMessage("Only the coach who created this group or a facility administrator can delete it.", true);
     return;
   }
 
   const memberCount = rosterGroupMemberships.filter(row => row.group_id === groupId).length;
 
-  showRosterMessage("Checking group before delete...");
+  if (button) button.disabled = true;
+  showDeleteMessage("Checking group before delete...");
 
   try {
     const { data: assignments, error: assignmentError } = await db
@@ -741,7 +756,7 @@ async function deleteRosterGroup(groupId) {
     // Group-targeted assignments cascade on delete, so block deletion when
     // workout history still points at this group.
     if ((assignments || []).length) {
-      showRosterMessage("This group has workout assignments. Remove or reassign those workouts before deleting the group.", true);
+      showDeleteMessage("This group has workout assignments. Remove or reassign those workouts before deleting the group.", true);
       return;
     }
 
@@ -750,7 +765,7 @@ async function deleteRosterGroup(groupId) {
       : `Delete ${group.name}?`;
 
     if (!confirm(confirmText)) {
-      showRosterMessage("");
+      showDeleteMessage("");
       return;
     }
 
@@ -766,7 +781,9 @@ async function deleteRosterGroup(groupId) {
     showRosterMessage("Group deleted.");
   } catch (error) {
     console.error(error);
-    showRosterMessage(error.message || "Could not delete group.", true);
+    showDeleteMessage(error.code === "23503" ? "This group still has members or linked records. Remove its member assignments and related records before deleting it." : error.message || "Could not delete group. Try again.", true);
+  } finally {
+    if (button) button.disabled = false;
   }
 }
 
