@@ -268,7 +268,7 @@ function captureWorkoutSetDraft(row) {
   if (!row || row.dataset.dirty !== "true") return;
   workoutSetDrafts.set(getSetDraftKey(row), Object.fromEntries(workoutDraftFields.map(selector => {
     const input = row.querySelector(selector);
-    return [selector, input ? { value: input.value, checked: input.checked } : null];
+    return [selector, input ? { value: input.value, checked: input.checked, invalid: input.validity ? !input.validity.valid : false } : null];
   })));
 }
 function captureCurrentWorkoutDrafts() {
@@ -293,11 +293,14 @@ function restoreWorkoutSetDrafts() {
       captureWorkoutSetDraft(row);
       const status = row.querySelector(".set-log-title em");
       if (status) status.textContent = "Unsaved changes";
+      syncWorkoutNextButton(row);
     });
     row.addEventListener("change", () => {
       row.dataset.dirty = "true";
       captureWorkoutSetDraft(row);
+      syncWorkoutNextButton(row);
     });
+    syncWorkoutNextButton(row);
   });
 }
 function clearWorkoutSetDraft(row) {

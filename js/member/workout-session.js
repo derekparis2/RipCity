@@ -39,12 +39,36 @@ function buildLogRowFromSetRow(row) {
   return logRow;
 }
 
-function validateWorkoutSetRow(row) {
+function hasRequiredWorkoutResults(row) {
+  const required = { weight_reps: [".set-weight-input", ".set-reps-input"], band_color: [".set-reps-input"],
+    time: [".set-time-input"], distance: [".set-distance-input"], custom: [".set-note-input"] }[row.dataset.inputType];
+  return required ? required.every(selector => hasValue(selector, row)) : isChecked(".set-completed-input", row);
+}
+
+function syncWorkoutNextButton(row) {
+  const button = row.querySelector(".session-next-step-btn");
+  if (button) button.textContent = "Next";
+}
+
+function createWorkoutDraftRow(step, draft) {
+  const inputs = Object.fromEntries(Object.entries(draft).filter(([, value]) => value).map(([selector, value]) => [selector, {
+    ...value, checkValidity: () => !value.invalid, reportValidity() {}, focus() {}
+  }]));
+  return { dataset: { exerciseId: step.exercise.id, setNumber: String(step.setNumber), inputType: step.exercise.input_type || "completion" },
+    querySelector: selector => inputs[selector] || null, querySelectorAll: () => Object.values(inputs) };
+}
+
+function validateWorkoutSetRow(row, allowIncomplete = false) {
   for (const input of row.querySelectorAll("input, select, textarea")) {
     if (input.checkValidity && !input.checkValidity()) {
       input.reportValidity();
       throw new Error("Check the highlighted result before saving.");
     }
+  }
+  if (allowIncomplete) {
+    const log = buildLogRowFromSetRow(row);
+    log.completed = hasRequiredWorkoutResults(row);
+    return log;
   }
   const type = row.dataset.inputType;
   const required = {
@@ -123,6 +147,11 @@ async function saveCurrentSetAndGoToStep(stepIndex) {
   }
 
   captureWorkoutSetDraft(row);
+  if (!hasRequiredWorkoutResults(row)) {
+    goToSessionStep(stepIndex);
+    showWorkoutSessionToast("Set left incomplete. You can return to it later.");
+    return;
+  }
   showWorkoutSessionMessage("Saving set...");
   try {
     validateWorkoutSetRow(row);
@@ -139,22 +168,39 @@ async function saveCurrentSetAndGoToStep(stepIndex) {
 
 async function finishWorkoutSession() {
   if (workoutSessionSaving || !workoutAssignment) return;
-  captureCurrentWorkoutDrafts();
   const row = document.querySelector(".session-step-card.active .set-log-row");
+  if (row && hasRequiredWorkoutResults(row)) row.dataset.dirty = "true";
+  captureCurrentWorkoutDrafts();
   try {
-    if (row?.dataset.dirty === "true") validateWorkoutSetRow(row);
     setWorkoutSaveBusy(true);
-    showWorkoutSessionMessage("Saving workout progress...");
-    if (row?.dataset.dirty === "true") await saveSetRow(row);
-    else existingSetLogs = await loadExistingSetLogs(workoutAssignment.id);
-    if (workoutSetDrafts.size) {
-      const steps = getWorkoutSessionSteps(workoutAssignment.workout);
-      const index = steps.findIndex(step => workoutSetDrafts.has(`${step.exercise.id}:${step.setNumber}`));
-      setWorkoutSaveBusy(false);
-      if (index >= 0) goToSessionStep(index);
-      showWorkoutSessionMessage("Save or clear the remaining unsaved edits before finishing.", true);
-      return;
+    const saved = await loadExistingSetLogs(workoutAssignment.id);
+    const steps = getWorkoutSessionSteps(workoutAssignment.workout);
+    const logs = [];
+    let invalidEdits = 0;
+    for (const step of steps) {
+      const draft = workoutSetDrafts.get(`${step.exercise.id}:${step.setNumber}`);
+      if (!draft) continue;
+      try { logs.push(validateWorkoutSetRow(createWorkoutDraftRow(step, draft), true)); }
+      catch { invalidEdits++; }
     }
+    const combined = new Map(saved.map(log => [`${log.exercise_id}:${log.set_number}`, log]));
+    logs.forEach(log => combined.set(`${log.exercise_id}:${log.set_number}`, log));
+    const remaining = steps.filter(step => !combined.get(`${step.exercise.id}:${step.setNumber}`)?.completed).length;
+    if (remaining || invalidEdits) {
+      const warning = `${remaining} of ${steps.length} sets are incomplete. Finish anyway? Entered results will be saved and unfinished sets will stay incomplete.`
+        + (invalidEdits ? ` ${invalidEdits} invalid entr${invalidEdits === 1 ? "y cannot" : "ies cannot"} be saved; those edits will be discarded.` : "");
+      if (!window.confirm(warning)) return;
+    }
+    showWorkoutSessionMessage("Saving workout progress...");
+    if (logs.length) {
+      const { error } = await db.from("exercise_set_logs").upsert(logs, {
+        onConflict: "workout_assignment_id,member_profile_id,exercise_id,set_number"
+      });
+      if (error) throw error;
+    }
+    existingSetLogs = await loadExistingSetLogs(workoutAssignment.id);
+    workoutSetDrafts.clear();
+    document.querySelectorAll(".set-log-row").forEach(clearWorkoutSetDraft);
     workoutSessionView = "summary";
     updateWorkoutSessionHistory("replace");
     renderWorkoutSession();

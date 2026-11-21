@@ -805,19 +805,37 @@ async function setRosterMemberStatus(facilityMemberId, nextStatus) {
   }
 }
 
+function showCreateGroupMessage(message, isError = false) {
+  const element = document.getElementById("create-group-message");
+  if (!element) return;
+  element.textContent = message;
+  element.hidden = !message;
+  element.classList.toggle("error-message", isError);
+  element.setAttribute("role", isError ? "alert" : "status");
+  element.setAttribute("aria-live", isError ? "assertive" : "polite");
+  if (isError) {
+    element.scrollIntoView({ block: "center", behavior: "smooth" });
+    element.focus({ preventScroll: true });
+  }
+}
+
 async function createRosterGroup(event) {
   event.preventDefault();
 
+  const submit = event.currentTarget.querySelector('button[type="submit"]');
+  if (submit.disabled) return;
   const name = document.getElementById("new-group-name").value.trim();
   const groupType = document.getElementById("new-group-type").value;
   const memberType = document.getElementById("new-group-member-type").value;
 
   if (!name) {
-    showRosterMessage("Group name is required.", true);
+    showCreateGroupMessage("Group name is required.", true);
     return;
   }
 
-  showRosterMessage("Creating group...");
+  submit.disabled = true;
+  submit.textContent = "Creating...";
+  showCreateGroupMessage("Creating group...");
 
   try {
     const { error } = await db
@@ -835,10 +853,13 @@ async function createRosterGroup(event) {
 
     document.getElementById("create-group-form").reset();
     await refreshRoster();
-    showRosterMessage("Group created.");
+    showCreateGroupMessage("Group created.");
   } catch (error) {
     console.error(error);
-    showRosterMessage(error.message || "Could not create group.", true);
+    showCreateGroupMessage(error.code === "23505" ? "A group with this name already exists. Choose a different name." : error.message || "Could not create group. Try again.", true);
+  } finally {
+    submit.disabled = false;
+    submit.textContent = "Create Group";
   }
 }
 

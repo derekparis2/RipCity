@@ -80,12 +80,37 @@ assert.equal(context.getWorkoutDemoUrl('javascript:alert(1)'), '');
 assert.equal(context.getWorkoutDemoUrl('https://example.com/demo'), 'https://example.com/demo');
 console.log('Member workout flow checks passed');
 
-// Finishing opens the summary without creating artificial completion logs.
-vm.runInContext('updateWorkoutSessionHistory = () => {}; workoutSessionView = "logging";', context);
+// Empty sets can advance, then Finish must ask before leaving them incomplete.
+vm.runInContext(`
+  updateWorkoutSessionHistory = () => {};
+  workoutSessionView = "logging";
+  getWorkoutSessionSteps = () => [
+    {exercise:{id:'exercise-1',input_type:'completion'},setNumber:1},
+    {exercise:{id:'exercise-1',input_type:'completion'},setNumber:2}
+  ];
+  goToSessionStep = index => { window.nextStep = index; };
+`, context);
+fields.get('.set-completed-input').checked = false;
+row.dataset.dirty = 'false';
 const writesBeforeFinish = writes;
+await context.saveCurrentSetAndGoToStep(1);
+assert.equal(context.window.nextStep, 1);
+assert.equal(writes, writesBeforeFinish);
+let warning;
+context.window.confirm = text => { warning = text; return false; };
+await context.finishWorkoutSession();
+assert.match(warning, /2 of 2 sets are incomplete/);
+assert.equal(vm.runInContext('workoutSessionView', context), 'logging', 'cancel stays in the workout');
+context.window.confirm = () => true;
 await context.finishWorkoutSession();
 assert.equal(vm.runInContext('workoutSessionView', context), 'summary');
 assert.equal(writes, writesBeforeFinish, 'Finish does not mark untouched sets completed');
+row.dataset.inputType = 'weight_reps';
+fields.get('.set-weight-input').value = '25';
+fields.get('.set-reps-input').value = '';
+const partial = context.validateWorkoutSetRow(row, true);
+assert.equal(partial.weight, 25);
+assert.equal(partial.completed, false, 'partial results can be saved without completing the set');
 vm.runInContext('workoutSessionView = "logging"; loadExistingSetLogs = async () => { throw new Error("Connection lost"); };', context);
 await context.finishWorkoutSession();
 assert.equal(vm.runInContext('workoutSessionView', context), 'logging', 'a failed finish stays in the workout');

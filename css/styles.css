@@ -11547,3 +11547,7 @@ body .app-page-heading :is(.dashboard-welcome-line,.dashboard-welcome-message):e
   .h2k-header [data-coach-nav] .coach-nav-link:hover { color:var(--text); border-color:var(--text); }
   .h2k-header [data-coach-nav] .coach-nav-link.active { background:var(--surface-2); color:var(--text); border:1px solid var(--facility-primary); box-shadow:none; }
 }
+
+.form-action-message { margin:0 0 12px; padding:12px 14px; border:1px solid var(--border); border-radius:10px; background:var(--surface-2); color:var(--text); font-weight:600; }
+.form-action-message.error-message { border-left:4px solid var(--danger); color:var(--text); }
+.form-action-message:focus { outline:2px solid var(--danger); outline-offset:3px; }

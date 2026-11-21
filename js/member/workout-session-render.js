@@ -82,8 +82,8 @@ function renderWorkoutSession() {
     container.innerHTML = `<section class="session-finish-summary" aria-labelledby="session-finish-title">
       <p class="eyebrow">WORKOUT SUMMARY</p>
       <h2 id="session-finish-title" tabindex="-1">${remaining ? "Finished for now" : "Workout complete"}</h2>
-      <p>${complete} of ${steps.length} sets saved.</p>
-      <p>${remaining ? `${remaining} set${remaining === 1 ? " is" : "s are"} still unlogged. Your saved results are kept, and you can return to finish later.` : "All your sets are saved. Nice work."}</p>
+      <p>${complete} of ${steps.length} sets complete.</p>
+      <p>${remaining ? `${remaining} set${remaining === 1 ? " is" : "s are"} still incomplete. Your entered results are saved, and you can return to finish later.` : "All your sets are saved. Nice work."}</p>
       <div class="session-finish-actions">
         <a class="primary-link" href="${window.RipCityUI.attr(window.RipCityAccess.getFacilityPageUrl("member-training.html"))}">Back to Training Calendar</a>
         <button class="outline-btn" type="button" data-resume-finished>${remaining ? "Continue Workout" : "Review Sets"}</button>
@@ -174,7 +174,7 @@ function renderWorkoutSession() {
 
   document.querySelectorAll(".save-set-btn").forEach(button => {
     button.addEventListener("click", () => {
-      saveSetLog(button.dataset.exerciseId, Number(button.dataset.setNumber));
+      finishWorkoutSession();
     });
   });
 
@@ -554,7 +554,7 @@ function renderSetLogger(exercise, setNumber, stepIndex = null) {
           <span>Set ${setNumber}</span>
           <strong>Your Result</strong>
         </div>
-        <em>${completed ? "Saved" : "Not saved"}</em>
+        <em>${completed ? "Saved" : existing ? "Partial result saved" : "Not saved"}</em>
       </div>
 
       <div class="set-log-required-fields">
@@ -601,7 +601,6 @@ function renderSetLogger(exercise, setNumber, stepIndex = null) {
         </div>
       </details>
 
-      ${hasStepperActions && !isLastStep ? `<button class="session-skip-set-btn" type="button" data-session-skip-index="${stepIndex + 1}">Skip this set for now</button>` : ""}
       <div class="set-log-actions">
         ${hasStepperActions && !isFirstStep ? `
           <button
@@ -619,7 +618,7 @@ function renderSetLogger(exercise, setNumber, stepIndex = null) {
             type="button"
             data-next-step-index="${stepIndex + 1}"
           >
-            Save & Next
+            Next
           </button>
         ` : `
           <button
@@ -628,7 +627,7 @@ function renderSetLogger(exercise, setNumber, stepIndex = null) {
             data-exercise-id="${window.RipCityUI.attr(exercise.id)}"
             data-set-number="${window.RipCityUI.attr(setNumber)}"
           >
-            ${hasStepperActions ? "Save & Finish Workout" : "Save Set"}
+            ${hasStepperActions ? "Finish Workout" : "Save Set"}
           </button>
         `}
       </div>

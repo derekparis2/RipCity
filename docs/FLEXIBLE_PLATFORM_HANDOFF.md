@@ -190,3 +190,34 @@ member shell. Beta feedback is limited to Rip City, where its configuration swit
 can still turn it off. Other facilities do not show the beta feedback widget.
 No migration is required. Browser review, including mobile/member pages, remains
 with Derek; only JavaScript syntax and whitespace checks were run by the agent.
+
+### Incomplete sets may continue
+
+Next advances when required results are missing and retains any draft. Complete
+results still use Save & Next. Finish collects edits across sets and asks for
+confirmation if any sets are incomplete. Cancel keeps edits and the current view.
+Confirmed finishing saves valid partial entries with completed=false, preserving
+entered values without inflating completion. Invalid numeric entries are explicitly
+identified as unsavable in the confirmation. The final set now uses this same
+Finish path. Verify blank/partial Next, cancel/confirm Finish, saved partial values,
+and resume on a phone. Tests were updated but not run by the agent.
+
+### Assignment warnings and group-form feedback
+
+New/reused workout assignments and program launches check the current facility
+calendar and ask for confirmation when the same roster or overlapping members
+already have a workout on those dates. Existing workouts stay in place. Calendar
+copy retains its existing destination-conflict protections. This is an advisory
+preflight, not a database uniqueness rule; concurrent assignments after the check
+can still occur. Reads are scoped and paginated rather than using the library cache.
+
+Group-creation messages appear inside the form; errors use role=alert, receive
+focus and scroll into view. Inputs are retained on failure and repeated submits
+are blocked while creating. Workout navigation now always labels its single
+advance button Next, whether saving results or advancing without them.
+
+Derek: test duplicate-date group/member/facility assignments, overlapping groups,
+cancel/confirm, new vs reused workouts, and program launches. Try blank/duplicate
+group names and a rejected insert on desktop/phone; verify the inline error and
+retained fields. Run tests/workout-assignment-warning.test.mjs with the suite.
+Only syntax/whitespace checks were performed by the agent; no migration needed.

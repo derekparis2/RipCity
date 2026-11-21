@@ -363,6 +363,26 @@ async function launchWorkoutProgram(programId, card, button) {
   button.textContent = "Starting...";
   showProgramsMessage("Creating program calendar workouts...");
   try {
+    const items = [];
+    for (let offset = 0; ; offset += 500) {
+      const { data, error } = await db.from("workout_program_items").select("id,week_number,day_of_week")
+        .eq("program_id", programId).order("id").range(offset, offset + 499);
+      if (error) throw error;
+      items.push(...(data || []));
+      if ((data || []).length < 500) break;
+    }
+    const proposed = items.map(item => {
+      const date = parseProgrammingDate(startDate);
+      date.setDate(date.getDate() + (Number(item.week_number) - 1) * 7 + Number(item.day_of_week) - 1);
+      return { assigned_date: formatProgrammingIsoDate(date), target_type: targetType,
+        target_group_id: targetType === "group" ? targetId : null,
+        target_member_profile_id: targetType === "member" ? targetId : null,
+        target_facility_id: targetType === "facility" ? targetId : null };
+    });
+    if (!await confirmWorkoutAssignmentConflicts(proposed)) {
+      showProgramsMessage("Program launch cancelled.");
+      return;
+    }
     const { error } = await db.rpc("launch_workout_program", {
       check_program_id: programId,
       check_target_type: targetType,
