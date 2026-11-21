@@ -805,7 +805,7 @@ async function setRosterMemberStatus(facilityMemberId, nextStatus) {
   }
 }
 
-function showCreateGroupMessage(message, isError = false) {
+function showCreateGroupMessage(message, isError = false, nameError = false) {
   const element = document.getElementById("create-group-message");
   if (!element) return;
   element.textContent = message;
@@ -813,9 +813,14 @@ function showCreateGroupMessage(message, isError = false) {
   element.classList.toggle("error-message", isError);
   element.setAttribute("role", isError ? "alert" : "status");
   element.setAttribute("aria-live", isError ? "assertive" : "polite");
+  const nameInput = document.getElementById("new-group-name");
+  if (nameInput) {
+    if (nameError) nameInput.setAttribute("aria-invalid", "true");
+    else nameInput.removeAttribute("aria-invalid");
+  }
   if (isError) {
-    element.scrollIntoView({ block: "center", behavior: "smooth" });
-    element.focus({ preventScroll: true });
+    nameInput?.scrollIntoView({ block: "center", behavior: "auto" });
+    nameInput?.focus({ preventScroll: true });
   }
 }
 
@@ -829,7 +834,7 @@ async function createRosterGroup(event) {
   const memberType = document.getElementById("new-group-member-type").value;
 
   if (!name) {
-    showCreateGroupMessage("Group name is required.", true);
+    showCreateGroupMessage("Group name is required.", true, true);
     return;
   }
 
@@ -856,7 +861,7 @@ async function createRosterGroup(event) {
     showCreateGroupMessage("Group created.");
   } catch (error) {
     console.error(error);
-    showCreateGroupMessage(error.code === "23505" ? "A group with this name already exists. Choose a different name." : error.message || "Could not create group. Try again.", true);
+    showCreateGroupMessage(error.code === "23505" ? "A group with this name already exists. Choose a different name." : error.message || "Could not create group. Try again.", true, error.code === "23505");
   } finally {
     submit.disabled = false;
     submit.textContent = "Create Group";
@@ -916,6 +921,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("refresh-roster-btn").addEventListener("click", refreshRoster);
   document.getElementById("create-group-form").addEventListener("submit", createRosterGroup);
+  document.getElementById("new-group-name").addEventListener("input", () => {
+    const name = document.getElementById("new-group-name");
+    if (name.hasAttribute("aria-invalid")) showCreateGroupMessage("");
+  });
   document.getElementById("coach-roster-logout-btn").addEventListener("click", logoutCoachRoster);
 
   ["roster-type-filter", "roster-status-filter", "roster-group-filter", "roster-search"].forEach(id => {

@@ -479,10 +479,18 @@ async function initProfilePage() {
 
     updateProfileShellNav();
     fillProfileForm();
+    document.documentElement.dataset.profileState = "ready";
     showProfileMessage("");
   } catch (error) {
     console.error(error);
     showProfileMessage(error.message || "Could not load profile.", true);
+    const loadingMessage = document.getElementById("profile-loading-message");
+    if (loadingMessage) {
+      loadingMessage.textContent = error.message || "Could not load profile. Please try again.";
+      loadingMessage.parentElement.setAttribute("role", "alert");
+    }
+    const retry = document.getElementById("profile-loading-retry");
+    if (retry) retry.hidden = false;
   }
 }
 

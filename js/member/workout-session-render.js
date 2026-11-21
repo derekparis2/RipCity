@@ -205,6 +205,11 @@ function renderWorkoutSession() {
     });
   });
 
+  const blockNav = container.querySelector(".session-block-navigation");
+  const activeTab = blockNav?.querySelector(".session-block-nav.active");
+  if (blockNav && activeTab) {
+    blockNav.scrollLeft = Math.max(0, activeTab.offsetLeft - blockNav.offsetLeft - (blockNav.clientWidth - activeTab.offsetWidth) / 2);
+  }
   restoreWorkoutSetDrafts();
   updateSetStats();
 }

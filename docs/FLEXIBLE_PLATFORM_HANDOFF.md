@@ -221,3 +221,13 @@ cancel/confirm, new vs reused workouts, and program launches. Try blank/duplicat
 group names and a rejected insert on desktop/phone; verify the inline error and
 retained fields. Run tests/workout-assignment-warning.test.mjs with the suite.
 Only syntax/whitespace checks were performed by the agent; no migration needed.
+
+### Consistent page spacing
+
+Signed-in pages now use an explicit app-shell and css/app-layout.css, loaded
+after page/theme styles. One source owns page width, top/side padding and section
+gaps. Empty status messages and empty hidden tool wrappers do not add gaps.
+Member/sidebar pages reserve their navigation area; phone workout logging keeps
+its natural scrolling layout. Owner preview uses the same layout sheet.
+Compare staff tabs, staff/member Profile, member tabs, and Platform at the same
+viewport/zoom after deployment. No browser tests were performed by the agent.

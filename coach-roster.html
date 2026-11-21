@@ -13,10 +13,11 @@
 
   <link rel="stylesheet" href="css/styles.css?v=ui-polish-4&amp;review=platform-stats-3&amp;workflow=performance-2&amp;nav=full-tabs-1&amp;layout=outlined-tabs-5&amp;feedback=visible-errors-1" />
   <link rel="stylesheet" href="css/facility-styles.css?v=facility-styles-12&amp;workflow=performance-2" />
+  <link rel="stylesheet" href="css/app-layout.css?v=consistent-spacing-2" />
 </head>
 
 <body class="auth-body">
-  <main class="coach-page">
+  <main class="app-shell coach-page">
     <header class="h2k-header">
       <div class="auth-brand">
         <img src="assets/rip-city-logo.png" alt="Rip City logo">
@@ -150,7 +151,7 @@
           <p id="create-group-message" class="form-action-message" role="status" aria-live="polite" tabindex="-1" hidden></p>
           <label>
             Group Name
-            <input id="new-group-name" type="text" placeholder="Example: Freshman Pitchers" />
+            <input id="new-group-name" aria-describedby="create-group-message" type="text" placeholder="Example: Freshman Pitchers" />
           </label>
 
           <div class="form-row">
@@ -193,6 +194,6 @@
   <script src="js/coach/coach-nav.js?v=program-creator-1&amp;navigation=facility-context-3&amp;workflow=performance-2&amp;nav=full-tabs-1&amp;shell=staff-profile-1"></script>
   <script src="js/shared/access-control.js?v=auth-reliability-3&amp;review=platform-stats-3&amp;navigation=facility-context-3&amp;shell=staff-profile-1"></script>
   <script src="js/shared/workout-data.js"></script>
-  <script src="js/coach/coach-roster.js?v=group-ownership-1&amp;review=platform-stats-3&amp;feedback=visible-errors-1"></script>
+  <script src="js/coach/coach-roster.js?v=group-ownership-2&amp;review=platform-stats-3&amp;feedback=visible-errors-1"></script>
 </body>
 </html>

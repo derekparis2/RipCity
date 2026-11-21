@@ -11428,7 +11428,6 @@ html[data-facility-slug] .coach-nav-link.active, html[data-facility-slug] .nav-l
 .session-draft-notice { color:var(--text); padding:12px 0; }
 .set-log-row[data-dirty="true"] .set-log-title em { color:var(--text); }
 .session-demo-link { display:inline-flex; margin:10px 0; }
-[data-session-heading]:focus { outline:2px solid var(--facility-primary); outline-offset:4px; }
 .session-skip-set-btn { width:fit-content; background:none; border:0; padding:10px 0; margin-top:8px; color:var(--muted); text-decoration:underline; text-underline-offset:3px; cursor:pointer; font:inherit; }
 .session-skip-set-btn:hover { color:var(--text); }
 
@@ -11443,66 +11442,6 @@ html[data-facility-slug] .coach-nav-link.active, html[data-facility-slug] .nav-l
   .workout-session-body .set-log-row input[type="checkbox"] { min-height:24px; width:24px; height:24px; }
   .workout-session-body .set-log-actions { padding-bottom:env(safe-area-inset-bottom,0px); }
   .session-finish-actions > * { display:flex; justify-content:center; align-items:center; width:100%; min-height:48px; }
-}
-
-/* One signed-in page shell, regardless of tab, role, or facility style. */
-:root { --app-page-width:1320px; --app-page-edge:16px; --app-page-top:32px; }
-body > :is(.coach-page,.approval-page,.h2k-page) {
-  width:min(var(--app-page-width),calc(100% - var(--app-page-edge) * 2));
-  max-width:var(--app-page-width);
-  min-width:0;
-  margin-inline:auto;
-  padding:var(--app-page-top) 0 60px;
-  box-sizing:border-box;
-}
-body > :is(.coach-page,.approval-page,.h2k-page) > * { min-width:0; }
-/* Member pages reserve the fixed sidebar, then use the same content width/gutters. */
-body.member-dashboard-body > main.member-main-content {
-  width:calc(100% - 280px);
-  max-width:none;
-  min-width:0;
-  margin:0 0 0 280px;
-  padding:var(--app-page-top) var(--app-page-edge) 60px;
-  box-sizing:border-box;
-}
-body.member-dashboard-body > main.member-main-content > * {
-  width:100%;
-  max-width:var(--app-page-width);
-  min-width:0;
-  margin-inline:auto;
-  box-sizing:border-box;
-}
-.workout-session-body .session-overview,
-.workout-session-body .session-step-shell { width:100%; max-width:none; }
-@media(max-width:700px) {
-  :root { --app-page-edge:9px; --app-page-top:12px; }
-  body > :is(.coach-page,.approval-page,.h2k-page) { padding-bottom:48px; }
-  body.member-dashboard-body > main.member-main-content {
-    width:100%; margin:0;
-    padding:var(--app-page-top) var(--app-page-edge) calc(94px + env(safe-area-inset-bottom));
-  }
-  body.member-dashboard-body .member-sidebar {
-    width:calc(100% - var(--app-page-edge) * 2);
-    margin-inline:auto;
-  }
-}
-@media(max-width:430px) { :root { --app-page-edge:7px; } }
-
-/* Full staff navigation gets its own desktop row instead of squeezing branding. */
-@media(min-width:1041px) {
-  .h2k-header:has([data-coach-nav]) {
-    display:grid;
-    grid-template-columns:minmax(0,1fr) auto;
-    align-items:center;
-    gap:20px;
-  }
-  .h2k-header:has([data-coach-nav]) > .auth-brand { grid-column:1; grid-row:1; min-width:0; }
-  .h2k-header:has([data-coach-nav]) .auth-brand p { white-space:nowrap; }
-  .h2k-header:has([data-coach-nav]) > .h2k-header-actions { display:contents; }
-  .h2k-header:has([data-coach-nav]) .h2k-header-actions > [data-coach-nav] { grid-column:1 / -1; grid-row:2; width:100%; }
-  .h2k-header:has([data-coach-nav]) .h2k-header-actions > button { grid-column:2; grid-row:1; justify-self:end; }
-  .h2k-header [data-coach-nav] .coach-nav-links { flex-wrap:wrap; width:100%; }
-  .h2k-header [data-coach-nav] .coach-nav-link { white-space:nowrap; }
 }
 
 /* Compact working-page headings replace oversized marketing banners. */
@@ -11551,3 +11490,11 @@ body .app-page-heading :is(.dashboard-welcome-line,.dashboard-welcome-message):e
 .form-action-message { margin:0 0 12px; padding:12px 14px; border:1px solid var(--border); border-radius:10px; background:var(--surface-2); color:var(--text); font-weight:600; }
 .form-action-message.error-message { border-left:4px solid var(--danger); color:var(--text); }
 .form-action-message:focus { outline:2px solid var(--danger); outline-offset:3px; }
+
+/* Profile waits for its verified role before revealing either navigation shell. */
+html[data-profile-state="loading"] body.profile-body { display:block; }
+html[data-profile-state="loading"] body.profile-body > :is(aside,main) { display:none !important; }
+.profile-loading { width:min(1320px,calc(100% - 32px)); margin:32px auto; padding:20px; background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:12px; box-sizing:border-box; }
+.profile-loading p { margin:0; }
+.profile-loading a { display:inline-flex; margin-top:14px; }
+html:not([data-profile-state="loading"]) .profile-loading { display:none; }
