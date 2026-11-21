@@ -199,9 +199,9 @@
 
         <section class="platform-config-section">
           <h4>Dashboard content</h4>
-          <label>Member welcome heading<input name="content_member_title" maxlength="500" value="${escapeHtml(config.dashboard_content?.member_title || "")}" placeholder="Your training starts here"></label>
+          <label>Member welcome line<input name="content_member_title" maxlength="500" value="${escapeHtml(config.dashboard_content?.member_title || "")}" placeholder="Your training starts here"></label>
           <label>Member welcome message<textarea name="content_member_message" maxlength="500">${escapeHtml(config.dashboard_content?.member_message || "")}</textarea></label>
-          <label>Coach welcome heading<input name="content_coach_title" maxlength="500" value="${escapeHtml(config.dashboard_content?.coach_title || "")}" placeholder="Your coaching dashboard"></label>
+          <label>Coach welcome line<input name="content_coach_title" maxlength="500" value="${escapeHtml(config.dashboard_content?.coach_title || "")}" placeholder="Your coaching dashboard"></label>
           <label>Coach welcome message<textarea name="content_coach_message" maxlength="500">${escapeHtml(config.dashboard_content?.coach_message || "")}</textarea></label>
           <label><input type="checkbox" name="content_show_feedback"${config.dashboard_content?.show_feedback !== false ? " checked" : ""}>Show feedback section</label>
           <label><input type="checkbox" name="content_show_scores"${config.dashboard_content?.show_scores !== false ? " checked" : ""}>Show habit score cards</label>
@@ -341,7 +341,7 @@
       const moduleFor = { announcements: "announcements", attention: "habits", workouts: "workouts", ...(role === "member" ? { scores: "habits" } : {}) };
       const copy = values.p_dashboard_content;
       const content = {
-        welcome: `<p class="eyebrow">${role === "member" ? "YOUR DAY" : "YOUR FACILITY"}</p><h3>${escapeHtml(copy[`${role}_title`] || (role === "member" ? "Welcome back, Jordan." : "Your coaching dashboard."))}</h3><p>${escapeHtml(copy[`${role}_message`] || "Everything you need for the day ahead.")}</p>`,
+        welcome: `<h2>Dashboard</h2><p>${role === "member" ? "Your training and progress at a glance." : "Your facility at a glance."}</p><p class="dashboard-welcome-line">${escapeHtml(copy[`${role}_title`])}</p><p class="dashboard-welcome-message">${escapeHtml(copy[`${role}_message`])}</p>`,
         announcements: '<p class="eyebrow">ANNOUNCEMENTS</p><h3>Build a consistent week.</h3><p>Three sessions. One day at a time. Keep the momentum going.</p>',
         feedback: '<h3>Tell us what to improve.</h3><p>Share feedback with your facility team.</p>',
         scores: role === "member" ? '<div class="stat-card"><span>Weekly habit score</span><strong>82%</strong></div><div class="stat-card"><span>Workouts this week</span><strong>2</strong></div>' : '<div class="stat-card"><span>Approved members</span><strong>24</strong></div><div class="stat-card"><span>Needs attention</span><strong>3</strong></div>',
@@ -351,10 +351,10 @@
       };
       const markup = Object.keys(sections).map(key => {
         let hidden = (moduleFor[key] && !modules[moduleFor[key]]) || (key === "feedback" && !copy.show_feedback) || (role === "member" && key === "scores" && !copy.show_scores);
-        return `<section class="${key === "welcome" ? "hero-card h2k-hero" : key === "scores" ? "stats-grid" : "panel"}" data-dashboard-role="${role}" data-dashboard-section="${key}"${hidden ? " hidden" : ""}>${content[key]}</section>`;
+        return `<section class="${key === "welcome" ? "hero-card h2k-hero app-page-heading" : key === "scores" ? "stats-grid" : "panel"}" data-dashboard-role="${role}" data-dashboard-section="${key}"${hidden ? " hidden" : ""}>${content[key]}</section>`;
       }).join("");
       const stylesheet = new URL("css/styles.css?v=facility-styles-1", window.location.href).href;
-      const designStylesheet = new URL("css/facility-styles.css?v=facility-styles-7", window.location.href).href;
+      const designStylesheet = new URL("css/facility-styles.css?v=facility-styles-8", window.location.href).href;
       frame.onload = () => {
         const doc = frame.contentDocument;
         if (!doc) return;

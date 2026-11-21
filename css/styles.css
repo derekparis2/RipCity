@@ -11504,3 +11504,31 @@ body.member-dashboard-body > main.member-main-content > * {
   .h2k-header [data-coach-nav] .coach-nav-links { flex-wrap:wrap; width:100%; }
   .h2k-header [data-coach-nav] .coach-nav-link { white-space:nowrap; }
 }
+
+/* Compact working-page headings replace oversized marketing banners. */
+body .app-page-heading {
+  display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap;
+  gap:16px; min-height:0; padding:22px 24px; margin:0 0 22px;
+  background:var(--surface); border:1px solid var(--border); border-radius:14px;
+}
+body .app-page-heading > div { min-width:0; max-width:none; }
+body .app-page-heading h2 {
+  margin:0 0 6px; font-family:"Inter",sans-serif;
+  font-size:clamp(24px,2.4vw,32px); line-height:1.2; font-weight:700;
+  text-transform:none; letter-spacing:-.025em; color:var(--text);
+}
+body .app-page-heading p { margin:0; max-width:72ch; color:var(--muted); line-height:1.5; }
+body .app-page-heading .dashboard-welcome-line { margin-top:12px; font-weight:600; color:var(--text); }
+body .app-page-heading .dashboard-welcome-message { margin-top:4px; }
+body .app-page-heading :is(.dashboard-welcome-line,.dashboard-welcome-message):empty { display:none; }
+@media(min-width:1041px) {
+  .h2k-header:has([data-coach-nav]) { gap:16px; padding-block:12px; margin-bottom:22px; }
+  .h2k-header:has([data-coach-nav]) .auth-brand h1 { font-size:clamp(24px,2.2vw,32px); line-height:1.15; }
+  .h2k-header:has([data-coach-nav]) .auth-brand img,
+  .h2k-header:has([data-coach-nav]) .auth-brand > .facility-brand-initials { width:48px; height:48px; }
+  .h2k-header [data-coach-nav] .coach-nav-links { gap:6px 18px; background:transparent; border-radius:0; }
+  .h2k-header [data-coach-nav] .coach-nav-link { min-height:42px; padding:10px 2px; border:0; border-bottom:2px solid transparent; border-radius:0; background:transparent; box-shadow:none; color:var(--muted); font-weight:600; }
+  .h2k-header [data-coach-nav] .coach-nav-link:hover { color:var(--text); background:transparent; }
+  .h2k-header [data-coach-nav] .coach-nav-link.active { color:var(--text); border-bottom-color:var(--facility-primary); background:transparent; box-shadow:none; }
+}
+@media(max-width:700px) { body .app-page-heading { padding:18px; gap:12px; } }
