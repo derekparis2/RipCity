@@ -180,3 +180,13 @@ The agent performed syntax/whitespace checks only, not browser or test execution
 ### Review adjustment: navigation and dashboard shortcuts
 
 At Derek’s request, restored the full staff tab list and removed the new pending-approval/follow-up shortcut strip, including its extra count query. The existing Approvals page and Needs Attention section remain available.
+
+### Desktop navigation review follow-up
+
+Restored outlined desktop tabs with larger text and a subtle filled active state.
+All page destinations remain visible; Exit Admin Mode is grouped with Log Out.
+Staff Profile uses the staff header/width/navigation; member Profile keeps its
+member shell. Beta feedback is limited to Rip City, where its configuration switch
+can still turn it off. Other facilities do not show the beta feedback widget.
+No migration is required. Browser review, including mobile/member pages, remains
+with Derek; only JavaScript syntax and whitespace checks were run by the agent.

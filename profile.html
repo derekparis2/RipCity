@@ -12,8 +12,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/styles.css?v=member-nav-fixed-1&amp;review=flexible-platform-2&amp;workflow=performance-2&amp;nav=full-tabs-1&amp;layout=compact-headings-4" />
-  <link rel="stylesheet" href="css/facility-styles.css?v=facility-styles-8&amp;workflow=performance-2" />
+  <link rel="stylesheet" href="css/styles.css?v=member-nav-fixed-1&amp;review=flexible-platform-2&amp;workflow=performance-2&amp;nav=full-tabs-1&amp;layout=outlined-tabs-5" />
+  <link rel="stylesheet" href="css/facility-styles.css?v=facility-styles-11&amp;workflow=performance-2" />
 </head>
 
 <body class="auth-body member-dashboard-body profile-body">
@@ -47,14 +47,17 @@
   </aside>
 
   <main class="main-content member-main-content profile-main-content">
-    <header class="topbar">
+    <header class="h2k-header" id="profile-coach-header" hidden>
+      <div class="auth-brand"><img src="assets/rip-city-logo.png" alt="Facility logo"><div><h1>Facility</h1><p>Profile</p></div></div>
+      <div class="h2k-header-actions coach-header-actions"><nav class="coach-nav" data-coach-nav="profile" aria-label="Coach navigation"></nav></div>
+    </header>
+    <header class="topbar" id="profile-member-header">
       <div>
         <p class="eyebrow">PROFILE</p>
         <h2 id="profile-page-heading">Member Profile</h2>
       </div>
 
       <div class="topbar-actions coach-header-actions">
-        <nav class="coach-nav hidden" data-coach-nav="profile" aria-label="Coach navigation"></nav>
         <button class="outline-btn" id="profile-logout-btn">Log Out</button>
       </div>
     </header>
@@ -219,9 +222,9 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/shared/supabaseClient.js"></script>
   <script src="js/shared/ui-utils.js"></script>
-  <script src="js/shared/access-control.js?v=auth-reliability-3&amp;review=flexible-platform-2&amp;navigation=facility-context-3"></script>
+  <script src="js/shared/access-control.js?v=auth-reliability-3&amp;review=flexible-platform-2&amp;navigation=facility-context-3&amp;shell=staff-profile-1"></script>
   <script src="js/member/member-nav.js?v=member-leaderboards-1&amp;navigation=facility-context-3"></script>
-  <script src="js/coach/coach-nav.js?v=program-creator-1&amp;navigation=facility-context-3&amp;workflow=performance-2&amp;nav=full-tabs-1"></script>
-  <script src="js/member/profile.js?v=coach-profile-1&amp;review=flexible-platform-2"></script>
+  <script src="js/coach/coach-nav.js?v=program-creator-1&amp;navigation=facility-context-3&amp;workflow=performance-2&amp;nav=full-tabs-1&amp;shell=staff-profile-1"></script>
+  <script src="js/member/profile.js?v=coach-profile-1&amp;review=flexible-platform-2&amp;shell=staff-profile-1"></script>
 </body>
 </html>

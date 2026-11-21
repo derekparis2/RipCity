@@ -142,3 +142,38 @@ html[data-facility-style] body .app-page-intro { min-height:0; padding:18px 22px
 html[data-facility-style] body .app-page-intro h3 { font-size:clamp(20px,2vw,24px); line-height:1.3; margin:0 0 6px; text-transform:none; }
 html[data-facility-style] body .app-page-intro .eyebrow { display:none; }
 @media(max-width:700px) { html[data-facility-style] body .app-page-intro { padding:16px; } }
+
+/* Outlined desktop tabs stay consistent across all facility styles. */
+@media(min-width:1041px) {
+  html[data-facility-style] .h2k-header:has([data-coach-nav]) { padding-block:8px; gap:12px; }
+  html[data-facility-style] .h2k-header [data-coach-nav] .coach-nav-links { gap:8px; }
+  html[data-facility-style] .h2k-header [data-coach-nav] .coach-nav-link { min-height:44px; padding:11px 14px; font-size:15px; font-weight:600; border:1px solid var(--border); border-radius:10px; background:transparent; color:var(--muted); box-shadow:none; }
+  html[data-facility-style] .h2k-header [data-coach-nav] .coach-nav-link:hover { color:var(--text); border-color:var(--text); }
+  html[data-facility-style] .h2k-header [data-coach-nav] .coach-nav-link.active { background:var(--surface-2); color:var(--text); border:1px solid var(--facility-primary); box-shadow:none; }
+}
+
+/* Other facilities' phone navigation follows the page palette, not Rip City's dark bar. */
+@media(max-width:700px) {
+  html[data-facility-slug]:not([data-facility-slug="rip-city"]) .member-shell-nav {
+    background:var(--surface); color:var(--text); border-color:var(--border); box-shadow:0 -4px 18px #0002;
+  }
+  html[data-facility-slug]:not([data-facility-slug="rip-city"]) .member-shell-nav .nav-link {
+    background:transparent; color:var(--muted); border:1px solid transparent; box-shadow:none;
+  }
+  html[data-facility-slug]:not([data-facility-slug="rip-city"]) .member-shell-nav .nav-link.active {
+    background:var(--surface-2); color:var(--text); border-color:var(--border); box-shadow:inset 0 -2px var(--facility-primary);
+  }
+  html[data-facility-slug]:not([data-facility-slug="rip-city"]) .member-shell-nav .mobile-nav-icon {
+    background:transparent; color:inherit; border-color:var(--border);
+  }
+  html[data-facility-slug]:not([data-facility-slug="rip-city"]) .member-shell-nav .nav-link.active .mobile-nav-icon {
+    background:var(--text); color:var(--bg); border-color:var(--text);
+  }
+}
+
+/* Calendar day details use a matched surface and foreground in alternate designs. */
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) .training-calendar-day {
+  background:var(--surface); color:var(--text); border-color:var(--border);
+}
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) .training-calendar-day-heading .eyebrow { color:var(--muted); }
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) .training-calendar-day-heading strong { color:var(--text); }

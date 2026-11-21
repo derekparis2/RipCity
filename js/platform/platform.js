@@ -203,7 +203,7 @@
           <label>Member welcome message<textarea name="content_member_message" maxlength="500">${escapeHtml(config.dashboard_content?.member_message || "")}</textarea></label>
           <label>Coach welcome line<input name="content_coach_title" maxlength="500" value="${escapeHtml(config.dashboard_content?.coach_title || "")}" placeholder="Your coaching dashboard"></label>
           <label>Coach welcome message<textarea name="content_coach_message" maxlength="500">${escapeHtml(config.dashboard_content?.coach_message || "")}</textarea></label>
-          <label><input type="checkbox" name="content_show_feedback"${config.dashboard_content?.show_feedback !== false ? " checked" : ""}>Show feedback section</label>
+          <label><input type="checkbox" name="content_show_feedback"${config.slug === "rip-city" && config.dashboard_content?.show_feedback !== false ? " checked" : ""}${config.slug !== "rip-city" ? " disabled" : ""}>Show beta feedback (Rip City testing only)</label>
           <label><input type="checkbox" name="content_show_scores"${config.dashboard_content?.show_scores !== false ? " checked" : ""}>Show habit score cards</label>
         </section>
         <section class="platform-config-section">
@@ -354,7 +354,7 @@
         return `<section class="${key === "welcome" ? "hero-card h2k-hero app-page-heading" : key === "scores" ? "stats-grid" : "panel"}" data-dashboard-role="${role}" data-dashboard-section="${key}"${hidden ? " hidden" : ""}>${content[key]}</section>`;
       }).join("");
       const stylesheet = new URL("css/styles.css?v=facility-styles-1", window.location.href).href;
-      const designStylesheet = new URL("css/facility-styles.css?v=facility-styles-8", window.location.href).href;
+      const designStylesheet = new URL("css/facility-styles.css?v=facility-styles-11", window.location.href).href;
       frame.onload = () => {
         const doc = frame.contentDocument;
         if (!doc) return;

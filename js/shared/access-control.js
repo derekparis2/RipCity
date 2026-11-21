@@ -328,7 +328,8 @@
       if (typeof value === "string" && value.trim()) element.textContent = value;
     });
     document.querySelectorAll("[data-facility-widget]").forEach(element => {
-      element.hidden = configuration.dashboard_content?.[element.dataset.facilityWidget] === false
+      element.hidden = (element.dataset.facilityWidget === "show_feedback" && configuration.slug !== "rip-city")
+        || configuration.dashboard_content?.[element.dataset.facilityWidget] === false
         || Boolean(element.dataset.facilityModule && !isModuleEnabled(configuration,element.dataset.facilityModule));
     });
     document.querySelectorAll("[data-facility-program-label]").forEach(element => {

@@ -173,6 +173,23 @@ function getProfileMemberTypeLabel() {
 
 function updateProfileShellNav() {
   const isCoach = Boolean(profileAccess?.isCoach);
+  const coachHeader = document.getElementById("profile-coach-header");
+  const memberHeader = document.getElementById("profile-member-header");
+  const sidebar = document.querySelector(".member-sidebar");
+  const main = document.querySelector("main");
+  if (coachHeader) coachHeader.hidden = !isCoach;
+  if (memberHeader) memberHeader.hidden = isCoach;
+  if (sidebar) sidebar.hidden = isCoach;
+  document.body.classList.toggle("member-dashboard-body", !isCoach);
+  document.body.classList.toggle("coach-profile-body", isCoach);
+  for (const name of ["main-content", "member-main-content"]) main?.classList.toggle(name, !isCoach);
+  main?.classList.toggle("coach-page", isCoach);
+  const logout = document.getElementById("profile-logout-btn");
+  const target = isCoach
+    ? coachHeader?.querySelector(".coach-session-actions") || coachHeader?.querySelector(".h2k-header-actions")
+    : memberHeader?.querySelector(".topbar-actions");
+  if (logout && target && logout.parentElement !== target) target.append(logout);
+  if (isCoach) window.initializeCoachNavigation?.(profileAccess.facilityConfig);
   const isH2K = currentMemberProfile?.member_type === "h2k";
   const subtitle = document.getElementById("profile-brand-subtitle");
   const programLabel = document.getElementById("profile-program-label");

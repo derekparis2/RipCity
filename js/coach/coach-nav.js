@@ -15,8 +15,25 @@ function initializeCoachNavigation(configuration = window.RipCityFacility) {
     const visibleItems = coachNavigationItems.filter(item => (
       !item.module || configuration?.modules?.[item.module]?.enabled !== false
     ));
-    if (window.RipCityPlatformOwner) {
-      visibleItems.push({ key: "platform", label: "Exit Admin Mode", href: "platform.html" });
+    const actions = nav.closest(".h2k-header-actions");
+    if (actions) {
+      let sessionActions = actions.querySelector(".coach-session-actions");
+      if (!sessionActions) {
+        sessionActions = document.createElement("div");
+        sessionActions.className = "coach-session-actions";
+        const logout = actions.querySelector("button:not(.coach-nav-toggle)");
+        if (logout) sessionActions.append(logout);
+        actions.append(sessionActions);
+      }
+      let exit = sessionActions.querySelector("[data-exit-admin]");
+      if (window.RipCityPlatformOwner && !exit) {
+        exit = document.createElement("a");
+        exit.className = "outline-link";
+        exit.dataset.exitAdmin = "true";
+        exit.href = "platform.html";
+        exit.textContent = "Exit Admin Mode";
+        sessionActions.prepend(exit);
+      } else if (!window.RipCityPlatformOwner) exit?.remove();
     }
     const renderLink = (item) => {
       const isActive = item.key === activeKey;
