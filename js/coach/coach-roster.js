@@ -22,12 +22,40 @@ const H2K_BAND_COLORS = [
   "Red"
 ];
 
+const rosterMessageTimers = new WeakMap();
+function renderRosterActionMessage(element, text, isError = false, onDismiss = null, autoClose = false) {
+  window.clearTimeout(rosterMessageTimers.get(element));
+  element.replaceChildren();
+  element.hidden = !text;
+  element.classList.toggle("error-message", isError);
+  element.classList.toggle("dismissible-message", isError && Boolean(text));
+  element.setAttribute("role", isError ? "alert" : "status");
+  element.setAttribute("aria-live", isError ? "assertive" : "polite");
+  if (!text) return;
+  const copy = document.createElement("span");
+  copy.textContent = text;
+  element.append(copy);
+  if (isError) {
+    const dismiss = document.createElement("button");
+    dismiss.type = "button";
+    dismiss.className = "message-dismiss-btn";
+    dismiss.setAttribute("aria-label", "Dismiss error");
+    dismiss.textContent = "×";
+    dismiss.addEventListener("click", () => {
+      renderRosterActionMessage(element, "");
+      onDismiss?.();
+    });
+    element.append(dismiss);
+  } else if (autoClose) {
+    rosterMessageTimers.set(element, window.setTimeout(() => renderRosterActionMessage(element, ""), 4500));
+  }
+}
+
 function showRosterMessage(message, isError = false) {
   const element = document.getElementById("coach-roster-message");
   if (!element) return;
 
-  element.textContent = message;
-  element.classList.toggle("error-message", isError);
+  renderRosterActionMessage(element, message, isError, null, /(?:created|deleted|saved|updated|deactivated|reactivated)\.$/i.test(message));
 }
 
 function showRosterSignupLinkMessage(message, isError = false) {
@@ -725,10 +753,7 @@ async function deleteRosterGroup(groupId, button) {
   const message = button?.closest(".roster-group-card")?.querySelector("[data-group-delete-message]");
   const showDeleteMessage = (text, isError = false) => {
     if (!message) { showRosterMessage(text, isError); return; }
-    message.textContent = text;
-    message.hidden = !text;
-    message.classList.toggle("error-message", isError);
-    message.setAttribute("role", isError ? "alert" : "status");
+    renderRosterActionMessage(message, text, isError, () => button?.focus());
     if (isError) {
       message.scrollIntoView({ block: "nearest", behavior: "auto" });
       message.focus({ preventScroll: true });
@@ -825,11 +850,11 @@ async function setRosterMemberStatus(facilityMemberId, nextStatus) {
 function showCreateGroupMessage(message, isError = false, nameError = false) {
   const element = document.getElementById("create-group-message");
   if (!element) return;
-  element.textContent = message;
-  element.hidden = !message;
-  element.classList.toggle("error-message", isError);
-  element.setAttribute("role", isError ? "alert" : "status");
-  element.setAttribute("aria-live", isError ? "assertive" : "polite");
+  renderRosterActionMessage(element, message, isError, () => {
+    const input = document.getElementById("new-group-name");
+    input?.removeAttribute("aria-invalid");
+    input?.focus();
+  }, message === "Group created.");
   const nameInput = document.getElementById("new-group-name");
   if (nameInput) {
     if (nameError) nameInput.setAttribute("aria-invalid", "true");

@@ -78,3 +78,11 @@ body.auth-body > main.app-shell > :is(.dashboard-grid,.approval-admin-tools):not
   .app-shell > .h2k-header [data-coach-nav] .coach-nav-links { display:flex; flex-wrap:wrap; width:100%; gap:8px; }
   .app-shell > .h2k-header [data-coach-nav] .coach-nav-link { white-space:nowrap; }
 }
+
+/* The testing grid sits inside a workspace; do not stack its old top margin with the page gap. */
+.app-shell > .testing-workspace > .testing-builder-grid { margin-block:0; }
+.dismissible-message { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+.dismissible-message > span { min-width:0; overflow-wrap:anywhere; }
+.message-dismiss-btn { flex:0 0 36px; display:inline-grid; place-items:center; width:36px; min-height:36px; padding:0; border:1px solid var(--border); border-radius:8px; background:var(--surface); color:var(--text); font:inherit; font-size:24px; cursor:pointer; }
+.message-dismiss-btn:focus-visible { outline:2px solid var(--facility-primary); outline-offset:2px; }
+@media(pointer:coarse) { .message-dismiss-btn { flex-basis:44px; width:44px; min-height:44px; } }

@@ -355,7 +355,7 @@
       }).join("");
       const stylesheet = new URL("css/styles.css?v=facility-styles-1", window.location.href).href;
       const designStylesheet = new URL("css/facility-styles.css?v=facility-styles-12", window.location.href).href;
-      const layoutStylesheet = new URL("css/app-layout.css?v=consistent-spacing-3", window.location.href).href;
+      const layoutStylesheet = new URL("css/app-layout.css?v=consistent-spacing-4", window.location.href).href;
       frame.onload = () => {
         const doc = frame.contentDocument;
         if (!doc) return;
