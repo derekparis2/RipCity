@@ -11487,3 +11487,20 @@ body.member-dashboard-body > main.member-main-content > * {
   }
 }
 @media(max-width:430px) { :root { --app-page-edge:7px; } }
+
+/* Full staff navigation gets its own desktop row instead of squeezing branding. */
+@media(min-width:1041px) {
+  .h2k-header:has([data-coach-nav]) {
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    align-items:center;
+    gap:20px;
+  }
+  .h2k-header:has([data-coach-nav]) > .auth-brand { grid-column:1; grid-row:1; min-width:0; }
+  .h2k-header:has([data-coach-nav]) .auth-brand p { white-space:nowrap; }
+  .h2k-header:has([data-coach-nav]) > .h2k-header-actions { display:contents; }
+  .h2k-header:has([data-coach-nav]) .h2k-header-actions > [data-coach-nav] { grid-column:1 / -1; grid-row:2; width:100%; }
+  .h2k-header:has([data-coach-nav]) .h2k-header-actions > button { grid-column:2; grid-row:1; justify-self:end; }
+  .h2k-header [data-coach-nav] .coach-nav-links { flex-wrap:wrap; width:100%; }
+  .h2k-header [data-coach-nav] .coach-nav-link { white-space:nowrap; }
+}

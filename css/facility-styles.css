@@ -111,3 +111,18 @@ html:is([data-facility-style="clean"],[data-facility-style="community"],[data-fa
 html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) .workout-builder-review-blocks > div { border-color:var(--border); }
 html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) .workout-date-chip { background:var(--surface-2);color:var(--text);border-color:var(--border); }
 html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) .coach-workouts-page :is(.primary-btn,.primary-link):hover { background:var(--facility-primary);color:var(--accent-ink);filter:brightness(.95); }
+
+/* Unilateral toggles use the current surface in both Builder and Exercise Library. */
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) .exercise-unilateral-toggle {
+  background:var(--surface); border-color:var(--border); color:var(--text) !important;
+}
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) .exercise-unilateral-toggle:has(input:checked) {
+  background:var(--surface-2); border-color:var(--facility-primary); color:var(--text) !important;
+}
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) .exercise-unilateral-toggle input { accent-color:var(--facility-primary); }
+.exercise-unilateral-toggle:focus-within { outline:2px solid var(--facility-primary); outline-offset:3px; }
+
+/* Initials always use a matched foreground/surface pair, independent of brand colors. */
+html:is([data-facility-style="clean"],[data-facility-style="community"],[data-facility-background="light"]) :is(.avatar,.profile-avatar,.leaderboard-avatar,.coach-review-avatar,.roster-avatar):not(.has-image) {
+  background:var(--surface-2); color:var(--text); border:1px solid var(--border);
+}
